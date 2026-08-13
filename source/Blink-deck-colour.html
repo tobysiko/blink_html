@@ -1,0 +1,1701 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Blink deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+@page { size: A4; margin: 9mm 8mm; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+       -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.sheet { width: 189mm; font-size: 0; }
+.card { width: 63mm; height: 88mm; display: inline-flex; flex-direction: column;
+        vertical-align: top; position: relative; overflow: hidden; font-size: 9pt;
+        border: .2mm dashed #aaa; }
+.pagebreak { page-break-after: always; }
+.sw { display: block; width: 100%; }
+.gl { display: block; }
+
+/* Corner index: rank over suit, hugging the corner, repeated rotated. */
+.idx { position: absolute; display: flex; flex-direction: column;
+       align-items: center; line-height: 1; z-index: 2; }
+.idx.tl { top: 2.0mm; left: 3.0mm; }
+.idx.br { bottom: 2.0mm; right: 3.0mm; transform: rotate(180deg); }
+.idx .r { font-family: "Fraunces", Georgia, serif; font-size: 15pt;
+          font-weight: 600; line-height: .84; }
+.idx .g { margin-top: .5mm; }
+
+.head { padding: 3.0mm 3.4mm 2.2mm 14.5mm; min-height: 15mm; }
+.nm { display: block; font-size: 9.5pt; font-weight: 600; letter-spacing: .15em; }
+.st { display: block; font-size: 6.8pt; letter-spacing: .04em; color: #777;
+      margin-top: .8mm; }
+.bar { height: 3mm; flex: none; }
+.art { flex: 1; display: flex; align-items: center; justify-content: center;
+       opacity: .93; }
+.eff { padding: 0 3.4mm 13mm; }
+.eff .row { display: flex; gap: 2mm; align-items: baseline;
+            padding: 2.1mm 0; border-top: .18mm solid #ddd; }
+.k { font-family: "IBM Plex Mono", monospace; font-size: 8pt; font-weight: 600;
+     width: 3.6mm; flex: none; color: #555; }
+.v { font-size: 8.4pt; line-height: 1.25; }
+.foot { position: absolute; bottom: 3.2mm; left: 3.4mm; right: 14.5mm;
+        font-size: 6.3pt; color: #999; letter-spacing: .05em; }
+.back { align-items: center; justify-content: center; }
+.bmark { display: flex; gap: 2mm; opacity: .55; margin-bottom: 4mm; }
+.bname { font-family: "Fraunces", Georgia, serif; font-size: 21pt;
+         font-weight: 600; letter-spacing: .24em; }
+.bver { font-size: 6.5pt; letter-spacing: .2em; color: #aaa;
+        margin-top: 2mm; }
+</style></head><body><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">1</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">2</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">3</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">4</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">5</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, this suit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">2 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 1–5 &middot; starting &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">6</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">7</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">8</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">9</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">10</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+1 card, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">colony, up to 2 out</span></div>
+    <div class="row"><span class="k">C</span><span class="v">3 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 6–10 &middot; starting &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">11</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">12</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">13</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">14</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">15</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 tiles, 1 unit</span></div>
+    <div class="row"><span class="k">C</span><span class="v">4 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 11–15 &middot; advanced &middot; 2p 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">16</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">17</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">18</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 3p 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">19</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#5A544C">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#5A544C">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#5A544C">MOUNTAIN</span>
+    <span class="st">holds 1 &middot; attack 2</span>
+  </div>
+  <div class="bar" style="background:#5A544C"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#1E4229">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#1E4229">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#1E4229">FOREST</span>
+    <span class="st">holds 2 &middot; attack 1</span>
+  </div>
+  <div class="bar" style="background:#1E4229"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#9B7A16">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#9B7A16">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#9B7A16">PLAINS</span>
+    <span class="st">holds 3 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#9B7A16"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div>
+<div class="card">
+  <span class="idx tl"><span class="r" style="color:#123D53">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+  <span class="idx br"><span class="r" style="color:#123D53">20</span><span class="g"><svg class="gl" viewBox="0 0 24 24" width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></span></span>
+
+  <div class="head">
+    <span class="nm" style="color:#123D53">OCEAN</span>
+    <span class="st">holds 1 &middot; attack 0</span>
+  </div>
+  <div class="bar" style="background:#123D53"></div>
+
+  <div class="art"><svg class="gl" viewBox="0 0 24 24" width="66" height="66" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+
+  <div class="eff">
+    <div class="row"><span class="k">A</span><span class="v">+2 cards, wins ties</span></div>
+    <div class="row"><span class="k">B</span><span class="v">2 colonies, any terrain</span></div>
+    <div class="row"><span class="k">C</span><span class="v">5 gold</span></div>
+  </div>
+
+  <div class="foot">ranks 16–20 &middot; advanced &middot; 4p</div>
+</div></div><div class='pagebreak'></div><div class='sheet'>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div>
+<div class="card back">
+  <div class="bmark"><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="#5A544C"/><path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12 L5.8 12 Z" fill="#1E4229"/><rect x="11" y="18" width="2" height="3.6" fill="#1E4229"/></svg>
+       <svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.6 19.6 h18.8" stroke="#9B7A16" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10 M16.6 19.6 q0 -6 2.2 -7.6" stroke="#9B7A16" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg><svg class="gl" viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0 M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="#123D53" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+  <div class="bname">BLINK</div>
+  <div class="bver">v0.22</div>
+</div></div></body></html>

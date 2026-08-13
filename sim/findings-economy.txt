@@ -1,0 +1,29 @@
+3 PLAYERS, 14 games, smart bots
+
+BEFORE  band-cliff starvation, no effects, no fortifying
+   rounds 28   starvation: units returned   5.8/game
+   GOLD in   59.6  (effect C   0.0)   out   43.5  (upkeep 20.4 upgrade 14.8 attack  8.3 fortify  0.0)
+   UNSPENT at end   16.1   fortifications  0.0 (absorbed  0.0 attacks)   effect C used  0.0
+   score  pop 47%  row 37%  dom 16%
+
+AFTER   proportional starvation + effect C + fortifying 
+   rounds 25   starvation: units returned   0.4/game
+   GOLD in   66.8  (effect C  11.6)   out   62.1  (upkeep 20.6 upgrade 16.8 attack  6.1 fortify 18.6)
+   UNSPENT at end    5.0   fortifications 18.6 (absorbed  2.1 attacks)   effect C used  3.4
+   score  pop 48%  row 38%  dom 15%
+
+
+4 PLAYERS, 10 games, smart bots
+
+BEFORE  band-cliff starvation, no effects, no fortifying
+   rounds 36   starvation: units returned   8.8/game
+   GOLD in  109.0  (effect C   0.0)   out   66.7  (upkeep 29.1 upgrade 19.9 attack 17.7 fortify  0.0)
+   UNSPENT at end   42.4   fortifications  0.0 (absorbed  0.0 attacks)   effect C used  0.0
+   score  pop 45%  row 42%  dom 13%
+
+AFTER   proportional starvation + effect C + fortifying 
+   rounds 30   starvation: units returned   0.1/game
+   GOLD in  106.0  (effect C   7.7)   out   99.7  (upkeep 27.9 upgrade 21.2 attack 13.2 fortify 37.4)
+   UNSPENT at end    7.1   fortifications 37.4 (absorbed  9.2 attacks)   effect C used  2.3
+   score  pop 47%  row 40%  dom 13%
+

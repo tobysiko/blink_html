@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+
+# Node — the tests' only dependency, installed on demand
+node_modules/
+package-lock.json
+
+# scratch
+*.tmp

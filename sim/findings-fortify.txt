@@ -1,0 +1,18 @@
+3 PLAYERS, 14 games — fortification policies
+
+policy     rounds  fortifs  absorbedcoins/hitgold@fort   kills  gold@upg  unspent     in   out   pop/row/dom
+off            26      0.0       0.0      inf      0.0    17.0      15.6     17.9     59    41   48/38/14
+eager          25     18.6       2.1      8.7     18.6    14.5      16.8      5.0     67    62   48/38/15
+targeted       28     11.9       2.8      4.3     11.9    15.6      16.1      8.6     65    57   48/37/15
+majority       28     11.6       2.9      4.0     11.6    15.1      16.3      8.2     64    56   48/37/15
+
+DOES FORTIFYING PAY?  (40 games each, same bot, only the fortify policy differs)
+
+  seat 0 targeted, seats 1-2 off      seat 0 off, seats 1-2 targeted
+    fortifies  wins 40%  score 32.6     never      wins 25%  score 30.6
+    never      wins 25%  score 28.9     fortifies  wins 38%  score 30.2
+    never      wins 35%  score 30.7     fortifies  wins 38%  score 32.3
+
+The fortifying seat wins more in BOTH arrangements, and the effect survives
+swapping which seat does it - so it is not a seat-position artefact. Population
+is where it shows: 15.9 for the fortifier against 13.6 and 14.7.

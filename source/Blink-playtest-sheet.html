@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Blink v0.22 — playtest sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEAE1; --page:#FBFAF6; --ink:#1C1F1D; --ink-soft:#5A5F59;
+  --plains:#C9992B; --forest:#37704A; --ocean:#256A8C; --stone:#8A837A;
+  --red:#C0392B; --rule:#CDC7B8;
+  --measure:38rem;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.62; font-weight:400;
+}
+.sheet{max-width:60rem;margin:0 auto;background:var(--page);
+  box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 50px -30px rgba(0,0,0,.5);}
+.pad{padding:0 clamp(1.25rem,5vw,4.5rem)}
+
+/* ---------- masthead ---------- */
+.mast{padding:clamp(2rem,6vw,4rem) 0 1.5rem;position:relative;overflow:hidden}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-soft);margin:0 0 1rem}
+.mast h1{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(3rem,12vw,6.5rem);line-height:.86;margin:0;
+  letter-spacing:-.03em}
+.mast .sub{font-family:Fraunces,Georgia,serif;font-weight:400;font-style:italic;
+  font-size:clamp(1.05rem,3vw,1.5rem);color:var(--ink-soft);margin:.6rem 0 0;letter-spacing:-.01em}
+.mast .meta{font-family:"IBM Plex Mono",monospace;font-size:.75rem;letter-spacing:.1em;
+  color:var(--ink-soft);margin:1.4rem 0 0;text-transform:uppercase}
+.mast .meta span{display:inline-block;margin-right:1.4rem;white-space:nowrap}
+.herowrap{margin:1.5rem 0 0}
+.herowrap svg{width:100%;height:auto;display:block;max-height:19rem}
+
+/* ---------- stepped rule: the signature ---------- */
+.steprule{display:flex;align-items:flex-end;height:16px;margin:0;gap:0}
+.steprule i{display:block;flex:1}
+.steprule i:nth-child(1){height:5px;background:var(--plains)}
+.steprule i:nth-child(2){height:16px;background:var(--stone)}
+.steprule i:nth-child(3){height:11px;background:var(--forest)}
+.steprule i:nth-child(4){height:5px;background:var(--ocean)}
+
+/* ---------- sections ---------- */
+section{padding:2.4rem 0 .5rem;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.h2{display:flex;align-items:baseline;gap:1rem;margin:0 0 1.1rem}
+.h2 .num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--stone);
+  letter-spacing:.12em;padding-top:.35rem;min-width:2.2rem}
+.h2 h2{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(1.5rem,4vw,2.15rem);line-height:1.06;margin:0;
+  letter-spacing:-.02em}
+h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.12rem;margin:1.9rem 0 .5rem;
+  letter-spacing:-.01em}
+p{margin:0 0 .95rem;max-width:var(--measure)}
+.lede{font-size:1.08rem;color:var(--ink-soft);max-width:44rem}
+ul,ol{max-width:var(--measure);margin:0 0 1rem;padding-left:1.15rem}
+li{margin:0 0 .42rem}
+strong{font-weight:600}
+em{font-style:italic}
+
+/* ---------- terrain chips ---------- */
+/* the swatch is absolutely positioned so its height — which encodes terrain
+   elevation — never changes the line box, keeping table rows aligned */
+.chip{display:inline-block;position:relative;padding-left:1.05em;font-weight:600;
+  white-space:nowrap}
+.chip::before{content:"";position:absolute;left:0;bottom:.16em;width:.62em;border-radius:1px}
+.chip.plains::before{height:.34em;background:var(--plains)}
+.chip.ocean::before{height:.34em;background:var(--ocean)}
+.chip.forest::before{height:.72em;background:var(--forest)}
+.chip.mountain::before{height:1.05em;background:var(--stone)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6rem 0 1.8rem;max-width:none}
+/* one scale for every diagram: the svg carries its own px size, we never stretch it */
+figure svg{display:block;max-width:100%;height:auto}
+.figbox{background:#F6F4ED;border:1px solid var(--rule);border-radius:4px;
+  padding:1.1rem .9rem;display:flex;justify-content:center;align-items:center}
+.figbox.plain{background:none;border:none;padding:.35rem 0}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.5;
+  color:var(--ink-soft);margin-top:.6rem;letter-spacing:.02em;max-width:var(--measure)}
+.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5A5F59}
+.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1C1F1D;font-weight:600}
+.fig-step{font-family:"IBM Plex Mono",monospace;fill:#8A837A;letter-spacing:.06em}
+.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1C1F1D;font-weight:600}
+.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#C0392B;font-weight:600}
+
+/* ---------- meld grid ---------- */
+.tiergroup{break-inside:avoid;margin-top:2rem}
+.example h3{color:var(--ink)} .example .h2 .num{color:var(--forest)}.tier{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .2rem;
+  padding-bottom:.35rem;border-bottom:1.5px solid var(--ink)}
+.tier-n{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;
+  line-height:1;letter-spacing:-.02em}
+.tier-t{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--stone)}
+.melds{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1.4rem 1.6rem;margin:1.1rem 0 .5rem}
+.melds figure{margin:0;max-width:none;display:flex;flex-direction:column;break-inside:avoid}
+.melds figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.melds .name{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1rem;margin:0 0 .1rem}
+.melds .rule{font-size:.82rem;color:var(--ink-soft);line-height:1.45;margin:0}
+.melds .shape{font-size:.82rem;margin:.35rem 0 0;line-height:1.45}
+.melds .shape b{font-weight:600}
+@media (max-width:640px){.melds{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;max-width:var(--measure);margin:1rem 0 1.4rem;
+  font-size:.92rem}
+table.wide{max-width:none}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:.68rem;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--stone);
+  border-bottom:1.5px solid var(--ink);padding:0 .7rem .4rem 0;vertical-align:bottom}
+td{padding:.5rem .7rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:last-child,th:last-child{padding-right:0}
+.num-cell{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- callout ---------- */
+.note{border-left:3px solid var(--plains);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
+  max-width:var(--measure)}
+.note p{margin:0 0 .5rem}
+.note p:last-child{margin:0}
+.note .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+
+/* ---------- sequence ---------- */
+.seq{list-style:none;padding:0;counter-reset:s;max-width:var(--measure)}
+.seq>li{counter-increment:s;position:relative;padding-left:2.4rem;margin:0 0 .8rem}
+.seq>li::before{content:counter(s);position:absolute;left:0;top:.05rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink);
+  background:var(--page);border:1.5px solid var(--ink);width:1.5rem;height:1.5rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+
+/* ---------- reference back page ---------- */
+.ref{background:var(--paper);color:var(--ink);border-top:2px solid var(--ink);
+  margin-top:2.5rem;padding-bottom:3rem}
+.ref section{border-top-color:var(--rule)}
+.ref .h2 h2,.ref h3{color:var(--ink)}
+.ref .h2 .num{color:#9A948A}
+.ref p,.ref li{color:var(--ink-soft)}
+.ref td{border-bottom-color:var(--rule)}
+.ref th{color:var(--stone);border-bottom-color:var(--ink)}
+.ref .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.4rem}
+.ref .cols>div{max-width:none}
+.ref .cols p,.ref .cols ul{max-width:none}
+.ref .note{border-left-color:var(--plains)}
+.ref .note .tag{color:#9A948A}
+
+footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+  color:var(--ink-soft);letter-spacing:.06em}
+
+@page{
+  size:A4;
+  margin:18mm 16mm 16mm 16mm;
+}
+@media print{
+  html,body{background:#fff}
+  .example{background:#F3F1EA;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
+  body{font-size:10.3pt;line-height:1.5}
+  .sheet{box-shadow:none;max-width:none;margin:0;background:#fff}
+  /* padding is provided by the @page margin, so drop the fluid inner pad */
+  .pad{padding:0}
+  .mast{padding:0 0 1rem}
+  /* let text fill the printable width instead of the 38rem screen measure */
+  p,ul,ol,figure,.lede,.melds figure,.note{max-width:none}
+  figcaption{max-width:none}
+  section{break-inside:auto;padding:1.2rem 0 .4rem}
+  /* keep atomic blocks whole */
+  figure,table,.note,.tiergroup,.pat,.seq li,tr{break-inside:avoid}
+  .h2,h3,thead{break-after:avoid}
+  h3{margin-top:1.3rem}
+  .herowrap svg{max-height:15rem}
+  /* figures keep their intrinsic size so the scale stays constant across the book */
+  figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+  .melds figure svg{max-width:100%;height:auto;margin:0 auto}
+  .figbox{background:#F7F5EF;border-color:#DDD8CB}
+  .ref{background:#fff;color:#000;border-top:2px solid #000}
+  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000}
+  .ref th{color:#555;border-bottom-color:#000}
+  .ref td{border-bottom-color:#ccc}
+  .ref .h2 .num{color:#777}
+}
+@media (max-width:640px){
+  body{font-size:15px}
+  .opener{break-after:page}
+  .h2{gap:.7rem}
+  .h2 .num{min-width:1.8rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:rise .5s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+.opener .lede{font-size:1.06rem}
+.contents{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  padding:.7rem 0;margin:1.4rem 0 0}
+.contents .tag{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+.contents p{margin:0;font-size:.86rem;line-height:1.7;color:var(--stone)}
+.contents b{color:var(--ink)}
+p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
+.gloss dt{font-weight:600;margin:.7rem 0 0;break-after:avoid}
+.gloss dd{margin:.1rem 0 0;color:var(--stone);break-before:avoid}
+
+@page{size:A4;margin:12mm 12mm 10mm 12mm}
+body{font-size:9.1pt;line-height:1.3}
+.sheet{max-width:none;box-shadow:none;background:#fff}
+.pad{padding:0}
+h1{font-family:Fraunces,Georgia,serif;font-size:19pt;margin:0;letter-spacing:-.02em;white-space:nowrap}
+.sub{font-family:"IBM Plex Mono",monospace;font-size:7.6pt;letter-spacing:.12em;
+  text-transform:uppercase;color:#8A837A;margin:.2rem 0 0}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;
+  border-bottom:2px solid #1C1F1D;padding-bottom:.3rem;margin-bottom:.5rem}
+.q{break-inside:avoid;margin:0 0 .38rem;padding-left:1.5rem;position:relative}
+.q .n{position:absolute;left:0;top:.05rem;font-family:"IBM Plex Mono",monospace;
+  font-size:.66rem;border:1.2px solid #1C1F1D;border-radius:50%;
+  width:1.15rem;height:1.15rem;display:flex;align-items:center;justify-content:center}
+.q h3{font-family:"IBM Plex Sans",sans-serif;font-size:9.6pt;font-weight:600;
+  margin:0 0 .1rem}
+.q p{margin:0 0 .18rem;font-size:8.7pt;color:#5A5F59;max-width:none}
+.rule-line{border-bottom:1px dotted #B4AFA3;height:.78rem}
+.rule-line.tall{height:1.5rem}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.4rem 1.6rem}
+.box{border:1px solid #CDC7B8;border-radius:3px;padding:.35rem .5rem;
+  background:#FBFAF6}
+.tally{font-family:"IBM Plex Mono",monospace;font-size:8pt;color:#8A837A}
+.scale{font-family:"IBM Plex Mono",monospace;font-size:8.4pt;letter-spacing:.08em}
+.setup{font-size:8.4pt;color:#5A5F59;border:1px solid #CDC7B8;border-radius:3px;
+  padding:.35rem .55rem;background:#F6F4ED;margin-bottom:.55rem}
+.foot{border-top:1px solid #CDC7B8;margin-top:.5rem;padding-top:.3rem;
+  font-family:"IBM Plex Mono",monospace;font-size:7.2pt;color:#8A837A}
+table.tick{width:100%;font-size:8.4pt;margin:.15rem 0 .1rem}
+table.tick td{border-bottom:1px dotted #B4AFA3;padding:.2rem .3rem .2rem 0}
+table.tick td.k{width:38%;color:#5A5F59}
+</style>
+</head>
+<body>
+<div class="sheet"><div class="pad">
+
+<div class="top">
+  <div>
+    <h1>Blink — playtest sheet</h1>
+    <p class="sub">rules v0.22 · one sheet per game</p>
+  </div>
+  <div class="tally" style="text-align:right;line-height:1.7">
+    players ____ &nbsp; date __________<br>
+    start ______ &nbsp; end ______</div>
+</div>
+
+<div class="setup">
+  <b>Play the base game only.</b> No objectives module, no expansions — those are
+  not tuned for these rules. The five questions below are the ones the design is
+  actually stuck on; everything else can wait for the feedback form.
+</div>
+
+<div class="q"><span class="n">1</span><h3>Free moves — the big unknown</h3><p>Each turn your band gives you 1–4 free moves (land across your own units, or sea). Tick roughly how many you actually used, and say what for.</p><table class="tick"><tr><td class="k">moves used per turn, typically</td><td class="scale">none &nbsp; 1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; wanted more</td></tr><tr><td class="k">mostly used to…</td><td class="scale">reinforce &nbsp; escape &nbsp; claim ground &nbsp; didn&rsquo;t bother</td></tr><tr><td class="k">did anyone forget they had them?</td><td class="scale">yes &nbsp; no</td></tr></table><div class="rule-line"></div></div>
+
+<div class="q"><span class="n">2</span><h3>Did the shape of a meld ever matter?</h3><p>Melds now only decide how many cards you spend. Straight of four and quadruple do the same work. Did anyone care which they held — and did anyone build toward a bigger meld on purpose?</p><table class="tick"><tr><td class="k">shape felt…</td><td class="scale">irrelevant &nbsp; mildly &nbsp; still interesting</td></tr><tr><td class="k">anyone hold cards to build a big meld?</td><td class="scale">yes &nbsp; no</td></tr></table><div class="rule-line"></div></div>
+
+<div class="q"><span class="n">3</span><h3>The new trick reward — and how often you cashed</h3><p>Winner spends one extra card; the meld that ranked last takes 1 gold. Tally one mark per card <b>you</b> cashed instead of using on the map (the sim predicts about one in three). Count for yourself only.</p><div class="box" style="height:1.7rem"></div><p style="margin-top:.2rem">cards cashed ______ of ______ played &nbsp;·&nbsp; did cashing ever feel like the <i>obvious</i> choice, with no decision in it? yes / no</p><table class="tick"><tr><td class="k">did anyone ask how many cards they could use?</td><td class="scale">yes &nbsp; no &nbsp; (the rule exists to stop that)</td></tr><tr><td class="k">the winner&rsquo;s extra card felt…</td><td class="scale">a real prize &nbsp; barely noticed &nbsp; too strong</td></tr><tr><td class="k">the last-place coin felt…</td><td class="scale">welcome &nbsp; pointless &nbsp; like charity</td></tr></table></div>
+
+<div class="q"><span class="n">4</span><h3>What ended the game, and did it land?</h3><p>The simulator says a suit's advanced deck always runs dry before anyone places a twentieth unit. If that happened, did the ending feel earned or abrupt?</p><table class="tick"><tr><td class="k">ended because…</td><td class="scale">a suit ran out &nbsp; someone placed 20 units</td></tr><tr><td class="k">the ending felt…</td><td class="scale">earned &nbsp; abrupt &nbsp; nobody noticed it coming</td></tr></table><div class="rule-line"></div></div>
+
+<div class="q"><span class="n">5</span><h3>Food and the coin shuffle</h3><p>Coins sit on your band's food slots and your people eat them at each recycle; you may move coins between reserve, food and fortifications freely on your turn.</p><table class="tick"><tr><td class="k">did anyone starve (return units)?</td><td class="scale">yes, ___ times &nbsp; never</td></tr><tr><td class="k">pre-placing food on the slots was…</td><td class="scale">clear &nbsp; fiddly &nbsp; forgotten &nbsp; pointless</td></tr><tr><td class="k">anyone pull coins off a fortification to eat?</td><td class="scale">yes &nbsp; no</td></tr></table></div>
+
+<div class="grid2">
+  <div>
+    <h3 style="font-family:'IBM Plex Sans';font-size:9.6pt;margin:.2rem 0 .1rem">
+    Anything you had to look up, argue about, or invent</h3>
+    <div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div>
+  </div>
+  <div>
+    <h3 style="font-family:'IBM Plex Sans';font-size:9.6pt;margin:.2rem 0 .1rem">
+    Best and worst moment</h3>
+    <div class="rule-line"></div><div class="rule-line"></div><div class="rule-line"></div>
+  </div>
+</div>
+
+<p style="margin:.45rem 0 .1rem;font-size:8.7pt"><b>Scores</b> — seat / total /
+population / victory row / dominance / gold left</p>
+<div class="rule-line tall"></div><div class="rule-line tall"></div><div class="rule-line tall"></div>
+
+<p class="scale" style="margin:.35rem 0 0">
+would play again &nbsp; 1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; 5 &nbsp;&nbsp;·&nbsp;&nbsp;
+rules were clear &nbsp; 1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; 5</p>
+
+<div class="foot">Blink · v0.22 · playtest sheet · Toby Siko ·
+the longer feedback form covers everything this page does not</div>
+
+</div></div>
+</body>
+</html>

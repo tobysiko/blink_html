@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blink — Rules v0.22</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF; --page:#FFFFFF; --ink:#000000; --ink-soft:#3F3F3F;
+  --plains:#B4B4B4; --forest:#5C5C5C; --ocean:#2B2B2B; --stone:#8A8A8A;
+  --red:#000000; --rule:#B0B0B0;
+  --measure:38rem;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.62; font-weight:400;
+}
+.sheet{max-width:60rem;margin:0 auto;background:var(--page);
+  box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 50px -30px rgba(0,0,0,.5);}
+.pad{padding:0 clamp(1.25rem,5vw,4.5rem)}
+
+/* ---------- masthead ---------- */
+.mast{padding:clamp(2rem,6vw,4rem) 0 1.5rem;position:relative;overflow:hidden}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-soft);margin:0 0 1rem}
+.mast h1{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(3rem,12vw,6.5rem);line-height:.86;margin:0;
+  letter-spacing:-.03em}
+.mast .sub{font-family:Fraunces,Georgia,serif;font-weight:400;font-style:italic;
+  font-size:clamp(1.05rem,3vw,1.5rem);color:var(--ink-soft);margin:.6rem 0 0;letter-spacing:-.01em}
+.mast .meta{font-family:"IBM Plex Mono",monospace;font-size:.75rem;letter-spacing:.1em;
+  color:var(--ink-soft);margin:1.4rem 0 0;text-transform:uppercase}
+.mast .meta span{display:inline-block;margin-right:1.4rem;white-space:nowrap}
+.herowrap{margin:1.5rem 0 0}
+.herowrap svg{width:100%;height:auto;display:block;max-height:19rem}
+
+/* ---------- stepped rule: the signature ---------- */
+.steprule{display:flex;align-items:flex-end;height:16px;margin:0;gap:0}
+.steprule i{display:block;flex:1}
+.steprule i:nth-child(1){height:5px;background:var(--plains)}
+.steprule i:nth-child(2){height:16px;background:var(--stone)}
+.steprule i:nth-child(3){height:11px;background:var(--forest)}
+.steprule i:nth-child(4){height:5px;background:var(--ocean)}
+
+/* ---------- sections ---------- */
+section{padding:2.4rem 0 .5rem;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.h2{display:flex;align-items:baseline;gap:1rem;margin:0 0 1.1rem}
+.h2 .num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--stone);
+  letter-spacing:.12em;padding-top:.35rem;min-width:2.2rem}
+.h2 h2{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(1.5rem,4vw,2.15rem);line-height:1.06;margin:0;
+  letter-spacing:-.02em}
+h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.12rem;margin:1.9rem 0 .5rem;
+  letter-spacing:-.01em}
+p{margin:0 0 .95rem;max-width:var(--measure)}
+.lede{font-size:1.08rem;color:var(--ink-soft);max-width:44rem}
+ul,ol{max-width:var(--measure);margin:0 0 1rem;padding-left:1.15rem}
+li{margin:0 0 .42rem}
+strong{font-weight:600}
+em{font-style:italic}
+
+/* ---------- terrain chips ---------- */
+/* the swatch is absolutely positioned so its height — which encodes terrain
+   elevation — never changes the line box, keeping table rows aligned */
+.chip{display:inline-block;position:relative;padding-left:1.05em;font-weight:600;
+  white-space:nowrap}
+.chip::before{content:"";position:absolute;left:0;bottom:.16em;width:.62em;border-radius:1px}
+.chip.plains::before{height:.34em;background:var(--plains)}
+.chip.ocean::before{height:.34em;background:var(--ocean)}
+.chip.forest::before{height:.72em;background:var(--forest)}
+.chip.mountain::before{height:1.05em;background:var(--stone)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6rem 0 1.8rem;max-width:none}
+/* one scale for every diagram: the svg carries its own px size, we never stretch it */
+figure svg{display:block;max-width:100%;height:auto}
+.figbox{background:#F4F4F4;border:1px solid var(--rule);border-radius:4px;
+  padding:1.1rem .9rem;display:flex;justify-content:center;align-items:center}
+.figbox.plain{background:none;border:none;padding:.35rem 0}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.5;
+  color:var(--ink-soft);margin-top:.6rem;letter-spacing:.02em;max-width:var(--measure)}
+.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5E5E5E}
+.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1E1E1E;font-weight:600}
+.fig-step{font-family:"IBM Plex Mono",monospace;fill:#848484;letter-spacing:.06em}
+.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1E1E1E;font-weight:600}
+.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#555555;font-weight:600}
+
+/* ---------- meld grid ---------- */
+.tiergroup{break-inside:avoid;margin-top:2rem}
+.example h3{color:var(--ink)} .example .h2 .num{color:var(--forest)}.tier{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .2rem;
+  padding-bottom:.35rem;border-bottom:1.5px solid var(--ink)}
+.tier-n{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;
+  line-height:1;letter-spacing:-.02em}
+.tier-t{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--stone)}
+.melds{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1.4rem 1.6rem;margin:1.1rem 0 .5rem}
+.melds figure{margin:0;max-width:none;display:flex;flex-direction:column;break-inside:avoid}
+.melds figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.melds .name{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1rem;margin:0 0 .1rem}
+.melds .rule{font-size:.82rem;color:var(--ink-soft);line-height:1.45;margin:0}
+.melds .shape{font-size:.82rem;margin:.35rem 0 0;line-height:1.45}
+.melds .shape b{font-weight:600}
+@media (max-width:640px){.melds{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;max-width:var(--measure);margin:1rem 0 1.4rem;
+  font-size:.92rem}
+table.wide{max-width:none}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:.68rem;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--stone);
+  border-bottom:1.5px solid var(--ink);padding:0 .7rem .4rem 0;vertical-align:bottom}
+td{padding:.5rem .7rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:last-child,th:last-child{padding-right:0}
+.num-cell{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- callout ---------- */
+.note{border-left:3px solid var(--plains);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
+  max-width:var(--measure)}
+.note p{margin:0 0 .5rem}
+.note p:last-child{margin:0}
+.note .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+
+/* ---------- sequence ---------- */
+.seq{list-style:none;padding:0;counter-reset:s;max-width:var(--measure)}
+.seq>li{counter-increment:s;position:relative;padding-left:2.4rem;margin:0 0 .8rem}
+.seq>li::before{content:counter(s);position:absolute;left:0;top:.05rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink);
+  background:var(--page);border:1.5px solid var(--ink);width:1.5rem;height:1.5rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+
+/* ---------- reference back page ---------- */
+.ref{background:var(--paper);color:var(--ink);border-top:2px solid var(--ink);
+  margin-top:2.5rem;padding-bottom:3rem}
+.ref section{border-top-color:var(--rule)}
+.ref .h2 h2,.ref h3{color:var(--ink)}
+.ref .h2 .num{color:#959595}
+.ref p,.ref li{color:var(--ink-soft)}
+.ref td{border-bottom-color:var(--rule)}
+.ref th{color:var(--stone);border-bottom-color:var(--ink)}
+.ref .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.4rem}
+.ref .cols>div{max-width:none}
+.ref .cols p,.ref .cols ul{max-width:none}
+.ref .note{border-left-color:var(--plains)}
+.ref .note .tag{color:#959595}
+
+footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+  color:var(--ink-soft);letter-spacing:.06em}
+
+@page{
+  size:A4;
+  margin:18mm 16mm 16mm 16mm;
+}
+@media print{
+  html,body{background:#FFFFFF}
+  .example{background:#F1F1F1;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
+  body{font-size:10.3pt;line-height:1.5}
+  .sheet{box-shadow:none;max-width:none;margin:0;background:#FFFFFF}
+  /* padding is provided by the @page margin, so drop the fluid inner pad */
+  .pad{padding:0}
+  .mast{padding:0 0 1rem}
+  /* let text fill the printable width instead of the 38rem screen measure */
+  p,ul,ol,figure,.lede,.melds figure,.note{max-width:none}
+  figcaption{max-width:none}
+  section{break-inside:auto;padding:1.2rem 0 .4rem}
+  /* keep atomic blocks whole */
+  figure,table,.note,.tiergroup,.pat,.seq li,tr{break-inside:avoid}
+  .h2,h3,thead{break-after:avoid}
+  h3{margin-top:1.3rem}
+  .herowrap svg{max-height:15rem}
+  /* figures keep their intrinsic size so the scale stays constant across the book */
+  figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+  .melds figure svg{max-width:100%;height:auto;margin:0 auto}
+  .figbox{background:#F5F5F5;border-color:#D8D8D8}
+  .ref{background:#FFFFFF;color:#000000;border-top:2px solid #000000}
+  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000000}
+  .ref th{color:#555555;border-bottom-color:#000000}
+  .ref td{border-bottom-color:#CCCCCC}
+  .ref .h2 .num{color:#777777}
+}
+@media (max-width:640px){
+  body{font-size:15px}
+  .opener{break-after:page}
+  .h2{gap:.7rem}
+  .h2 .num{min-width:1.8rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:rise .5s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+.opener .lede{font-size:1.06rem}
+.contents{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  padding:.7rem 0;margin:1.4rem 0 0}
+.contents .tag{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+.contents p{margin:0;font-size:.86rem;line-height:1.7;color:var(--stone)}
+.contents b{color:var(--ink)}
+p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
+.gloss dt{font-weight:600;margin:.7rem 0 0;break-after:avoid}
+.gloss dd{margin:.1rem 0 0;color:var(--stone);break-before:avoid}
+
+/* ---- black-and-white overrides ---- */
+.sheet{box-shadow:none;border:none}
+/* light chips need an outline or they vanish on white */
+.chip::before{outline:.5px solid #000;outline-offset:-.5px}
+/* the stepped rule is four tones; give it edges so they stay countable */
+.steprule i{box-shadow:inset 0 0 0 .5px #000}
+img,svg{filter:none}
+@media print{ body{background:#fff} .sheet{background:#fff} }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="mast pad">
+  <p class="eyebrow">A meld-building civilization game</p>
+  <h1>Blink</h1>
+  <p class="sub">Climbing the ladder of civilization</p>
+  <p class="meta"><span>2–4 players</span><span>60–120 minutes</span><span>Toby Siko</span></p>
+  <div class="herowrap"><svg class="fig" viewBox="-82 -40 321 202" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,26.00 90.07,39.00 112.58,26.00 112.58,0.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,34.00 135.10,47.00 157.62,34.00 157.62,8.00" fill="#D9D9D9"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,57.00 -22.52,70.00 0.00,57.00 0.00,31.00" fill="#D9D9D9"/><polygon points="-22.52,13.00 0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,26.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,57.00 22.52,70.00 45.03,57.00 45.03,31.00" fill="#D9D9D9"/><polygon points="22.52,13.00 45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="22.52" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="22.52" cy="38.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="35.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,65.00 112.58,78.00 135.10,65.00 135.10,39.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="38.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="35.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,73.00 157.62,86.00 180.13,73.00 180.13,47.00" fill="#D9D9D9"/><polygon points="157.62,13.00 180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,26.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="157.62" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="157.62" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="-22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,96.00 -45.03,109.00 -22.52,96.00 -22.52,70.00" fill="#D9D9D9"/><polygon points="-45.03,52.00 -22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,65.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#D9D9D9"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,96.00 45.03,109.00 67.55,96.00 67.55,70.00" fill="#D9D9D9"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="77.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="74.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="70.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="67.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,96.00 90.07,109.00 112.58,96.00 112.58,70.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,104.00 135.10,117.00 157.62,104.00 157.62,78.00" fill="#D9D9D9"/><polygon points="135.10,52.00 157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,65.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#D9D9D9"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,135.00 67.55,148.00 90.07,135.00 90.07,109.00" fill="#D9D9D9"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="123.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="67.55" cy="120.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,135.00 112.58,148.00 135.10,135.00 135.10,109.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="202.65,13.00 225.17,26.00 225.17,52.00 202.65,65.00 180.13,52.00 180.13,26.00" fill="none" stroke="#666666" stroke-width="1.6" stroke-dasharray="5 4"/></svg></div>
+</header>
+<div class="steprule"><i></i><i></i><i></i><i></i></div>
+
+<main class="pad">
+
+<section class="opener">
+  <div class="h2"><span class="num">—</span><h2>Start here</h2></div>
+  <p class="lede">Each round you play a <b>meld</b> — a small combination of cards. The meld
+  competes for the trick, and then every card in it becomes something: a settler, a new
+  tile, an attack — or a coin. Win the trick and you spend one card more than you played;
+  come last and you pocket a coin.</p>
+  <ol class="seq">
+    <li><b>Card phase.</b> Everyone plays a meld. Most cards wins the trick.</li>
+    <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
+    explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
+    your free actions: your band's free moves, and gold shuffled between food, fortresses
+    and research.</li>
+    <li><b>Grow, and pay for it.</b> Units leave your board in tiers. Each tier you empty
+    pays you a one-off ascension reward, lets you play a bigger meld and move further — and
+    raises the gold your people cost to feed.</li>
+  </ol>
+  <p>The game ends when someone places their last unit or the upgrade deck runs dry.
+  Most points wins: one per unit on the map, plus your victory row, plus terrain majorities.</p>
+  <div class="contents">
+    <span class="tag">Contents</span>
+    <p><b>01</b> The idea · <b>02</b> Components · <b>03</b> Setup · <b>04</b> The round ·
+    <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
+    <b>08</b> Terrain · <b>09</b> Feeding and refilling · <b>10</b> Research and the market ·
+    <b>✦</b> A worked example · <b>11</b> End of the game ·
+    <b>—</b> Glossary · <b>—</b> Quick reference</p>
+  </div>
+</section>
+
+<section>
+  <div class="h2"><span class="num">01</span><h2>The idea</h2></div>
+  <p class="lede">In Blink, the cards you play do two things at once. They compete for
+  the trick, and they are the budget your civilization spends. A pair is two things done;
+  a run of four is four. You never choose a move separately from the cards — the meld is
+  the budget.</p>
+  <p>Winning the trick lets you act first and spend one card more than you played. The
+  player who came last takes a coin. So a strong meld buys tempo, but growth has a cost:
+  the more ground you hold, the more it takes to feed, and feeding comes due whether or
+  not you won.</p>
+  <p>Behind every card sits one plain question: <strong>is it people, or is it gold?</strong>
+  Spent on the map, a card settles a unit, opens new ground or strikes a rival — always on
+  terrain matching its suit. Cashed, it is a coin, and coins buy food, fortresses and
+  research. Gold is tight, and winning play cashes cards constantly. The player who reads
+  when a hand is people and when it is money — and when to spend a trick rather than win
+  it — comes out ahead.</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">02</span><h2>Components</h2></div>
+  <ul>
+    <li><strong>80 civilization cards</strong> — four suits (Plains, Forest, Ocean, Mountain), ranks 1–20</li>
+    <li><strong>60 terrain tiles</strong> — 15 each of Plains, Forest, Ocean and Mountain</li>
+    <li><strong>80 population units</strong> — 20 in each of four player colours</li>
+    <li><strong>4 player boards</strong> — each with a <b>reserve</b> of five tiers, a
+    <b>gold area</b>, and a <b>victory row</b> of five slots</li>
+    <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
+    <li><strong>4 initiative dice</strong> — use one per player</li>
+  </ul>
+  <figure><div class="figbox"><svg class="fig" width="448.3" height="211.9" viewBox="20 5 419 198" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,114.00 60.00,127.00 82.52,114.00 82.52,88.00" fill="#D9D9D9"/><polygon points="60.00,70.00 82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,83.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><text x="60.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Ocean</text><text x="60.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="60.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,114.00 168.00,127.00 190.52,114.00 190.52,88.00" fill="#D9D9D9"/><polygon points="168.00,70.00 190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,83.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><text x="168.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Plains</text><text x="168.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 3</text><text x="168.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,122.00 276.00,135.00 298.52,122.00 298.52,96.00" fill="#D9D9D9"/><polygon points="276.00,70.00 298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,83.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><text x="276.00" y="143.00" text-anchor="middle" class="fig-strong" font-size="14">Forest</text><text x="276.00" y="161.00" text-anchor="middle" class="fig-label" font-size="12">holds 2</text><text x="276.00" y="177.00" text-anchor="middle" class="fig-step" font-size="11">costs 1 gold</text><polygon points="406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,130.00 384.00,143.00 406.52,130.00 406.52,104.00" fill="#D9D9D9"/><polygon points="384.00,70.00 406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,83.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><text x="384.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="14">Mountain</text><text x="384.00" y="169.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="384.00" y="185.00" text-anchor="middle" class="fig-step" font-size="11">costs 2 gold</text><text x="60.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="168.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="276.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">2 layers</text><text x="384.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">3 layers</text></svg></div><figcaption>The four terrains at a glance. Defended ground is shown taller — a visual reminder of its attack cost, nothing more. The numbers on the table are the rules.</figcaption></figure>
+</section>
+
+<section>
+  <div class="h2"><span class="num">03</span><h2>Setup</h2></div>
+  <ol class="seq">
+    <li><b>Split the cards.</b> Divide the 80 cards into a <strong>starting deck</strong> and an
+    <strong>upgrade deck</strong> by rank, according to the player count.
+    <table>
+      <thead><tr><th>Players</th><th>Starting deck</th><th>Upgrade deck</th></tr></thead>
+      <tbody>
+        <tr><td>2</td><td>ranks 6–10</td><td>ranks 11–15</td></tr>
+        <tr><td>3</td><td>ranks 3–10 †</td><td>ranks 11–18 †</td></tr>
+        <tr><td>4</td><td>ranks 1–10</td><td>ranks 11–20</td></tr>
+      </tbody>
+    </table>
+    <p class="fine">† <b>Three-player balance.</b> Ranks 3–10 give 32 starting cards for 30
+    dealt. Draw <b>two of the four rank-3 cards at random</b> and keep them; return the other
+    two to the box. Then remove the <b>rank-18</b> cards of those same two suits from the
+    upgrade deck, so no suit is over-represented in either half of the game.</p></li>
+
+    <li><b>Draft your hand.</b> Deal 10 starting-deck cards to each player. Keep 4 and pass 6
+    clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end with a fixed hand
+    of <strong>ten cards</strong>.</li>
+
+    <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 4, 6, 4, 4 from
+    the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
+    Settlement, 2 on Kingdom, 3 on Empire, 4 on Civilization. Your meld limit starts at
+    <strong>2</strong>.</li>
+
+    <li><b>Lay the starting map.</b> Build the layout shown for your player count, then each
+    player places one unit from their top band on their own Plains tile. Whatever the count, the
+    map obeys the same three rules:
+    <ul>
+      <li><strong>one Mountain per player</strong>, in a single block in the middle;</li>
+      <li><strong>one Plains per player</strong> around it, each touching exactly one Mountain;</li>
+      <li>every start exactly <strong>three tiles</strong> from every other.</li>
+    </ul>
+    <p class="fine">Three is not decoration. A card only acts next to your civilization, so
+    in the opening rounds nobody can reach a rival's homeland at all. Long before homelands are
+    in danger, the Mountains become the contested ground — each holds one unit and costs 2 gold
+    a card to take — so the fight for the middle comes first.</p></li>
+
+    <li><b>Tile supply.</b> Sort the remaining tiles into four open piles by terrain,
+    where everyone can see and reach them. There is no bag and nothing is hidden: any tile
+    may be taken at any time until that terrain runs out.</li>
+
+    <li><b>Upgrade deck and market.</b> Shuffle <strong>all advanced cards together</strong>
+    into one face-down deck. Deal <strong>six face up in a 2 &times; 3 grid</strong> beside
+    it — that is the market (§10).</li>
+
+    <li><b>First player.</b> Choose a start player. They take initiative die “1”.</li>
+  </ol>
+  <figure><div class="figbox"><svg class="fig" width="673.0" height="286.8" viewBox="-6 -52 629 268" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(22.52,-0.00)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,34.00 90.07,47.00 112.58,34.00 112.58,8.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,18.00 135.10,31.00 157.62,18.00 157.62,-8.00" fill="#D9D9D9"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="135.10" cy="6.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="135.10" cy="3.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/></g><text x="90.07" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">2 players</text><g transform="translate(196.13,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#D9D9D9"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="22.52" cy="123.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="120.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,151.00 67.55,164.00 90.07,151.00 90.07,125.00" fill="#D9D9D9"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,174.00 135.10,187.00 157.62,174.00 157.62,148.00" fill="#D9D9D9"/><polygon points="135.10,130.00 157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,143.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="135.10" cy="162.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="135.10" cy="159.00" rx="11" ry="5.5" fill="#8C8C8C" stroke="#000000" stroke-width="1.2"/></g><text x="274.94" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">3 players</text><g transform="translate(392.27,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#D9D9D9"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,112.00 45.03,125.00 67.55,112.00 67.55,86.00" fill="#D9D9D9"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,151.00 157.62,164.00 180.13,151.00 180.13,125.00" fill="#D9D9D9"/><polygon points="157.62,91.00 180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,135.00 202.65,148.00 225.17,135.00 225.17,109.00" fill="#D9D9D9"/><polygon points="202.65,91.00 225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="202.65" cy="123.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="202.65" cy="120.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,174.00 90.07,187.00 112.58,174.00 112.58,148.00" fill="#D9D9D9"/><polygon points="90.07,130.00 112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,143.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="162.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="90.07" cy="159.00" rx="11" ry="5.5" fill="#8C8C8C" stroke="#000000" stroke-width="1.2"/></g><text x="493.59" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">4 players</text></svg></div><figcaption>The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.</figcaption></figure>
+</section>
+
+<section>
+  <div class="h2"><span class="num">04</span><h2>The round</h2></div>
+  <p>Every round has two halves. First everyone plays cards. Then everyone spends
+  those same cards, in the order the cards decided.</p>
+  <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 4, then 6,
+  then 4, then a final 4 — and you always take units from the <b>topmost tier that still
+  holds any</b>. That tier is your current tier, and it prints the four numbers that govern
+  your game: the size of meld you may play, the free moves you get each turn, the gold your
+  people cost to feed, and the highest card rank you may retire.</p>
+  <table>
+    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th></tr></thead>
+    <tbody>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">13</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">15</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">6</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">17</td></tr>
+      <tr><td>Empire</td><td class="num-cell">4</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">20</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">4</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">none</td></tr>
+    </tbody>
+  </table>
+  <p>Read all four off the topmost tier that still holds units — one rule, no counting,
+  and <strong>nothing cumulative</strong>: you owe the coins on that tier and no others.
+  Empty a tier and every number steps up together: the expansion that buys you a bigger meld
+  and a longer stride is the same expansion that sends you the bill. Melds never exceed
+  six; placing the last unit of the Civilization tier ends the game (§11).</p>
+
+  <h3>Ascension</h3>
+  <p>Each tier below the first has a <strong>coin printed on your board</strong> at setup.
+  The first time you reach that tier — the moment the tier above it empties — take those
+  coins from your board into your reserve.</p>
+  <table>
+    <thead><tr><th>Reaching</th><th>Settlement</th><th>Kingdom</th><th>Empire</th><th>Civilization</th></tr></thead>
+    <tbody>
+      <tr><td>Ascension reward</td><td class="num-cell">1</td><td class="num-cell">2</td><td class="num-cell">3</td><td class="num-cell">4</td></tr>
+    </tbody>
+  </table>
+  <p class="fine">First time only. Ground you later lose does not put the coins back, and
+  falling to a lower tier does not let you claim them twice.</p>
+  <figure><div class="figbox"><svg class="fig" width="649.0" height="462.4" viewBox="-6 -8 532 379" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><rect x="8" y="6" width="504" height="351" rx="12" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/><text x="20.00" y="24.00" text-anchor="start" class="fig-step" font-size="12">RESERVE</text><text x="384.00" y="24.00" text-anchor="start" class="fig-step" font-size="11">FOOD</text><text x="448.00" y="24.00" text-anchor="start" class="fig-step" font-size="11">MOVES</text><text x="134.00" y="24.00" text-anchor="start" class="fig-label" font-size="9.5">empty from the top band down</text><rect x="20" y="38" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="43.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="59.00" text-anchor="middle" class="fig-strong" font-size="15">2</text><text x="39.00" y="69.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="54.00" text-anchor="start" class="fig-step" font-size="11">Tribe</text><text x="60.00" y="66.00" text-anchor="start" class="fig-label" font-size="8">2 units</text><ellipse cx="143" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="167" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><text x="392.00" y="60.00" text-anchor="start" class="fig-label" font-size="9">free</text><rect x="452" y="46.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="60.00" text-anchor="middle" class="fig-strong" font-size="12">1</text><rect x="20" y="84" width="480" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="89.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="105.00" text-anchor="middle" class="fig-strong" font-size="15">3</text><text x="39.00" y="115.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="100.00" text-anchor="start" class="fig-step" font-size="11">Settlement</text><text x="60.00" y="112.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="215" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><circle cx="392.00" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="92.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="106.00" text-anchor="middle" class="fig-strong" font-size="12">2</text><rect x="20" y="130" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="135.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="15">4</text><text x="39.00" y="161.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="146.00" text-anchor="start" class="fig-step" font-size="11">Kingdom</text><text x="60.00" y="158.00" text-anchor="start" class="fig-label" font-size="8">6 units</text><ellipse cx="143" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="263" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="263" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="149.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="149.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="149.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="149.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="138.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="152.00" text-anchor="middle" class="fig-strong" font-size="12">3</text><rect x="20" y="176" width="480" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="181.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="197.00" text-anchor="middle" class="fig-strong" font-size="15">5</text><text x="39.00" y="207.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="192.00" text-anchor="start" class="fig-step" font-size="11">Empire</text><text x="60.00" y="204.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="426.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="426.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="184.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="198.00" text-anchor="middle" class="fig-strong" font-size="12">4</text><rect x="20" y="222" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="227.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="243.00" text-anchor="middle" class="fig-strong" font-size="15">6</text><text x="39.00" y="253.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="238.00" text-anchor="start" class="fig-step" font-size="11">Civilization</text><text x="60.00" y="250.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="426.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="426.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="443.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="443.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="230.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="244.00" text-anchor="middle" class="fig-strong" font-size="12">5</text><text x="20.00" y="274.00" text-anchor="start" class="fig-label" font-size="8.5">Each recycle your people eat your current tier's coins only — food is not cumulative.</text><text x="20.00" y="287.00" text-anchor="start" class="fig-label" font-size="8.5">Free moves refresh every turn.</text><text x="20.00" y="311.00" text-anchor="start" class="fig-step" font-size="11">GOLD</text><circle cx="78.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="78.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="96.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="96.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="114.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="114.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="132.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="132.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="150.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="150.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="168.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="168.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="20.00" y="341.00" text-anchor="start" class="fig-step" font-size="10">VICTORY ROW</text><rect x="112" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="146" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="180" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="214" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="248" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/></svg></div><figcaption>The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — and your free moves — 1, 2, 3, 4, 5 — pays a one-off ascension coin, and moves you onto a costlier row. You always pay only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, one food owed each recycle.</figcaption></figure>
+
+  <h3>Declare</h3>
+  <p>Before a single card is played, each player may spend one card from their victory row on
+  effect <strong>A</strong> (§10). Declare together on a count of three, or in turn order from
+  the leader — whichever your table prefers, so long as it happens <em>before any meld is on
+  the table</em>.</p>
+  <p>You are committing blind. You do not know what anyone is about to play, only what is in
+  your own hand — which is the whole point: A is a bet, not an answer.</p>
+  <p>Only A is declared here. <strong>B</strong> is used in your own map phase and
+  <strong>C</strong> at any moment, so neither needs announcing now. Most rounds nobody declares
+  anything and the step takes a second.</p>
+
+  <h3>Card phase</h3>
+  <ol class="seq">
+    <li>The leader plays a meld from their hand — anything from a single card up to
+    their current <strong>meld size limit</strong>, read off their board. You begin the
+    game able to play two cards at a time.</li>
+    <li>Clockwise, every other player plays a meld of their own, from one card up to
+    their own limit. You may not pass, and you never have to follow what was led.</li>
+    <li>The <strong>most cards wins</strong> the trick. If two melds are the same size,
+    compare their <strong>highest card</strong>; if those match, their second-highest, then
+    third, and so on until one is higher. If two melds are still identical, the one played
+    <strong>earlier</strong> wins. There are never ties after this.</li>
+    <li>Set the initiative dice: winner to 1, then the rest in that same order.</li>
+  </ol>
+
+  <h3>Map phase</h3>
+  <p>In initiative order, each player spends their meld — card by card, in any order,
+  each card resolved fully before the next (§06) — and takes their free actions (§07),
+  woven between the cards however they like. Finish your whole turn before the next
+  player begins.</p>
+  <p><strong>Everyone spends every card of their meld.</strong> Nobody is docked a card and
+  there is no number to remember — cashing a card for gold is always your own choice
+  (§06).</p>
+  <p>The round then settles three ways:</p>
+  <ul>
+    <li><strong>The trick winner spends one extra card</strong> from their hand, on top of
+    their meld and beyond their meld limit. It is spent like any other card — settle,
+    explore, attack or cash. If their hand is empty, they take <strong>1 gold</strong>
+    instead.</li>
+    <li><strong>The player whose meld ranked last takes 1 gold.</strong> Only that one
+    player, whatever the player count.</li>
+    <li><strong>Anyone who matched the winner's card count and still lost discards one
+    card</strong> from their hand, face down, to the shared discard pile (§09). Play as
+    many cards as the winner and you must give one up; play fewer and nothing happens. This
+    is the old "one card less than the winner" made explicit.</li>
+  </ul>
+  <p>A meld you have resolved goes face up into your <strong>personal discard</strong>, in
+  front of you. That pile is not lost — it becomes your next hand when your current hand
+  runs out (§09).</p>
+  <p>When all players have finished, hand the lead to the trick winner and begin a new
+  round.</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">05</span><h2>Melds</h2></div>
+  <p class="lede">One rule, and it replaces every meld type Blink used to have.</p>
+
+  <div class="note" style="border-left-color:var(--forest)">
+    <span class="tag">The meld rule</span>
+    <p>A meld is <strong>any cards whose ranks form an unbroken run</strong> — every rank
+    from your lowest to your highest must be present. <strong>How many cards you hold of
+    each rank does not matter, and suits do not matter at all.</strong> One card is
+    always a legal meld.</p>
+  </div>
+
+  <table>
+    <thead><tr><th>Cards</th><th>Legal?</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td class="num-cell">2</td><td>yes</td><td>a single card is a run of one</td></tr>
+      <tr><td class="num-cell">2 2</td><td>yes</td><td>one rank, no gap possible</td></tr>
+      <tr><td class="num-cell">2 3</td><td>yes</td><td>2 then 3, unbroken</td></tr>
+      <tr><td class="num-cell">2 3 3 4 4</td><td>yes</td><td>2, 3, 4 all present — doubles are free</td></tr>
+      <tr><td class="num-cell">2 2 4 4</td><td><strong>no</strong></td><td>nothing at rank 3 — the run is broken</td></tr>
+    </tbody>
+  </table>
+
+  <figure><div class="figbox"><svg class="fig" width="565.0" height="413.0" viewBox="-6 -6 528 386" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g><rect x="0" y="0" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="0" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="5" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="38.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="41.0" r="5" fill="url(#h-plains)"/></g><text x="246" y="26" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="26" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">one card is always a run</text><g><rect x="0" y="80" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="80" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="0" y="85" width="40" height="4" fill="url(#h-forest)"/><text x="20.0" y="118.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="121.0" r="5" fill="url(#h-forest)"/></g><g><rect x="46" y="80" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="80" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="46" y="85" width="40" height="4" fill="url(#h-ocean)"/><text x="66.0" y="118.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="66.0" cy="121.0" r="5" fill="url(#h-ocean)"/></g><text x="246" y="106" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="106" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">one rank, doubled</text><g><rect x="0" y="160" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="160" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="165" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="198.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="201.0" r="5" fill="url(#h-plains)"/></g><g><rect x="46" y="160" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="160" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="46" y="165" width="40" height="4" fill="url(#h-mountain)"/><text x="66.0" y="198.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="66.0" cy="201.0" r="5" fill="url(#h-mountain)"/></g><text x="246" y="186" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="186" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">2 then 3</text><g><rect x="0" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="240" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="0" y="245" width="40" height="4" fill="url(#h-ocean)"/><text x="20.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="281.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="46" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="240" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="46" y="245" width="40" height="4" fill="url(#h-plains)"/><text x="66.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="66.0" cy="281.0" r="5" fill="url(#h-plains)"/></g><g><rect x="92" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="92" y="240" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="92" y="245" width="40" height="4" fill="url(#h-forest)"/><text x="112.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="112.0" cy="281.0" r="5" fill="url(#h-forest)"/></g><g><rect x="138" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="138" y="240" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="138" y="245" width="40" height="4" fill="url(#h-mountain)"/><text x="158.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="158.0" cy="281.0" r="5" fill="url(#h-mountain)"/></g><g><rect x="184" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="184" y="240" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="184" y="245" width="40" height="4" fill="url(#h-plains)"/><text x="204.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="204.0" cy="281.0" r="5" fill="url(#h-plains)"/></g><text x="246" y="266" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="266" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">2, 3, 4 all present — doubles are free</text><g><rect x="0" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="320" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="325" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="361.0" r="5" fill="url(#h-plains)"/></g><g><rect x="46" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="320" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="46" y="325" width="40" height="4" fill="url(#h-forest)"/><text x="66.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="66.0" cy="361.0" r="5" fill="url(#h-forest)"/></g><g><rect x="92" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="92" y="320" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="92" y="325" width="40" height="4" fill="url(#h-ocean)"/><text x="112.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="112.0" cy="361.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="138" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="138" y="320" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="138" y="325" width="40" height="4" fill="url(#h-mountain)"/><text x="158.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="158.0" cy="361.0" r="5" fill="url(#h-mountain)"/></g><text x="246" y="346" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="#1A1A1A">✗</text><text x="270" y="346" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">nothing at rank 3 — the run is broken</text></svg></div><figcaption>The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant at this stage. Only the last row is illegal, and only because nothing sits at rank 3.</figcaption></figure>
+
+  <p>So the old vocabulary is gone. There is no straight, no set, no full house — only
+  runs with any number of duplicates. A pair is a run of one rank; a straight is a run
+  with no duplicates; everything between them is now legal too.</p>
+
+  <p>Your <strong>meld limit</strong> is the ceiling on how many cards you may play, never
+  a quota: Tribe 2, Settlement 3, Kingdom 4, Empire 5, Civilization 6. Suits still matter
+  enormously — but only later, when each card is spent on terrain matching its suit
+  (§06).</p>
+
+  <div class="note">
+    <span class="tag">Losing the trick costs you almost nothing</span>
+    <p>Every meld you play is spent in full. If your meld came last, it pays you a coin.
+    The only cost of losing is the extra card the winner spends — and, if you matched the
+    winner's card count and lost on rank, one card discarded from your hand (§04). Playing
+    a single on purpose is a real line, not a failure.</p>
+  </div>
+</section>
+
+<section>
+  <div class="h2"><span class="num">06</span><h2>Spending your meld</h2></div>
+  <p>Take each card of your meld in turn — <strong>in any order you like</strong> — and do
+  <em>one</em> of four things with it. Each card resolves fully before the next, on the map
+  as the last card left it: a tile you lay with one card can be settled by the next.</p>
+  <p>Two rules govern every card. Nothing else constrains it.</p>
+  <ol class="seq">
+    <li><b>Reach.</b> A card acts on a single cell <strong>next to your civilization</strong>:
+    a tile you occupy, or a tile or empty space adjacent to one you occupy. Cards of the same
+    meld need not land near each other — one can grow a border while another strikes across
+    the map.</li>
+    <li><b>Suit matches terrain.</b> The cell's terrain matches the card's suit — a Forest
+    card acts on Forest, an Ocean card on Ocean. This holds for every one of the four uses
+    below except taking gold.</li>
+  </ol>
+  <div class="note">
+    <span class="tag">If you are swept off the map</span>
+    <p>Losing your last unit does not end your game. While you have <b>no units on the map</b>
+    at the start of your map phase, your cards are <b>exempt from the reach rule</b>: they act
+    on any unoccupied tile matching their suit, anywhere on the map. You re-found your
+    civilization and carry on.</p>
+  </div>
+
+  <h3>Settle</h3>
+  <p>Put one unit from your board's reserve on the cell — always the topmost band that still
+  holds any. One card, one unit. Drawing down the reserve is how your civilization gets
+  bigger — and how the game ends (§11).</p>
+  <p>You may stack units on a tile up to that terrain's population limit — three on Plains,
+  two in Forest, one on Ocean or Mountain.</p>
+
+  <h3>Explore</h3>
+  <p>If the cell is an <strong>empty space</strong> beside your civilization, place a tile
+  there from the open supply instead of placing a unit. The tile must match the card's suit.
+  No unit goes down — settle it with a later card, or leave it as open ground.</p>
+  <p>The world grows compact, and one rule keeps it that way: <strong>a new tile must touch at
+  least two tiles already on the map</strong>. Among the spaces that qualify, your reach
+  decides which you may take.</p>
+  <p>Two edges, always. A tile touching only one existing tile is the first plank of a bridge
+  into open table, and Blink has no bridges: every new tile is wedged into the mass, so the map
+  grows as a single body you can still reach across. Two is also the most the rule can safely
+  ask — any two neighbouring tiles leave a space touching them both, so there is always
+  somewhere legal to explore. Ask for three and the map could grow into a shape it can never
+  grow out of.</p>
+  <p>The supply is open, so there is never any searching: take the tile you need. If that
+  terrain has <strong>run out</strong> — all fifteen are already on the map — the card takes
+  gold instead.</p>
+  <figure><div class="figbox"><svg class="fig" width="321.0" height="131.6" viewBox="-37 -46 300 123" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,26.00 45.03,39.00 67.55,26.00 67.55,0.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="none" stroke="#666666" stroke-width="1.6" stroke-dasharray="5 4"/><text x="90.07" y="4.00" text-anchor="middle" class="fig-strong" font-size="22">?</text><text x="90.07" y="48.00" text-anchor="middle" class="fig-label" font-size="11">no tile here yet</text><path d="M73 0 l26 0 M99 0 l-8 -6 M99 0 l-8 6" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round"/><g><rect x="178" y="-32" width="40" height="56" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="178" y="-32" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="178" y="-27" width="40" height="4" fill="url(#h-ocean)"/><text x="198.0" y="7.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="198.0" cy="11.0" r="5" fill="url(#h-ocean)"/></g><text x="198.00" y="44.00" text-anchor="middle" class="fig-label" font-size="11">play 6 of Ocean</text><text x="198.00" y="59.00" text-anchor="middle" class="fig-label" font-size="11">→ place a tile</text></svg></div><figcaption>Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two existing tiles — and the very next card may settle it.</figcaption></figure>
+
+  <h3>Attack</h3>
+  <p>When the cell is a tile a rival occupies, you cannot settle there. Instead, spending
+  that card <strong>removes one of the rival's units</strong> from the tile, back to their
+  board. Your own unit is <strong>not</strong> placed — the card is spent on the attack, and
+  the unit you would have settled stays in your reserve.</p>
+  <p>So taking a contested tile is patient work: one card clears one defender, and only
+  once the tile is empty can a later card settle it. A stack of rivals must be worn
+  down over more than one turn.</p>
+  <figure><div class="figbox"><svg class="fig" width="590.4" height="385.6" viewBox="-162 -14 369 241" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="url(#h-forest)"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="url(#h-forest)"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="url(#h-forest)"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#D9D9D9"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#D9D9D9"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile removes one defender — your own unit never leaves your reserve. Clearing a stack takes as many cards as there are defenders.</figcaption></figure>
+  <p>High ground is not safer, only dearer. <strong>Each card you spend attacking</strong>
+  pays the terrain's price first — so clearing a two-unit Forest with two cards costs 2 gold,
+  not 1. If you cannot pay, you cannot attack that cell; the card does something else, or
+  takes gold.</p>
+  <table>
+    <thead><tr><th>Attacking into</th><th>Cost per card</th><th>Cards to clear a full stack</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">free</td><td class="num-cell">3</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">free</td><td class="num-cell">1</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">1 gold</td><td class="num-cell">2</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">2 gold</td><td class="num-cell">1</td></tr>
+    </tbody>
+  </table>
+  <p>To capture ground, empty it first and settle it after — which always takes more
+  than one round.</p>
+
+  <h3>Take gold</h3>
+  <p>Instead of using a card on the map, take <strong>1 gold</strong>. Any card, any number
+  of them — a whole meld can be cashed. This is not a fallback for cards that found no
+  terrain: gold is tight, it buys food, fortresses and research (§07), and winning play
+  turns cards into coins constantly. Every card asks the same question — people, or
+  gold?</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">07</span><h2>Free actions</h2></div>
+  <p>Besides the cards, your map phase carries three kinds of free action. They cost no
+  card, and you may weave them between your card plays in any order.</p>
+
+  <h3>Free moves</h3>
+  <p>Your current tier prints your free moves — <strong>Tribe 1, Settlement 2, Kingdom 3,
+  Empire 4, Civilization 5</strong> — and you may use up to that many each map phase. Each
+  move takes one of your units:</p>
+  <ul>
+    <li><strong>By land</strong> — move a unit any distance <strong>across tiles occupied by
+    your units</strong>, stepping off at the end onto an adjacent free tile with room under
+    its population limit. Your network carries the traveller; the last step may leave it.</li>
+    <li><strong>By sea</strong> — move a unit standing on Ocean across <strong>unoccupied
+    Ocean</strong>, as far as the open water reaches, ending on an empty Ocean tile.</li>
+  </ul>
+  <p>Movement is never an attack: you may not move onto or through a rival, and moving onto
+  a tile is only possible while it has room. You may empty a tile by moving its last unit
+  away — splitting your civilization in two is allowed. An empty tile is nobody's, and your
+  neighbours will notice. Because Ocean holds only one unit, the sea is a road rather than
+  a place to live.</p>
+
+  <h3>The water advantage</h3>
+  <p><strong>The first time each turn that you move by sea</strong>, you may immediately
+  <strong>explore one tile of any terrain you like</strong> — free, and not tied to any
+  card's suit. Everything else about exploring holds: the new tile must touch at least two
+  tiles already on the map, and it must be within your reach (§06).</p>
+  <p>The sea is how a civilization finds ground it had no card for. Once per turn, however
+  many sea moves your tier allows.</p>
+
+  <h3>Reallocate your gold</h3>
+  <p>Your coins live in four places, and during your own map phase you may move them freely
+  between the first three:</p>
+  <ul>
+    <li><strong>Reserve</strong> — the gold area on your board. Liquid, uncommitted.</li>
+    <li><strong>Food</strong> — coins on your current band's food slots (§09). This is the
+    supply your people will eat at the next recycle.</li>
+    <li><strong>Fortifications</strong> — coins standing on your units on the map
+    (below).</li>
+    <li><strong>Research</strong> — gold spent on upgrades (§10). Spending is one way:
+    a coin given to research is gone.</li>
+  </ul>
+  <p>Reallocation is free and unlimited on your own turn. Between your turns the coins
+  stand where you left them — and that is when they matter: a fortification only protects
+  while the coin is on the unit, and your food only counts if it is on the slots when your
+  hand recycles.</p>
+
+  <h3>Fortifying</h3>
+  <p>A coin on one of your units means that unit <strong>cannot be removed by an
+  attack</strong>: the attack takes the gold to the supply instead, and both units survive.
+  One coin per unit, never two. The coin is lost to the supply the moment the unit is
+  disturbed in any way — attacked, moved, or stacked onto.</p>
+  <p>You cannot fortify in response to an attack — attacks happen on someone else's turn,
+  and by then it is too late. A fortification is a read on your neighbours, paid for in
+  advance.</p>
+  <figure><div class="figbox"><svg class="fig" width="344.0" height="196.8" viewBox="-45 -59 215 123" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><circle cx="0.00" cy="-9.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="0.00" cy="-9.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="46.00" text-anchor="middle" class="fig-strong" font-size="11">fortified</text><path d="M40 0 l30 0 M64 -6 l6 6 l-6 6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><text x="55.00" y="-24.00" text-anchor="middle" class="fig-step" font-size="11">attacked</text><g transform="translate(112,0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><text x="0.00" y="46.00" text-anchor="middle" class="fig-strong" font-size="11">unit survives</text><text x="0.00" y="-34.00" text-anchor="middle" class="fig-label" font-size="11">gold spent</text></g></svg></div><figcaption>Gold on a unit buys it exactly one escape. Move that unit, stack onto it, or disturb it in any way, and the gold is lost to the supply.</figcaption></figure>
+
+  <h3>One victory card</h3>
+  <p>Once per map phase you may spend a card from your victory row on its
+  <strong>B</strong> effect (§10) — extra units settled beyond your meld. Effects A and C
+  have their own moments; B is the only one tied to your turn, and it is
+  <strong>at most one per turn</strong>.</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">08</span><h2>Terrain</h2></div>
+  <table>
+    <thead><tr><th>Terrain</th><th>Holds</th><th>Costs to attack</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">3</td><td class="num-cell">free</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">1</td><td class="num-cell">free</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">2</td><td class="num-cell">1 gold</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">1</td><td class="num-cell">2 gold</td></tr>
+    </tbody>
+  </table>
+  <p>These values are fixed — nothing in the game ever modifies them. As a visual aid, defended
+  terrain is moulded taller: Forest stands two layers, Mountain three, so a glance at the map
+  recalls the attack cost without looking anything up.</p>
+  <p>The supply holds the four terrains in <strong>equal numbers — 15 each</strong>. That mirrors the
+  deck, where every suit appears at every rank. No terrain is scarce, and no card in your hand is
+  worth more than another because the ground it needs is rarer. What a terrain is worth is set by
+  how many units it holds and what it costs to take — never by how much of it exists.</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">09</span><h2>Feeding and refilling</h2></div>
+  <p>You play with a hand of <strong>ten cards</strong>. Cards leave it — discarded when
+  you match the winner's count and lose (§04), retired to your victory row when you
+  research (§10) — so the hand is topped back up rather than merely recycled.</p>
+  <p>When you play your <strong>last hand card</strong>, your hand <b>recycles</b>. Finish
+  your map phase first — spend the meld, make your upgrade if you want one — and then, at
+  the very end of your turn:</p>
+  <ol class="seq">
+    <li><strong>Feed your population</strong> (below).</li>
+    <li><strong>Take back everything you have played</strong> — your whole personal
+    discard.</li>
+    <li><strong>Draw from the shared pile</strong> until you hold ten again. The shared
+    pile is the face-down stack of cards discarded by losing melds; shuffle it before
+    drawing if it has not been shuffled since cards were added.</li>
+  </ol>
+  <p>So your ten are no longer the same ten all game. Cards you lose flow into the shared
+  pile, and cards other players lost flow back to you. A hand you drafted carefully will
+  drift, and what it drifts toward is whatever the table has been throwing away.</p>
+  <p class="fine">Every player refills to exactly ten and every discarded card goes to the
+  same pile, so the pile always holds enough. If it is ever empty when you must draw, you
+  are already holding ten.</p>
+  <p>Your current tier prints its <strong>food slots</strong> — <strong>Tribe none,
+  Settlement 1, Kingdom 2, Empire 3, Civilization 4</strong> — and the coins standing on them are your food
+  supply. When your hand recycles, your people <strong>eat the supply</strong>: the coins on
+  your slots go back to the general supply, and the meal is paid. Food is <strong>not
+  cumulative</strong> — you feed the band you are on and no others.</p>
+  <p>If the slots are short — the food is not there when the recycle comes — return
+  <strong>one unit from the map to your board for each missing coin</strong>. The debt is
+  then settled; you never owe food into the next recycle. Coins reach the slots by
+  reallocation on your own turn (§07): a well-run civilization sets the table before the
+  harvest, and everyone can see whose slots are standing empty.</p>
+  <p><strong>You choose which units go.</strong> There is no rule forcing you to give up your
+  weakest or least defended ground first. A unit removed this way loses any fortification coin
+  standing on it, and that gold returns to the supply.</p>
+  <p>A unit that comes back — starved off the map, or removed by an attack — goes into the
+  <strong>lowest band that still has a free slot</strong>: the band you emptied most recently.
+  Only once that band is full again does the one above it begin to refill. Losing ground walks
+  your limit back down <em>one step at a time</em>, and never drops you straight to the
+  beginning.</p>
+  <div class="note">
+    <span class="tag">The pressure</span>
+    <p>The very expansion that lets you play a bigger meld is what sends you the bill: every
+    band you clear moves you onto a costlier row, up to three gold a recycle at Empire. Gold
+    buys research, fortifications, attacks on defended terrain, and food, and there is never
+    enough for all four. A civilization that expands faster than it earns will starve back
+    down — and shrink its own melds doing it. Losing a trick pays you a gold per unused card,
+    so falling behind quietly helps you feed; racing ahead does not.</p>
+  </div>
+</section>
+
+<section>
+  <div class="h2"><span class="num">10</span><h2>Research and the market</h2></div>
+  <p>All advanced cards are shuffled together into a single face-down <strong>upgrade
+  deck</strong>. Six of them lie face up beside it in a <strong>2 &times; 3 grid</strong> —
+  the market.</p>
+
+  <p><strong>Once per turn</strong>, during your map phase, you may research:</p>
+  <ol class="seq">
+    <li><b>Draw the top card</b> of the upgrade deck and place it face up on <b>any grid
+    position you choose</b>, covering the card already there. The covered card is out of
+    reach until the one on top of it is taken.</li>
+    <li><b>Retire one card</b> from your hand or discard into your <strong>victory
+    row</strong>. It leaves play for the rest of the game — but it scores (§11).</li>
+    <li><b>Pay 1 gold</b> and take <b>any visible market card whose rank is at or below
+    your tier's rank cap</b> — Tribe 13, Settlement 15, Kingdom 17, Empire 20,
+    Civilization no limit. It goes into your personal discard, and joins your hand at the
+    next recycle.</li>
+    <li><b>Refill</b> any grid position left empty from the top of the deck.</li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">The cap is a buying rule, not a holding rule</span>
+    <p>Your rank cap only applies at the moment you take a card from the market. A card
+    already in your hand, your discard or your victory row is yours to keep and use however
+    it arrived — a low tier cannot reach the top of the market, but it is never forced to
+    give up what it has.</p>
+  </div>
+
+  <p>Your victory row holds at most <strong>five cards</strong>. To add a sixth, first
+  discard one of the five permanently — a card discarded this way is gone, and never
+  scores.</p>
+
+  <h3>Spending a victory card</h3>
+  <p>Every card carries <strong>three printed effects</strong>, and a card in your victory row
+  may be spent on <strong>exactly one</strong> of them. The card is then removed from the
+  game — your row shrinks, and your end score with it. The three options are always
+  the same three kinds, growing with the card's rank:</p>
+  <table>
+    <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
+    <tbody>
+      <tr><td>1–5</td><td>Meld counts as <b>+1 card</b> this trick</td><td><b>Found a colony</b> — 1 new tile of this suit, 1 unit, fortified</td><td><b>2</b> gold</td></tr>
+      <tr><td>6–10</td><td><b>+1 card</b> and <b>win ties</b></td><td><b>Found a distant colony</b> — as above, up to 2 tiles out</td><td><b>3</b> gold</td></tr>
+      <tr><td>11–15</td><td>Meld counts as <b>+2 cards</b></td><td><b>Open a frontier</b> — 2 new tiles, 1 unit on one of them, fortified</td><td><b>4</b> gold</td></tr>
+      <tr><td>16–20</td><td><b>+2 cards</b> and <b>win ties</b></td><td><b>Two colonies</b> — 2 new tiles of any terrain, 1 unit on each, both fortified</td><td><b>5</b> gold</td></tr>
+    </tbody>
+  </table>
+  <p><strong>A</strong> is declared in the <em>declare step</em> at the top of the round, before
+  any meld is played (§04) — blind, knowing only your own hand. Its bonus counts only toward
+  winning the trick, never toward extra spending on the map; if two players both declare an
+  effect that wins ties, the one who spent the <strong>higher-ranked card</strong> takes the
+  trick. <strong>B</strong> is used during your own map phase, <strong>at most once per
+  turn</strong> (§07), when you can already see the board: each extra unit is one additional
+  <em>settle</em>, within your normal reach — it may not explore and may not attack.
+  <strong>C</strong> may be taken at any moment, even mid-payment when feeding falls
+  short.</p>
+  <div class="note">
+    <span class="tag">One row, three appetites</span>
+    <p>The same five slots are your <em>score</em>, your <em>war chest</em> and your
+    <em>trick insurance</em>. High cards score best in the centre slot — and their
+    effects are also the strongest, so the card you most want to keep is the card you
+    most want to spend. That tension is the point.</p>
+  </div>
+</section>
+
+<section class="example">
+  <div class="h2"><span class="num">✦</span><h2>A worked example</h2></div>
+  <p>Three players — <strong>Ada</strong>, <strong>Bex</strong> and <strong>Cy</strong> —
+  sit down to their first game. This walks their setup and one full round, so you can
+  watch every rule fire in order.</p>
+
+  <h3>Setting up</h3>
+  <p>With three players, the <strong>starting deck</strong> is ranks 3–10 and the
+  <strong>upgrade deck</strong> ranks 11–18, shuffled together. They deal ten cards
+  apiece and draft — keep four and pass the rest, then keep six, keep eight, keep all
+  ten — until each holds a fixed hand of ten.</p>
+  <p>Each takes a board and loads all five tiers with twenty units, and sets their
+  ascension coins on the printed spots. They lay the three-player
+  starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
+  three tiles from the others — and each puts one unit on a Plains tile of their own. The
+  remaining tiles are sorted into four open piles by terrain. Finally they sort the advanced cards into
+  <strong>four suit decks</strong>, lowest rank on top, and reveal the top of each: a
+  four-card market showing 11 of Plains, 11 of Forest, 11 of Ocean, 11 of Mountain.
+  Ada is chosen to start and takes initiative die “1”.</p>
+
+  <h3>The card phase</h3>
+  <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
+  Ada leads.</p>
+  <ul>
+    <li><strong>Ada</strong> plays <strong>5 of Plains + 6 of Plains</strong> — the run
+    5-6.</li>
+    <li><strong>Bex</strong> plays <strong>8 of Mountain + 8 of Ocean</strong> — the run 8,
+    doubled. Suits are irrelevant to the meld.</li>
+    <li><strong>Cy</strong> plays a single <strong>4 of Mountain</strong>.</li>
+  </ul>
+  <p>Now the trick resolves: <strong>most cards wins</strong>. Ada and Bex both played
+  two, so they tie on count; the tie breaks on the <strong>highest card</strong>, and
+  Bex’s 8 beats Ada’s 6. <strong>Bex wins the trick</strong> and takes initiative die 1
+  — she will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
+  <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, she discards one card
+  from her hand face down to the shared pile. Cy played only one — fewer than the winner —
+  so he discards nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
+
+  <h3>The map phase</h3>
+  <p>Everyone spends every card they played. Bex, who won, also spends <strong>one extra
+  card</strong> from her hand; Cy, whose single ranked last, takes <strong>1 gold</strong>.
+  They act in initiative order.</p>
+  <ul>
+    <li><strong>Bex</strong> (2 cards, plus her winner&rsquo;s extra). Only Plains and
+    Mountain exist at setup, so her <strong>Mountain</strong> card is the one that can
+    settle: the Mountain beside her start is adjacent to her homeland — in reach — and she
+    <strong>settles</strong> it, taking a unit from her top band. Mountain holds one, so
+    that tile is now hers alone. Her <strong>Ocean</strong> card <strong>explores</strong>:
+    she picks an empty space beside her civilization, checks it touches at least two tiles
+    already on the map (it touches three), and lays the Ocean tile from the supply. Then she
+    takes her <strong>extra card</strong> from hand — a 3 of Plains — and settles a second
+    unit on her homeland.</li>
+    <li><strong>Ada</strong> (2 cards). The only Plains in reach is her own homeland, so she
+    <strong>settles</strong> her 6 of Plains as a second unit on it — Plains holds three.
+    Her 5 of Plains has nowhere better to go, so she <strong>cashes</strong> it for
+    <strong>1 gold</strong> — her choice, not a penalty.</li>
+    <li><strong>Cy</strong> (1 card). He has already taken <strong>1 gold</strong> for
+    ranking last. The card itself he also cashes, for a second gold: nothing on the map is
+    worth reaching for yet, and he is banking toward an upgrade.</li>
+  </ul>
+  <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
+  units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
+  happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
+  to build the ground first. To finish the round they check the end triggers — no one has
+  placed their last unit and no suit deck is empty, so play continues. No one emptied a whole
+  tier, so meld limits stay at 2, nobody has claimed an ascension coin, and no food is due;
+  that only comes when a hand recycles.
+  <strong>Bex leads the next round.</strong></p>
+  <div class="note">
+    <span class="tag">What just happened</span>
+    <p>One meld did two jobs for each player: it fought for the trick, then became the
+    budget they spent on the map. Bex’s two extra rank on a single card won her both
+    initiative and a full turn; Cy’s cautious single let him hoard gold instead. That
+    trade — tempo now against resources later — is the whole game in miniature.</p>
+  </div>
+</section>
+
+<section>
+  <div class="h2"><span class="num">11</span><h2>End of the game</h2></div>
+  <p>The end is triggered as soon as either:</p>
+  <ul>
+    <li>a player places the <strong>last unit</strong> from their reserve onto the map, or</li>
+    <li>the <strong>upgrade deck</strong> runs out — the face-down stack is empty and a grid
+    position cannot be refilled.</li>
+  </ul>
+  <p>Finish the current round, then play <strong>one more full round</strong>. Then score.</p>
+  <table>
+    <thead><tr><th>Score</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><strong>Population</strong></td><td>1 point per unit you have on the map.</td></tr>
+      <tr><td><strong>Victory row</strong></td><td>Arrange your victory cards in rank order, <strong>pushed to the right</strong> of five slots. If you have three or more, score the <strong>rank in the centre slot</strong>. With fewer than three, score just <strong>1 point per card</strong> instead.</td></tr>
+      <tr><td><strong>Dominance</strong></td><td>3 points for each terrain type where you have the most units — but only if <strong>all</strong> your units on that terrain form a <strong>single connected group</strong>. One stray unit of that terrain sitting apart from the rest disqualifies you for that terrain entirely. Tied players each score. A terrain nobody occupies scores for nobody.</td></tr>
+    </tbody>
+  </table>
+  <figure><div class="figbox"><svg class="fig" width="663.7" height="172.0" viewBox="-14 -7 544 141" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><rect x="0" y="30" width="42" height="60" rx="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="4 4"/><rect x="48" y="30" width="42" height="60" rx="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="4 4"/><rect x="93" y="27" width="48" height="66" rx="6" fill="url(#h-plains)" opacity="0.30"/><g><rect x="96" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="96" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="96" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="117.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="117.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><circle cx="117" cy="103" r="11" fill="#1A1A1A"/><text x="117" y="107" text-anchor="middle" fill="#FAFAFA" font-size="13" font-weight="700">3</text><g><rect x="144" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="144" y="30" width="42" height="9" rx="4" fill="url(#h-forest)"/><rect x="144" y="35" width="42" height="4" fill="url(#h-forest)"/><text x="165.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">9</text><circle cx="165.0" cy="77.0" r="5" fill="url(#h-forest)"/></g><g><rect x="192" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="192" y="30" width="42" height="9" rx="4" fill="url(#h-plains)"/><rect x="192" y="35" width="42" height="4" fill="url(#h-plains)"/><text x="213.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">15</text><circle cx="213.0" cy="77.0" r="5" fill="url(#h-plains)"/></g><text x="117.00" y="18.00" text-anchor="middle" class="fig-step" font-size="11">Three cards — centre slot scores 3</text><line x1="258" y1="18" x2="258" y2="120" stroke="#C7C7C7" stroke-width="1.2"/><g><rect x="282" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="282" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="282" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="303.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="303.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="330" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="330" y="30" width="42" height="9" rx="4" fill="url(#h-mountain)"/><rect x="330" y="35" width="42" height="4" fill="url(#h-mountain)"/><text x="351.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">7</text><circle cx="351.0" cy="77.0" r="5" fill="url(#h-mountain)"/></g><rect x="375" y="27" width="48" height="66" rx="6" fill="url(#h-plains)" opacity="0.30"/><g><rect x="378" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="378" y="30" width="42" height="9" rx="4" fill="url(#h-forest)"/><rect x="378" y="35" width="42" height="4" fill="url(#h-forest)"/><text x="399.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">11</text><circle cx="399.0" cy="77.0" r="5" fill="url(#h-forest)"/></g><circle cx="399" cy="103" r="11" fill="#1A1A1A"/><text x="399" y="107" text-anchor="middle" fill="#FAFAFA" font-size="13" font-weight="700">11</text><g><rect x="426" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="426" y="30" width="42" height="9" rx="4" fill="url(#h-plains)"/><rect x="426" y="35" width="42" height="4" fill="url(#h-plains)"/><text x="447.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">14</text><circle cx="447.0" cy="77.0" r="5" fill="url(#h-plains)"/></g><g><rect x="474" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="474" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="474" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="495.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">18</text><circle cx="495.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><text x="399.00" y="18.00" text-anchor="middle" class="fig-step" font-size="11">Five cards — centre slot scores 11</text></svg></div><figcaption>The empty slots sit on the left, so the centre slot only reaches your true middle card once all five are filled. A half-full row scores a lower card — and slipping a low card in can push your centre down. Fill the row, and mind what lands dead centre.</figcaption></figure>
+  <table>
+    <thead><tr><th>Your victory row</th><th>Laid out in five slots</th><th>Scores</th></tr></thead>
+    <tbody>
+      <tr><td>2 cards — 9, 17</td><td>· · · 9 17</td><td class="num-cell">2</td></tr>
+      <tr><td>3 cards — 6, 9, 17</td><td>· · <b>6</b> 9 17</td><td class="num-cell">6</td></tr>
+      <tr><td>4 cards — 6, 9, 14, 17</td><td>· 6 <b>9</b> 14 17</td><td class="num-cell">9</td></tr>
+      <tr><td>5 cards — 6, 9, 14, 16, 17</td><td>6 9 <b>14</b> 16 17</td><td class="num-cell">14</td></tr>
+    </tbody>
+  </table>
+  <p>With fewer than three cards you score 1 point each instead — so the third card is where
+  the row starts paying, and the fifth is where it pays properly.</p>
+  <p>Most points wins. Gold breaks a tie.</p>
+  <div class="note">
+    <span class="tag">Beyond the base game</span>
+    <p>Two optional layers deepen scoring once the base game is familiar, each in its
+    own booklet: <strong>shared map objectives</strong> — pattern cards like rivers,
+    silk roads and mountain ranges that everyone can score — and <strong>personal
+    objectives</strong>, secret goals held from the start. Add them one at a time, not
+    for your first game or two.</p>
+  </div>
+</section>
+
+</main>
+
+<div class="ref">
+<div class="pad">
+<section>
+  <div class="h2"><span class="num">—</span><h2>Glossary</h2></div>
+  <dl class="gloss">
+    <dt>Meld</dt><dd>The cards you play in one round — one to your meld limit. It competes for
+    the trick, then each of its cards is spent on the map or cashed for gold.</dd>
+    <dt>Cell</dt><dd>The single hex a card acts on — a tile or empty space in your reach,
+    matching the card's suit.</dd>
+    <dt>Reach</dt><dd>Where your cards may act: any tile you occupy, or any tile or empty
+    space adjacent to one you occupy (§06).</dd>
+    <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
+    <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom,
+    Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
+    it prints your meld limit, your free moves, your food slots and your rank cap.</dd>
+    <dt>Ascension</dt><dd>Reaching a tier for the first time. Take the coins printed on that
+    tier: 1, 2, 3, 4 as you climb. Once only (§04).</dd>
+    <dt>Shared pile</dt><dd>The face-down stack of cards discarded by melds that matched the
+    winner's count and lost. You refill your hand from it (§09).</dd>
+    <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
+    across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
+    <dt>Food slots</dt><dd>The coin spaces on your current band. What stands there when your
+    hand recycles is what your people eat (§09).</dd>
+    <dt>Recycle</dt><dd>The moment your hand empties: you feed your population, then take your
+    personal discard back as your new hand (§09).</dd>
+    <dt>Victory row</dt><dd>The five slots on your board holding retired cards. They score at the
+    end — or can each be spent once for an effect, and then are gone.</dd>
+  </dl>
+</section>
+
+<section>
+  <div class="h2"><span class="num">—</span><h2>Quick reference</h2></div>
+  <div class="cols">
+    <div>
+      <h3>Reserve bands</h3>
+      <p>Units sit in tiers of 2 / 4 / 6 / 4 / 4, emptied top-down. <b>Tribe</b> melds 2,
+      1 move, food free, cap 13. <b>Settlement</b> 3, 2, food 1, cap 15. <b>Kingdom</b> 4,
+      3, food 2, cap 17. <b>Empire</b> 5, 4, food 3, cap 20. <b>Civilization</b> 6, 5,
+      food 4, no cap. Read them off your current tier only — food is <b>not</b> cumulative,
+      eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
+      1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
+      <h3>Round</h3>
+      <p>Declare A effects blind → leader plays a meld → everyone plays a meld → most cards
+      wins, then highest card, then next-highest, then earliest played (never a tie) →
+      spend melds in initiative order → winner spends one extra card, last place takes
+      1 gold, anyone matching the winner's count discards one.</p>
+      <h3>Melds — one rule</h3>
+      <p>Any cards whose ranks form an <b>unbroken run</b>. Duplicates of any rank are free;
+      suits are irrelevant. One card is always legal.<br>
+      2 ✓ · 2-2 ✓ · 2-3 ✓ · 2-3-3-4-4 ✓ · <b>2-2-4-4 ✗</b> (no 3).<br>
+      Limit by tier: 2 / 3 / 4 / 5 / 6.</p>
+      <h3>Each card of your meld</h3>
+      <p>ONE of: Settle a unit · Explore a tile · Attack (pay the terrain price) ·
+      Take 1 gold. Any order; each card resolves on the map as the last one left it.</p>
+      <p>Reach: a tile you occupy or adjacent to one you occupy. Suit matches terrain.
+      No units on the map? Act anywhere.</p>
+      <p>Everyone spends every card. The winner spends ONE EXTRA from hand (or takes 1
+      gold if their hand is empty). The meld that ranked LAST takes 1 gold. Anyone who
+      MATCHED the winner's card count and lost discards one card to the shared pile.</p>
+    </div>
+    <div>
+      <h3>Terrain</h3>
+      <table>
+        <tbody>
+          <tr><td>Plains</td><td class="num-cell">holds 3</td></tr>
+          <tr><td>Ocean</td><td class="num-cell">holds 1 · sea roads</td></tr>
+          <tr><td>Forest</td><td class="num-cell">holds 2 · attack costs 1</td></tr>
+          <tr><td>Mountain</td><td class="num-cell">holds 1 · attack costs 2</td></tr>
+        </tbody>
+      </table>
+      <h3>Exploring</h3>
+      <p>A new tile must touch <b>at least two</b> tiles already on the map, in your reach,
+      matching the card's suit. The supply is open; if that terrain has run out, the card
+      takes gold.</p>
+      <h3>Free actions, your turn</h3>
+      <p><b>Moves</b> (tier number, 1–5): by land across your own connected units onto a
+      free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
+      <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
+      of ANY terrain (touch-two and reach still apply). · <b>Reallocate gold</b> freely
+      between reserve, food slots and fortifications; research spending is one-way. ·
+      <b>One victory card on B</b> per turn.</p>
+      <h3>Fortifying</h3>
+      <p>1 gold on one of your units: the next attack takes the gold instead of the unit.
+      One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
+      <h3>Gold</h3>
+      <p>1 per cashed card · ascension coins 1/2/3/4, once each · 1 for ranking last ·
+      pay 1 to research · pay 1 to fortify · pay 1–2 <em>per card</em> to attack Forest or
+      Mountain · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
+      recycles — short slots starve units off the map.</p>
+      <h3>Research — once per turn</h3>
+      <p>Draw the top upgrade card onto any of the six grid positions (covering it) →
+      retire a card to your victory row → pay 1 gold → take any visible card <b>at or below
+      your tier's rank cap</b> (13/15/17/20/none) → refill empty positions.</p>
+      <h3>Refilling your hand</h3>
+      <p>Hand empty: feed, take back your discard, then draw from the <b>shared pile</b> up
+      to ten.</p>
+      <h3>Victory-card effects</h3>
+      <p>Spend a victory card for ONE of: <b>A</b> meld +1/+2 cards this trick (higher bands
+      win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the
+      GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>blind,
+      before any meld is played</b>; B in your own map phase; C at any moment. The card
+      leaves the game.</p>
+      <h3>Scoring</h3>
+      <p>Units on the map + centre-slot rank of your right-aligned victory row (3+ cards, else
+      1 per card) + 3 per terrain majority — majority requires <b>all</b> your units on that
+      terrain to form <b>one connected group</b>. Gold breaks ties.</p>
+    </div>
+  </div>
+</section>
+</div>
+</div>
+
+<div class="pad"><footer>Blink · base game · draft rules v0.22 · Toby Siko ·
+deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
+separately</footer></div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+3 PLAYERS, 14 games, targeted fortification
+
+C only  (previous state)
+   rounds 28   gold in  64.9  out  56.8  unspent   8.6   kills 15.6
+   victory-row cards per game: kept to score 14.1 | spent A  0.0 | B  0.0 | C  1.9   (A mean rank 0.0, B cells 0.0)
+   score  pop 48%  row 37%  dom 15%
+
+A + B + C  (all three live)
+   rounds 18   gold in  48.8  out  43.3  unspent   5.6   kills 12.6
+   victory-row cards per game: kept to score  7.1 | spent A  5.6 | B  5.8 | C  2.9   (A mean rank 11.5, B cells 6.6)
+   score  pop 51%  row 29%  dom 20%
+
+
+TRICK WINS BY PLAY POSITION  (22 games each)
+
+  A OFF (B and C live)   lead 37.6%   middle 30.8%   last 31.5%
+  A ON  (all three)      lead 23.9%   middle 30.8%   last 45.3%
+
+Without A the LEADER is slightly favoured, which is the tie-break doing its
+job: "if still tied, whoever played earlier wins". Turning A on inverts it.
+The last player sees every meld already on the table and can spend exactly
+enough to take the trick; the leader has no information and my bot never
+declares A from that seat at all (0.0% of its melds).
+
+Final scores stay close (24.6 / 26.2 / 23.8) because the trick winner LEADS
+the next round - winning puts you in the worst seat for A, which is negative
+feedback. The advantage oscillates rather than compounding.

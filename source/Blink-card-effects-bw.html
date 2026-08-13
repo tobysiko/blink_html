@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blink — Card Effects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF; --page:#FFFFFF; --ink:#000000; --ink-soft:#3F3F3F;
+  --plains:#B4B4B4; --forest:#5C5C5C; --ocean:#2B2B2B; --stone:#8A8A8A;
+  --red:#000000; --rule:#B0B0B0;
+  --measure:38rem;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.62; font-weight:400;
+}
+.sheet{max-width:60rem;margin:0 auto;background:var(--page);
+  box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 50px -30px rgba(0,0,0,.5);}
+.pad{padding:0 clamp(1.25rem,5vw,4.5rem)}
+
+/* ---------- masthead ---------- */
+.mast{padding:clamp(2rem,6vw,4rem) 0 1.5rem;position:relative;overflow:hidden}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-soft);margin:0 0 1rem}
+.mast h1{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(3rem,12vw,6.5rem);line-height:.86;margin:0;
+  letter-spacing:-.03em}
+.mast .sub{font-family:Fraunces,Georgia,serif;font-weight:400;font-style:italic;
+  font-size:clamp(1.05rem,3vw,1.5rem);color:var(--ink-soft);margin:.6rem 0 0;letter-spacing:-.01em}
+.mast .meta{font-family:"IBM Plex Mono",monospace;font-size:.75rem;letter-spacing:.1em;
+  color:var(--ink-soft);margin:1.4rem 0 0;text-transform:uppercase}
+.mast .meta span{display:inline-block;margin-right:1.4rem;white-space:nowrap}
+.herowrap{margin:1.5rem 0 0}
+.herowrap svg{width:100%;height:auto;display:block;max-height:19rem}
+
+/* ---------- stepped rule: the signature ---------- */
+.steprule{display:flex;align-items:flex-end;height:16px;margin:0;gap:0}
+.steprule i{display:block;flex:1}
+.steprule i:nth-child(1){height:5px;background:var(--plains)}
+.steprule i:nth-child(2){height:16px;background:var(--stone)}
+.steprule i:nth-child(3){height:11px;background:var(--forest)}
+.steprule i:nth-child(4){height:5px;background:var(--ocean)}
+
+/* ---------- sections ---------- */
+section{padding:2.4rem 0 .5rem;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.h2{display:flex;align-items:baseline;gap:1rem;margin:0 0 1.1rem}
+.h2 .num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--stone);
+  letter-spacing:.12em;padding-top:.35rem;min-width:2.2rem}
+.h2 h2{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(1.5rem,4vw,2.15rem);line-height:1.06;margin:0;
+  letter-spacing:-.02em}
+h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.12rem;margin:1.9rem 0 .5rem;
+  letter-spacing:-.01em}
+p{margin:0 0 .95rem;max-width:var(--measure)}
+.lede{font-size:1.08rem;color:var(--ink-soft);max-width:44rem}
+ul,ol{max-width:var(--measure);margin:0 0 1rem;padding-left:1.15rem}
+li{margin:0 0 .42rem}
+strong{font-weight:600}
+em{font-style:italic}
+
+/* ---------- terrain chips ---------- */
+/* the swatch is absolutely positioned so its height — which encodes terrain
+   elevation — never changes the line box, keeping table rows aligned */
+.chip{display:inline-block;position:relative;padding-left:1.05em;font-weight:600;
+  white-space:nowrap}
+.chip::before{content:"";position:absolute;left:0;bottom:.16em;width:.62em;border-radius:1px}
+.chip.plains::before{height:.34em;background:var(--plains)}
+.chip.ocean::before{height:.34em;background:var(--ocean)}
+.chip.forest::before{height:.72em;background:var(--forest)}
+.chip.mountain::before{height:1.05em;background:var(--stone)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6rem 0 1.8rem;max-width:none}
+/* one scale for every diagram: the svg carries its own px size, we never stretch it */
+figure svg{display:block;max-width:100%;height:auto}
+.figbox{background:#F4F4F4;border:1px solid var(--rule);border-radius:4px;
+  padding:1.1rem .9rem;display:flex;justify-content:center;align-items:center}
+.figbox.plain{background:none;border:none;padding:.35rem 0}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.5;
+  color:var(--ink-soft);margin-top:.6rem;letter-spacing:.02em;max-width:var(--measure)}
+.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5E5E5E}
+.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1E1E1E;font-weight:600}
+.fig-step{font-family:"IBM Plex Mono",monospace;fill:#848484;letter-spacing:.06em}
+.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1E1E1E;font-weight:600}
+.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#555555;font-weight:600}
+
+/* ---------- meld grid ---------- */
+.tiergroup{break-inside:avoid;margin-top:2rem}
+.example h3{color:var(--ink)} .example .h2 .num{color:var(--forest)}.tier{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .2rem;
+  padding-bottom:.35rem;border-bottom:1.5px solid var(--ink)}
+.tier-n{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;
+  line-height:1;letter-spacing:-.02em}
+.tier-t{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--stone)}
+.melds{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1.4rem 1.6rem;margin:1.1rem 0 .5rem}
+.melds figure{margin:0;max-width:none;display:flex;flex-direction:column;break-inside:avoid}
+.melds figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.melds .name{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1rem;margin:0 0 .1rem}
+.melds .rule{font-size:.82rem;color:var(--ink-soft);line-height:1.45;margin:0}
+.melds .shape{font-size:.82rem;margin:.35rem 0 0;line-height:1.45}
+.melds .shape b{font-weight:600}
+@media (max-width:640px){.melds{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;max-width:var(--measure);margin:1rem 0 1.4rem;
+  font-size:.92rem}
+table.wide{max-width:none}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:.68rem;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--stone);
+  border-bottom:1.5px solid var(--ink);padding:0 .7rem .4rem 0;vertical-align:bottom}
+td{padding:.5rem .7rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:last-child,th:last-child{padding-right:0}
+.num-cell{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- callout ---------- */
+.note{border-left:3px solid var(--plains);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
+  max-width:var(--measure)}
+.note p{margin:0 0 .5rem}
+.note p:last-child{margin:0}
+.note .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+
+/* ---------- sequence ---------- */
+.seq{list-style:none;padding:0;counter-reset:s;max-width:var(--measure)}
+.seq>li{counter-increment:s;position:relative;padding-left:2.4rem;margin:0 0 .8rem}
+.seq>li::before{content:counter(s);position:absolute;left:0;top:.05rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink);
+  background:var(--page);border:1.5px solid var(--ink);width:1.5rem;height:1.5rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+
+/* ---------- reference back page ---------- */
+.ref{background:var(--paper);color:var(--ink);border-top:2px solid var(--ink);
+  margin-top:2.5rem;padding-bottom:3rem}
+.ref section{border-top-color:var(--rule)}
+.ref .h2 h2,.ref h3{color:var(--ink)}
+.ref .h2 .num{color:#959595}
+.ref p,.ref li{color:var(--ink-soft)}
+.ref td{border-bottom-color:var(--rule)}
+.ref th{color:var(--stone);border-bottom-color:var(--ink)}
+.ref .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.4rem}
+.ref .cols>div{max-width:none}
+.ref .cols p,.ref .cols ul{max-width:none}
+.ref .note{border-left-color:var(--plains)}
+.ref .note .tag{color:#959595}
+
+footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+  color:var(--ink-soft);letter-spacing:.06em}
+
+@page{
+  size:A4;
+  margin:18mm 16mm 16mm 16mm;
+}
+@media print{
+  html,body{background:#FFFFFF}
+  .example{background:#F1F1F1;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
+  body{font-size:10.3pt;line-height:1.5}
+  .sheet{box-shadow:none;max-width:none;margin:0;background:#FFFFFF}
+  /* padding is provided by the @page margin, so drop the fluid inner pad */
+  .pad{padding:0}
+  .mast{padding:0 0 1rem}
+  /* let text fill the printable width instead of the 38rem screen measure */
+  p,ul,ol,figure,.lede,.melds figure,.note{max-width:none}
+  figcaption{max-width:none}
+  section{break-inside:auto;padding:1.2rem 0 .4rem}
+  /* keep atomic blocks whole */
+  figure,table,.note,.tiergroup,.pat,.seq li,tr{break-inside:avoid}
+  .h2,h3,thead{break-after:avoid}
+  h3{margin-top:1.3rem}
+  .herowrap svg{max-height:15rem}
+  /* figures keep their intrinsic size so the scale stays constant across the book */
+  figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+  .melds figure svg{max-width:100%;height:auto;margin:0 auto}
+  .figbox{background:#F5F5F5;border-color:#D8D8D8}
+  .ref{background:#FFFFFF;color:#000000;border-top:2px solid #000000}
+  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000000}
+  .ref th{color:#555555;border-bottom-color:#000000}
+  .ref td{border-bottom-color:#CCCCCC}
+  .ref .h2 .num{color:#777777}
+}
+@media (max-width:640px){
+  body{font-size:15px}
+  .opener{break-after:page}
+  .h2{gap:.7rem}
+  .h2 .num{min-width:1.8rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:rise .5s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+.bands td:first-child{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+.allranks{font-size:.86rem}
+.allranks td{padding:.34rem .7rem .34rem 0}
+.allranks td:first-child{font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;width:3rem}
+.allranks tbody tr:nth-child(5n) td{border-bottom:1.5px solid var(--stone)}
+.ruling{border-left:3px solid var(--ocean);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
+  max-width:var(--measure)}
+.ruling .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+
+/* ---- black-and-white overrides ---- */
+.sheet{box-shadow:none;border:none}
+/* light chips need an outline or they vanish on white */
+.chip::before{outline:.5px solid #000;outline-offset:-.5px}
+/* the stepped rule is four tones; give it edges so they stay countable */
+.steprule i{box-shadow:inset 0 0 0 .5px #000}
+img,svg{filter:none}
+@media print{ body{background:#fff} .sheet{background:#fff} }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="mast pad">
+  <p class="eyebrow">Reference · victory-card effects</p>
+  <h1>Card Effects</h1>
+  <p class="sub">The three things a victory card can do</p>
+  <p class="meta"><span>Companion to base game rules v0.22</span><span>Toby Siko</span></p>
+</header>
+<div class="steprule"><i></i><i></i><i></i><i></i></div>
+
+<main class="pad">
+
+<section>
+  <div class="h2"><span class="num">—</span><h2>The three effects</h2></div>
+  <p class="lede">Every civilization card carries three printed effects. A card sitting in your
+  <strong>victory row</strong> may be spent on exactly one of them, after which the card leaves
+  the game — your row shrinks, and your end score with it. The options are always the same three
+  kinds; only their strength grows with the card's rank.</p>
+  <table class="bands">
+    <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
+    <tbody><tr><td>1–5</td><td>Meld counts as <b>+1 card</b> for winning this trick</td><td><b>Found a colony</b>: 1 new tile of this suit, 1 unit on it, fortified</td><td class='num-cell'>2 gold</td></tr><tr><td>6–10</td><td><b>+1 card</b>, and wins ties</td><td><b>Distant colony</b>: as above, and the tile may sit up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>11–15</td><td>Meld counts as <b>+2 cards</b></td><td><b>Open a frontier</b>: 2 new tiles of this suit, 1 unit on one, fortified</td><td class='num-cell'>4 gold</td></tr><tr><td>16–20</td><td><b>+2 cards</b>, and wins ties</td><td><b>Two colonies</b>: 2 new tiles of ANY terrain, 1 unit on each, both fortified</td><td class='num-cell'>5 gold</td></tr></tbody>
+  </table>
+  <p><strong>A</strong> is declared in the <em>declare step</em> at the top of the round, before
+  any meld is played — blind, knowing only your own hand. <strong>B</strong> is used during your
+  own map phase, when the board in front of you is already settled. <strong>C</strong> may be
+  taken at any moment, even mid-payment when feeding falls short.</p>
+</section>
+
+<section>
+  <div class="h2"><span class="num">01</span><h2>Three rulings</h2></div>
+
+  <h3>What a colony is — effect B</h3>
+  <p>B no longer settles into ground you already hold. It <strong>founds new ground</strong>:
+  you lay tiles, put units on them from your board, and fortify them. At most
+  <strong>one victory card may be spent on B per turn</strong>.</p>
+  <p>The fortification coins come from the <strong>general supply</strong>, not from your
+  own gold — B is the one place in Blink where a fortification is free.</p>
+  <div class="ruling">
+    <span class="tag">Placement</span>
+    <p>Every colony tile still obeys <b>touch-two</b>: it must touch at least two tiles
+    already on the map. <b>Reach does not apply</b> — a colony may be founded anywhere along
+    the map's edge, not only beside your own civilization. Ranks <b>1&ndash;15</b> place tiles
+    matching the spent card's suit; ranks <b>16&ndash;20</b> may place any terrain. Ranks
+    <b>6&ndash;10</b> may reach up to two tiles out, laying the intervening tile first.</p>
+  </div>
+  <div class="ruling">
+    <span class="tag">Two tiles, one unit</span>
+    <p>Ranks <b>11&ndash;15</b> lay two tiles but take only <b>one</b> unit from your board:
+    settle and fortify that one, and leave the second tile as open ground. Units come from
+    the topmost tier holding any, so a colony still empties your board and still raises your
+    food bill.</p>
+  </div>
+
+  <h3>What “+1 / +2 cards” means — effect A</h3>
+  <p>This changes only the trick-resolution count. It never adds units to the map, and it never
+  lets you exceed your meld-size limit. Your meld is still exactly the
+  cards you physically played — a straight of four is four cards to spend whether or not you added +2.</p>
+  <p>The bonus is virtual: when <em>most cards wins</em> is compared, your meld counts as larger,
+  so it can take a trick it would otherwise lose. The reward is tempo — you win the trick, spend
+  your full meld, and act first — not size.</p>
+  <p>So applying +2 cards to a meld of four or five does not create a six- or seven-card meld: no
+  such meld exists, and the effect adds no physical cards. A four-card meld is still one of
+  <em>straight of four, quadruple, two pair</em>; a five-card meld is still <em>straight of five</em>
+  or <em>full house</em>. Only its trick-weight changes.</p>
+
+  <h3>Several A effects in one trick</h3>
+  <p>Nothing stops two or more players spending A in the same round. Each applies, and the trick
+  resolves on the modified counts — highest virtual count wins, then highest single rank, then
+  earliest played, exactly as normal. Because every declaration is made before any meld is
+  played, nobody can answer anybody: you are all guessing at once, and finding out together.</p>
+  <div class="ruling">
+    <span class="tag">A is a bet, B is a decision</span>
+    <p>The difference in timing is the difference in kind. <strong>A</strong> is spent before you
+    have seen a single card, so it is a wager on a trick you might have won anyway.
+    <strong>B</strong> is spent in your own map phase with the board in front of you, so it is
+    never a gamble — only a question of whether the units are worth the card.</p>
+  </div>
+  <div class="ruling">
+    <span class="tag">Two players both winning ties</span>
+    <p>If two players each spend an effect that <em>wins ties</em> and they are still tied, the
+    player who spent the <strong>higher-ranked card</strong> takes the trick.</p>
+  </div>
+</section>
+
+<section>
+  <div class="h2"><span class="num">02</span><h2>Every card, at a glance</h2></div>
+  <p>The production reference: the exact A / B / C each rank prints. All four suits of a rank
+  share the same effects. A card's suit matters only for effect B's terrain requirement, and for
+  the meld shapes the card can join.</p>
+  <table class="allranks">
+    <thead><tr><th>Rank</th><th>A · trick</th><th>B · map</th><th>C · gold</th></tr></thead>
+    <tbody><tr><td>1</td><td>+1 card</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>2</td><td>+1 card</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>3</td><td>+1 card</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>4</td><td>+1 card</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>5</td><td>+1 card</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>6</td><td>+1 card, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>7</td><td>+1 card, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>8</td><td>+1 card, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>9</td><td>+1 card, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>10</td><td>+1 card, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>11</td><td>+2 cards</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>12</td><td>+2 cards</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>13</td><td>+2 cards</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>14</td><td>+2 cards</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>15</td><td>+2 cards</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>16</td><td>+2 cards, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>17</td><td>+2 cards, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>18</td><td>+2 cards, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>19</td><td>+2 cards, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>20</td><td>+2 cards, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr></tbody>
+  </table>
+</section>
+
+</main>
+
+<div class="pad"><footer>Blink · card effects reference · companion to base game rules v0.22 ·
+Toby Siko · deep-diversions.com/blink · @tobysiko.bsky.social</footer></div>
+
+</div>
+</body>
+</html>

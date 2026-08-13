@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="297.0mm" height="210.0mm" viewBox="0 0 297.0 210.0">
+<rect width="297.0" height="210.0" fill="#FBFAF6"/>
+<path d="M10.0 14.0 h8 M14.0 10.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
+<path d="M279.0 14.0 h8 M283.0 10.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
+<path d="M10.0 196.0 h8 M14.0 192.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
+<path d="M279.0 196.0 h8 M283.0 192.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
+<text x="14.00" y="21.00" font-family="IBM Plex Sans" font-size="9" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">BLINK</text>
+<text x="44.00" y="21.00" font-family="IBM Plex Sans" font-size="5" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
+<text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.17 · units 15 mm</text>
+<line x1="14.0" y1="25.0" x2="283.0" y2="25.0" stroke="#2A2E2B" stroke-width="0.5"/>
+<text x="14.00" y="34.00" font-family="IBM Plex Mono" font-size="4.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">RESERVE</text>
+<text x="58.00" y="34.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">empty from the top band down as units reach the map</text>
+<text x="200.00" y="34.00" font-family="IBM Plex Mono" font-size="4.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">FOOD</text>
+<text x="246.00" y="34.00" font-family="IBM Plex Mono" font-size="4.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">MOVES</text>
+<rect x="14.0" y="36.5" width="267.0" height="20.0" rx="2.4" fill="#FBFAF6" stroke="#CDC7B8" stroke-width="0.4"/>
+<rect x="16.0" y="39.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
+<text x="22.00" y="48.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
+<text x="22.00" y="56.70" font-family="IBM Plex Mono" font-size="2.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">cards</text>
+<text x="32.00" y="44.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Tribe</text>
+<text x="32.00" y="49.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">2 units</text>
+<circle cx="64.50" cy="46.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="81.50" cy="46.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<text x="202.00" y="47.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">free</text>
+<rect x="246.0" y="41.0" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
+<text x="251.00" y="48.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">1</text>
+<rect x="14.0" y="59.0" width="267.0" height="20.0" rx="2.4" fill="#EFECE3" stroke="#CDC7B8" stroke-width="0.4"/>
+<rect x="16.0" y="62.0" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
+<text x="22.00" y="70.90" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
+<text x="22.00" y="79.20" font-family="IBM Plex Mono" font-size="2.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">cards</text>
+<text x="32.00" y="67.20" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Settlement</text>
+<text x="32.00" y="72.10" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<circle cx="64.50" cy="68.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="81.50" cy="68.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="98.50" cy="68.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="115.50" cy="68.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="204.50" cy="68.50" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<rect x="246.0" y="63.5" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
+<text x="251.00" y="70.70" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
+<rect x="14.0" y="81.5" width="267.0" height="20.0" rx="2.4" fill="#FBFAF6" stroke="#CDC7B8" stroke-width="0.4"/>
+<rect x="16.0" y="84.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
+<text x="22.00" y="93.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
+<text x="22.00" y="101.70" font-family="IBM Plex Mono" font-size="2.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">cards</text>
+<text x="32.00" y="89.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Kingdom</text>
+<text x="32.00" y="94.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">6 units</text>
+<circle cx="64.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="81.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="98.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="115.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="132.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="149.50" cy="91.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="204.50" cy="91.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="216.50" cy="91.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<rect x="246.0" y="86.0" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
+<text x="251.00" y="93.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
+<rect x="14.0" y="104.0" width="267.0" height="20.0" rx="2.4" fill="#EFECE3" stroke="#CDC7B8" stroke-width="0.4"/>
+<rect x="16.0" y="107.0" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
+<text x="22.00" y="115.90" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
+<text x="22.00" y="124.20" font-family="IBM Plex Mono" font-size="2.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">cards</text>
+<text x="32.00" y="112.20" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Empire</text>
+<text x="32.00" y="117.10" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<circle cx="64.50" cy="113.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="81.50" cy="113.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="98.50" cy="113.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="115.50" cy="113.50" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="204.50" cy="113.50" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="216.50" cy="113.50" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="228.50" cy="113.50" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<rect x="246.0" y="108.5" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
+<text x="251.00" y="115.70" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
+<rect x="14.0" y="126.5" width="267.0" height="20.0" rx="2.4" fill="#FBFAF6" stroke="#CDC7B8" stroke-width="0.4"/>
+<rect x="16.0" y="129.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
+<text x="22.00" y="138.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">6</text>
+<text x="22.00" y="146.70" font-family="IBM Plex Mono" font-size="2.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">cards</text>
+<text x="32.00" y="134.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Civilization</text>
+<text x="32.00" y="139.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<circle cx="64.50" cy="136.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="81.50" cy="136.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="98.50" cy="136.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="115.50" cy="136.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="1.8 1.8"/>
+<circle cx="204.50" cy="136.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="216.50" cy="136.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="228.50" cy="136.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="240.50" cy="136.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<rect x="246.0" y="131.0" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
+<text x="251.00" y="138.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
+<text x="14.00" y="161.50" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">FOOD (not cumulative) — each time your hand recycles, your people eat the coins on your current band's slots.</text>
+<text x="14.00" y="166.50" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">Short a coin? Return units from the map until the remaining empty slots are covered.</text>
+<line x1="14.0" y1="171.5" x2="283.0" y2="171.5" stroke="#CDC7B8" stroke-width="0.4"/>
+<text x="16.00" y="177.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">GOLD</text>
+<text x="16.00" y="182.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">1 per unused meld card</text>
+<rect x="16.0" y="186.5" width="96" height="30" rx="3" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="25.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="38.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="51.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="64.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="77.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="90.00" cy="195.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="25.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="38.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="51.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="64.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="77.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<circle cx="90.00" cy="207.50" r="4.2" fill="none" stroke="#EBD9A6" stroke-width="0.5"/>
+<text x="126.00" y="177.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">SCORING</text>
+<text x="126.00" y="183.50" font-family="IBM Plex Mono" font-size="3.4" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">units on map  +  centre rank of your victory row  +  3 per terrain majority</text>
+<text x="126.00" y="189.00" font-family="IBM Plex Mono" font-size="3.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">gold breaks ties · fewer than 3 cards in the row score 1 each</text>
+<text x="14.00" y="179.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">VICTORY ROW</text>
+<text x="72.00" y="179.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">— slide cards in from below, ranks ascending left to right; the centre slot scores</text>
+<clipPath id="sheet"><rect x="0" y="0" width="297.0" height="210.0"/></clipPath>
+<g clip-path="url(#sheet)">
+<rect x="14.00" y="184.0" width="63.5" height="88.9" rx="3" fill="#FBFAF6" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+<text x="19.50" y="191.50" font-family="IBM Plex Sans" font-size="5.5" fill="#B9B4A8" text-anchor="start" font-weight="400" letter-spacing="0" style="">1</text>
+<rect x="65.38" y="184.0" width="63.5" height="88.9" rx="3" fill="#FBFAF6" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+<text x="70.88" y="191.50" font-family="IBM Plex Sans" font-size="5.5" fill="#B9B4A8" text-anchor="start" font-weight="400" letter-spacing="0" style="">2</text>
+<rect x="116.75" y="184.0" width="63.5" height="88.9" rx="3" fill="#FBFAF6" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+<text x="122.25" y="191.50" font-family="IBM Plex Sans" font-size="5.5" fill="#B9B4A8" text-anchor="start" font-weight="400" letter-spacing="0" style="">3</text>
+<rect x="168.12" y="184.0" width="63.5" height="88.9" rx="3" fill="#FBFAF6" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+<text x="173.62" y="191.50" font-family="IBM Plex Sans" font-size="5.5" fill="#B9B4A8" text-anchor="start" font-weight="400" letter-spacing="0" style="">4</text>
+<rect x="219.50" y="184.0" width="63.5" height="88.9" rx="3" fill="#FBFAF6" stroke="#B9B4A8" stroke-width="0.7" stroke-dasharray="2.5 2"/>
+<text x="225.00" y="191.50" font-family="IBM Plex Sans" font-size="5.5" fill="#B9B4A8" text-anchor="start" font-weight="400" letter-spacing="0" style="">5</text>
+</g>
+<line x1="14.0" y1="173.5" x2="283.0" y2="173.5" stroke="#CDC7B8" stroke-width="0.4"/>
+</svg>

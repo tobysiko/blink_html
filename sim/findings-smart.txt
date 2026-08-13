@@ -1,0 +1,17 @@
+BOTS THAT CHOOSE WHERE TO PLAY vs BOTS THAT DO NOT
+(smart = real placement policy + retires HIGH cards to the victory row)
+
+2 players
+  greedy, random place   rounds   30   settle  52.0  kills   6.8  explore  44.4   pop 51% row 24% dom 25%   Empire  40%
+  smart, chosen place    rounds   28   settle  59.0  kills   9.8  explore  23.7   pop 47% row 33% dom 20%   Empire  47%
+3 players
+  greedy, random place   rounds   32   settle  63.8  kills  18.9  explore  48.8   pop 59% row 21% dom 20%   Empire  28%
+  smart, chosen place    rounds   28   settle  67.7  kills  18.6  explore  29.8   pop 47% row 37% dom 16%   Empire  41%
+4 players
+  greedy, random place   rounds   38   settle  94.2  kills  41.7  explore  51.3   pop 65% row 16% dom 18%   Empire  31%
+  smart, chosen place    rounds   35   settle  92.6  kills  37.1  explore  32.8   pop 45% row 42% dom 13%   Empire  31%
+
+HEAD TO HEAD, 3 players, 45 games
+  smart    wins   76%   mean score  37.7
+  greedy   wins   24%   mean score  30.5
+  turtle   wins    0%   mean score  11.7

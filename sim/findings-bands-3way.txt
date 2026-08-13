@@ -1,0 +1,51 @@
+14 three-player games each — current ruleset
+(A declared blind, B in the map phase, proportional starvation, targeted fortify)
+
+layout                rounds  melds of 5  melds of 4  BIG total  time@lim5   upkeep  unspent   score pop/row/dom
+4/6/8/2  current          18        0.05        1.48       1.52         2%     13.1      5.1   53/27/20
+5/5/5/5  equal            19        0.10        0.98       1.07         5%     10.9      6.1   54/24/22
+3/6/7/4  middle           18        0.12        1.79       1.90         4%     16.3      4.3   50/32/18
+2/4/6/8  proposed         18        0.48        2.93       3.40        18%     21.9      4.7   58/21/21
+
+(melds of 4 and 5 are PER PLAYER PER GAME)
+
+layout                 % of all melds that are 4 cards   5 cards
+4/6/8/2  current                                  7.7%      0.2%
+5/5/5/5  equal                                    5.2%      0.5%
+3/6/7/4  middle                                   9.6%      0.6%
+2/4/6/8  proposed                                16.7%      2.7%
+
+WHY EQUAL BANDS ARE THE WORST OF THE FOUR
+-----------------------------------------
+A meld places ONE UNIT PER CARD, so a big meld consumes the very band that
+permits it:
+
+    layout     units at limit 4   units at limit 5   most 4-melds   most 5-melds
+    4/6/8/2           8                  2                2              0
+    5/5/5/5           5                  5                1              1
+    3/6/7/4           7                  4                1              0
+    2/4/6/8           6                  8                1              1
+
+Across a whole game a player places 20 units. If every meld were five cards
+they would play four melds all game. The ceiling on big melds is structural.
+Time at limit 4 is worth more than time at limit 5: hands fill a four-card
+meld far more often, and it costs 20% of the reserve rather than 25%.
+
+5/5/5/5 pays three units out of the limit-4 band to buy time at limit 5, and
+loses a third of its four-card melds doing it.
+
+WHERE 3/6/7/4 LANDS
+-------------------
+It is the conservative option and it behaves like one. Against the current
+bands it more than doubles five-card melds (0.05 -> 0.12) and adds a quarter
+to four-card melds (1.48 -> 1.79), for +3.2 gold of upkeep. It changes the
+opening least of the three alternatives - Founding only drops from 4 to 3, so
+the gentle first rounds survive.
+
+But 0.12 five-card melds per player per game is still one every eight games.
+The straight of five and the full house remain effectively absent. 3/6/7/4
+improves the four-card tier; it does not rescue the fifth rung.
+
+Note the score split moves in an interesting direction: 50/32/18, the highest
+victory-row share of any layout tested. Fewer units placed per turn than
+2/4/6/8 leaves more gold for upgrades.

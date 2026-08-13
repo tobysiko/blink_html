@@ -1,0 +1,20 @@
+GOLD FLOW  (smart bots; fortifying and victory-card effects NOT modelled)
+
+2 PLAYERS (12 games)
+  cards played  120.1  ->  landed  90.8 (76%)   became gold  29.2 (24%)
+  GOLD IN    29.2  = lost trick  27.8 + unplaceable  0.1 + other  1.4
+  GOLD OUT   24.9  = upkeep  13.3 + upgrades   9.5 + attacks   2.1 + fortify 0.0
+  UNSPENT AT END   4.3   upgrades bought   9.5
+
+3 PLAYERS (12 games)
+  cards played  171.2  ->  landed 113.6 (66%)   became gold  57.6 (34%)
+  GOLD IN    57.6  = lost trick  56.5 + unplaceable  0.2 + other  0.8
+  GOLD OUT   40.8  = upkeep  18.9 + upgrades  14.8 + attacks   7.2 + fortify 0.0
+  UNSPENT AT END  16.8   upgrades bought  14.8
+
+4 PLAYERS (12 games)
+  cards played  281.2  ->  landed 165.3 (59%)   became gold 115.8 (41%)
+  GOLD IN   115.8  = lost trick 114.2 + unplaceable  0.6 + other  0.9
+  GOLD OUT   71.7  = upkeep  31.2 + upgrades  19.9 + attacks  20.5 + fortify 0.0
+  UNSPENT AT END  44.2   upgrades bought  19.9
+

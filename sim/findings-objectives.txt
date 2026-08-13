@@ -1,0 +1,15 @@
+30 three-player games, 90 player-boards, final maps averaging 28 tiles
+
+objective             pts  scores for  mean pts                   verdict
+Coastal Control         1         44%      0.58                        ok
+Island Nation           1          0%      0.00               UNREACHABLE
+Breadbasket             2          0%      0.00               UNREACHABLE
+Highland Lake           2         10%      0.20                        ok
+Mountain Fortress       3          8%      0.23                 very rare
+Mountain Range          3         12%      0.37                        ok
+Greenway                3          0%      0.00               UNREACHABLE
+Trade Delta             3         49%      1.90                        ok
+Rainforest              4          2%      0.09                 very rare
+Silk Road               4          0%      0.00               UNREACHABLE
+Ocean Corridor          4          0%      0.00               UNREACHABLE
+River Flow              4         13%      0.53                        ok

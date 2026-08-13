@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Blink replay — 3 players · seed 5 · 12 rounds · last unit placed · winner seat 0 on 51</title>
+<style>
+:root{--paper:#EDEAE1;--page:#FBFAF6;--ink:#1C1F1D;--soft:#5A5F59;--rule:#CDC7B8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,"Segoe UI",sans-serif;font-size:14px}
+.wrap{max-width:1240px;margin:0 auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:2px solid var(--ink);padding-bottom:8px;margin-bottom:14px}
+h1{font-size:22px;margin:0;letter-spacing:-.02em}
+.meta{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--soft)}
+.bar{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+button{font:inherit;padding:5px 12px;border:1.5px solid var(--ink);
+  background:var(--page);border-radius:5px;cursor:pointer}
+button:hover{background:#e8e4d8}
+input[type=range]{flex:1}
+.grid{display:grid;grid-template-columns:1fr 300px;gap:16px}
+.card{background:var(--page);border:1px solid var(--rule);border-radius:6px;padding:12px}
+svg{display:block;width:100%;height:auto}
+h2{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);
+  margin:0 0 8px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--soft);border-bottom:1px solid var(--ink);padding:0 4px 3px 0}
+td{padding:4px 4px 4px 0;border-bottom:1px solid var(--rule)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+.log{font-size:12.5px;line-height:1.5}
+.log div{padding:3px 0;border-bottom:1px dotted var(--rule)}
+.clock{display:flex;gap:14px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;
+  color:var(--soft);margin-top:8px}
+.end{color:#C0392B;font-weight:600}
+.spark{height:46px;width:100%}
+.chip{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  width:22px;height:30px;border:1px solid #1C1F1D;border-radius:3px;background:#fff;
+  margin:0 2px 3px 0;font-size:11px;font-weight:700;line-height:1;vertical-align:top}
+.chip i{display:block;width:100%;height:4px;border-radius:2px 2px 0 0;margin-bottom:2px}
+.chip.dim{opacity:.32}
+.chip.big{width:26px;height:36px;font-size:12.5px}
+.hands{font-size:12px}
+.prow{border-bottom:1px solid var(--rule);padding:8px 0}
+.prow:last-child{border-bottom:none}
+.cols{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.col{min-width:90px}
+.col.sep{border-left:2px solid var(--rule);padding-left:12px}
+.who{font-weight:600;white-space:nowrap;min-width:132px}
+.chip.hi{box-shadow:inset 0 0 0 1.5px #B8952E}
+.lbl{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:var(--soft);
+  letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:2px}
+.acct{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--soft);
+  margin-top:5px}
+.acct b{color:var(--ink)}
+.acct .neg{color:#C0392B}
+.acct .pos{color:#2E7D46}
+.short{color:#C0392B;font-weight:700}
+.pilenote{font-family:ui-monospace,Menlo,monospace;font-size:10px;
+  color:var(--soft);margin:2px 0 6px}
+#pile{min-height:34px}
+.lbl.bad{color:#C0392B;font-weight:700}
+.mkt{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.slot{border:1px solid var(--rule);border-radius:4px;padding:6px;text-align:center;
+  background:#fff}
+.slot.empty{background:#F0ECE2;border-style:dashed}
+.depth{font-family:ui-monospace,Menlo,monospace;font-size:9px;color:var(--soft);
+  display:block;margin-top:3px}
+.row2{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:14px}
+.over{outline:2px solid #C0392B;outline-offset:1px}
+</style></head><body><div class="wrap">
+
+<header>
+  <h1>Blink replay</h1>
+  <div class="meta">3 players · seed 5 · 12 rounds · last unit placed · winner seat 0 on 51</div>
+</header>
+
+<div class="bar">
+  <button id="prev">&larr; prev</button>
+  <button id="next">next &rarr;</button>
+  <button id="play">play</button>
+  <input type="range" id="slider" min="0" max="0" value="0">
+  <div class="meta" id="counter"></div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>The map</h2>
+    <svg id="map" viewBox="0 0 640 420"></svg>
+    <div class="clock" id="clock"></div>
+  </div>
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <h2>Players</h2>
+      <table id="players"></table>
+      <svg class="spark" id="spark" viewBox="0 0 280 46"></svg>
+    </div>
+    <div class="card">
+      <h2>This round</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+</div>
+
+<div class="row2">
+  <div>
+    <div class="card" style="margin-bottom:14px">
+      <h2>Market &mdash; 3&times;3 grid</h2>
+      <div class="mkt" id="market"></div>
+      <div class="clock" id="mktclock"></div>
+    </div>
+    <div class="card">
+      <h2>Shared pile</h2>
+      <div id="pile"></div>
+      <svg class="spark" id="pilechart" viewBox="0 0 240 54"></svg>
+      <div class="clock" id="pileclock"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Hands and melds</h2>
+    <div class="hands" id="hands"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const F = [{"round":0,"tiles":[{"x":13.0,"y":66,"t":"plains","o":0,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":-1,"n":0,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":1,"g":0},{"x":52.0,"y":44,"t":"mountain","o":-1,"n":0,"g":0},{"x":65.0,"y":66,"t":"mountain","o":-1,"n":0,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Tribe","limit":2,"gold":0,"onmap":1,"vrow":0,"score":4,"reserve":19,"cap":11,"hand":[[4,"M"],[4,"P"],[5,"M"],[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"M"],[8,"O"],[8,"P"]],"meld":[],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[],"row":[]},{"seat":1,"tier":"Tribe","limit":2,"gold":0,"onmap":1,"vrow":0,"score":4,"reserve":19,"cap":11,"hand":[[3,"O"],[3,"P"],[5,"F"],[5,"P"],[6,"P"],[7,"O"],[9,"F"],[10,"M"],[10,"O"],[10,"P"]],"meld":[],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[],"row":[]},{"seat":2,"tier":"Tribe","limit":2,"gold":0,"onmap":1,"vrow":0,"score":4,"reserve":19,"cap":11,"hand":[[4,"F"],[4,"O"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"O"],[9,"P"],[10,"F"]],"meld":[],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[],"row":[]}],"log":["Setup \u2014 starting map dealt, hands drafted."],"deck":29,"pile":0,"pilecards":[],"grid":[{"r":20,"s":"O","d":1},{"r":13,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":12,"s":"O","d":1},{"r":13,"s":"O","d":1},{"r":17,"s":"M","d":1},{"r":16,"s":"M","d":1},{"r":12,"s":"P","d":1},{"r":11,"s":"F","d":1}],"ended":null},{"round":1,"tiles":[{"x":13.0,"y":66,"t":"plains","o":0,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":-1,"n":0,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":2,"g":0}],"players":[{"seat":0,"tier":"Settlement","limit":3,"gold":1,"onmap":3,"vrow":1,"score":7,"reserve":17,"cap":13,"hand":[[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"O"],[8,"P"],[13,"F"]],"meld":[[4,"M"],[5,"M"]],"bonus":[],"legal":true,"bought":[[13,"F"]],"retired":[[8,"M"]],"rfrom":"","dropped":[[4,"P"]],"disc":2,"deck":9,"money":[["lost the trick",1],["ascension",1],["upgrade",-1]],"row":[[8,"M"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":1,"onmap":3,"vrow":1,"score":7,"reserve":17,"cap":13,"hand":[[3,"O"],[3,"P"],[5,"F"],[5,"P"],[7,"O"],[9,"F"],[12,"P"]],"meld":[[10,"M"],[10,"P"]],"bonus":[[6,"P"]],"legal":true,"bought":[[12,"P"]],"retired":[[10,"O"]],"rfrom":"","dropped":[],"disc":3,"deck":10,"money":[["held back",1],["ascension",1],["upgrade",-1]],"row":[[10,"O"]]},{"seat":2,"tier":"Settlement","limit":3,"gold":1,"onmap":2,"vrow":1,"score":3,"reserve":18,"cap":13,"hand":[[4,"F"],[4,"O"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[13,"P"]],"meld":[[9,"M"],[9,"P"]],"bonus":[],"legal":true,"bought":[[13,"P"]],"retired":[[9,"O"]],"rfrom":"","dropped":[[10,"F"]],"disc":2,"deck":9,"money":[["held back",1],["ascension",1],["upgrade",-1]],"row":[[9,"O"]]}],"log":["Seat 1 won the trick.","5 settled \u00b7 2 discards to the pile \u00b7 3 upgrades \u00b7 3 ascensions \u00b7 2 cards cashed"],"deck":24,"pile":2,"pilecards":[[4,"P"],[10,"F"]],"grid":[{"r":20,"s":"O","d":1},{"r":19,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":14,"s":"O","d":2},{"r":17,"s":"M","d":1},{"r":16,"s":"M","d":1},{"r":14,"s":"F","d":1},{"r":11,"s":"F","d":1}],"ended":null},{"round":2,"tiles":[{"x":13.0,"y":66,"t":"plains","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":-1,"n":0,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":88,"t":"forest","o":-1,"n":0,"g":0},{"x":65.0,"y":110,"t":"plains","o":-1,"n":0,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0}],"players":[{"seat":0,"tier":"Settlement","limit":3,"gold":2,"onmap":5,"vrow":1,"score":9,"reserve":15,"cap":13,"hand":[[6,"F"],[7,"F"],[8,"O"]],"meld":[[6,"M"],[7,"M"],[8,"P"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[[13,"F"]],"disc":5,"deck":8,"money":[["cashed",1]],"row":[[8,"M"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":2,"onmap":3,"vrow":1,"score":7,"reserve":17,"cap":13,"hand":[[5,"F"],[5,"P"],[7,"O"],[9,"F"],[12,"P"]],"meld":[[3,"O"],[3,"P"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["lost the trick",1]],"row":[[10,"O"]]},{"seat":2,"tier":"Settlement","limit":3,"gold":2,"onmap":3,"vrow":1,"score":7,"reserve":17,"cap":13,"hand":[[4,"F"],[4,"O"],[5,"O"]],"meld":[[6,"O"],[7,"P"],[8,"F"]],"bonus":[[13,"P"]],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":6,"deck":9,"money":[["cashed",1]],"row":[[9,"O"]]}],"log":["Seat 2 won the trick.","3 settled \u00b7 4 explored \u00b7 1 discards to the pile \u00b7 2 cards cashed"],"deck":23,"pile":3,"pilecards":[[4,"P"],[10,"F"],[13,"F"]],"grid":[{"r":20,"s":"O","d":1},{"r":19,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":14,"s":"O","d":2},{"r":17,"s":"M","d":1},{"r":16,"s":"M","d":1},{"r":14,"s":"F","d":1},{"r":15,"s":"M","d":2}],"ended":null},{"round":3,"tiles":[{"x":13.0,"y":66,"t":"plains","o":0,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":-1,"n":0,"g":0},{"x":39.0,"y":22,"t":"ocean","o":0,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":1,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":-1,"n":0,"g":0},{"x":91.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Kingdom","limit":4,"gold":2,"onmap":8,"vrow":2,"score":19,"reserve":12,"cap":15,"hand":[[4,"M"],[5,"M"],[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"O"],[8,"P"],[10,"F"],[14,"F"]],"meld":[[6,"F"],[7,"F"],[8,"O"]],"bonus":[],"legal":true,"bought":[[14,"F"]],"retired":[[13,"F"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["bonus (no cards left)",1],["ascension",2],["food",-2],["upgrade",-1]],"row":[[8,"M"],[13,"F"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":3,"onmap":4,"vrow":1,"score":8,"reserve":16,"cap":13,"hand":[[7,"O"],[9,"F"],[12,"P"]],"meld":[[5,"F"],[5,"P"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":7,"deck":10,"money":[["lost the trick",1]],"row":[[10,"O"]]},{"seat":2,"tier":"Settlement","limit":3,"gold":0,"onmap":4,"vrow":2,"score":9,"reserve":16,"cap":13,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"P"],[12,"F"]],"meld":[[4,"F"],[4,"O"],[5,"O"]],"bonus":[],"legal":true,"bought":[[12,"F"]],"retired":[[13,"P"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["food",-1],["upgrade",-1]],"row":[[9,"O"],[13,"P"]]}],"log":["Seat 0 won the trick.","5 settled \u00b7 3 explored \u00b7 2 free moves \u00b7 2 upgrades \u00b7 1 ascensions"],"deck":20,"pile":0,"pilecards":[],"grid":[{"r":20,"s":"O","d":1},{"r":19,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":14,"s":"O","d":2},{"r":17,"s":"M","d":1},{"r":16,"s":"M","d":1},{"r":17,"s":"P","d":2},{"r":15,"s":"M","d":2}],"ended":null},{"round":4,"tiles":[{"x":0.0,"y":0,"t":"forest","o":-1,"n":0,"g":0},{"x":13.0,"y":22,"t":"ocean","o":0,"n":1,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":1,"g":1},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":1,"g":0},{"x":91.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Empire","limit":5,"gold":5,"onmap":11,"vrow":3,"score":31,"reserve":9,"cap":17,"hand":[[4,"M"],[5,"M"],[6,"M"],[7,"M"],[17,"P"]],"meld":[[6,"F"],[7,"F"],[8,"O"],[8,"P"]],"bonus":[[10,"F"]],"legal":true,"bought":[[17,"P"]],"retired":[[14,"F"]],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["held back",1],["ascension",3],["upgrade",-1]],"row":[[8,"M"],[13,"F"],[14,"F"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":3,"onmap":4,"vrow":1,"score":8,"reserve":16,"cap":13,"hand":[[7,"O"],[12,"P"]],"meld":[[9,"F"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":8,"deck":10,"money":[["lost the trick",1],["fortify",-1]],"row":[[10,"O"]]},{"seat":2,"tier":"Settlement","limit":3,"gold":2,"onmap":5,"vrow":2,"score":13,"reserve":15,"cap":13,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[6,"O"],[9,"M"],[12,"F"]],"meld":[[7,"P"],[8,"F"],[9,"P"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":3,"deck":10,"money":[["cashed",1],["held back",1]],"row":[[9,"O"],[13,"P"]]}],"log":["Seat 0 won the trick.","4 settled \u00b7 2 explored \u00b7 1 water explores \u00b7 5 free moves \u00b7 1 upgrades \u00b7 1 ascensions \u00b7 3 cards cashed"],"deck":19,"pile":0,"pilecards":[],"grid":[{"r":20,"s":"O","d":1},{"r":19,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":14,"s":"O","d":2},{"r":17,"s":"M","d":1},{"r":14,"s":"M","d":2},{"r":15,"s":"P","d":1},{"r":15,"s":"M","d":2}],"ended":null},{"round":5,"tiles":[{"x":-52.0,"y":0,"t":"ocean","o":-1,"n":0,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":-1,"n":0,"g":0},{"x":13.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":-1,"n":0,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":1,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Empire","limit":5,"gold":1,"onmap":13,"vrow":3,"score":35,"reserve":7,"cap":17,"hand":[[4,"M"],[5,"M"],[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"O"],[8,"P"],[10,"F"],[14,"M"]],"meld":[[4,"M"],[5,"M"],[6,"M"],[7,"M"]],"bonus":[[17,"P"]],"legal":true,"bought":[[14,"M"]],"retired":[[17,"P"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["food",-3],["upgrade",-1]],"row":[[13,"F"],[14,"F"],[17,"P"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":3,"onmap":4,"vrow":2,"score":9,"reserve":16,"cap":13,"hand":[[11,"F"]],"meld":[[7,"O"]],"bonus":[],"legal":true,"bought":[[11,"F"]],"retired":[[12,"P"]],"rfrom":"","dropped":[],"disc":9,"deck":10,"money":[["lost the trick",1],["upgrade",-1]],"row":[[10,"O"],[12,"P"]]},{"seat":2,"tier":"Kingdom","limit":4,"gold":3,"onmap":7,"vrow":3,"score":25,"reserve":13,"cap":15,"hand":[[5,"O"],[6,"O"],[9,"M"],[15,"M"]],"meld":[[4,"F"],[4,"O"],[4,"P"]],"bonus":[],"legal":true,"bought":[[15,"M"]],"retired":[[12,"F"]],"rfrom":"","dropped":[],"disc":6,"deck":10,"money":[["ascension",2],["upgrade",-1]],"row":[[9,"O"],[12,"F"],[13,"P"]]}],"log":["Seat 0 won the trick.","4 settled \u00b7 3 explored \u00b7 1 units killed \u00b7 1 colony tiles \u00b7 1 colony units \u00b7 1 water explores \u00b7 6 free moves \u00b7 3 upgrades \u00b7 1 ascensions"],"deck":15,"pile":0,"pilecards":[],"grid":[{"r":20,"s":"O","d":1},{"r":19,"s":"P","d":1},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":19,"s":"M","d":3},{"r":17,"s":"M","d":1},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},{"r":20,"s":"F","d":1}],"ended":null},{"round":6,"tiles":[{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":-1,"n":0,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":13.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":-1,"n":0,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":1,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":-1,"n":0,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":-1,"n":0,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":6,"onmap":16,"vrow":3,"score":39,"reserve":4,"cap":20,"hand":[[4,"M"],[5,"M"],[6,"M"],[17,"M"]],"meld":[[6,"F"],[7,"F"],[7,"M"],[8,"O"],[8,"P"]],"bonus":[[10,"F"]],"legal":true,"bought":[[17,"M"]],"retired":[[14,"M"]],"rfrom":"","dropped":[],"disc":6,"deck":10,"money":[["cashed",3],["upgrade",-1],["ascension",4],["fortify",-1]],"row":[[14,"F"],[14,"M"],[17,"P"]]},{"seat":1,"tier":"Settlement","limit":3,"gold":2,"onmap":4,"vrow":3,"score":17,"reserve":16,"cap":13,"hand":[[3,"O"],[3,"P"],[5,"F"],[5,"P"],[6,"P"],[7,"O"],[9,"F"],[10,"M"],[10,"P"],[12,"M"]],"meld":[[11,"F"]],"bonus":[],"legal":true,"bought":[[12,"M"]],"retired":[[11,"F"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["lost the trick",1],["food",-1],["upgrade",-1]],"row":[[10,"O"],[11,"F"],[12,"P"]]},{"seat":2,"tier":"Kingdom","limit":4,"gold":2,"onmap":8,"vrow":3,"score":29,"reserve":12,"cap":15,"hand":[[9,"M"],[11,"O"]],"meld":[[5,"O"],[6,"O"]],"bonus":[],"legal":true,"bought":[[11,"O"]],"retired":[[15,"M"]],"rfrom":"","dropped":[],"disc":8,"deck":10,"money":[["upgrade",-1]],"row":[[12,"F"],[13,"P"],[15,"M"]]}],"log":["Seat 0 won the trick.","4 settled \u00b7 1 explored \u00b7 1 units killed \u00b7 2 colony tiles \u00b7 1 colony units \u00b7 1 water explores \u00b7 5 free moves \u00b7 3 upgrades \u00b7 1 ascensions \u00b7 3 cards cashed"],"deck":11,"pile":0,"pilecards":[],"grid":[{"r":20,"s":"O","d":1},{"r":18,"s":"O","d":2},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},{"r":19,"s":"M","d":3},{"r":20,"s":"P","d":1},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},{"r":20,"s":"F","d":1}],"ended":null},{"round":7,"tiles":[{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":-1,"n":0,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":-1,"n":0,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":13.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":-1,"n":0,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":2,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":1,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":6,"onmap":18,"vrow":3,"score":41,"reserve":2,"cap":20,"hand":[[20,"O"]],"meld":[[4,"M"],[5,"M"],[6,"M"]],"bonus":[],"legal":true,"bought":[[20,"O"]],"retired":[[17,"M"]],"rfrom":"","dropped":[],"disc":9,"deck":10,"money":[["lost the trick",1],["upgrade",-1]],"row":[[14,"M"],[17,"M"],[17,"P"]]},{"seat":1,"tier":"Kingdom","limit":4,"gold":4,"onmap":7,"vrow":3,"score":23,"reserve":13,"cap":15,"hand":[[3,"O"],[3,"P"],[7,"O"],[9,"F"],[10,"M"],[10,"P"],[12,"M"]],"meld":[[5,"F"],[5,"P"],[6,"P"]],"bonus":[],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":3,"deck":10,"money":[["ascension",2]],"row":[[10,"O"],[11,"F"],[12,"P"]]},{"seat":2,"tier":"Kingdom","limit":4,"gold":1,"onmap":9,"vrow":2,"score":14,"reserve":11,"cap":15,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"P"],[11,"O"]],"meld":[[11,"O"]],"bonus":[[9,"M"]],"legal":true,"bought":[],"retired":[],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["cashed",1],["food",-2]],"row":[[13,"P"],[15,"M"]]}],"log":["Seat 2 won the trick.","5 settled \u00b7 2 explored \u00b7 2 colony tiles \u00b7 1 colony units \u00b7 6 free moves \u00b7 1 upgrades \u00b7 1 ascensions \u00b7 1 cards cashed"],"deck":7,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":16,"s":"F","d":3},{"r":18,"s":"P","d":2},{"r":14,"s":"P","d":3},{"r":19,"s":"M","d":3},{"r":20,"s":"P","d":1},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},{"r":20,"s":"F","d":1}],"ended":null},{"round":8,"tiles":[{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":-1,"n":0,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":0,"n":1,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":-26.0,"y":88,"t":"mountain","o":-1,"n":0,"g":0},{"x":13.0,"y":-22,"t":"plains","o":-1,"n":0,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":13.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":2,"n":1,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":2,"onmap":19,"vrow":3,"score":45,"reserve":1,"cap":20,"hand":[[4,"M"],[5,"M"],[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"O"],[8,"P"],[10,"F"],[20,"P"]],"meld":[[20,"O"]],"bonus":[],"legal":true,"bought":[[20,"P"]],"retired":[[20,"O"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["lost the trick",1],["food",-4],["upgrade",-1]],"row":[[17,"M"],[17,"P"],[20,"O"]]},{"seat":1,"tier":"Kingdom","limit":4,"gold":3,"onmap":9,"vrow":3,"score":26,"reserve":11,"cap":15,"hand":[[7,"O"],[9,"F"],[10,"M"],[10,"P"],[15,"F"]],"meld":[[3,"O"],[3,"P"]],"bonus":[],"legal":true,"bought":[[15,"F"]],"retired":[[12,"M"]],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["upgrade",-1]],"row":[[11,"F"],[12,"M"],[12,"P"]]},{"seat":2,"tier":"Kingdom","limit":4,"gold":2,"onmap":10,"vrow":3,"score":27,"reserve":10,"cap":15,"hand":[[4,"F"],[4,"O"],[5,"O"],[6,"O"],[15,"O"]],"meld":[[7,"P"],[8,"F"],[9,"M"],[9,"P"]],"bonus":[[4,"P"]],"legal":true,"bought":[[15,"O"]],"retired":[[11,"O"]],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["cashed",1],["held back",1],["upgrade",-1]],"row":[[11,"O"],[13,"P"],[15,"M"]]}],"log":["Seat 2 won the trick.","4 settled \u00b7 2 explored \u00b7 1 water explores \u00b7 4 free moves \u00b7 3 upgrades \u00b7 2 cards cashed"],"deck":3,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":16,"s":"F","d":3},{"r":18,"s":"P","d":2},{"r":13,"s":"M","d":4},{"r":19,"s":"M","d":3},{"r":11,"s":"P","d":1},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},{"r":20,"s":"F","d":1}],"ended":null},{"round":9,"tiles":[{"x":-156.0,"y":0,"t":"plains","o":-1,"n":0,"g":0},{"x":-143.0,"y":22,"t":"forest","o":1,"n":1,"g":1},{"x":-117.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-130.0,"y":0,"t":"plains","o":-1,"n":0,"g":0},{"x":-117.0,"y":22,"t":"ocean","o":2,"n":1,"g":1},{"x":-91.0,"y":-22,"t":"ocean","o":-1,"n":0,"g":0},{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":-1,"n":0,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":0,"n":1,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":-26.0,"y":88,"t":"mountain","o":-1,"n":0,"g":0},{"x":-13.0,"y":110,"t":"ocean","o":-1,"n":0,"g":0},{"x":13.0,"y":-22,"t":"plains","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":13.0,"y":22,"t":"ocean","o":-1,"n":0,"g":0},{"x":0.0,"y":44,"t":"mountain","o":-1,"n":0,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":2,"n":1,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":1,"g":0},{"x":39.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":1,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":6,"onmap":19,"vrow":4,"score":46,"reserve":1,"cap":20,"hand":[[6,"M"],[7,"M"],[19,"M"]],"meld":[[4,"M"],[5,"M"],[6,"F"],[7,"F"],[8,"O"],[8,"P"]],"bonus":[[20,"P"]],"legal":true,"bought":[[19,"M"]],"retired":[[10,"F"]],"rfrom":"","dropped":[],"disc":7,"deck":10,"money":[["cashed",2],["no reserve",4],["upgrade",-1],["fortify",-1]],"row":[[10,"F"],[17,"M"],[17,"P"],[20,"O"]]},{"seat":1,"tier":"Kingdom","limit":4,"gold":2,"onmap":10,"vrow":3,"score":28,"reserve":10,"cap":15,"hand":[[7,"O"],[11,"M"]],"meld":[[9,"F"],[10,"M"],[10,"P"]],"bonus":[],"legal":true,"bought":[[11,"M"]],"retired":[[15,"F"]],"rfrom":"","dropped":[],"disc":8,"deck":10,"money":[["lost the trick",1],["attack",-1],["upgrade",-1]],"row":[[12,"M"],[12,"P"],[15,"F"]]},{"seat":2,"tier":"Empire","limit":5,"gold":5,"onmap":12,"vrow":3,"score":31,"reserve":8,"cap":17,"hand":[[14,"O"]],"meld":[[4,"F"],[4,"O"],[5,"O"],[6,"O"]],"bonus":[],"legal":true,"bought":[[14,"O"]],"retired":[[15,"O"]],"rfrom":"","dropped":[],"disc":9,"deck":10,"money":[["held back",1],["ascension",3],["upgrade",-1]],"row":[[13,"P"],[15,"M"],[15,"O"]]}],"log":["Seat 0 won the trick.","2 settled \u00b7 3 explored \u00b7 1 units killed \u00b7 4 colony tiles \u00b7 2 colony units \u00b7 2 water explores \u00b7 10 free moves \u00b7 3 upgrades \u00b7 1 ascensions \u00b7 7 cards cashed"],"deck":0,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":16,"s":"F","d":3},{"r":18,"s":"P","d":2},{"r":17,"s":"F","d":5},{"r":13,"s":"O","d":1},{"r":16,"s":"O","d":2},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},{"r":20,"s":"F","d":1}],"ended":null},{"round":10,"tiles":[{"x":-156.0,"y":0,"t":"plains","o":-1,"n":0,"g":0},{"x":-143.0,"y":22,"t":"forest","o":1,"n":1,"g":1},{"x":-117.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-130.0,"y":0,"t":"plains","o":-1,"n":0,"g":0},{"x":-117.0,"y":22,"t":"ocean","o":2,"n":1,"g":1},{"x":-91.0,"y":-22,"t":"ocean","o":-1,"n":0,"g":0},{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":0,"n":1,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":-26.0,"y":88,"t":"mountain","o":-1,"n":0,"g":0},{"x":-13.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":13.0,"y":-22,"t":"plains","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":1,"g":0},{"x":13.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":0.0,"y":44,"t":"mountain","o":-1,"n":0,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":2,"n":1,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":0},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":1,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":3,"onmap":20,"vrow":4,"score":47,"reserve":0,"cap":20,"hand":[[4,"M"],[5,"M"],[6,"F"],[6,"M"],[7,"F"],[7,"M"],[8,"O"],[8,"P"],[19,"M"],[20,"F"]],"meld":[[6,"M"],[7,"M"]],"bonus":[[19,"M"]],"legal":true,"bought":[[20,"F"]],"retired":[[20,"P"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["no reserve",2],["food",-4],["upgrade",-1]],"row":[[17,"M"],[17,"P"],[20,"O"],[20,"P"]]},{"seat":1,"tier":"Empire","limit":5,"gold":5,"onmap":11,"vrow":3,"score":28,"reserve":9,"cap":17,"hand":[[13,"M"]],"meld":[[7,"O"]],"bonus":[],"legal":true,"bought":[[13,"M"]],"retired":[[11,"M"]],"rfrom":"","dropped":[],"disc":9,"deck":10,"money":[["lost the trick",1],["ascension",3],["upgrade",-1]],"row":[[11,"M"],[12,"M"],[15,"F"]]},{"seat":2,"tier":"Empire","limit":5,"gold":1,"onmap":13,"vrow":3,"score":33,"reserve":7,"cap":17,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"P"],[17,"F"]],"meld":[[14,"O"]],"bonus":[],"legal":true,"bought":[[17,"F"]],"retired":[[14,"O"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["food",-3],["upgrade",-1]],"row":[[14,"O"],[15,"M"],[15,"O"]]}],"log":["Seat 0 won the trick.","3 settled \u00b7 9 free moves \u00b7 3 upgrades \u00b7 1 ascensions \u00b7 2 cards cashed","END TRIGGERED \u2014 last unit placed."],"deck":0,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":16,"s":"F","d":3},{"r":18,"s":"P","d":2},{"r":14,"s":"P","d":3},{"r":13,"s":"O","d":1},{"r":16,"s":"O","d":2},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},null],"ended":"last unit placed"},{"round":11,"tiles":[{"x":-169.0,"y":22,"t":"ocean","o":2,"n":1,"g":1},{"x":-143.0,"y":-22,"t":"ocean","o":-1,"n":0,"g":0},{"x":-156.0,"y":0,"t":"plains","o":2,"n":1,"g":0},{"x":-143.0,"y":22,"t":"forest","o":1,"n":1,"g":1},{"x":-117.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-130.0,"y":0,"t":"plains","o":2,"n":1,"g":0},{"x":-117.0,"y":22,"t":"ocean","o":2,"n":1,"g":1},{"x":-91.0,"y":-22,"t":"ocean","o":-1,"n":0,"g":0},{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":0,"n":1,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":-26.0,"y":88,"t":"mountain","o":-1,"n":0,"g":0},{"x":-13.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":13.0,"y":-22,"t":"plains","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":13.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":0.0,"y":44,"t":"mountain","o":1,"n":1,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":2,"n":1,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":39.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":1},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":0},{"x":65.0,"y":110,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":2,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":8,"onmap":20,"vrow":5,"score":51,"reserve":0,"cap":20,"hand":[[7,"M"],[13,"O"],[19,"M"]],"meld":[[4,"M"],[5,"M"],[6,"F"],[7,"F"],[8,"O"],[8,"P"]],"bonus":[[6,"M"]],"legal":true,"bought":[[13,"O"]],"retired":[[20,"F"]],"rfrom":"","dropped":[],"disc":7,"deck":10,"money":[["cashed",1],["no reserve",6],["upgrade",-1],["fortify",-1]],"row":[[17,"M"],[17,"P"],[20,"F"],[20,"O"],[20,"P"]]},{"seat":1,"tier":"Empire","limit":5,"gold":2,"onmap":12,"vrow":3,"score":27,"reserve":8,"cap":17,"hand":[[3,"O"],[3,"P"],[5,"F"],[5,"P"],[6,"P"],[7,"O"],[9,"F"],[10,"M"],[10,"P"],[16,"O"]],"meld":[[13,"M"]],"bonus":[],"legal":true,"bought":[[16,"O"]],"retired":[[13,"M"]],"rfrom":"","dropped":[],"disc":0,"deck":10,"money":[["lost the trick",1],["food",-3],["upgrade",-1]],"row":[[12,"M"],[13,"M"],[15,"F"]]},{"seat":2,"tier":"Civilization","limit":6,"gold":6,"onmap":16,"vrow":3,"score":40,"reserve":4,"cap":20,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[14,"P"]],"meld":[[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"P"]],"bonus":[],"legal":true,"bought":[[14,"P"]],"retired":[[17,"F"]],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["cashed",3],["upgrade",-1],["ascension",4],["fortify",-1]],"row":[[15,"M"],[15,"O"],[17,"F"]]}],"log":["Seat 0 won the trick.","3 settled \u00b7 2 colony tiles \u00b7 1 colony units \u00b7 10 free moves \u00b7 3 upgrades \u00b7 1 ascensions \u00b7 10 cards cashed"],"deck":0,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":16,"s":"F","d":3},{"r":18,"s":"P","d":2},{"r":19,"s":"O","d":2},null,{"r":11,"s":"P","d":1},{"r":20,"s":"M","d":2},{"r":19,"s":"F","d":2},null],"ended":"last unit placed"},{"round":12,"tiles":[{"x":-195.0,"y":-22,"t":"plains","o":2,"n":1,"g":1},{"x":-195.0,"y":22,"t":"plains","o":-1,"n":0,"g":0},{"x":-169.0,"y":-22,"t":"mountain","o":1,"n":1,"g":1},{"x":-182.0,"y":0,"t":"mountain","o":-1,"n":0,"g":0},{"x":-169.0,"y":22,"t":"ocean","o":2,"n":1,"g":1},{"x":-143.0,"y":-22,"t":"ocean","o":-1,"n":0,"g":0},{"x":-156.0,"y":0,"t":"plains","o":1,"n":2,"g":0},{"x":-143.0,"y":22,"t":"forest","o":1,"n":1,"g":0},{"x":-117.0,"y":-22,"t":"forest","o":2,"n":1,"g":0},{"x":-130.0,"y":0,"t":"plains","o":2,"n":2,"g":0},{"x":-117.0,"y":22,"t":"ocean","o":2,"n":1,"g":0},{"x":-91.0,"y":-22,"t":"ocean","o":2,"n":1,"g":0},{"x":-104.0,"y":0,"t":"forest","o":0,"n":1,"g":1},{"x":-91.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-78.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-65.0,"y":22,"t":"forest","o":0,"n":1,"g":1},{"x":-39.0,"y":-22,"t":"forest","o":-1,"n":0,"g":0},{"x":-52.0,"y":0,"t":"ocean","o":0,"n":1,"g":0},{"x":-39.0,"y":22,"t":"mountain","o":0,"n":1,"g":1},{"x":-39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":-26.0,"y":0,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":22,"t":"mountain","o":0,"n":1,"g":0},{"x":-13.0,"y":66,"t":"forest","o":-1,"n":0,"g":0},{"x":-26.0,"y":88,"t":"mountain","o":-1,"n":0,"g":0},{"x":-13.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":13.0,"y":-22,"t":"plains","o":0,"n":1,"g":0},{"x":0.0,"y":0,"t":"forest","o":0,"n":1,"g":0},{"x":13.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":0.0,"y":44,"t":"mountain","o":1,"n":1,"g":0},{"x":13.0,"y":66,"t":"plains","o":0,"n":3,"g":0},{"x":0.0,"y":88,"t":"plains","o":2,"n":1,"g":0},{"x":39.0,"y":-22,"t":"forest","o":1,"n":2,"g":0},{"x":26.0,"y":0,"t":"forest","o":0,"n":2,"g":0},{"x":39.0,"y":22,"t":"ocean","o":1,"n":1,"g":0},{"x":39.0,"y":66,"t":"mountain","o":0,"n":1,"g":0},{"x":26.0,"y":88,"t":"ocean","o":2,"n":1,"g":1},{"x":39.0,"y":110,"t":"ocean","o":2,"n":1,"g":0},{"x":52.0,"y":0,"t":"plains","o":1,"n":3,"g":0},{"x":65.0,"y":22,"t":"plains","o":1,"n":3,"g":0},{"x":52.0,"y":44,"t":"mountain","o":0,"n":1,"g":0},{"x":65.0,"y":66,"t":"mountain","o":0,"n":1,"g":1},{"x":52.0,"y":88,"t":"forest","o":0,"n":2,"g":1},{"x":65.0,"y":110,"t":"plains","o":2,"n":1,"g":0},{"x":91.0,"y":66,"t":"forest","o":2,"n":2,"g":0},{"x":78.0,"y":88,"t":"plains","o":2,"n":3,"g":0},{"x":91.0,"y":110,"t":"ocean","o":2,"n":1,"g":0}],"players":[{"seat":0,"tier":"Civilization","limit":6,"gold":7,"onmap":20,"vrow":5,"score":51,"reserve":0,"cap":20,"hand":[[7,"M"],[19,"F"]],"meld":[[13,"O"]],"bonus":[],"legal":true,"bought":[[19,"F"]],"retired":[[19,"M"]],"rfrom":"","dropped":[],"disc":8,"deck":10,"money":[["lost the trick",1],["upgrade",-1],["fortify",-1]],"row":[[17,"M"],[19,"M"],[20,"F"],[20,"O"],[20,"P"]]},{"seat":1,"tier":"Empire","limit":5,"gold":6,"onmap":15,"vrow":3,"score":34,"reserve":5,"cap":17,"hand":[[3,"O"],[3,"P"],[10,"M"],[10,"P"],[16,"F"]],"meld":[[5,"F"],[5,"P"],[6,"P"],[7,"O"]],"bonus":[[9,"F"]],"legal":true,"bought":[[16,"F"]],"retired":[[16,"O"]],"rfrom":"","dropped":[],"disc":5,"deck":10,"money":[["cashed",1],["upgrade",-1],["ascension",4]],"row":[[13,"M"],[15,"F"],[16,"O"]]},{"seat":2,"tier":"Civilization","limit":6,"gold":1,"onmap":19,"vrow":3,"score":43,"reserve":1,"cap":20,"hand":[[4,"F"],[4,"O"],[4,"P"],[5,"O"],[6,"O"],[7,"P"],[8,"F"],[9,"M"],[9,"P"],[18,"P"]],"meld":[[4,"F"],[4,"O"],[4,"P"],[5,"O"]],"bonus":[],"legal":true,"bought":[[18,"P"]],"retired":[[14,"P"]],"rfrom":"","dropped":[[14,"P"]],"disc":0,"deck":10,"money":[["food",-4],["upgrade",-1]],"row":[[15,"M"],[15,"O"],[17,"F"]]}],"log":["Seat 1 won the trick.","6 settled \u00b7 2 units killed \u00b7 4 colony tiles \u00b7 2 colony units \u00b7 1 discards to the pile \u00b7 15 free moves \u00b7 3 upgrades \u00b7 1 ascensions \u00b7 1 cards cashed"],"deck":0,"pile":0,"pilecards":[],"grid":[{"r":16,"s":"P","d":1},{"r":18,"s":"O","d":2},{"r":17,"s":"O","d":1},{"r":19,"s":"O","d":2},null,{"r":11,"s":"P","d":1},{"r":20,"s":"M","d":2},{"r":15,"s":"P","d":1},null],"ended":"last unit placed"}];
+const TC = {"plains": "#C9992B", "forest": "#37704A", "ocean": "#256A8C", "mountain": "#8A837A"}, SC = ["#C0392B", "#2F6F8F", "#7A5CA8", "#4E7A32"];
+let i = 0, timer = null;
+
+const $ = s => document.querySelector(s);
+const slider = $("#slider");
+slider.max = F.length - 1;
+
+function hex(cx, cy, r){
+  let p = [];
+  for (let k = 0; k < 6; k++){
+    const a = Math.PI/180 * (60*k - 30);
+    p.push((cx + r*Math.cos(a)).toFixed(1) + "," + (cy + r*Math.sin(a)).toFixed(1));
+  }
+  return p.join(" ");
+}
+
+const SUITC = {P:"#C9992B", F:"#37704A", O:"#256A8C", M:"#8A837A"};
+
+function chip(r, su, cls){
+  return `<span class="chip ${cls||''}"><i style="background:${SUITC[su]}"></i>${r}</span>`;
+}
+
+function drawCards(f){
+  // market: top card of each position, with stack depth
+  $("#market").innerHTML = f.grid.map(g => g === null
+    ? `<div class="slot empty"><span class="chip dim">&nbsp;</span><span class="depth">empty</span></div>`
+    : `<div class="slot">${chip(g.r, g.s, "big")}<span class="depth">${g.d > 1 ? g.d + " deep" : "top"}</span></div>`
+  ).join("");
+  $("#mktclock").innerHTML = `<span>deck ${f.deck}</span><span>pile ${f.pile}</span>`;
+
+  // the shared pile. Face down at the table — this is the designer's X-ray.
+  $("#pile").innerHTML = f.pilecards.length
+    ? `<div class="pilenote">${f.pilecards.length} card${f.pilecards.length>1?"s":""}, face down</div>`
+      + f.pilecards.map(c => chip(c[0], c[1], c[0] >= 11 ? "hi" : "")).join("")
+    : `<div class="pilenote">empty</div><span class="depth">nothing discarded yet</span>`;
+  // size over the whole game, so you can see it is a trickle, not a reservoir
+  const mx = Math.max(2, ...F.map(z => z.pile));
+  const bw = 232 / F.length;
+  $("#pilechart").innerHTML = F.map((z, k) => {
+    const h = (z.pile / mx) * 40;
+    return `<rect x="${(4 + k*bw).toFixed(1)}" y="${(46-h).toFixed(1)}" `
+         + `width="${Math.max(1.5, bw-1.4).toFixed(1)}" height="${h.toFixed(1)}" `
+         + `fill="${k===i ? "#C0392B" : "#B4AFA3"}"/>`;
+  }).join("") + `<line x1="0" y1="46" x2="240" y2="46" stroke="#CDC7B8"/>`
+    + `<text x="2" y="10" font-size="9" fill="#5A5F59" font-family="ui-monospace,Menlo,monospace">peak ${mx}</text>`;
+  $("#pileclock").innerHTML = `<span>in play across the table</span>`;
+
+  // every card that LEFT a player this round, in its own column
+  const H = c => chip(c[0], c[1], c[0] >= 11 ? "hi" : "");
+  const col = (label, cs, sep, empty) =>
+    `<div class="col${sep?" sep":""}"><span class="lbl${label===label.toUpperCase()&&label.length>6?" bad":""}">${label}</span>`
+    + (cs.length ? cs.map(H).join("") : `<span class="depth">${empty||"—"}</span>`)
+    + `</div>`;
+
+  let h = "";
+  for (const p of f.players){
+    // your deck is ten cards: hand + personal discard. Anything less went to
+    // the SHARED pile via the match-discard; it returns at the next recycle.
+    const lost = 10 - p.deck;
+    const acct = p.money.map(([lab, amt]) =>
+        `<span class="${amt<0?'neg':'pos'}">${amt>0?"+":""}${amt}</span> ${lab}`)
+      .join(" · ") || "no coins moved";
+
+    h += `<div class="prow"><div class="cols">`
+       + `<div class="who"><span class="dot" style="background:${SC[p.seat]}"></span>`
+       + `seat ${p.seat}<br><span class="depth">limit ${p.limit} · cap `
+       + `${p.cap > 90 ? "—" : p.cap} · ${p.gold} gold</span></div>`
+       + col(`hand (${p.hand.length})`, p.hand)
+       + col(p.legal ? "meld" : "MELD — NOT A RUN", p.meld, true, "nothing played")
+       + col("winner +1", p.bonus, false)
+       + col(`retired → row${p.rfrom ? " ("+p.rfrom+")" : ""}`, p.retired, true)
+       + col("bought", p.bought, false)
+       + col("lost to pile", p.dropped, false)
+       + col(`victory row ${p.row.length}/5`, p.row, true, "empty")
+       + `</div><div class="acct">`
+       + `deck <b>${p.deck}</b>/10 (hand ${p.hand.length} + discard ${p.disc})`
+       + (lost > 0 ? ` <span class="short">−${lost} in the shared pile</span>` : "")
+       + ` &nbsp;·&nbsp; ${acct}</div></div>`;
+  }
+  $("#hands").innerHTML = h;
+}
+
+function draw(){
+  const f = F[i];
+  // --- map, auto-centred on its own extent
+  const xs = f.tiles.map(t=>t.x), ys = f.tiles.map(t=>t.y);
+  const minx = Math.min(...xs), maxx = Math.max(...xs);
+  const miny = Math.min(...ys), maxy = Math.max(...ys);
+  const ox = 320 - (minx+maxx)/2, oy = 210 - (miny+maxy)/2;
+  let s = "";
+  for (const t of f.tiles){
+    const cx = t.x + ox, cy = t.y + oy;
+    s += `<polygon points="${hex(cx,cy,14)}" fill="${TC[t.t]}" stroke="#1C1F1D" stroke-width="1" opacity="0.92"/>`;
+    if (t.n > 0){
+      s += `<circle cx="${cx}" cy="${cy}" r="7" fill="${SC[t.o]}" stroke="#fff" stroke-width="1.4"/>`;
+      if (t.n > 1)
+        s += `<text x="${cx}" y="${cy+3.5}" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">${t.n}</text>`;
+    }
+    if (t.g > 0){
+      // one coin per fortified unit — a Plains tile can carry three
+      s += `<circle cx="${cx+10}" cy="${cy-10}" r="${t.g > 1 ? 5.5 : 4}" fill="#E8C049" stroke="#8A6A18" stroke-width="1"/>`;
+      if (t.g > 1)
+        s += `<text x="${cx+10}" y="${cy-7.4}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#5A4408">${t.g}</text>`;
+    }
+  }
+  $("#map").innerHTML = s;
+
+  // --- players
+  let rows = "<tr><th>seat</th><th>tier</th><th>gold</th><th>map</th><th>row</th><th>score</th></tr>";
+  for (const p of f.players){
+    rows += `<tr><td><span class="dot" style="background:${SC[p.seat]}"></span>${p.seat}</td>`
+         +  `<td>${p.tier}</td><td>${p.gold}</td><td>${p.onmap}</td>`
+         +  `<td>${p.vrow}</td><td><b>${p.score}</b></td></tr>`;
+  }
+  $("#players").innerHTML = rows;
+
+  // --- score sparkline to this point
+  let sp = "";
+  const N = F.length;
+  for (let seat = 0; seat < f.players.length; seat++){
+    const pts = F.slice(0, i+1).map((fr, k) => {
+      const x = (k/(Math.max(1,N-1)))*272 + 4;
+      const mx = Math.max(10, ...F.map(z=>Math.max(...z.players.map(q=>q.score))));
+      const y = 42 - (fr.players[seat].score/mx)*38;
+      return x.toFixed(1)+","+y.toFixed(1);
+    }).join(" ");
+    sp += `<polyline points="${pts}" fill="none" stroke="${SC[seat]}" stroke-width="1.8"/>`;
+  }
+  $("#spark").innerHTML = sp;
+
+  // --- log + clock
+  $("#log").innerHTML = f.log.map(l =>
+     `<div${l.startsWith("END")?' class="end"':''}>${l}</div>`).join("");
+  $("#clock").innerHTML =
+      `<span>upgrade deck ${f.deck}</span><span>shared pile ${f.pile}</span>`
+    + `<span>tiles ${f.tiles.length}</span>`
+    + (f.ended ? `<span class="end">${f.ended}</span>` : "");
+  drawCards(f);
+  $("#counter").textContent = "round " + f.round + " / " + F[F.length-1].round;
+  slider.value = i;
+}
+
+function go(k){ i = Math.max(0, Math.min(F.length-1, k)); draw(); }
+$("#prev").onclick = () => go(i-1);
+$("#next").onclick = () => go(i+1);
+slider.oninput = e => go(+e.target.value);
+$("#play").onclick = function(){
+  if (timer){ clearInterval(timer); timer = null; this.textContent = "play"; return; }
+  this.textContent = "pause";
+  timer = setInterval(() => { if (i >= F.length-1){ clearInterval(timer); timer=null; $("#play").textContent="play"; } else go(i+1); }, 700);
+};
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") go(i-1);
+  if (e.key === "ArrowRight") go(i+1);
+});
+draw();
+</script></body></html>

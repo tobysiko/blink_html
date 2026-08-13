@@ -1,0 +1,24 @@
+
+2 PLAYERS   (150 games, random-legal bots)
+  game length         37.0 rounds (median 41, max 78)
+  end trigger        last unit placed: 99, a suit ran out: 51
+  final map           41.9 tiles of 60
+  band reached       Empire 42%, Growth 28%, Expansion 25%, Founding 5%
+  score comes from   population 51%, victory row 25%, dominance 24%
+  seat win share     seat 0 52%, seat 1 48%
+
+3 PLAYERS   (150 games, random-legal bots)
+  game length         51.2 rounds (median 53, max 80)   [11 hit the 80-round cap]
+  end trigger        last unit placed: 122, a suit ran out: 19, never triggered: 9
+  final map           52.2 tiles of 60
+  band reached       Expansion 36%, Empire 32%, Growth 26%, Founding 6%
+  score comes from   population 58%, victory row 22%, dominance 20%
+  seat win share     seat 0 35%, seat 1 29%, seat 2 35%
+
+4 PLAYERS   (150 games, random-legal bots)
+  game length         65.0 rounds (median 69, max 80)   [44 hit the 80-round cap]
+  end trigger        last unit placed: 103, never triggered: 40, a suit ran out: 7
+  final map           56.9 tiles of 60
+  band reached       Expansion 40%, Growth 31%, Empire 20%, Founding 8%
+  score comes from   population 63%, victory row 17%, dominance 19%
+  seat win share     seat 0 23%, seat 1 25%, seat 2 26%, seat 3 26%

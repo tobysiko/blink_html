@@ -1,0 +1,26 @@
+CAN A PLAYER DELIBERATELY BUILD IT?  30 three-player games each
+
+objective             pts   passive   seeking               verdict
+Coastal Control         1       50%       38%            achievable
+Island Nation           1        0%        0%         not buildable
+Breadbasket             2        0%        0%         not buildable
+Highland Lake           2       12%        0%         not buildable
+Mountain Fortress       3       25%       25%                  hard
+Mountain Range          3       12%       25%                  hard
+Greenway                3        0%        0%         not buildable
+Trade Delta             3       43%       57%            achievable
+Rainforest              4        0%       14%                  hard
+Silk Road               4        0%        0%         not buildable
+Ocean Corridor          4        0%        0%         not buildable
+River Flow              4        0%        0%         not buildable
+
+THE BUILDER'S BUDGET, per player per game
+  tiles created (explores) by all players :  22.0
+  ... per player                          :   7.3
+  ... per player of any ONE terrain       :   1.8
+  tiles a player OCCUPIES at the end      :   8.1
+
+A straight line of four same-terrain tiles needs four tiles of one terrain at
+four chosen positions. The budget is under two. That is why seeking moved the
+three-tile objectives (Mountain Range 12% -> 25%, Rainforest 0% -> 14%) and did
+nothing at all for the four-tile ones.

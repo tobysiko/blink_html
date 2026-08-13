@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blink — Map Objectives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF; --page:#FFFFFF; --ink:#000000; --ink-soft:#3F3F3F;
+  --plains:#B4B4B4; --forest:#5C5C5C; --ocean:#2B2B2B; --stone:#8A8A8A;
+  --red:#000000; --rule:#B0B0B0;
+  --measure:38rem;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px; line-height:1.62; font-weight:400;
+}
+.sheet{max-width:60rem;margin:0 auto;background:var(--page);
+  box-shadow:0 0 0 1px rgba(0,0,0,.07),0 18px 50px -30px rgba(0,0,0,.5);}
+.pad{padding:0 clamp(1.25rem,5vw,4.5rem)}
+
+/* ---------- masthead ---------- */
+.mast{padding:clamp(2rem,6vw,4rem) 0 1.5rem;position:relative;overflow:hidden}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-soft);margin:0 0 1rem}
+.mast h1{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(3rem,12vw,6.5rem);line-height:.86;margin:0;
+  letter-spacing:-.03em}
+.mast .sub{font-family:Fraunces,Georgia,serif;font-weight:400;font-style:italic;
+  font-size:clamp(1.05rem,3vw,1.5rem);color:var(--ink-soft);margin:.6rem 0 0;letter-spacing:-.01em}
+.mast .meta{font-family:"IBM Plex Mono",monospace;font-size:.75rem;letter-spacing:.1em;
+  color:var(--ink-soft);margin:1.4rem 0 0;text-transform:uppercase}
+.mast .meta span{display:inline-block;margin-right:1.4rem;white-space:nowrap}
+.herowrap{margin:1.5rem 0 0}
+.herowrap svg{width:100%;height:auto;display:block;max-height:19rem}
+
+/* ---------- stepped rule: the signature ---------- */
+.steprule{display:flex;align-items:flex-end;height:16px;margin:0;gap:0}
+.steprule i{display:block;flex:1}
+.steprule i:nth-child(1){height:5px;background:var(--plains)}
+.steprule i:nth-child(2){height:16px;background:var(--stone)}
+.steprule i:nth-child(3){height:11px;background:var(--forest)}
+.steprule i:nth-child(4){height:5px;background:var(--ocean)}
+
+/* ---------- sections ---------- */
+section{padding:2.4rem 0 .5rem;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.h2{display:flex;align-items:baseline;gap:1rem;margin:0 0 1.1rem}
+.h2 .num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--stone);
+  letter-spacing:.12em;padding-top:.35rem;min-width:2.2rem}
+.h2 h2{font-family:Fraunces,Georgia,serif;font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:600;font-size:clamp(1.5rem,4vw,2.15rem);line-height:1.06;margin:0;
+  letter-spacing:-.02em}
+h3{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.12rem;margin:1.9rem 0 .5rem;
+  letter-spacing:-.01em}
+p{margin:0 0 .95rem;max-width:var(--measure)}
+.lede{font-size:1.08rem;color:var(--ink-soft);max-width:44rem}
+ul,ol{max-width:var(--measure);margin:0 0 1rem;padding-left:1.15rem}
+li{margin:0 0 .42rem}
+strong{font-weight:600}
+em{font-style:italic}
+
+/* ---------- terrain chips ---------- */
+/* the swatch is absolutely positioned so its height — which encodes terrain
+   elevation — never changes the line box, keeping table rows aligned */
+.chip{display:inline-block;position:relative;padding-left:1.05em;font-weight:600;
+  white-space:nowrap}
+.chip::before{content:"";position:absolute;left:0;bottom:.16em;width:.62em;border-radius:1px}
+.chip.plains::before{height:.34em;background:var(--plains)}
+.chip.ocean::before{height:.34em;background:var(--ocean)}
+.chip.forest::before{height:.72em;background:var(--forest)}
+.chip.mountain::before{height:1.05em;background:var(--stone)}
+
+/* ---------- figures ---------- */
+figure{margin:1.6rem 0 1.8rem;max-width:none}
+/* one scale for every diagram: the svg carries its own px size, we never stretch it */
+figure svg{display:block;max-width:100%;height:auto}
+.figbox{background:#F4F4F4;border:1px solid var(--rule);border-radius:4px;
+  padding:1.1rem .9rem;display:flex;justify-content:center;align-items:center}
+.figbox.plain{background:none;border:none;padding:.35rem 0}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.5;
+  color:var(--ink-soft);margin-top:.6rem;letter-spacing:.02em;max-width:var(--measure)}
+.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5E5E5E}
+.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1E1E1E;font-weight:600}
+.fig-step{font-family:"IBM Plex Mono",monospace;fill:#848484;letter-spacing:.06em}
+.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1E1E1E;font-weight:600}
+.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#555555;font-weight:600}
+
+/* ---------- meld grid ---------- */
+.tiergroup{break-inside:avoid;margin-top:2rem}
+.example h3{color:var(--ink)} .example .h2 .num{color:var(--forest)}.tier{display:flex;align-items:baseline;gap:.6rem;margin:0 0 .2rem;
+  padding-bottom:.35rem;border-bottom:1.5px solid var(--ink)}
+.tier-n{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.9rem;
+  line-height:1;letter-spacing:-.02em}
+.tier-t{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--stone)}
+.melds{display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1.4rem 1.6rem;margin:1.1rem 0 .5rem}
+.melds figure{margin:0;max-width:none;display:flex;flex-direction:column;break-inside:avoid}
+.melds figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+.melds .name{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1rem;margin:0 0 .1rem}
+.melds .rule{font-size:.82rem;color:var(--ink-soft);line-height:1.45;margin:0}
+.melds .shape{font-size:.82rem;margin:.35rem 0 0;line-height:1.45}
+.melds .shape b{font-weight:600}
+@media (max-width:640px){.melds{grid-template-columns:repeat(2,1fr)}}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse;width:100%;max-width:var(--measure);margin:1rem 0 1.4rem;
+  font-size:.92rem}
+table.wide{max-width:none}
+th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:.68rem;font-weight:500;
+  letter-spacing:.13em;text-transform:uppercase;color:var(--stone);
+  border-bottom:1.5px solid var(--ink);padding:0 .7rem .4rem 0;vertical-align:bottom}
+td{padding:.5rem .7rem .5rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td:last-child,th:last-child{padding-right:0}
+.num-cell{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- callout ---------- */
+.note{border-left:3px solid var(--plains);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
+  max-width:var(--measure)}
+.note p{margin:0 0 .5rem}
+.note p:last-child{margin:0}
+.note .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+
+/* ---------- sequence ---------- */
+.seq{list-style:none;padding:0;counter-reset:s;max-width:var(--measure)}
+.seq>li{counter-increment:s;position:relative;padding-left:2.4rem;margin:0 0 .8rem}
+.seq>li::before{content:counter(s);position:absolute;left:0;top:.05rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--ink);
+  background:var(--page);border:1.5px solid var(--ink);width:1.5rem;height:1.5rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+
+/* ---------- reference back page ---------- */
+.ref{background:var(--paper);color:var(--ink);border-top:2px solid var(--ink);
+  margin-top:2.5rem;padding-bottom:3rem}
+.ref section{border-top-color:var(--rule)}
+.ref .h2 h2,.ref h3{color:var(--ink)}
+.ref .h2 .num{color:#959595}
+.ref p,.ref li{color:var(--ink-soft)}
+.ref td{border-bottom-color:var(--rule)}
+.ref th{color:var(--stone);border-bottom-color:var(--ink)}
+.ref .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.6rem 2.4rem}
+.ref .cols>div{max-width:none}
+.ref .cols p,.ref .cols ul{max-width:none}
+.ref .note{border-left-color:var(--plains)}
+.ref .note .tag{color:#959595}
+
+footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;
+  color:var(--ink-soft);letter-spacing:.06em}
+
+@page{
+  size:A4;
+  margin:18mm 16mm 16mm 16mm;
+}
+@media print{
+  html,body{background:#FFFFFF}
+  .example{background:#F1F1F1;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
+  body{font-size:10.3pt;line-height:1.5}
+  .sheet{box-shadow:none;max-width:none;margin:0;background:#FFFFFF}
+  /* padding is provided by the @page margin, so drop the fluid inner pad */
+  .pad{padding:0}
+  .mast{padding:0 0 1rem}
+  /* let text fill the printable width instead of the 38rem screen measure */
+  p,ul,ol,figure,.lede,.melds figure,.note{max-width:none}
+  figcaption{max-width:none}
+  section{break-inside:auto;padding:1.2rem 0 .4rem}
+  /* keep atomic blocks whole */
+  figure,table,.note,.tiergroup,.pat,.seq li,tr{break-inside:avoid}
+  .h2,h3,thead{break-after:avoid}
+  h3{margin-top:1.3rem}
+  .herowrap svg{max-height:15rem}
+  /* figures keep their intrinsic size so the scale stays constant across the book */
+  figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
+  .melds figure svg{max-width:100%;height:auto;margin:0 auto}
+  .figbox{background:#F5F5F5;border-color:#D8D8D8}
+  .ref{background:#FFFFFF;color:#000000;border-top:2px solid #000000}
+  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000000}
+  .ref th{color:#555555;border-bottom-color:#000000}
+  .ref td{border-bottom-color:#CCCCCC}
+  .ref .h2 .num{color:#777777}
+}
+@media (max-width:640px){
+  body{font-size:15px}
+  .opener{break-after:page}
+  .h2{gap:.7rem}
+  .h2 .num{min-width:1.8rem}
+}
+@media (prefers-reduced-motion:no-preference){
+  .sheet{animation:rise .5s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+}
+
+.pat{display:grid;grid-template-columns:230px 1fr;gap:1.6rem;align-items:center;
+  padding:1.1rem 0;border-bottom:1px solid var(--rule);break-inside:avoid}
+.pat-fig svg{width:100%;height:auto;max-height:170px;display:block}
+.pat-head{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin:0 0 .15rem}
+.pat-head h3{font-family:Fraunces,Georgia,serif;font-size:1.15rem;margin:0;font-weight:600}
+.pat-badge{display:flex;align-items:baseline;gap:.3rem;white-space:nowrap}
+.pts{font-family:Fraunces,Georgia,serif;font-size:1.5rem;font-weight:600;color:var(--red)}
+.pts-l{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--stone)}
+.tag-line{font-style:italic;color:var(--ink-soft);margin:0 0 .35rem;font-size:.9rem}
+.pat-rule{margin:0;font-size:.9rem;line-height:1.5}
+.reuse{margin:.35rem 0 0;font-size:.82rem;color:var(--ink-soft)}
+.pat-rule b{font-weight:600}
+@media print{.pat{break-inside:avoid}}
+
+/* ---- black-and-white overrides ---- */
+.sheet{box-shadow:none;border:none}
+/* light chips need an outline or they vanish on white */
+.chip::before{outline:.5px solid #000;outline-offset:-.5px}
+/* the stepped rule is four tones; give it edges so they stay countable */
+.steprule i{box-shadow:inset 0 0 0 .5px #000}
+img,svg{filter:none}
+@media print{ body{background:#fff} .sheet{background:#fff} }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="mast pad">
+  <p class="eyebrow">Advanced module · secret objectives</p>
+  <h1>Map Objectives</h1>
+  <p class="sub">A secret shape to build toward</p>
+</header>
+
+<main class="pad">
+<section>
+  <p>Once the base game feels familiar, add this layer. Every player is dealt a
+  <strong>secret goal for the shape of their world</strong> — a river running down from
+  the highlands, a range of peaks, a stretch of coast — and spends the game quietly
+  steering their expansion toward it. The map stops being a place to spread and becomes
+  a place to compose.</p>
+
+  <div class="h2"><span class="num">01</span><h2>Setup &amp; scoring</h2></div>
+  <ol class="seq">
+    <li><b>Deal two, keep one.</b> Shuffle the objective cards and deal <strong>two to each
+    player, face down</strong>. Look at both, keep one, and return the other to the box
+    unseen. Choose before the card draft if you can — the objective you keep should
+    inform the hand you build.</li>
+    <li><b>Keep it hidden.</b> Your objective stays secret for the whole game. Nobody is
+    told what anyone is chasing.</li>
+    <li><b>Reveal together.</b> At the end of the game, after the base score is counted,
+    every player turns their objective face up at the same moment and adds its points if
+    they completed it.</li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">Completed or not — there is no half</span>
+    <p>An objective scores its <strong>full value once</strong>, or nothing. You cannot
+    score it twice by building the pattern twice, and there is no penalty for failing.
+    Every pattern is exactly <strong>three tiles</strong>, and every tile must be one you
+    <strong>occupy</strong> — a tile with at least one of your units standing on it.
+    Empty tiles, and tiles held only by a rival, never count.</p>
+  </div>
+
+  <p>Every objective is worth <strong>4 points</strong>. For scale, a finished game usually
+  scores somewhere between twenty and thirty, so an objective is worth roughly a fifth of a
+  good result — enough to steer a game, not enough to decide one on its own.</p>
+  <p>All twelve ask for the same thing in different terrain: <strong>three tiles you occupy
+  in a chain</strong>, the middle one touching both ends. They are alike in
+  shape so that the choice you make when you keep one is about <em>your hand</em>, not about
+  which card is easiest. If you drafted Ocean, the Fjord and the Lookout are close; if you
+  drafted Plains, the Mountain Pass is.</p>
+  <div class="note">
+    <span class="tag">Not yet re-tuned for v0.21 — play the base game first</span>
+    <p>This deck was balanced against the v0.20 placement rules, where a meld landed as a
+    connected pattern. Under v0.21 the map ends about <strong>20% smaller</strong> and
+    players hold fewer tiles, so the chains are harder across the board — and no longer
+    evenly hard. Measured passively, they now range from about <strong>1% to 28%</strong>
+    where they once sat in a much narrower band, and <em>Mountain Pass</em>,
+    <em>Coastal Chain</em> and <em>Clearing</em> have all but stopped happening.</p>
+    <p>Treat the twelve as a draft. They are still playable — nothing here contradicts the
+    base rules — but the promise that all twelve are equally reachable is not currently
+    true, and the flat 4 points needs revisiting once v0.21 has been played.</p>
+  </div>
+  <p class="fine">Twelve cards is enough for four players to be dealt two each with four
+  still unseen, so no table ever sees the whole deck.</p>
+
+  <div class="note">
+    <span class="tag">Building in the open</span>
+    <p>Your objective is secret; your map is not. Every chain uses ordinary, useful ground,
+    so the early tiles of one look like plain expansion — but the third tile is the tell.
+    A rival who guesses right can settle the space you needed, and a chain broken at the
+    last tile is worth nothing. Build the ambiguous end first.</p>
+  </div>
+
+  <div class="h2"><span class="num">02</span><h2>The objectives</h2></div>
+  <div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 144" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,34.00 0.00,47.00 22.52,34.00 22.52,8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,26.00 45.03,39.00 67.55,26.00 67.55,0.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,57.00 67.55,70.00 90.07,57.00 90.07,31.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Foothills</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Where the stone gives way to soil.</p><p class="pat-rule">A mountain, next to a forest, next to a plains.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 144" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,34.00 0.00,47.00 22.52,34.00 22.52,8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,57.00 67.55,70.00 90.07,57.00 90.07,31.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Watershed</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Every drop from here reaches the sea.</p><p class="pat-rule">A mountain, next to a plains, next to an ocean.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 144" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,34.00 0.00,47.00 22.52,34.00 22.52,8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,26.00 45.03,39.00 67.55,26.00 67.55,0.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,57.00 67.55,70.00 90.07,57.00 90.07,31.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Highland Rivers</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Snowmelt finds its way down.</p><p class="pat-rule">A mountain, next to a forest, next to an ocean.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 144" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,34.00 0.00,47.00 22.52,34.00 22.52,8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,73.00 67.55,86.00 90.07,73.00 90.07,47.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Fjord</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Deep water between two shoulders of rock.</p><p class="pat-rule">A mountain, next to an ocean, next to another mountain.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 167 105" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,18.00 90.07,31.00 112.58,18.00 112.58,-8.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Mountain Pass</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">The one way through, and everyone knows it.</p><p class="pat-rule">A plains, next to a mountain, next to another plains.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 167 89" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,18.00 90.07,31.00 112.58,18.00 112.58,-8.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Coastal Chain</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Two shores and the water between.</p><p class="pat-rule">A plains, next to an ocean, next to another plains.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 136" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,26.00 0.00,39.00 22.52,26.00 22.52,0.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Clearing</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Open sky in the middle of the wood.</p><p class="pat-rule">A forest, next to a plains, next to another forest.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 167 105" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,18.00 90.07,31.00 112.58,18.00 112.58,-8.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Mountain Lookout</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">One peak, and the sea on either hand.</p><p class="pat-rule">An ocean, next to a mountain, next to another ocean.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 136" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,26.00 45.03,39.00 67.55,26.00 67.55,0.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,57.00 67.55,70.00 90.07,57.00 90.07,31.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Riverbank</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Soft ground, and everything grows.</p><p class="pat-rule">A plains, next to a forest, next to an ocean.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 144" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,26.00 0.00,39.00 22.52,26.00 22.52,0.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Timberline</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">The last trees before the rock.</p><p class="pat-rule">A forest, next to a mountain, next to another forest.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 145 136" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>River Delta</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Where the water spreads and slows.</p><p class="pat-rule">An ocean, next to a plains, next to a forest.</p></div></div><div class="pat"><div class="pat-fig"><svg class="fig" viewBox="-2 -4 167 97" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(36.5,38.0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,26.00 0.00,39.00 22.52,26.00 22.52,0.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,26.00 90.07,39.00 112.58,26.00 112.58,0.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/></g></svg></div><div class="pat-body"><div class="pat-head"><h3>Sheltered Water</h3><div class="pat-badge"><span class="pts">4</span><span class="pts-l">pts</span></div></div><p class="tag-line">Wooded on both sides, calm between.</p><p class="pat-rule">A forest, next to an ocean, next to another forest.</p></div></div>
+
+  <div class="h2"><span class="num">03</span><h2>Going further</h2></div>
+  <p>Two variants once the layer is second nature:</p>
+  <ul>
+    <li><strong>Open objectives.</strong> Deal two face up beside the map, shared by
+    everyone, each player scoring it if they build it. A gentler, more readable game —
+    good for teaching the patterns.</li>
+    <li><strong>Keep both.</strong> Deal two and keep both, each still worth its full
+    value. More points in play and a broader target, at the cost of some focus.</li>
+  </ul>
+</section>
+</main>
+
+<div class="pad"><footer>Blink · advanced module · map objectives · v0.22 ·
+companion to the base rules</footer></div>
+
+</div>
+</body>
+</html>

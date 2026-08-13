@@ -1,0 +1,12 @@
+14 three-player games each — 2/4/6/8 bands, current ruleset
+
+configuration                rounds  upkeep  starved  shifts  drifts   held  settles   pop/row/dom
+none of the three (before)       18    21.9      0.1     0.0     0.0    0.0     45.9   58/21/21
++ shift only                     18    21.7      0.1     0.3     0.0    0.0     45.9   55/24/21
++ shift + drift                  18    21.4      0.3     0.6     3.5    0.0     46.6   59/20/21
+all three                        18    16.9      0.0     9.3     2.2    0.2     37.9   52/27/21
+
+all three + DISCONNECT PENALTY     18    15.7      0.0     9.6     1.9    0.2     38.6   49/26/26    (units culled 5.1/game)
+
+  NOTE: the disconnect penalty is NOT a rule - §06 says splitting your
+  civilization is allowed, and §07 says drift may break it into pieces.
