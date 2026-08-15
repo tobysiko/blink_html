@@ -18,9 +18,15 @@ Two things Vercel does not give you, which a Cloudflare Durable Object did:
   collision and fails if the retry is removed.
 
 One thing to know before you promise anyone a quiet evening: **Vercel closes a
-WebSocket when the function reaches its maximum duration** (`maxDuration` in
-`vercel.json`, 300s here). Every table will be dropped periodically, whatever
-anyone does. That is survivable only because the client treats reconnection as
+WebSocket when the function reaches its maximum duration.** Every table will be
+dropped periodically, whatever anyone does.
+
+The config deliberately does not set `maxDuration` or `memory`: both are
+plan-dependent, and a deployment that fails on a config value is a miserable
+first experience. A shorter ceiling only means more reconnects, and those are
+handled and tested. If you want fewer of them, add
+`"functions": { "api/blink.js": { "maxDuration": 300 } }` — and if the deploy
+complains, your plan does not allow that number. That is survivable only because the client treats reconnection as
 normal: it keeps its player token, backs off, and rebuilds the whole game from
 the log it is handed on the way back in — the same path a phone takes into a
 tunnel, and the path `net_test.js` exercises on every run.
@@ -70,7 +76,8 @@ tunnel, and the path `net_test.js` exercises on every run.
    one file: nothing can differ between what was tested and what is deployed.
 
 4. **Add the rewrite** from `server/vercel.json` to the site's `vercel.json`,
-   so `/api/blink/*` all reaches the one function.
+   so `/api/blink/*` all reaches the one function. (Already written into the
+   site repo.)
 
 5. **Point the page at it** and rebuild:
 
