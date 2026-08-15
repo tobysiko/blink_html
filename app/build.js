@@ -1,5 +1,11 @@
 const fs = require('fs');
 const cp = require('child_process');
+const path = require('path');
+
+/* Paths are anchored to this file, not to where you happened to be standing.
+ * The server README tells you to run `node ../app/build.js`, and a build that
+ * only works from one directory is a trap laid for the next person. */
+const here = (f) => path.join(__dirname, f);
 
 /* Which build is this?
  *
@@ -36,22 +42,22 @@ const BUILD = Object.assign({ version: 'v0.22', api: API,
                               reportUrl: API ? API.replace(/\/$/, '') + '/report' : null },
                             gitStamp());
 console.log(`build ${BUILD.version} ${BUILD.commit}${BUILD.dirty ? '+dirty' : ''} (${BUILD.branch})`);
-const strip = (f) => fs.readFileSync(f, 'utf8')
+const strip = (f) => fs.readFileSync(here(f), 'utf8')
   .replace(/if \(typeof module[\s\S]*$/, '');       // drop the node export tail
 const eng = strip('engine.js');
 const lang = strip('i18n.js');
 const sess = strip('session.js');
 const rep = strip('report.js');
-const net = fs.readFileSync('net.js', 'utf8');
-const ui  = fs.readFileSync('ui.js', 'utf8');
-const out = fs.readFileSync('shell.html', 'utf8')
+const net = fs.readFileSync(here('net.js'), 'utf8');
+const ui  = fs.readFileSync(here('ui.js'), 'utf8');
+const out = fs.readFileSync(here('shell.html'), 'utf8')
   .replace('/*__ENGINE__*/',
     "document.documentElement.className += ' js';   // scripts run: hide the no-JS notice\n"
     + 'const BUILD = ' + JSON.stringify(BUILD) + ';\n'
     + lang + '\n' + eng + '\n' + sess + '\n' + rep)
   .replace('/*__UI__*/', net + '\n' + ui);
-fs.writeFileSync('../Blink-play-v0.22.html', out);
-console.log('built ../Blink-play-v0.22.html', (out.length/1024).toFixed(1)+' KB');
+fs.writeFileSync(here('../Blink-play-v0.22.html'), out);
+console.log('built Blink-play-v0.22.html', (out.length/1024).toFixed(1)+' KB');
 
 /* Also emit ../deploy/index.html — the same page with the tags a SERVED copy
  * wants (description, theme colour, noindex while it is a prototype) and, if
@@ -69,7 +75,7 @@ let page = out.replace('<title>Blink — play v0.22</title>', meta);
  * has no such page, so this link only exists in the deploy build. */
 page = page.replace('<span class="right">',
   '<a class="back" href="/blink/" data-i18n="app.back">← Blink</a>\n  <span class="right">');
-fs.mkdirSync('../deploy', { recursive: true });
+fs.mkdirSync(here('../deploy'), { recursive: true });
 
 /* The same file is the deploy artifact and the page served at
  * deep-diversions.com/blink/play.html. Copy it straight into the site repo when
@@ -77,8 +83,8 @@ fs.mkdirSync('../deploy', { recursive: true });
 const SITE = process.env.BLINK_SITE
   || `${process.env.HOME}/Code/deep-diversions/public/blink`;
 function writeDeploy(text, how) {
-  fs.writeFileSync('../deploy/index.html', text);
-  console.log(`built ../deploy/index.html ${(text.length/1024).toFixed(1)} KB (${how})`);
+  fs.writeFileSync(here('../deploy/index.html'), text);
+  console.log(`built deploy/index.html ${(text.length/1024).toFixed(1)} KB (${how})`);
   if (fs.existsSync(SITE)) {
     fs.writeFileSync(`${SITE}/play.html`, text);
     console.log(`copied to ${SITE}/play.html — commit the site repo too`);
@@ -93,15 +99,15 @@ const DOCS = { 'rulebook.html': '../source/Blink-rules-v0.22.html',
                'card-effects.html': '../source/Blink-card-effects.html',
                'map-objectives.html': '../source/Blink-map-objectives.html' };
 for (const [name, src] of Object.entries(DOCS)) {
-  if (!fs.existsSync(src)) { console.log(`missing ${src} — ${name} will 404`); continue; }
-  const text = fs.readFileSync(src, 'utf8');
-  fs.writeFileSync(`../${name}`, text);
-  fs.writeFileSync(`../deploy/${name}`, text);
+  if (!fs.existsSync(here(src))) { console.log(`missing ${src} — ${name} will 404`); continue; }
+  const text = fs.readFileSync(here(src), 'utf8');
+  fs.writeFileSync(here(`../${name}`), text);
+  fs.writeFileSync(here(`../deploy/${name}`), text);
   if (fs.existsSync(SITE)) fs.writeFileSync(`${SITE}/${name}`, text);
 }
 
 let terser = null;
-try { terser = require('terser'); } catch (e) { /* optional */ }
+try { terser = require(here('node_modules/terser')); } catch (e) { /* optional */ }
 if (!terser) {
   writeDeploy(page, 'unminified — npm install terser for a smaller build');
 } else {
