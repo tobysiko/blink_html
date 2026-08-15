@@ -23,7 +23,6 @@ const fs = require('fs');
 const path = require('path');
 
 const APP = path.join(__dirname, '..', 'app');
-const E = require(path.join(APP, 'engine.js'));
 const S = require(path.join(APP, 'session.js'));
 let WebSocketServer;
 try { ({ WebSocketServer } = require(path.join(APP, 'node_modules', 'ws'))); }
@@ -35,7 +34,14 @@ catch (e) {
 const PORT = Number(process.argv[2]) || 8787;
 const REPORTS = path.join(__dirname, 'reports');
 
-const sessions = new Map();          // code -> {s, sockets:Map(ws->token)}
+/* The store decides where a table lives: a Map here by default, Redis if you
+ * point REDIS_URL at one — which is worth doing occasionally, because Redis is
+ * what production uses and the interesting bugs are the ones only a second
+ * instance can cause. */
+const { storeFromEnv } = require('./store.js');
+const { createHub } = require('./hub.js');
+let hub = null;
+
 const CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-methods': 'GET,POST,OPTIONS',
@@ -58,21 +64,21 @@ const server = http.createServer(async (req, res) => {
 
   if (p === '/' || p === '/health')
     return send(res, 200, { ok: true, service: 'blink-sessions (dev)',
-                            protocol: S.SESSION_PROTOCOL, sessions: sessions.size });
+                            protocol: S.SESSION_PROTOCOL,
+                            store: hub ? hub.store.kind : 'starting',
+                            rooms: hub ? hub.size : 0 });
 
   if (p === '/session' && req.method === 'POST') {
-    const opts = await body(req);
-    const s = S.newSession(opts);
-    sessions.set(s.code, { s, sockets: new Map() });
+    const s = await hub.create(await body(req));
     console.log(`session ${s.code}  ${s.n}p  seed ${s.seed}`);
     return send(res, 200, { ok: true, code: s.code, state: S.sessionState(s) });
   }
 
   const m = p.match(/^\/session\/([A-Za-z0-9-]{4,12})$/);
   if (m) {
-    const room = sessions.get(m[1].toUpperCase());
-    if (!room) return send(res, 404, { ok: false, why: 'session.unknown' });
-    return send(res, 200, { ok: true, state: S.sessionState(room.s) });
+    const s = await hub.get(m[1].toUpperCase());
+    if (!s) return send(res, 404, { ok: false, why: 'session.unknown' });
+    return send(res, 200, { ok: true, state: S.sessionState(s) });
   }
 
   if (p === '/report' && req.method === 'POST') {
@@ -97,57 +103,38 @@ const server = http.createServer(async (req, res) => {
 /* ---- the sockets: transport, and nothing else -------------------------- */
 
 const wss = new WebSocketServer({ noServer: true });
-server.on('upgrade', (req, socket, head) => {
+server.on('upgrade', async (req, socket, head) => {
   const url = new URL(req.url, 'http://x');
   const m = url.pathname.match(/^\/session\/([A-Za-z0-9-]{4,12})\/ws$/);
-  const room = m && sessions.get(m[1].toUpperCase());
-  if (!room) { socket.destroy(); return; }
-  wss.handleUpgrade(req, socket, head, (ws) => attach(room, ws));
+  const code = m && m[1].toUpperCase();
+  if (!code || !(await hub.get(code))) { socket.destroy(); return; }
+  wss.handleUpgrade(req, socket, head, async (ws) => {
+    await hub.open(code, ws);
+    ws.on('message', (data) => {
+      let msg = null;
+      try { msg = JSON.parse(data.toString()); }
+      catch (e) { return ws.send(JSON.stringify({ t: 'error', why: 'bad json' })); }
+      hub.handle(code, ws, msg).catch((e) => {
+        console.error('handler threw:', e.message);
+        try { ws.send(JSON.stringify({ t: 'error', why: 'server error' })); } catch (x) { /* */ }
+      });
+    });
+    const drop = () => hub.close(code, ws).catch(() => {});
+    ws.on('close', drop);
+    ws.on('error', drop);
+  });
 });
 
-function attach(room, ws) {
-  room.sockets.set(ws, null);
-  const fill = (msg, token) => msg.state === true
-    ? Object.assign({}, msg, { state: S.sessionState(room.s, token) })
-    : msg;
-  const post = (sock, msg) => {
-    try { sock.send(JSON.stringify(msg)); } catch (e) { /* gone */ }
-  };
-
-  ws.on('message', (data) => {
-    let msg = null;
-    try { msg = JSON.parse(data.toString()); }
-    catch (e) { return post(ws, { t: 'error', why: 'bad json' }); }
-    let out;
-    try { out = S.sessionHandle(room.s, E, { token: room.sockets.get(ws) }, msg); }
-    catch (e) {
-      console.error('handler threw:', e.message);
-      return post(ws, { t: 'error', why: 'server error' });
-    }
-    if (out.token) room.sockets.set(ws, out.token);
-    for (const step of out.to) {
-      if (step.who === 'self') post(ws, fill(step.msg, room.sockets.get(ws)));
-      else for (const [sock, tok] of room.sockets) post(sock, fill(step.msg, tok));
-    }
-  });
-
-  const drop = () => {
-    const token = room.sockets.get(ws);
-    room.sockets.delete(ws);
-    if (!token) return;
-    S.sessionLeave(room.s, token);
-    for (const [sock, tok] of room.sockets)
-      post(sock, fill({ t: 'seats', state: true }, tok));
-  };
-  ws.on('close', drop);
-  ws.on('error', drop);
+async function ready() {
+  if (!hub) hub = createHub(await storeFromEnv(process.env));
+  return hub;
 }
 
 if (require.main === module) {
-  server.listen(PORT, () => {
-    console.log(`blink sessions (dev) on http://localhost:${PORT}`);
+  ready().then(() => server.listen(PORT, () => {
+    console.log(`blink sessions (dev) on http://localhost:${PORT}  [${hub.store.kind}]`);
     console.log(`build the app against it:  BLINK_API=http://localhost:${PORT} node app/build.js`);
-  });
+  }));
 }
 
-module.exports = { server, sessions };
+module.exports = { server, ready, hub: () => hub };

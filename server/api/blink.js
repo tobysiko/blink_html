@@ -2806,217 +2806,483 @@ function sessionHandle(s, Engine, ctx, msg) {
   }
 }
 
-/* ---------------- server/worker.src.js --------- */
-/* The Blink session service.
+const SESSION = { sessionState, sessionHandle, sessionLeave, newSession };
+/* ---------------- server/store.js -------------- */
+/* Where a table lives, and how everyone at it hears about a move.
  *
- * A Cloudflare Worker in front of one Durable Object per session. The Durable
- * Object is the right shape for this because a session is exactly what it is
- * good at: a small piece of state with a single writer and a handful of
- * sockets attached to it.
+ * On Cloudflare a Durable Object was both of these for free: one object per
+ * session, single writer, sockets attached. Vercel gives neither. A connection
+ * is pinned to one function instance, but new connections are not — so two
+ * people at one table can easily be talking to two different instances, and a
+ * deployment splits them again. Two things follow:
  *
- * It is deliberately thin. All the rules live in session.js, which knows
- * nothing about sockets and is tested without them — this file is transport,
- * error codes and storage.
+ *   1. The session cannot live in a variable. It goes in a store.
+ *   2. A broadcast has to leave the process. It goes over pub/sub.
  *
- * Routes
- *   POST /session            create one; body is the rules, returns the code
- *   GET  /session/:code      the state, for a page that has not connected yet
- *   GET  /session/:code/ws   the socket (Upgrade: websocket)
- *   POST /report             a playtest report, stored as-is
- *   GET  /reports            list them (needs ADMIN_KEY)
- *   GET  /report/:id         one of them (needs ADMIN_KEY)
+ * And one thing that was free now has to be earned: **two players answering at
+ * the same instant.** A Durable Object serialises writes. Redis does not, so
+ * two instances could both read a log of length 14 and both write 15 — the
+ * second silently erasing the first. The `step` guard in session.js *detects*
+ * a stale answer but cannot prevent a lost update, because by then both reads
+ * have already happened. So every change goes through `update()`, which is a
+ * compare-and-set with a retry, and the whole rest of the codebase carries on
+ * knowing nothing about any of it.
  *
- * Built by `node build.js` in this folder, which glues engine.js, session.js
- * and this file into one deployable worker.js — the same trick the app uses,
- * for the same reason: no module system, no bundler, nothing to go wrong
- * between what is tested and what is deployed.
+ * Two implementations, one interface:
+ *
+ *   memoryStore()  — a Map. For the dev server and the tests.
+ *   redisStore(url) — for Vercel. Needs `redis` (or any node-redis-compatible
+ *                     client); the marketplace add-on supplies the URL.
  */
 
-/* ------------------------------------------------------------ the router */
+const KEY = (code) => `blink:session:${code}`;
+const CHAN = (code) => `blink:room:${code}`;
+const TTL_SECONDS = 60 * 60 * 24 * 2;      // a table nobody returns to expires
 
-const CORS = {
-  "access-control-allow-origin": "*",
-  "access-control-allow-methods": "GET,POST,OPTIONS",
-  "access-control-allow-headers": "content-type",
-  "access-control-max-age": "86400",
+/* ------------------------------------------------------------- in memory */
+
+function memoryStore() {
+  const rooms = new Map();                 // code -> {s, listeners:Set}
+  const room = (code) => {
+    if (!rooms.has(code)) rooms.set(code, { s: null, listeners: new Set() });
+    return rooms.get(code);
+  };
+  return {
+    kind: "memory",
+    raw: null,                             // nowhere to keep a report on a laptop
+    async create(s) { room(s.code).s = s; return s; },
+    async get(code) { return room(code).s; },
+    /* Single-threaded node: read-modify-write cannot be interleaved here, so
+     * the retry loop the Redis version needs is simply absent. */
+    async update(code, fn) {
+      const r = room(code);
+      if (!r.s) return { ok: false, why: "session.unknown" };
+      const out = fn(r.s);
+      return out;
+    },
+    async publish(code, msg) {
+      for (const f of room(code).listeners) { try { f(msg); } catch (e) { /* gone */ } }
+    },
+    async subscribe(code, fn) {
+      const r = room(code);
+      r.listeners.add(fn);
+      return () => r.listeners.delete(fn);
+    },
+    async close() { rooms.clear(); },
+    _rooms: rooms,
+  };
+}
+
+/* ----------------------------------------------------------------- redis */
+
+/* `client` and `sub` are separate connections on purpose: a Redis client in
+ * subscribe mode cannot run ordinary commands. */
+function redisStore(client, sub) {
+  const listeners = new Map();             // code -> Set(fn)
+  let wired = false;
+
+  function wire() {
+    if (wired) return;
+    wired = true;
+    sub.on("message", (chan, payload) => {
+      const set = listeners.get(chan);
+      if (!set) return;
+      let msg = null;
+      try { msg = JSON.parse(payload); } catch (e) { return; }
+      for (const f of set) { try { f(msg); } catch (e) { /* gone */ } }
+    });
+  }
+
+  return {
+    kind: "redis",
+    /* The plain client, for the few things that are not sessions — playtest
+     * reports live in the same Redis, because a report is a few kilobytes and
+     * there will be hundreds of them, not millions. */
+    raw: client,
+
+    async create(s) {
+      await client.set(KEY(s.code), JSON.stringify(s), { EX: TTL_SECONDS });
+      return s;
+    },
+
+    async get(code) {
+      const raw = await client.get(KEY(code));
+      return raw ? JSON.parse(raw) : null;
+    },
+
+    /* Compare-and-set. WATCH the key, apply the change to the copy we read,
+     * and let the transaction fail if anyone else wrote in between — then read
+     * again and redo it. The retry is not a formality: it is the only thing
+     * standing between two simultaneous taps and a move that vanishes. */
+    async update(code, fn, tries) {
+      const limit = tries || 20;
+      for (let i = 0; i < limit; i++) {
+        const watcher = client.duplicate ? await client.duplicate().connect() : client;
+        try {
+          await watcher.watch(KEY(code));
+          const raw = await watcher.get(KEY(code));
+          if (!raw) { await watcher.unwatch(); return { ok: false, why: "session.unknown" }; }
+          const s = JSON.parse(raw);
+          const out = fn(s);
+          /* A refusal changes nothing, so it needs no transaction at all —
+           * and refusals are the common case under contention. */
+          if (!out || out.ok === false) { await watcher.unwatch(); return out; }
+          const tx = watcher.multi();
+          tx.set(KEY(code), JSON.stringify(s), { EX: TTL_SECONDS });
+          const res = await tx.exec();
+          if (res !== null) return out;             // committed
+          // somebody else got there first: read again and redo the work
+        } finally {
+          if (watcher !== client && watcher.quit) { try { await watcher.quit(); } catch (e) { /* */ } }
+        }
+      }
+      return { ok: false, why: "session.busy" };
+    },
+
+    async publish(code, msg) {
+      await client.publish(CHAN(code), JSON.stringify(msg));
+    },
+
+    async subscribe(code, fn) {
+      wire();
+      const chan = CHAN(code);
+      if (!listeners.has(chan)) {
+        listeners.set(chan, new Set());
+        await sub.subscribe(chan);
+      }
+      listeners.get(chan).add(fn);
+      return async () => {
+        const set = listeners.get(chan);
+        if (!set) return;
+        set.delete(fn);
+        if (!set.size) { listeners.delete(chan); try { await sub.unsubscribe(chan); } catch (e) { /* */ } }
+      };
+    },
+
+    async close() {
+      try { await sub.quit(); } catch (e) { /* */ }
+      try { await client.quit(); } catch (e) { /* */ }
+    },
+  };
+}
+
+/* Pick one from the environment. No REDIS_URL means the memory store, which is
+ * exactly right on a laptop and exactly wrong on Vercel — so the Vercel entry
+ * point says so loudly rather than half-working. */
+async function storeFromEnv(env) {
+  const url = (env || process.env).REDIS_URL || (env || process.env).KV_URL || null;
+  if (!url) return memoryStore();
+  let createClient;
+  try { ({ createClient } = require("redis")); }
+  catch (e) { throw new Error("REDIS_URL is set but the `redis` package is not installed"); }
+  const client = createClient({ url });
+  const sub = client.duplicate();
+  await client.connect();
+  await sub.connect();
+  return redisStore(client, sub);
+}
+
+/* ---------------- server/hub.js ---------------- */
+/* The sockets in *this* process, and how they hear about everyone else's.
+ *
+ * Every server — the node dev one, the Vercel function, and anything later —
+ * is this file plus a way of getting a socket. It owns three things and no
+ * more:
+ *
+ *   1. which local sockets belong to which table, and who each one is;
+ *   2. running a message through `sessionHandle` inside the store's
+ *      compare-and-set, so two people answering at the same instant cannot
+ *      erase each other;
+ *   3. turning a `who: "all"` into something that reaches players on OTHER
+ *      instances, which on Vercel is most of them.
+ *
+ * A broadcast carries the session with it. The alternative — publish the
+ * message, then have every instance read the store to fill in each player's
+ * view — is an extra round trip per recipient per move, and it can race with
+ * the next write and show somebody a board one move ahead of the message that
+ * describes it. The session is about a kilobyte. Send it.
+ *
+ * A socket here is anything with `send(string)`. That is the whole interface,
+ * which is why the same file runs under `ws`, under Vercel's upgrade API, and
+ * in a test with no sockets at all.
+ */
+
+
+const E = { Game };
+const S = SESSION;
+
+function createHub(store) {
+  /* code -> { socks: Map(sock -> token), off: () => void } */
+  const rooms = new Map();
+
+  const post = (sock, msg) => {
+    try { sock.send(JSON.stringify(msg)); } catch (e) { /* gone */ }
+  };
+  /* `state: true` is a promise to fill in the view for whoever is being told —
+   * which seat is "you" depends on the reader. */
+  const fill = (msg, s, token) => (msg.state === true
+    ? Object.assign({}, msg, { state: S.sessionState(s, token) })
+    : msg);
+
+  async function room(code) {
+    if (rooms.has(code)) return rooms.get(code);
+    const r = { socks: new Map(), off: null };
+    rooms.set(code, r);
+    /* Everything published for this table — by us or by another instance —
+     * is delivered to whichever of its players happen to be here. */
+    r.off = await store.subscribe(code, ({ msg, session }) => {
+      for (const [sock, token] of r.socks) post(sock, fill(msg, session, token));
+    });
+    return r;
+  }
+
+  return {
+    store,
+
+    async open(code, sock) {
+      const r = await room(code);
+      r.socks.set(sock, null);
+      return r;
+    },
+
+    /* A socket going away is not a player going away: in the lobby the seat is
+     * freed, mid-game it is kept, and session.js is the one that knows the
+     * difference. */
+    async close(code, sock) {
+      const r = rooms.get(code);
+      if (!r) return;
+      const token = r.socks.get(sock);
+      r.socks.delete(sock);
+      if (token) {
+        const out = await store.update(code, (s) => {
+          const was = S.sessionState(s);
+          S.sessionLeave(s, token);
+          return { ok: JSON.stringify(was) !== JSON.stringify(S.sessionState(s)), s };
+        });
+        if (out && out.ok) {
+          const s = await store.get(code);
+          if (s) await store.publish(code, { msg: { t: "seats", state: true }, session: s });
+        }
+      }
+      /* The last socket here stops listening. On Vercel this matters: an
+       * instance holding a subscription for a table nobody on it is playing
+       * is paying to hear about a game it cannot show anyone. */
+      if (!r.socks.size) {
+        rooms.delete(code);
+        if (r.off) { try { await r.off(); } catch (e) { /* */ } }
+      }
+    },
+
+    async handle(code, sock, msg) {
+      const r = rooms.get(code);
+      if (!r) return;
+      let session = null;
+      const out = await store.update(code, (s) => {
+        const res = S.sessionHandle(s, E, { token: r.socks.get(sock) }, msg);
+        session = s;                 // the state as of this change, for the fan-out
+        return res;
+      });
+      if (!out) return;
+      if (out.why && !out.to) return post(sock, { t: "error", why: out.why });
+      if (out.token) r.socks.set(sock, out.token);
+      if (!session) session = await store.get(code);
+      if (!session) return post(sock, { t: "error", why: "session.unknown" });
+
+      for (const step of out.to || []) {
+        if (step.who === "self") post(sock, fill(step.msg, session, r.socks.get(sock)));
+        /* Published rather than looped over locally, even when everybody at
+         * this table happens to be on this instance — one path, so the
+         * multi-instance case is the one that gets exercised. */
+        else await store.publish(code, { msg: step.msg, session });
+      }
+    },
+
+    /* For a server that wants to make one before anybody connects. */
+    async create(opts) {
+      const s = S.newSession(opts);
+      await store.create(s);
+      return s;
+    },
+
+    async get(code) { return store.get(code); },
+
+    /* How many sockets this process is holding, for a health route. */
+    get size() { return rooms.size; },
+    _rooms: rooms,
+  };
+}
+
+/* ---------------- server/vercel.src.js --------- */
+/* The session service as a Vercel Function.
+ *
+ * Vercel serves WebSockets by letting a function export an http server, and
+ * pins each connection to the instance that accepted it. What it does not give
+ * you is a home for the table: a *new* connection may land anywhere, and a
+ * deployment splits old connections from new ones. So both of the things a
+ * Durable Object handed us for free are done explicitly here — the session
+ * lives in Redis, and a broadcast goes out over pub/sub — and neither
+ * `session.js` nor the client knows or cares.
+ *
+ * One consequence worth stating plainly: **Vercel closes a WebSocket when the
+ * function hits its maximum duration.** Every table will therefore be dropped
+ * periodically, whatever anyone does. That is survivable only because the
+ * client already treats reconnection as normal rather than exceptional: it
+ * keeps its player token, backs off, and rebuilds the whole game from the log
+ * it is handed on the way back in. The same path a phone takes into a tunnel.
+ *
+ * Routes, all under /api so they sit on the same origin as the play page —
+ * which means no CORS, no second domain, and one `git push` to ship both:
+ *
+ *   POST /api/blink/session          open a table
+ *   GET  /api/blink/session/:code    its state, before connecting
+ *   GET  /api/blink/session/:code/ws the socket
+ *   POST /api/blink/report           a playtest report
+ *
+ * Generated into one file by server/build.js. Do not edit the generated copy.
+ */
+
+const http = require("http");
+
+let WebSocketServer = null;
+try { ({ WebSocketServer } = require("ws")); }
+catch (e) { /* reported on the first upgrade rather than at import time */ }
+
+/* One hub per instance, made once and kept for the life of it. */
+let hubPromise = null;
+function getHub() {
+  if (!hubPromise) {
+    hubPromise = storeFromEnv(process.env).then((store) => {
+      if (store.kind === "memory" && process.env.VERCEL)
+        console.warn("blink: no REDIS_URL — players on different instances will "
+          + "not see each other. Add a Redis and set REDIS_URL.");
+      return createHub(store);
+    });
+  }
+  return hubPromise;
+}
+
+const JSONH = { "content-type": "application/json" };
+const reply = (res, code, body) => {
+  res.writeHead(code, JSONH);
+  res.end(JSON.stringify(body));
 };
-const json = (body, status) => new Response(JSON.stringify(body), {
-  status: status || 200,
-  headers: Object.assign({ "content-type": "application/json" }, CORS),
+const readBody = (req) => new Promise((ok) => {
+  let b = "";
+  req.on("data", (c) => { b += c; if (b.length > 4e6) req.destroy(); });
+  req.on("end", () => { try { ok(JSON.parse(b || "{}")); } catch (e) { ok({}); } });
 });
 
-export default {
-  async fetch(request, env) {
-    const url = new URL(request.url);
-    const path = url.pathname.replace(/\/+$/, "") || "/";
-    if (request.method === "OPTIONS") return new Response(null, { headers: CORS });
-
-    try {
-      if (path === "/" || path === "/health")
-        return json({ ok: true, service: "blink-sessions", protocol: SESSION_PROTOCOL });
-
-      // ---- create
-      if (path === "/session" && request.method === "POST") {
-        const body = await request.json().catch(() => ({}));
-        const code = makeCode();
-        const id = env.SESSIONS.idFromName(code);
-        const stub = env.SESSIONS.get(id);
-        const r = await stub.fetch("https://do/create", {
-          method: "POST",
-          body: JSON.stringify(Object.assign({}, body, { code })),
-        });
-        return new Response(r.body, { status: r.status, headers: Object.assign(
-          { "content-type": "application/json" }, CORS) });
-      }
-
-      // ---- one session: state, or a socket
-      const m = path.match(/^\/session\/([A-Za-z0-9-]{4,12})(\/ws)?$/);
-      if (m) {
-        const code = m[1].toUpperCase();
-        const stub = env.SESSIONS.get(env.SESSIONS.idFromName(code));
-        const to = m[2] ? "https://do/ws" + url.search : "https://do/state";
-        return stub.fetch(to, request);
-      }
-
-      // ---- playtest reports
-      if (path === "/report" && request.method === "POST") {
-        const rep = await request.json().catch(() => null);
-        if (!rep || !rep.schema) return json({ ok: false, why: "not a report" }, 400);
-        const id = `${(rep.build && rep.build.commit) || "unknown"}/${
-          (rep.started || "").slice(0, 10)}/${rep.id || Date.now()}.json`;
-        if (env.REPORTS) {
-          await env.REPORTS.put(id, JSON.stringify(rep), {
-            httpMetadata: { contentType: "application/json" },
-            customMetadata: {
-              commit: String((rep.build && rep.build.commit) || ""),
-              players: String(rep.setup ? rep.setup.n : ""),
-              seed: String(rep.setup ? rep.setup.seed : ""),
-              rating: String((rep.feedback && rep.feedback.rating) || ""),
-              flags: String((rep.flags || []).length),
-            },
-          });
-        }
-        return json({ ok: true, id: rep.id, stored: !!env.REPORTS });
-      }
-
-      /* Reading reports back is not public: they carry names and free text
-       * people wrote for the designer, not for the internet. */
-      if (path === "/reports" || path.startsWith("/report/")) {
-        if (!env.ADMIN_KEY || url.searchParams.get("key") !== env.ADMIN_KEY)
-          return json({ ok: false, why: "not yours" }, 403);
-        if (!env.REPORTS) return json({ ok: false, why: "no store bound" }, 503);
-        if (path === "/reports") {
-          const list = await env.REPORTS.list({ limit: 200,
-            prefix: url.searchParams.get("commit") || undefined });
-          return json({ ok: true, reports: list.objects.map((o) => ({
-            key: o.key, size: o.size, at: o.uploaded, meta: o.customMetadata })) });
-        }
-        const obj = await env.REPORTS.get(path.slice("/report/".length));
-        if (!obj) return json({ ok: false, why: "no such report" }, 404);
-        return new Response(obj.body, { headers: { "content-type": "application/json" } });
-      }
-
-      return json({ ok: false, why: "no such route" }, 404);
-    } catch (e) {
-      return json({ ok: false, why: "server error", detail: String(e && e.message) }, 500);
-    }
-  },
-};
-
-/* ------------------------------------------------------ one live session */
-
-export class BlinkSession {
-  constructor(state, env) {
-    this.state = state;
-    this.env = env;
-    this.sockets = new Map();          // WebSocket -> token
-    this.s = null;
-  }
-
-  async load() {
-    if (!this.s) this.s = (await this.state.storage.get("session")) || null;
-    return this.s;
-  }
-  async save() {
-    this.s.touched = new Date().toISOString();
-    await this.state.storage.put("session", this.s);
-  }
-
-  async fetch(request) {
-    const url = new URL(request.url);
-    await this.load();
-
-    if (url.pathname === "/create") {
-      const body = await request.json().catch(() => ({}));
-      this.s = newSession(body);
-      await this.save();
-      return json({ ok: true, code: this.s.code, state: sessionState(this.s) });
-    }
-
-    if (!this.s) return json({ ok: false, why: "session.unknown" }, 404);
-
-    if (url.pathname === "/state")
-      return json({ ok: true, state: sessionState(this.s) });
-
-    if (url.pathname === "/ws") {
-      if (request.headers.get("Upgrade") !== "websocket")
-        return json({ ok: false, why: "expected a websocket" }, 426);
-      const pair = new WebSocketPair();
-      const [client, server] = Object.values(pair);
-      server.accept();
-      this.attach(server);
-      return new Response(null, { status: 101, webSocket: client });
-    }
-
-    return json({ ok: false, why: "no such route" }, 404);
-  }
-
-  attach(ws) {
-    this.sockets.set(ws, null);
-    ws.addEventListener("message", (ev) => {
-      let msg = null;
-      try { msg = JSON.parse(ev.data); } catch (e) { return this.send(ws, { t: "error", why: "bad json" }); }
-      this.handle(ws, msg).catch((e) =>
-        this.send(ws, { t: "error", why: "server error", detail: String(e && e.message) }));
-    });
-    const drop = () => {
-      const token = this.sockets.get(ws);
-      this.sockets.delete(ws);
-      if (token) {
-        sessionLeave(this.s, token);
-        this.save();
-        this.broadcast({ t: "seats", state: true });
-      }
-    };
-    ws.addEventListener("close", drop);
-    ws.addEventListener("error", drop);
-  }
-
-  send(ws, msg) { try { ws.send(JSON.stringify(msg)); } catch (e) { /* gone */ } }
-
-  /* Everybody hears the same thing, except the bits that are theirs alone:
-   * which seat is "you" depends on who is being told. */
-  broadcast(msg) {
-    for (const [ws, token] of this.sockets) this.send(ws, this.fill(msg, token));
-  }
-
-  /* Transport only. Every decision about who may do what lives in
-   * session.js, so the Durable Object and the node dev server cannot drift
-   * apart on the one thing that matters. */
-  async handle(ws, msg) {
-    const out = sessionHandle(this.s, { Game }, { token: this.sockets.get(ws) }, msg);
-    if (out.token) this.sockets.set(ws, out.token);
-    let changed = false;
-    for (const step of out.to) {
-      if (step.who === "self") this.send(ws, this.fill(step.msg, this.sockets.get(ws)));
-      else { this.broadcast(step.msg); changed = true; }
-    }
-    if (changed || out.token) await this.save();
-  }
-
-  fill(msg, token) {
-    return msg.state === true
-      ? Object.assign({}, msg, { state: sessionState(this.s, token) })
-      : msg;
-  }
+/* Everything after /api/blink, so the same file works whatever the function is
+ * mounted as. */
+function route(url) {
+  return url.pathname.replace(/^\/api\/blink/, "").replace(/\/+$/, "") || "/";
 }
+
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, "http://x");
+  const p = route(url);
+  try {
+    const hub = await getHub();
+
+    if (p === "/" || p === "/health")
+      return reply(res, 200, { ok: true, service: "blink-sessions",
+                               protocol: SESSION_PROTOCOL, store: hub.store.kind });
+
+    if (p === "/session" && req.method === "POST") {
+      const s = await hub.create(await readBody(req));
+      return reply(res, 200, { ok: true, code: s.code, state: sessionState(s) });
+    }
+
+    const m = p.match(/^\/session\/([A-Za-z0-9-]{4,12})$/);
+    if (m) {
+      const s = await hub.get(m[1].toUpperCase());
+      if (!s) return reply(res, 404, { ok: false, why: "session.unknown" });
+      return reply(res, 200, { ok: true, state: sessionState(s) });
+    }
+
+    /* Reports are written by whoever finished a game, and read by nobody
+     * without the key: they carry names and free text people wrote for the
+     * designer, not for the internet. */
+    if (p === "/report" && req.method === "POST") {
+      const rep = await readBody(req);
+      if (!rep || !rep.schema) return reply(res, 400, { ok: false, why: "not a report" });
+      const stored = await putReport(hub.store, rep);
+      return reply(res, 200, { ok: true, id: rep.id, stored });
+    }
+    if (p === "/reports" || p.startsWith("/report/")) {
+      if (!process.env.ADMIN_KEY || url.searchParams.get("key") !== process.env.ADMIN_KEY)
+        return reply(res, 403, { ok: false, why: "not yours" });
+      return reply(res, 200, await getReports(hub.store, p, url));
+    }
+
+    return reply(res, 404, { ok: false, why: "no such route" });
+  } catch (e) {
+    return reply(res, 500, { ok: false, why: "server error", detail: String(e && e.message) });
+  }
+});
+
+/* ---- the socket -------------------------------------------------------- */
+
+const wss = WebSocketServer ? new WebSocketServer({ noServer: true }) : null;
+
+server.on("upgrade", async (req, socket, head) => {
+  if (!wss) { socket.destroy(); return; }
+  const url = new URL(req.url, "http://x");
+  const m = route(url).match(/^\/session\/([A-Za-z0-9-]{4,12})\/ws$/);
+  const code = m && m[1].toUpperCase();
+  if (!code) { socket.destroy(); return; }
+  let hub;
+  try {
+    hub = await getHub();
+    if (!(await hub.get(code))) { socket.destroy(); return; }
+  } catch (e) { socket.destroy(); return; }
+
+  wss.handleUpgrade(req, socket, head, async (ws) => {
+    await hub.open(code, ws);
+    ws.on("message", (data) => {
+      let msg = null;
+      try { msg = JSON.parse(data.toString()); }
+      catch (e) { return ws.send(JSON.stringify({ t: "error", why: "bad json" })); }
+      hub.handle(code, ws, msg).catch(() => {
+        try { ws.send(JSON.stringify({ t: "error", why: "server error" })); } catch (x) { /* */ }
+      });
+    });
+    const drop = () => hub.close(code, ws).catch(() => {});
+    ws.on("close", drop);
+    ws.on("error", drop);
+  });
+});
+
+/* ---- reports ----------------------------------------------------------- */
+
+/* Kept in the same Redis as the sessions, under a key that sorts by build and
+ * then by day — so "what did people say about the commit I shipped on Tuesday"
+ * is a prefix scan. A report is a few kilobytes and there will be hundreds of
+ * them, not millions; this does not need object storage to be a good idea. */
+const REPORT_KEY = (rep) => `blink:report:${(rep.build && rep.build.commit) || "unknown"}:`
+  + `${(rep.started || "").slice(0, 10)}:${rep.id || Date.now()}`;
+
+async function putReport(store, rep) {
+  if (!store.raw) return false;                       // memory store: nowhere to put it
+  await store.raw.set(REPORT_KEY(rep), JSON.stringify(rep));
+  return true;
+}
+
+async function getReports(store, p, url) {
+  if (!store.raw) return { ok: false, why: "no store bound" };
+  if (p === "/reports") {
+    const match = "blink:report:" + (url.searchParams.get("commit") || "") + "*";
+    const keys = [];
+    for await (const k of store.raw.scanIterator({ MATCH: match, COUNT: 200 })) {
+      keys.push(k);
+      if (keys.length >= 500) break;
+    }
+    return { ok: true, reports: keys.sort() };
+  }
+  const raw = await store.raw.get(p.slice("/report/".length));
+  if (!raw) return { ok: false, why: "no such report" };
+  return JSON.parse(raw);
+}
+
+module.exports = server;
+module.exports.default = server;

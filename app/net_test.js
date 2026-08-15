@@ -64,6 +64,7 @@ const page = () => {
 const srv = require(path.join(__dirname, '..', 'server', 'dev.js'));
 
 async function main() {
+  await srv.ready();                       // the store is picked at boot now
   await new Promise((r) => srv.server.listen(PORT, r));
 
   const A = page(), B = page();

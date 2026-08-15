@@ -380,7 +380,10 @@ function sessionState(s, forToken) {
  */
 function sessionHandle(s, Engine, ctx, msg) {
   const token = ctx.token;
-  const err = (why) => ({ to: [{ who: "self", msg: { t: "error", why } }] });
+  /* `ok` is not for the client — it tells the STORE whether the session
+   * changed. A refusal changes nothing, so it must not be written back, and
+   * under contention refusals are the common case. */
+  const err = (why) => ({ ok: false, to: [{ who: "self", msg: { t: "error", why } }] });
   if (!msg || typeof msg.t !== "string") return err("session.badMessage");
 
   switch (msg.t) {
@@ -388,6 +391,7 @@ function sessionHandle(s, Engine, ctx, msg) {
       const r = sessionJoin(s, { name: msg.name, seat: msg.seat, token: msg.token });
       if (!r.ok) return err(r.why);
       return {
+        ok: true,
         token: r.player.token,
         /* The token is how a dropped phone gets its seat back, so it goes to
          * that player and to nobody else. */
@@ -400,12 +404,12 @@ function sessionHandle(s, Engine, ctx, msg) {
     case "sit": {
       const r = sessionSit(s, token, msg.seat);
       if (!r.ok) return err(r.why);
-      return { to: [{ who: "all", msg: { t: "seats", state: true } }] };
+      return { ok: true, to: [{ who: "all", msg: { t: "seats", state: true } }] };
     }
     case "start": {
       const r = sessionStart(s, token);
       if (!r.ok) return err(r.why);
-      return { to: [{ who: "all", msg: { t: "start", state: true } }] };
+      return { ok: true, to: [{ who: "all", msg: { t: "start", state: true } }] };
     }
     case "answer": {
       const r = sessionAnswer(s, Engine, token, msg.step, msg.token);
@@ -414,26 +418,26 @@ function sessionHandle(s, Engine, ctx, msg) {
          * it is a double tap, or two messages that crossed. Send the truth
          * back and let the client resynchronise silently. */
         if (r.why === "session.stale")
-          return { to: [{ who: "self", msg: { t: "sync", state: true } }] };
+          return { ok: false, to: [{ who: "self", msg: { t: "sync", state: true } }] };
         return err(r.why);
       }
-      return { to: [{ who: "all", msg: { t: "answer", step: r.step, token: msg.token,
-                                         by: r.by, phase: s.phase } }] };
+      return { ok: true, to: [{ who: "all", msg: { t: "answer", step: r.step, token: msg.token,
+                                                  by: r.by, phase: s.phase } }] };
     }
     case "undo": {
       const r = sessionUndo(s, Engine, token, msg.step);
       if (!r.ok) return err(r.why);
-      return { to: [{ who: "all", msg: { t: "undo", step: r.step } }] };
+      return { ok: true, to: [{ who: "all", msg: { t: "undo", step: r.step } }] };
     }
     case "flag": {
       const r = sessionFlag(s, token, msg.flag || {});
       if (!r.ok) return err(r.why);
-      return { to: [{ who: "self", msg: { t: "flagged", flag: r.flag } }] };
+      return { ok: true, to: [{ who: "self", msg: { t: "flagged", flag: r.flag } }] };
     }
     case "sync":
-      return { to: [{ who: "self", msg: { t: "sync", state: true } }] };
+      return { ok: false, to: [{ who: "self", msg: { t: "sync", state: true } }] };
     case "ping":
-      return { to: [{ who: "self", msg: { t: "pong", at: Date.now() } }] };
+      return { ok: false, to: [{ who: "self", msg: { t: "pong", at: Date.now() } }] };
     default:
       return err("session.unknownMessage");
   }

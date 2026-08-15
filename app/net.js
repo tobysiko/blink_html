@@ -38,8 +38,16 @@ function netToken(code, set) {
   } catch (e) { return null; }          // private mode: you get one connection
 }
 
+/* The service may be on this very site — `/api/blink` — or somewhere else
+ * entirely. A relative setting is resolved against the page, which is what you
+ * want when the two ship together: no domain baked into the build, and preview
+ * deployments talk to their own copy rather than to production. */
 function netApi() {
-  return (BUILD.api || "").replace(/\/$/, "");
+  const raw = (BUILD.api || "").replace(/\/$/, "");
+  if (!raw) return "";
+  if (/^https?:\/\//.test(raw)) return raw;
+  try { return new URL(raw, location.href).href.replace(/\/$/, ""); }
+  catch (e) { return raw; }
 }
 
 /* The link you send people. Same page, one parameter — no separate app, no
@@ -83,6 +91,8 @@ function netConnect(code, name, handlers) {
 function netOpen() {
   if (!NET) return;
   const url = NET.api.replace(/^http/, "ws") + "/session/" + NET.code + "/ws";
+  /* http -> ws, https -> wss; anything else is a build that was configured
+   * with something that is not a URL. */
   let ws;
   try { ws = new WebSocket(url); }
   catch (e) { return netLost(); }

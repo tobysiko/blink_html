@@ -11,3 +11,6 @@ package-lock.json
 
 # scratch
 *.tmp
+
+# playtest reports written by the dev server
+server/reports/
