@@ -17,6 +17,9 @@ python3 build_variants.py
 python3 board_a4.py
 python3 board_blank.py
 
+# the printed numbers must still be the numbers the game is played with
+python3 check_rules.py
+
 # print-and-play card decks
 python3 build_cards.py
 python3 build_cards.py --bw

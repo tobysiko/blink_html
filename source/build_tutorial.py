@@ -87,7 +87,7 @@ HTML = f"""<!doctype html>
   <div class="step">
     <span class="n">Step 3 · your board</span>
     <h3>Load all twenty units, top tier first</h3>
-    <p>Take a player board and fill all five tiers — <b>2, 4, 5, 5, 4</b> from the top. Every unit
+    <p>Take a player board and fill all five tiers — <b>2, 4, 6, 4, 4</b> from the top. Every unit
     you'll ever place is here. Put the <b>ascension coins</b> on their printed spots: 1, 2, 3, 4.</p>
     {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints four numbers: the meld you may play, your free moves, the gold your people cost to feed, and the highest rank you may buy. Right now that is Tribe — melds of two, one free move, food free, cap 11.')}
     <div class="say"><b>Say this out loud:</b> this board is the engine. Emptying a tier makes you stronger and
@@ -115,7 +115,7 @@ HTML = f"""<!doctype html>
     <p>Now shuffle the whole advanced deck together, face down. Deal <b>nine cards face up in a
     3&times;3 grid</b> beside it. That is the market — a spread of ranks, not one per suit.
     Leave a gap beside it for the <b>shared pile</b>, which starts empty.</p>
-    {fig('market', 'One shuffled deck, nine positions. Every research draws a card onto a position of your choice — which buries whatever was there. Your tier&rsquo;s rank cap decides how much of the spread you can actually reach; the rest is visible and out of bounds.')}
+    {fig('market', 'One shuffled deck, nine positions. Every research turns a card onto the position showing the highest rank — burying it. Nobody chooses where it lands, so the top of the market keeps sinking out of reach. Your tier&rsquo;s rank cap decides how much of the spread you can actually take; the rest is visible and out of bounds.')}
   </div>
 
   <div class="step">
@@ -147,8 +147,10 @@ HTML = f"""<!doctype html>
   <p>Now resolve it. <strong>Most cards wins</strong> — no adding up. Ada and Bex both played
   two, so they tie; the tie breaks on the <strong>highest card</strong>, and Bex's 8 beats
   Ada's 6. <b>Bex wins the trick.</b> She takes die 1, Ada die 2, Cy die 3.</p>
-  <p>Ada matched Bex's two cards and lost, so she <b>discards one card from her hand</b>,
-  face down, to the shared pile. Cy played fewer, so he discards nothing.</p>
+  <p>Ada matched Bex's two cards and lost, so one of the two cards <b>she already played</b>
+  is <b>set aside</b>: she chooses which, it pays her <b>1 gold</b> instead of acting on the
+  map, and it goes face down to the shared pile. Cy played fewer than the winner, so he gives
+  up nothing.</p>
   <div class="say"><b>Notice:</b> Cy could not have won with one card no matter how high it
   was. Card count beats rank, always. Rank is only the tie-breaker.</div>
 
@@ -157,24 +159,25 @@ HTML = f"""<!doctype html>
   cards</strong>, one by one, as your actions on the map. Each card does one of four things:
   <b>settle</b> a unit, <b>explore</b> a tile, <b>attack</b> a rival, or <b>take 1 gold</b> —
   always on terrain matching its suit, always next to your civilization.</p>
-  <p><b>Everyone spends every card they played</b> — there is no number to remember. Then
-  the round pays out twice: the <b>winner spends one extra card</b> from hand (or takes 1
-  gold if their hand is empty), and the player whose meld <b>ranked last takes 1 gold</b>.
-  Act in initiative order.</p>
+  <p><b>The winner spends every card they played</b>, and so does anyone who played
+  <em>fewer</em> than the winner. Only a player who <b>matched</b> the winner and lost gives
+  one up — set aside for a gold, as Ada just did. The player whose meld <b>ranked last takes
+  1 gold</b>. Act in initiative order.</p>
 
-  <p><span class="seat">Bex — 2 cards, plus the winner's extra</span><br>
+  <p><span class="seat">Bex — 2 cards, and she won</span><br>
   Only Plains and Mountain are on the table yet, so her <b>Mountain</b> card is the one that
   can settle: the Mountain beside her homeland is in reach, and she takes a unit from her top
   band. Mountain holds one, so that tile is hers alone now. She spends her <b>Ocean</b> card
   on an <b>explore</b>: she picks an empty space beside her civilization, checks that it
   touches at least two tiles already on the table, takes an Ocean tile from the supply, and
-  puts it down empty for now. Then she takes her <b>extra card</b> from hand — the winner's
-  prize — and settles a second unit on her homeland.</p>
+  puts it down empty for now. Both her cards reached the map — that is what winning the trick
+  is worth, along with going first.</p>
 
-  <p><span class="seat">Ada — 2 cards</span><br>
-  The only Plains she can reach is her own homeland, so she settles her 6 of Plains by
-  <b>stacking</b> a second unit on it — Plains holds three. Her 5 of Plains has nowhere
-  better to go, so she <b>cashes</b> it for <b>1 gold</b> — her choice, not a penalty.</p>
+  <p><span class="seat">Ada — 2 cards, one of them set aside</span><br>
+  She keeps the <b>6 of Plains</b> and sets the 5 aside. The only Plains she can reach is her
+  own homeland, so she settles the 6 by <b>stacking</b> a second unit on it — Plains holds
+  three. The 5 goes face down to the shared pile and pays her <b>1 gold</b>: that is the
+  price of matching Bex's two cards and losing on rank.</p>
   <div class="say"><b>Notice:</b> at the start there is no Forest and no Ocean anywhere. The only
   way to use those cards is to <em>build</em> the ground first — that is what exploring is for,
   and it is why nobody's hand is dead on turn one.</div>
@@ -226,13 +229,20 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">4</span><h2>Round three — spend a coin</h2></div>
   <p>By now someone has two or three gold. Here's what it buys.</p>
   <p>The most important purchase is an <strong>upgrade</strong>, and it is a straight trade:
-  <b>one card out, one card in</b>. Retire a card <b>from your hand</b> into your
-  <b>victory row</b>, pay <b>1 gold</b>, and take any one of the nine face-up market cards
-  <b>straight into your hand</b>. You still hold exactly ten cards; one of them is just much
-  better — and you can play it next round.</p>
+  <b>your worst card out, a better one in</b>. Retire the <b>lowest-ranked card in your
+  hand</b> into your <b>victory row</b>, pay <b>1 gold</b>, and take any one of the nine
+  face-up market cards <b>straight into your hand</b>. You still hold exactly ten cards; one
+  of them is just much better — and you can play it next round.</p>
   <p>It has to come out of your <b>hand</b> — cards you have already played to the table this
   turn are spent, and cannot be retired. So a turn where you dump your whole hand is a turn
   you do not research.</p>
+  <p>You never choose <em>which</em> card leaves: it is always your lowest. That is what makes
+  research feel like progress rather than shopping — the old idea is what pays for the new
+  one, and nothing reaches your victory row that was not once the worst card you owned.</p>
+  <p>Early on that means giving up a 3 or a 4. Later, when your hand is all upgrades, your
+  lowest card <em>is</em> a good one. Don't hold back waiting for that: a card in the row is
+  a point whatever its rank, so researching whenever you can afford it beats saving up for a
+  perfect one.</p>
   <p>The card you retired is not wasted — it sits in your victory row and <b>scores at the end
   of the game</b>: a point for being there, and, once you hold three, its rank may land in the
   centre slot and score again. Or you can spend it later for a one-shot effect, at the cost of never scoring

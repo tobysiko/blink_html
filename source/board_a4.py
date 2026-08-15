@@ -34,8 +34,8 @@ BANDS = [
     # (label, meld_limit, n_units, feed_coins, free_moves, ascension, rank_cap)
     ("Tribe",        2, 2, 0, 1, 0, "11"),
     ("Settlement",   3, 4, 1, 2, 1, "13"),
-    ("Kingdom",      4, 5, 2, 3, 2, "15"),
-    ("Empire",       5, 5, 3, 4, 3, "17"),
+    ("Kingdom",      4, 6, 2, 3, 2, "15"),
+    ("Empire",       5, 4, 3, 4, 3, "17"),
     ("Civilization", 6, 4, 4, 5, 4, "20"),
 ]
 

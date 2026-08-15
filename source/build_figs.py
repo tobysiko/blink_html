@@ -366,14 +366,14 @@ def vprow():
 
     # left: three cards -> centre slot is the LOW card
     draw_row(0, 30, [(3, "ocean"), (9, "forest"), (15, "plains")],
-             "Three cards \u2014 centre slot scores 3")
+             "Three cards \u2014 3 + centre slot 3 = 6")
     # divider
     b += (f'<line x1="{row_w+24}" y1="18" x2="{row_w+24}" y2="{30+slot_h+30}" '
           f'stroke="#CDC7B8" stroke-width="1.2"/>')
     # right: five cards -> centre slot is the MEDIAN
     draw_row(row_w + 48, 30, [(3, "ocean"), (7, "mountain"), (11, "forest"),
                               (14, "plains"), (18, "ocean")],
-             "Five cards \u2014 centre slot scores 11")
+             "Five cards \u2014 5 + centre slot 11 = 16")
 
     return svg(0, 0, b, vb="auto")
 

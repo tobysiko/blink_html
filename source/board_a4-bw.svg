@@ -40,7 +40,7 @@
 <rect x="208.0" y="37.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
 <text x="213.00" y="44.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">1</text>
 <text x="228.00" y="43.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">—</text>
-<text x="274.00" y="44.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">13</text>
+<text x="274.00" y="44.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">11</text>
 <rect x="14.0" y="49.5" width="267.0" height="15.5" rx="2.4" fill="#FAFAFA" stroke="#C7C7C7" stroke-width="0.4"/>
 <rect x="16.0" y="52.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
 <text x="22.00" y="61.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
@@ -54,7 +54,7 @@
 <rect x="208.0" y="54.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
 <text x="213.00" y="61.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
 <circle cx="226.50" cy="59.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="226.50" cy="59.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<text x="274.00" y="61.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">15</text>
+<text x="274.00" y="61.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">13</text>
 <rect x="14.0" y="66.5" width="267.0" height="15.5" rx="2.4" fill="#ECECEC" stroke="#C7C7C7" stroke-width="0.4"/>
 <rect x="16.0" y="69.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
 <text x="22.00" y="78.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
@@ -72,7 +72,7 @@
 <text x="213.00" y="78.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
 <circle cx="226.50" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="226.50" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
 <circle cx="237.00" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="237.00" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<text x="274.00" y="78.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">17</text>
+<text x="274.00" y="78.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">15</text>
 <rect x="14.0" y="83.5" width="267.0" height="15.5" rx="2.4" fill="#FAFAFA" stroke="#C7C7C7" stroke-width="0.4"/>
 <rect x="16.0" y="86.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
 <text x="22.00" y="95.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
@@ -90,7 +90,7 @@
 <circle cx="226.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="226.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
 <circle cx="237.00" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="237.00" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
 <circle cx="247.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="247.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<text x="274.00" y="95.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">20</text>
+<text x="274.00" y="95.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">17</text>
 <rect x="14.0" y="100.5" width="267.0" height="15.5" rx="2.4" fill="#ECECEC" stroke="#C7C7C7" stroke-width="0.4"/>
 <rect x="16.0" y="103.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
 <text x="22.00" y="112.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">6</text>
@@ -110,7 +110,7 @@
 <circle cx="237.00" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="237.00" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
 <circle cx="247.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="247.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
 <circle cx="258.00" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="258.00" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<text x="274.00" y="112.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">—</text>
+<text x="274.00" y="112.00" font-family="IBM Plex Sans" font-size="5.5" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">20</text>
 <text x="14.00" y="129.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.2" style="">FOOD is NOT cumulative — each recycle your people eat your current tier's coins.</text>
 <text x="14.00" y="133.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.2" style="">ASCEND coins are taken once, the first time you reach that tier. CAP is the highest rank you may buy.</text>
 <line x1="14.0" y1="134.0" x2="283.0" y2="134.0" stroke="#C7C7C7" stroke-width="0.4"/>

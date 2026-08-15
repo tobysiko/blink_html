@@ -1,77 +1,75 @@
 # Putting v0.22 on GitHub
 
-`README.md` and `.gitignore` are written and ready. The commit has to be made by
-you — see *Why* at the bottom.
+The commit is made — 177 files, and I verified from my side that **no file went
+in empty**. Two things remain.
 
-## Decide first: private or public
+## 1 · Drop two files that are mine, not yours
 
-This is an unpublished design in submission to Hans im Glück, and the repo would
-contain the full rulebook, the card and board artwork, and the print-and-play
-PDFs. **Private is the safer default**; Vercel deploys private repos without any
-trouble. Make it public later if you want print-and-play in the open — you
-cannot un-publish something that has been public.
-
-## Create it
+`sim/_cmp_tmp.py` and `sim/_verify_tmp.py` are scratch scripts I copied into
+`sim/` to run comparisons against the Python engine. The mount would not let me
+delete them afterwards, so they ended up in the commit. Nothing is pushed yet,
+so amend rather than adding a second commit:
 
 ```
 cd ~/Documents/Claude/Projects/Blink/Blink_July2026/v0.22
-git init -b main
-git add -A
-git commit -m "Blink v0.22 — rules, components, simulation and browser prototype"
+git rm --cached -q sim/_cmp_tmp.py sim/_verify_tmp.py
+rm sim/_cmp_tmp.py sim/_verify_tmp.py
+git commit --amend --no-edit
 ```
 
-Then, with the GitHub CLI:
+## 2 · Create the repo and push — no `gh` needed
+
+`gh` is not installed on your machine, and you do not need it.
+
+Go to **github.com/new**:
+
+- **Name:** `blink-v0.22`
+- **Visibility: Private.** This is an unpublished design in submission to Hans im
+  Glück, and the repo carries the full rulebook, the artwork and the
+  print-and-play PDFs. Vercel deploys private repos without any trouble. You can
+  open it later; you cannot close it again.
+- **Do not** tick "Add a README", ".gitignore" or a licence — the repo already
+  has them, and an initialised remote makes the first push conflict.
+
+Then, using the URL GitHub shows you:
 
 ```
-gh repo create blink-v0.22 --private --source=. --push
-```
-
-Or without it: make an empty repo on github.com, then
-
-```
-git remote add origin git@github.com:<you>/blink-v0.22.git
+git remote add origin https://github.com/<your-user>/blink-v0.22.git
 git push -u origin main
 ```
 
-## Check nothing went up empty
+If you have SSH keys set up, `git@github.com:<your-user>/blink-v0.22.git` is
+smoother — an HTTPS push asks for a personal access token rather than your
+password.
 
-Worth doing once, because it is exactly what went wrong here:
+Prefer the CLI after all? `brew install gh`, then `gh auth login`, then
+`gh repo create blink-v0.22 --private --source=. --push`.
 
-```
-git ls-files | wc -l                          # expect ~176
-find . -size 0 -not -path "./.git/*" -type f  # expect no output
-```
-
-If any file lists as zero bytes, do not push — say so and we will work out why.
-
-## Then Vercel deploys itself
+## 3 · Then Vercel deploys itself
 
 On vercel.com: **Add New → Project → Import** the repo, then set
 
 - **Root Directory:** `deploy`
-- **Framework Preset:** Other (it is a single static file)
+- **Framework Preset:** Other
 - no build command, no output directory
 
-Deploy. Every push to `main` then republishes automatically, and
-`app/build.js` regenerates `deploy/index.html`, so the loop is:
-edit `app/` → `node build.js` → commit → live.
+Every push to `main` republishes from then on, so the loop is:
+edit `app/` → `node build.js` → commit → push → live.
 
-Finally add the subdomain — Settings → Domains → `blink.deep-diversions.com`.
-Details in `deploy/DEPLOY.md`.
+Finally, Settings → Domains → `blink.deep-diversions.com`. Details in
+`deploy/DEPLOY.md`.
 
-## Why I could not make the commit
+---
 
-My sandbox reaches your folder through a mount, and **49 of the files cannot be
-read through it** — `stat` reports the right size but every read fails with
-`Resource deadlock avoided`. They are the files I had not opened earlier in the
-session: the rulebook and deck PDFs, `PRINT-AND-PLAY.md`, `README.txt`, most of
-`source/`, and the `sim/findings-*.txt` set.
+### A note on the checks I gave you
 
-That is not a harmless failure. When I copied the tree to build the repo, `tar`
-hit the read errors and left **files of the correct length containing nothing but
-zero bytes** — and a size check said everything matched. Only comparing
-checksums caught it. Committing that would have published 49 empty files that
-look fine in a directory listing.
+The `find` command failed because I left a trailing `# expect no output` on it —
+zsh does not treat `#` as a comment at an interactive prompt, so it was passed
+to `find` as an argument. My mistake. You do not need to run it: I checked the
+committed tree directly and every blob has content.
 
-Run the commands above on your own machine, where the files are real, and none
-of this applies.
+If you ever do want that check, without the comment:
+
+```
+find . -size 0 -type f -not -path "./.git/*"
+```

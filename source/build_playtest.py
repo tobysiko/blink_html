@@ -112,9 +112,10 @@ HTML = f"""<!doctype html>
    '<td class="scale">yes &nbsp; no</td></tr></table>'
    + LINES(1))}
 
-{q(3, "The new trick reward — and how often you cashed",
-   "Winner spends one extra card; the meld that ranked last takes 1 gold. Tally one mark "
-   "per card <b>you</b> cashed instead of using on the map (the sim predicts about one "
+{q(3, "The cost of matching the winner — and how often you cashed",
+   "Match the winner's card count and lose, and one card you played is set aside for "
+   "1 gold and goes to the shared pile; the meld that ranked last takes 1 gold. Tally one "
+   "mark per card <b>you</b> cashed instead of using on the map (the sim predicts about one "
    "in three). Count for yourself only.",
    '<div class="box" style="height:1.7rem"></div>'
    '<p style="margin-top:.2rem">cards cashed ______ of ______ played &nbsp;·&nbsp; '
@@ -123,8 +124,10 @@ HTML = f"""<!doctype html>
    '<table class="tick">'
    '<tr><td class="k">did anyone ask how many cards they could use?</td>'
    '<td class="scale">yes &nbsp; no &nbsp; (the rule exists to stop that)</td></tr>'
-   '<tr><td class="k">the winner&rsquo;s extra card felt…</td>'
-   '<td class="scale">a real prize &nbsp; barely noticed &nbsp; too strong</td></tr>'
+   '<tr><td class="k">giving up a card for matching the winner felt…</td>'
+   '<td class="scale">a real cost &nbsp; barely noticed &nbsp; too harsh</td></tr>'
+   '<tr><td class="k">did anyone play FEWER cards on purpose to dodge it?</td>'
+   '<td class="scale">yes &nbsp; no</td></tr>'
    '<tr><td class="k">the last-place coin felt…</td>'
    '<td class="scale">welcome &nbsp; pointless &nbsp; like charity</td></tr></table>')}
 

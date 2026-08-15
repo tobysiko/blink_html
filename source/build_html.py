@@ -227,8 +227,12 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 #   COMPONENT (1.22) - schematics of physical components rather than of the
 #       map: the player board and the victory row. Sized to fill the column.
 COMPARE, DETAIL, COMPONENT = 1.07, 1.60, 1.22
+# The market figure grew when the grid went from 2x3 to 3x3 and has overflowed
+# the print column ever since — check_figs.py has been failing on it. It gets
+# its own scale so nine positions fit the page instead of being clipped.
+MARKET = 1.45
 SCALE = {
-    "combat": DETAIL, "fortify": DETAIL, "market": DETAIL,
+    "combat": DETAIL, "fortify": DETAIL, "market": MARKET,
     "board": COMPONENT, "vprow": COMPONENT,
 }
 _VB = re.compile(r'viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"')
@@ -363,7 +367,7 @@ HTML = f"""<!doctype html>
     clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end with a fixed hand
     of <strong>ten cards</strong>.</li>
 
-    <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 4, 5, 5, 4 from
+    <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 4, 6, 4, 4 from
     the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
     Settlement, 2 on Kingdom, 3 on Empire, 4 on Civilization. Your meld limit starts at
     <strong>2</strong>.</li>
@@ -410,8 +414,8 @@ HTML = f"""<!doctype html>
     <tbody>
       <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">11</td></tr>
       <tr><td>Settlement</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">13</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">15</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">17</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">6</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">15</td></tr>
+      <tr><td>Empire</td><td class="num-cell">4</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">17</td></tr>
       <tr><td>Civilization</td><td class="num-cell">4</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td></tr>
     </tbody>
   </table>
@@ -465,25 +469,27 @@ HTML = f"""<!doctype html>
   each card resolved fully before the next (§06) — and takes their free actions (§07),
   woven between the cards however they like. Finish your whole turn before the next
   player begins.</p>
-  <p><strong>Everyone spends every card of their meld.</strong> Nobody is docked a card and
-  there is no number to remember — cashing a card for gold is always your own choice
-  (§06).</p>
-  <p>The round then settles three ways:</p>
+  <p><strong>The trick winner spends every card of their meld.</strong> So does everyone
+  who played fewer cards than the winner. Cashing a card for gold is always your own
+  choice, never a penalty (§06).</p>
+  <p>The round then settles two ways:</p>
   <ul>
-    <li><strong>The trick winner spends one extra card</strong> from their hand, on top of
-    their meld and beyond their meld limit. It is spent like any other card — settle,
-    explore, attack or cash. If their hand is empty, they take <strong>1 gold</strong>
-    instead.</li>
+    <li><strong>Match the winner's card count and lose, and one of your played cards is
+    set aside.</strong> You choose which. It is not spent on the map — instead it pays you
+    <strong>1 gold</strong> and goes face down onto the <strong>shared pile</strong> (§09),
+    where it becomes part of somebody's next hand. Play as many cards as the winner and
+    you must give one up; play <em>fewer</em> and nothing happens, because you are already
+    below the winner's count.</li>
     <li><strong>The player whose meld ranked last takes 1 gold.</strong> Only that one
-    player, whatever the player count.</li>
-    <li><strong>Anyone who matched the winner's card count and still lost discards one
-    card</strong> from their hand, face down, to the shared discard pile (§09). Play as
-    many cards as the winner and you must give one up; play fewer and nothing happens. This
-    is the old "one card less than the winner" made explicit.</li>
+    player, whatever the player count. If the last-ranked player also matched the winner's
+    count, they take both coins.</li>
   </ul>
+  <p>Nothing is docked from your hand, and there is no winner's bonus card: the winner's
+  advantage is that they act first and that every card they played reaches the map.</p>
   <p>A meld you have resolved goes face up into your <strong>personal discard</strong>, in
   front of you. That pile is not lost — it becomes your next hand when your current hand
-  runs out (§09).</p>
+  runs out (§09). The one card that leaves your economy for good is the card you set aside:
+  it goes to the shared pile, and the next player to run out of cards may well draw it.</p>
   <p>When all players have finished, hand the lead to the trick winner and begin a new
   round.</p>
 </section>
@@ -524,10 +530,11 @@ HTML = f"""<!doctype html>
 
   <div class="note">
     <span class="tag">Losing the trick costs you almost nothing</span>
-    <p>Every meld you play is spent in full. If your meld came last, it pays you a coin.
-    The only cost of losing is the extra card the winner spends — and, if you matched the
-    winner's card count and lost on rank, one card discarded from your hand (§04). Playing
-    a single on purpose is a real line, not a failure.</p>
+    <p>Play <em>fewer</em> cards than the winner and every one of them still reaches the
+    map; if your meld came last, it also pays you a coin. The only players who give
+    anything up are those who <strong>matched</strong> the winner and lost on rank, and
+    even they are paid a gold for the card (§04). Playing a single on purpose is a real
+    line, not a failure — matching the winner and losing is the one thing that costs.</p>
   </div>
 </section>
 
@@ -637,10 +644,28 @@ HTML = f"""<!doctype html>
   <h3>The water advantage</h3>
   <p><strong>The first time each turn that you move by sea</strong>, you may immediately
   <strong>explore one tile of any terrain you like</strong> — free, and not tied to any
-  card's suit. Everything else about exploring holds: the new tile must touch at least two
-  tiles already on the map, and it must be within your reach (§06).</p>
-  <p>The sea is how a civilization finds ground it had no card for. Once per turn, however
-  many sea moves your tier allows.</p>
+  card's suit. The new tile must touch at least two tiles already on the map, as every
+  explore must (§06) — but it does <strong>not</strong> have to be within your reach. Lay
+  it anywhere the map will legally take it.</p>
+  <p>That is the whole difference between a voyage and a card. A card acts beside your own
+  civilization; a ship brings back news of ground you have never stood on. The sea is how
+  a civilization finds land it had no card for — and sometimes finds it on somebody else's
+  doorstep. Once per turn, however many sea moves your tier allows.</p>
+  <div class="note">
+    <span class="tag">A sea move starts on the water</span>
+    <p>Read the second bullet above literally: a sea move is made by <em>a unit standing on
+    Ocean</em>. Stepping onto an empty Ocean tile <strong>from land</strong> is an ordinary
+    land move — it is how you reach the water, and it pays nothing.</p>
+    <p>So the advantage costs two moves: one to put a unit out to sea, one to sail it. A
+    <strong>Tribe has only one free move</strong> and cannot do both in the same turn — it
+    must leave a unit on the water and collect the tile next turn. Getting a boat out early
+    is an investment, and that is the point: the ocean pays the civilizations that have
+    already committed to it.</p>
+    <p>Touch-two still holds — §06 has no bridges, and a voyage does not get to build one.
+    If the map has no legal space at all, or the terrain you want has run out, the
+    advantage is simply <strong>not spent</strong>: sail again later in the same turn and
+    you may still take it.</p>
+  </div>
 
   <h3>Reallocate your gold</h3>
   <p>Your coins live in four places, and during your own map phase you may move them freely
@@ -671,8 +696,10 @@ HTML = f"""<!doctype html>
 
   <h3>One victory card</h3>
   <p>Once per map phase you may spend a card from your victory row on its
-  <strong>B</strong> effect (§10) — extra units settled beyond your meld. Effects A and C
-  have their own moments; B is the only one tied to your turn, and it is
+  <strong>B</strong> effect (§10) — new ground founded beyond your meld: a tile or two from
+  the supply, a unit from your reserve on each, and a fortification coin on each of those
+  units from the general supply. It explores, so touch-two and your reach both apply.
+  Effects A and C have their own moments; B is the only one tied to your turn, and it is
   <strong>at most one per turn</strong>.</p>
 </section>
 
@@ -698,10 +725,10 @@ HTML = f"""<!doctype html>
 
 <section>
   <div class="h2"><span class="num">09</span><h2>Feeding and refilling</h2></div>
-  <p>You play with a hand of <strong>ten cards</strong>. Cards leave it — discarded when
-  you match the winner's count and lose (§04), retired <b>from your hand</b> to your
-  victory row when you research (§10) — so the hand is topped back up rather than merely
-  recycled.</p>
+  <p>You play with a hand of <strong>ten cards</strong>. Cards leave it for good in two
+  ways — <b>set aside</b> when you match the winner's count and lose, which sends a card you
+  already played to the shared pile (§04), and <b>retired</b> to your victory row when you
+  research (§10) — so the hand is topped back up rather than merely recycled.</p>
   <p>The moment you play your <strong>last hand card</strong>, your hand <b>recycles</b> —
   immediately, in the middle of your turn, before you do anything else. Do not wait for the
   end of the turn: pick everything back up straight away, and you still have your full map
@@ -712,8 +739,9 @@ HTML = f"""<!doctype html>
     discard.</li>
     <li><strong>Draw from the shared pile</strong> until you hold ten again. The shared
     pile is the face-down stack in the middle of the table, beside the market; it starts
-    the game empty and holds only the cards discarded by losing melds (§04). Shuffle it
-    before drawing if it has not been shuffled since cards were added.</li>
+    the game empty and holds the cards <em>set aside</em> by melds that matched the winner
+    and lost (§04). Shuffle it before drawing if it has not been shuffled since cards were
+    added.</li>
   </ol>
   <p>Then carry on with your turn. Because the refill is immediate, playing your whole hand
   never costs you your research — you simply pick up ten fresh cards and retire one of
@@ -761,11 +789,13 @@ HTML = f"""<!doctype html>
 
   <p><strong>Once per turn</strong>, during your map phase, you may research:</p>
   <ol class="seq">
-    <li><b>Draw the top card</b> of the upgrade deck and place it face up on <b>any grid
-    position you choose</b>, covering the card already there. The covered card is out of
-    reach until the one on top of it is taken.</li>
-    <li><b>Retire one card from your hand</b> into your <strong>victory row</strong>.
-    It leaves play for the rest of the game — but it scores (§11). Cards you have
+    <li><b>Draw the top card</b> of the upgrade deck and place it face up on the grid
+    position showing the <b>highest rank</b>, covering it. If two positions tie, take the
+    leftmost. The covered card is out of reach until the one on top of it is taken. Nobody
+    chooses this — the tallest idea on the market is always the one buried next.</li>
+    <li><b>Retire the lowest-ranked card in your hand</b> into your
+    <strong>victory row</strong>. If you hold several of that rank, choose which suit to
+    give up. It leaves play for the rest of the game — but it scores (§11). Cards you have
     already played to the table are spent: they cannot be retired.</li>
     <li><b>Pay 1 gold</b> and take <b>any visible market card whose rank is at or below
     your tier's rank cap</b> — Tribe 11, Settlement 13, Kingdom 15, Empire 17,
@@ -782,6 +812,22 @@ HTML = f"""<!doctype html>
     already in your hand, your discard or your victory row is yours to keep and use however
     it arrived — a low tier cannot reach the top of the market, but it is never forced to
     give up what it has.</p>
+  </div>
+
+  <div class="note" style="border-left-color:var(--forest)">
+    <span class="tag">Your worst card, not your best</span>
+    <p>Research replaces the weakest idea you hold with a stronger one: the card that leaves
+    is always your lowest. So the victory row is a record of what your civilization
+    <em>outgrew</em>, and it grows with you — early on it takes 3s and 4s, and by the late
+    game your lowest card may be a 12.</p>
+    <p>A high card <em>can</em> still reach the row — but only by being lived with. Hold it
+    while you play the rest of your hand down, and eventually it is the lowest thing you
+    have. What you cannot do is buy a 17 and park it straight into the row: everything in
+    there was once the worst card you owned.</p>
+    <p class="fine">Waiting for that is a thinner edge than it looks. Every research you
+    skip is a card the row never gets, and each of those is worth a point on its own before
+    any rank is counted — so a civilization that researches whenever it can afford to
+    generally out-scores one that waits for the perfect card to fall.</p>
   </div>
 
   <p>Your victory row holds at most <strong>five cards</strong>. To add a sixth, first
@@ -807,8 +853,13 @@ HTML = f"""<!doctype html>
   winning the trick, never toward extra spending on the map; if two players both declare an
   effect that wins ties, the one who spent the <strong>higher-ranked card</strong> takes the
   trick. <strong>B</strong> is used during your own map phase, <strong>at most once per
-  turn</strong> (§07), when you can already see the board: each extra unit is one additional
-  <em>settle</em>, within your normal reach — it may not explore and may not attack.
+  turn</strong> (§07), when you can already see the board. It founds ground: lay the new
+  tile or tiles from the supply, settle a unit from your reserve on each one the card
+  provides for, and fortify each of those units with a coin <strong>from the general
+  supply</strong> — that gold is not yours and never was. Every tile it lays is an
+  <em>explore</em>, so §06 applies in full: the space must touch at least two tiles already
+  on the map and lie <strong>within your reach</strong>. The 6–10 band is the one exception,
+  and the only reason to prefer it: its colony may sit <strong>up to two tiles out</strong>.
   <strong>C</strong> may be taken at any moment, even mid-payment when feeding falls
   short.</p>
   <div class="note">
@@ -854,28 +905,27 @@ HTML = f"""<!doctype html>
   two, so they tie on count; the tie breaks on the <strong>highest card</strong>, and
   Bex’s 8 beats Ada’s 6. <strong>Bex wins the trick</strong> and takes initiative die 1
   — she will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
-  <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, she discards one card
-  from her hand face down to the shared pile. Cy played only one — fewer than the winner —
-  so he discards nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
+  <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
+  played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
+  instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
+  so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
 
   <h3>The map phase</h3>
-  <p>Everyone spends every card they played. Bex, who won, also spends <strong>one extra
-  card</strong> from her hand; Cy, whose single ranked last, takes <strong>1 gold</strong>.
-  They act in initiative order.</p>
+  <p>Bex spends both her cards; Ada spends the one she kept; Cy spends his single. They act
+  in initiative order.</p>
   <ul>
-    <li><strong>Bex</strong> (2 cards, plus her winner&rsquo;s extra). Only Plains and
-    Mountain exist at setup, so her <strong>Mountain</strong> card is the one that can
-    settle: the Mountain beside her start is adjacent to her homeland — in reach — and she
-    <strong>settles</strong> it, taking a unit from her top band. Mountain holds one, so
-    that tile is now hers alone. Her <strong>Ocean</strong> card <strong>explores</strong>:
-    she picks an empty space beside her civilization, checks it touches at least two tiles
-    already on the map (it touches three), and lays the Ocean tile from the supply. Then she
-    takes her <strong>extra card</strong> from hand — a 3 of Plains — and settles a second
-    unit on her homeland.</li>
-    <li><strong>Ada</strong> (2 cards). The only Plains in reach is her own homeland, so she
-    <strong>settles</strong> her 6 of Plains as a second unit on it — Plains holds three.
-    Her 5 of Plains has nowhere better to go, so she <strong>cashes</strong> it for
-    <strong>1 gold</strong> — her choice, not a penalty.</li>
+    <li><strong>Bex</strong> (2 cards). Only Plains and Mountain exist at setup, so her
+    <strong>Mountain</strong> card is the one that can settle: the Mountain beside her start
+    is adjacent to her homeland — in reach — and she <strong>settles</strong> it, taking a
+    unit from her top band. Mountain holds one, so that tile is now hers alone. Her
+    <strong>Ocean</strong> card <strong>explores</strong>: she picks an empty space beside
+    her civilization, checks it touches at least two tiles already on the map (it touches
+    three), and lays the Ocean tile from the supply.</li>
+    <li><strong>Ada</strong> (2 cards, one of them set aside). She keeps the
+    <strong>6 of Plains</strong> and sets the 5 aside — the only Plains in reach is her own
+    homeland, and a second unit there is worth more than a coin. She
+    <strong>settles</strong> the 6 on it, Plains holding three. The 5 goes to the shared
+    pile and pays her <strong>1 gold</strong>: the cost of matching Bex and losing.</li>
     <li><strong>Cy</strong> (1 card). He has already taken <strong>1 gold</strong> for
     ranking last. The card itself he also cashes, for a second gold: nothing on the map is
     worth reaching for yet, and he is banking toward an upgrade.</li>
@@ -921,13 +971,14 @@ HTML = f"""<!doctype html>
     <thead><tr><th>Your victory row</th><th>Laid out in five slots</th><th>Scores</th></tr></thead>
     <tbody>
       <tr><td>2 cards — 9, 17</td><td>· · · 9 17</td><td class="num-cell">2</td></tr>
-      <tr><td>3 cards — 6, 9, 17</td><td>· · <b>6</b> 9 17</td><td class="num-cell">6</td></tr>
-      <tr><td>4 cards — 6, 9, 14, 17</td><td>· 6 <b>9</b> 14 17</td><td class="num-cell">9</td></tr>
-      <tr><td>5 cards — 6, 9, 14, 16, 17</td><td>6 9 <b>14</b> 16 17</td><td class="num-cell">14</td></tr>
+      <tr><td>3 cards — 6, 9, 17</td><td>· · <b>6</b> 9 17</td><td class="num-cell">3 + 6 = <b>9</b></td></tr>
+      <tr><td>4 cards — 6, 9, 14, 17</td><td>· 6 <b>9</b> 14 17</td><td class="num-cell">4 + 9 = <b>13</b></td></tr>
+      <tr><td>5 cards — 6, 9, 14, 16, 17</td><td>6 9 <b>14</b> 16 17</td><td class="num-cell">5 + 14 = <b>19</b></td></tr>
     </tbody>
   </table>
-  <p>With fewer than three cards you score 1 point each instead — so the third card is where
-  the row starts paying, and the fifth is where it pays properly.</p>
+  <p>The point per card is always there — with fewer than three cards it is <em>all</em> you
+  score, which is why the third card is where the row starts paying properly and the fifth
+  is where it pays best.</p>
   <p>Most points wins. Gold breaks a tie.</p>
   <div class="note">
     <span class="tag">Beyond the base game</span>
@@ -958,8 +1009,11 @@ HTML = f"""<!doctype html>
     it prints your meld limit, your free moves, your food slots and your rank cap.</dd>
     <dt>Ascension</dt><dd>Reaching a tier for the first time. Take the coins printed on that
     tier: 1, 2, 3, 4 as you climb. Once only (§04).</dd>
-    <dt>Shared pile</dt><dd>The face-down stack of cards discarded by melds that matched the
-    winner's count and lost. You refill your hand from it (§09).</dd>
+    <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
+    matched the winner's count and lost. You refill your hand from it (§09).</dd>
+    <dt>Set aside</dt><dd>The card you give up for matching the trick winner's card count
+    and losing. You choose which of your played cards it is; it pays you 1 gold instead of
+    acting on the map, and goes to the shared pile (§04).</dd>
     <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
     across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
     <dt>Food slots</dt><dd>The coin spaces on your current band. What stands there when your
@@ -977,16 +1031,17 @@ HTML = f"""<!doctype html>
     <div>
       <h3>Reserve bands</h3>
       <p>Units sit in tiers of 2 / 4 / 6 / 4 / 4, emptied top-down. <b>Tribe</b> melds 2,
-      1 move, food free, cap 13. <b>Settlement</b> 3, 2, food 1, cap 15. <b>Kingdom</b> 4,
-      3, food 2, cap 17. <b>Empire</b> 5, 4, food 3, cap 20. <b>Civilization</b> 6, 5,
-      food 4, no cap. Read them off your current tier only — food is <b>not</b> cumulative,
+      1 move, food free, cap 11. <b>Settlement</b> 3, 2, food 1, cap 13. <b>Kingdom</b> 4,
+      3, food 2, cap 15. <b>Empire</b> 5, 4, food 3, cap 17. <b>Civilization</b> 6, 5,
+      food 4, cap 20. Read them off your current tier only — food is <b>not</b> cumulative,
       eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
       1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
       <h3>Round</h3>
       <p>Declare A effects blind → leader plays a meld → everyone plays a meld → most cards
       wins, then highest card, then next-highest, then earliest played (never a tie) →
-      spend melds in initiative order → winner spends one extra card, last place takes
-      1 gold, anyone matching the winner's count discards one.</p>
+      spend melds in initiative order. The winner spends every card. Anyone who
+      <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
+      goes to the shared pile. Last place takes 1 gold.</p>
       <h3>Melds — one rule</h3>
       <p>Any cards whose ranks form an <b>unbroken run</b>. Duplicates of any rank are free;
       suits are irrelevant. One card is always legal.<br>
@@ -997,9 +1052,9 @@ HTML = f"""<!doctype html>
       Take 1 gold. Any order; each card resolves on the map as the last one left it.</p>
       <p>Reach: a tile you occupy or adjacent to one you occupy. Suit matches terrain.
       No units on the map? Act anywhere.</p>
-      <p>Everyone spends every card. The winner spends ONE EXTRA from hand (or takes 1
-      gold if their hand is empty). The meld that ranked LAST takes 1 gold. Anyone who
-      MATCHED the winner's card count and lost discards one card to the shared pile.</p>
+      <p>The winner spends every card, and so does anyone who played FEWER. Anyone who
+      MATCHED the winner's count and lost sets one played card aside — 1 gold, and the card
+      goes face down to the shared pile. The meld that ranked LAST takes 1 gold.</p>
     </div>
     <div>
       <h3>Terrain</h3>
@@ -1019,7 +1074,7 @@ HTML = f"""<!doctype html>
       <p><b>Moves</b> (tier number, 1–5): by land across your own connected units onto a
       free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
       <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
-      of ANY terrain (touch-two and reach still apply). · <b>Reallocate gold</b> freely
+      of ANY terrain, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
       between reserve, food slots and fortifications; research spending is one-way. ·
       <b>One victory card on B</b> per turn.</p>
       <h3>Fortifying</h3>
@@ -1031,10 +1086,11 @@ HTML = f"""<!doctype html>
       Mountain · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
       recycles — short slots starve units off the map.</p>
       <h3>Research — once per turn</h3>
-      <p>Draw the top upgrade card onto any of the six grid positions (covering it) →
-      retire a card <b>from your hand</b> to your victory row → pay 1 gold → take any
-      visible card <b>at or below your tier's rank cap</b> (11/13/15/17/20) → refill
-      empty positions. No cards in hand, no research this turn.</p>
+      <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
+      covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
+      card in your hand</b> to your victory row → pay 1 gold → take any visible card
+      <b>at or below your tier's rank cap</b> (11/13/15/17/20) → refill empty positions.
+      No cards in hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — feed, take back your discard, then draw from
       the <b>shared pile</b> up to ten. Carry on with the turn.</p>
