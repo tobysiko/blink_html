@@ -1952,7 +1952,12 @@ function finishFeedback() {
   if (!url) { downloadReport(REP); return Promise.resolve("download"); }
   return fetch(url, { method: "POST", headers: { "content-type": "application/json" },
                       body: JSON.stringify(REP) })
-    .then((r) => { if (!r.ok) throw new Error(r.status); return "post"; })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    /* A 200 is not the same as "kept". The service will accept a report and
+     * say `stored: false` when it has nowhere durable to put it — and the one
+     * thing this must never do is thank somebody for an evening's work and
+     * quietly drop it. */
+    .then((r) => { if (!r || r.stored === false) throw new Error("not stored"); return "post"; })
     .catch(() => { downloadReport(REP); return "failed"; });
 }
 

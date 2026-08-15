@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-15T14:50:33Z
+ * Built 2026-08-15T15:02:46Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2833,11 +2833,34 @@ const SESSION = { sessionState, sessionHandle, sessionLeave, newSession };
  *   memoryStore()  — a Map. For the dev server and the tests.
  *   redisStore(url) — for Vercel. Needs `redis` (or any node-redis-compatible
  *                     client); the marketplace add-on supplies the URL.
+ *
+ * What it costs, because the point of a free tier is not paying for a
+ * prototype. A move is three commands — one GET, one compare-and-set, one
+ * publish — and an instance holds two connections, not one per move.
+ * store_test.js counts both and fails if they grow: the day this quietly
+ * becomes five commands is the day the allowance runs out in a fortnight
+ * instead of a year.
+ *
+ * The store is deliberately NOT where anything valuable lives. A free Redis
+ * is RAM only — no persistence, no failover. Losing a table in progress on a
+ * restart is a shrug: every client is holding the same log, and the seats
+ * come back with them. Losing a playtest report would not be a shrug, so
+ * reports are not kept here.
  */
 
 const KEY = (code) => `blink:session:${code}`;
 const CHAN = (code) => `blink:room:${code}`;
 const TTL_SECONDS = 60 * 60 * 24 * 2;      // a table nobody returns to expires
+
+/* Write only if the value is still the one we read. Comparing the whole
+ * previous string rather than keeping a version counter means the session
+ * stays a single key with nothing to hold in step — a table is about a
+ * kilobyte, and a kilobyte of argument is cheaper than a second key that can
+ * go stale. */
+const CAS_SCRIPT = `
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[1], ARGV[2], 'EX', tonumber(ARGV[3]))
+return 1`;
 
 /* ------------------------------------------------------------- in memory */
 
@@ -2895,9 +2918,9 @@ function redisStore(client, sub) {
 
   return {
     kind: "redis",
-    /* The plain client, for the few things that are not sessions — playtest
-     * reports live in the same Redis, because a report is a few kilobytes and
-     * there will be hundreds of them, not millions. */
+    /* The plain client, for the few things that are not sessions. Note what
+     * is NOT here: a free Redis has no persistence, so nothing that would be
+     * missed after a restart may be kept in it. */
     raw: client,
 
     async create(s) {
@@ -2910,31 +2933,36 @@ function redisStore(client, sub) {
       return raw ? JSON.parse(raw) : null;
     },
 
-    /* Compare-and-set. WATCH the key, apply the change to the copy we read,
-     * and let the transaction fail if anyone else wrote in between — then read
-     * again and redo it. The retry is not a formality: it is the only thing
-     * standing between two simultaneous taps and a move that vanishes. */
+    /* Compare-and-set, in two commands.
+     *
+     * The obvious way is WATCH/MULTI/EXEC, and the first version did that. It
+     * costs five commands and a fresh connection per move — a WATCH cannot be
+     * shared between two overlapping updates in one process — and on a free
+     * tier capped at thirty connections, a connection per move is not a cost,
+     * it is an outage.
+     *
+     * This is a GET and then a script that writes only if nobody else has.
+     * Two commands, atomic by definition (a Lua script is one operation to
+     * Redis), no connection churn, and the same guarantee: two instances
+     * cannot both append to the log, because the second one's compare fails
+     * and it redoes its work against what actually happened.
+     *
+     * A refusal writes nothing at all, and under contention refusals are the
+     * common case. */
     async update(code, fn, tries) {
       const limit = tries || 20;
       for (let i = 0; i < limit; i++) {
-        const watcher = client.duplicate ? await client.duplicate().connect() : client;
-        try {
-          await watcher.watch(KEY(code));
-          const raw = await watcher.get(KEY(code));
-          if (!raw) { await watcher.unwatch(); return { ok: false, why: "session.unknown" }; }
-          const s = JSON.parse(raw);
-          const out = fn(s);
-          /* A refusal changes nothing, so it needs no transaction at all —
-           * and refusals are the common case under contention. */
-          if (!out || out.ok === false) { await watcher.unwatch(); return out; }
-          const tx = watcher.multi();
-          tx.set(KEY(code), JSON.stringify(s), { EX: TTL_SECONDS });
-          const res = await tx.exec();
-          if (res !== null) return out;             // committed
-          // somebody else got there first: read again and redo the work
-        } finally {
-          if (watcher !== client && watcher.quit) { try { await watcher.quit(); } catch (e) { /* */ } }
-        }
+        const raw = await client.get(KEY(code));
+        if (!raw) return { ok: false, why: "session.unknown" };
+        const s = JSON.parse(raw);
+        const out = fn(s);
+        if (!out || out.ok === false) return out;
+        const won = await client.eval(CAS_SCRIPT, {
+          keys: [KEY(code)],
+          arguments: [raw, JSON.stringify(s), String(TTL_SECONDS)],
+        });
+        if (Number(won) === 1) return out;
+        // somebody else got there first: read again and redo the work
       }
       return { ok: false, why: "session.busy" };
     },
@@ -3253,36 +3281,45 @@ server.on("upgrade", async (req, socket, head) => {
   });
 });
 
-/* ---- reports ----------------------------------------------------------- */
-
-/* Kept in the same Redis as the sessions, under a key that sorts by build and
- * then by day — so "what did people say about the commit I shipped on Tuesday"
- * is a prefix scan. A report is a few kilobytes and there will be hundreds of
- * them, not millions; this does not need object storage to be a good idea. */
-const REPORT_KEY = (rep) => `blink:report:${(rep.build && rep.build.commit) || "unknown"}:`
-  + `${(rep.started || "").slice(0, 10)}:${rep.id || Date.now()}`;
+/* ---- reports -----------------------------------------------------------
+ *
+ * A free Redis is RAM only: no persistence, no failover. A table in progress
+ * can survive being lost — every client is holding the same log — but a
+ * playtest report cannot. Somebody spent an evening on that and wrote three
+ * sentences at the end of it, and losing it to a maintenance restart would be
+ * indefensible.
+ *
+ * So reports go to Blob storage if the project has any, and if it has none
+ * the route says so plainly and the page falls back to downloading the file
+ * for the player to send on. The one thing it must never do is accept a
+ * report, say "thank you", and drop it.
+ */
 
 async function putReport(store, rep) {
-  if (!store.raw) return false;                       // memory store: nowhere to put it
-  await store.raw.set(REPORT_KEY(rep), JSON.stringify(rep));
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return false;                     // the page will download it instead
+  let put;
+  try { ({ put } = require("@vercel/blob")); }
+  catch (e) { return false; }
+  const key = `blink/reports/${(rep.build && rep.build.commit) || "unknown"}/`
+    + `${(rep.started || "").slice(0, 10)}/${rep.id || Date.now()}.json`;
+  await put(key, JSON.stringify(rep), {
+    access: "public",                 // unguessable URL; the listing needs the key
+    contentType: "application/json",
+    token,
+    addRandomSuffix: true,
+  });
   return true;
 }
 
 async function getReports(store, p, url) {
-  if (!store.raw) return { ok: false, why: "no store bound" };
-  if (p === "/reports") {
-    const match = "blink:report:" + (url.searchParams.get("commit") || "") + "*";
-    const keys = [];
-    for await (const k of store.raw.scanIterator({ MATCH: match, COUNT: 200 })) {
-      keys.push(k);
-      if (keys.length >= 500) break;
-    }
-    return { ok: true, reports: keys.sort() };
-  }
-  const raw = await store.raw.get(p.slice("/report/".length));
-  if (!raw) return { ok: false, why: "no such report" };
-  return JSON.parse(raw);
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return { ok: false, why: "no report store bound" };
+  let list;
+  try { ({ list } = require("@vercel/blob")); }
+  catch (e) { return { ok: false, why: "no report store bound" }; }
+  const prefix = "blink/reports/" + (url.searchParams.get("commit") || "");
+  const out = await list({ prefix, limit: 500, token });
+  return { ok: true, reports: out.blobs.map((b) => ({
+    key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
 }
-
-module.exports = server;
-module.exports.default = server;

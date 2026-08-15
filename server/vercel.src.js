@@ -138,36 +138,45 @@ server.on("upgrade", async (req, socket, head) => {
   });
 });
 
-/* ---- reports ----------------------------------------------------------- */
-
-/* Kept in the same Redis as the sessions, under a key that sorts by build and
- * then by day — so "what did people say about the commit I shipped on Tuesday"
- * is a prefix scan. A report is a few kilobytes and there will be hundreds of
- * them, not millions; this does not need object storage to be a good idea. */
-const REPORT_KEY = (rep) => `blink:report:${(rep.build && rep.build.commit) || "unknown"}:`
-  + `${(rep.started || "").slice(0, 10)}:${rep.id || Date.now()}`;
+/* ---- reports -----------------------------------------------------------
+ *
+ * A free Redis is RAM only: no persistence, no failover. A table in progress
+ * can survive being lost — every client is holding the same log — but a
+ * playtest report cannot. Somebody spent an evening on that and wrote three
+ * sentences at the end of it, and losing it to a maintenance restart would be
+ * indefensible.
+ *
+ * So reports go to Blob storage if the project has any, and if it has none
+ * the route says so plainly and the page falls back to downloading the file
+ * for the player to send on. The one thing it must never do is accept a
+ * report, say "thank you", and drop it.
+ */
 
 async function putReport(store, rep) {
-  if (!store.raw) return false;                       // memory store: nowhere to put it
-  await store.raw.set(REPORT_KEY(rep), JSON.stringify(rep));
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return false;                     // the page will download it instead
+  let put;
+  try { ({ put } = require("@vercel/blob")); }
+  catch (e) { return false; }
+  const key = `blink/reports/${(rep.build && rep.build.commit) || "unknown"}/`
+    + `${(rep.started || "").slice(0, 10)}/${rep.id || Date.now()}.json`;
+  await put(key, JSON.stringify(rep), {
+    access: "public",                 // unguessable URL; the listing needs the key
+    contentType: "application/json",
+    token,
+    addRandomSuffix: true,
+  });
   return true;
 }
 
 async function getReports(store, p, url) {
-  if (!store.raw) return { ok: false, why: "no store bound" };
-  if (p === "/reports") {
-    const match = "blink:report:" + (url.searchParams.get("commit") || "") + "*";
-    const keys = [];
-    for await (const k of store.raw.scanIterator({ MATCH: match, COUNT: 200 })) {
-      keys.push(k);
-      if (keys.length >= 500) break;
-    }
-    return { ok: true, reports: keys.sort() };
-  }
-  const raw = await store.raw.get(p.slice("/report/".length));
-  if (!raw) return { ok: false, why: "no such report" };
-  return JSON.parse(raw);
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) return { ok: false, why: "no report store bound" };
+  let list;
+  try { ({ list } = require("@vercel/blob")); }
+  catch (e) { return { ok: false, why: "no report store bound" }; }
+  const prefix = "blink/reports/" + (url.searchParams.get("commit") || "");
+  const out = await list({ prefix, limit: 500, token });
+  return { ok: true, reports: out.blobs.map((b) => ({
+    key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
 }
-
-module.exports = server;
-module.exports.default = server;

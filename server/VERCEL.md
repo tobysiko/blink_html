@@ -32,6 +32,31 @@ tunnel, and the path `net_test.js` exercises on every run.
    service still starts, but every instance keeps its own tables and two
    players will not see each other — the function logs a warning saying so.
 
+   **The free plan is enough**, and here is the arithmetic rather than a
+   shrug. A table is about 1.2 kB and a move costs two commands plus one
+   publish (`store_test.js` counts them and fails if that grows):
+
+   | free plan | what a playtest needs |
+   |---|---|
+   | 30 MB | ~25,000 tables |
+   | 100 ops/sec | ~30 moves a second — thirty tables of people, all moving at once |
+   | 5 GB/month | ~5 kB a move, so a few thousand games |
+   | 30 connections | two per warm instance, so ~15 instances |
+
+   Connections is the one to watch, and it is why the compare-and-set does not
+   open one per move. The earlier WATCH version did, which would have
+   exhausted the plan in about fifteen simultaneous moves.
+
+   **Two things the free plan does not have**, and what they mean here:
+
+   - *No persistence.* A restart loses tables in progress. That is a shrug —
+     every client is holding the same log, and rejoining redeals the game. It
+     is NOT a shrug for playtest reports, which is why those go to Blob
+     storage instead (below) and why the page downloads the file if there is
+     nowhere durable to put it.
+   - *No high availability.* If the Redis is down, tables cannot be opened or
+     joined. Solo and hot-seat play are unaffected — they never touch it.
+
 2. **Add the dependencies** to the site's `package.json`:
 
    ```
@@ -56,7 +81,13 @@ tunnel, and the path `net_test.js` exercises on every run.
    Then commit and push both repos. The page stamps itself with the commit it
    came from, so every playtest report names the exact version that produced it.
 
-6. Optional: `ADMIN_KEY` as an environment variable, to read reports back.
+6. **Somewhere durable for the reports.** Storage → Blob, and
+   `npm install @vercel/blob`. It sets `BLOB_READ_WRITE_TOKEN`. Without it the
+   report route answers `stored: false` and the page downloads the file for
+   the player to send on — which is honest, but relies on them actually
+   sending it.
+
+7. Optional: `ADMIN_KEY` as an environment variable, to read reports back.
    Writing one needs no key — that is a playtester finishing a game. Reading
    them does, because they carry names and free text people wrote for you.
 

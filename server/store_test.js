@@ -176,17 +176,45 @@ async function main() {
      'the forced race never collided — this test is proving nothing');
 
   /* Refusals must not cost a write at all: under contention they are the
-   * common case, and a transaction per refusal is a queue nobody needs. */
+   * common case, and a write per refusal is a queue nobody needs. */
   redis.writes = 0;
   await rstore.update(r.code, (sess) =>
     S.sessionAnswer(sess, E, 'not-a-player', 0, { pick: 0 }));
   ok(redis.writes === 0, 'a refused message still wrote to the store');
 
+  /* ---- what a move costs -------------------------------------------------
+   * The free Redis on Vercel allows 100 operations a second and 30
+   * connections. Neither is generous enough to be ignored, and both are the
+   * kind of number that creeps: an extra command per move looks like nothing
+   * in a diff and is a third of the budget. So it is pinned here. */
+  redis.cmds = 0;
+  const liveNow = await rstore.get(r.code);          // 1: the test's own read
+  const seatNow = whose(liveNow);
+  const actorNow = Object.values(r.players).find((x) => x.seat === seatNow);
+  redis.cmds = 0;
+  const atNow = S.sessionAdvance(liveNow, E);
+  const move = await rstore.update(r.code, (sess) =>
+    S.sessionAnswer(sess, E, actorNow.token, liveNow.log.length,
+      atNow.req.type === 'turn' ? { kind: 'end' } : { pick: 0 }));
+  ok(move.ok, 'the costed move was refused: ' + move.why);
+  const perMove = redis.cmds;
+  ok(perMove <= 2, `a move now costs ${perMove} Redis commands before the publish, `
+     + 'expected a GET and a compare-and-set');
+  redis.cmds = 0;
+  await rstore.publish(r.code, { msg: { t: 'answer' }, session: liveNow });
+  ok(redis.cmds === 1, `a broadcast costs ${redis.cmds} commands, expected 1`);
+
+  /* And no connection churn. The WATCH version made one per move, which on a
+   * thirty-connection plan is not an expense, it is an outage. */
+  ok(redis.dups === 0,
+     `a move opened ${redis.dups} new connections — the free plan allows 30 in total`);
+
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
     : `store: two instances over one table stayed in step for ${moves} moves and `
       + `agreed on who sits where; a double tap across two instances collided `
       + `${redis.retries} time(s) in the store and still played exactly one move; `
-      + `refusals cost no write`);
+      + `a move costs ${perMove} commands plus one publish, opens no new `
+      + `connection, and a refusal costs nothing`);
   process.exit(fail.length ? 1 : 0);
 }
 
@@ -202,6 +230,9 @@ function fakeRedis() {
   const api = {
     retries: 0,
     writes: 0,
+    cmds: 0,
+    bytes: 0,
+    dups: 0,
     _race: 0,
     raceOnce() { api._race = 2; },
   };
@@ -213,7 +244,7 @@ function fakeRedis() {
   const make = (isTx) => {
     let watching = null, watchedAt = 0;
     const c = {
-      duplicate: () => ({ connect: async () => make(true) }),
+      duplicate: () => { api.dups += 1; return { connect: async () => make(true) }; },
       quit: async () => {},
       async watch(k) { watching = k; watchedAt = version; },
       async unwatch() { watching = null; },
@@ -222,6 +253,7 @@ function fakeRedis() {
          * what a slow network actually does: both clients see the same old
          * value, and one of them is late getting it home. Sleeping before the
          * read would just serialise them, and prove nothing. */
+        api.cmds += 1;
         const v = data.has(k) ? data.get(k) : null;
         if (isTx && api._race > 0) {
           api._race -= 1;
@@ -229,21 +261,22 @@ function fakeRedis() {
         }
         return v;
       },
-      async set(k, v) { data.set(k, v); version += 1; api.writes += 1; },
-      async publish(chan, payload) {
-        for (const f of subs.get(chan) || []) f(chan, payload);
+      async set(k, v) { api.cmds += 1; data.set(k, v); version += 1; api.writes += 1; },
+      /* The compare-and-set, with the script's semantics rather than a Lua
+       * interpreter: write only if the value is still the one that was read. */
+      async eval(script, { keys, arguments: args }) {
+        api.cmds += 1;
+        const cur = data.has(keys[0]) ? data.get(keys[0]) : null;
+        if (cur !== args[0]) { api.retries += 1; return 0; }
+        data.set(keys[0], args[1]);
+        version += 1;
+        api.writes += 1;
+        return 1;
       },
-      multi() {
-        const ops = [];
-        return {
-          set(k, v) { ops.push([k, v]); return this; },
-          async exec() {
-            if (watching && watchedAt !== version) { api.retries += 1; return null; }
-            for (const [k, v] of ops) { data.set(k, v); version += 1; api.writes += 1; }
-            watching = null;
-            return ops.map(() => 'OK');
-          },
-        };
+      async publish(chan, payload) {
+        api.cmds += 1;
+        api.bytes += payload.length;
+        for (const f of subs.get(chan) || []) f(chan, payload);
       },
     };
     return c;
