@@ -289,7 +289,12 @@
   /* Shrinkable, so it can never push the bottom of itself off the window: if
      the map takes its floor, this scrolls inside instead of being clipped. */
   .lower{flex:0 1 auto; min-height:0; border-top:1px solid var(--line);
-    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto}
+    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    /* Stop a scroll that hits the end of this panel from rubber-banding the
+       body behind it — the body is locked (overflow:hidden) during play, so
+       without this an overscroll here can read as the scroll simply dying. */
+    overscroll-behavior:contain}
 
   #map{grid-area:3/2/4/3; width:100%; height:100%; display:block; align-self:stretch;
     justify-self:stretch; min-width:0; min-height:0}
@@ -1027,7 +1032,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"40176ead50","branch":"main","dirty":true,"built":"2026-08-15T15:32:46Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"58934d786f","branch":"main","dirty":true,"built":"2026-08-15T20:30:39Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -6081,10 +6086,20 @@ function initPan() {
   svg.addEventListener("pointerdown", (e) => {
     if (e.button) return;
     PTRS.set(e.pointerId, at(e));
-    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    /* Capture only when a gesture is actually about to start. Capturing on
+     * every touch — including a one-finger touch on a map that is not
+     * `pannable`, meant to fall through to the page's own scroll — is what
+     * broke scrolling on iOS Safari: WebKit does not reliably fire
+     * pointercancel when its native scroll wins over a captured pointer, so
+     * DRAG/PTRS were left thinking a gesture was still live, and the *next*
+     * touch — anywhere, not just over the map — inherited that broken state.
+     * Leaving an ordinary swipe uncaptured means iOS never has a reason to
+     * hand it to us at all. */
     if (PTRS.size === 2) {                       // pinch beats pan
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       DRAG = { pinch: true, from: spread(), zoom: scaleNow(), moved: 99 };
     } else if (PTRS.size === 1 && svg.classList.contains("pannable")) {
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       DRAG = { from: at(e), pan: { x: PAN.x, y: PAN.y }, scale: scaleNow(), moved: 0 };
     }
   });
@@ -6105,6 +6120,7 @@ function initPan() {
     applyViewBox();
   });
   const end = (e) => {
+    if (!PTRS.has(e.pointerId)) return;   // not one of ours — a touch elsewhere
     PTRS.delete(e.pointerId);
     try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
     if (!DRAG || PTRS.size) return;
@@ -6115,8 +6131,14 @@ function initPan() {
                            { capture: true, once: true });
     }
   };
-  svg.addEventListener("pointerup", end);
-  svg.addEventListener("pointercancel", end);
+  /* On window, not svg: an uncaptured pointer — an ordinary scroll swipe that
+   * started over a non-pannable map — finishes wherever the finger lifts,
+   * which by then is very likely outside the map entirely once the page has
+   * scrolled under it. A listener on svg alone would never see that pointerup
+   * and PTRS would carry a dead entry forever, silently pushing the next
+   * two-finger touch into thinking a pinch was already half-started. */
+  window.addEventListener("pointerup", end);
+  window.addEventListener("pointercancel", end);
 
   /* Wheel and trackpad zoom, where they cannot be confused with scrolling the
    * page: on a wide screen the page does not scroll, and on a narrow one only

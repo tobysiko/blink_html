@@ -1025,10 +1025,20 @@ function initPan() {
   svg.addEventListener("pointerdown", (e) => {
     if (e.button) return;
     PTRS.set(e.pointerId, at(e));
-    try { svg.setPointerCapture(e.pointerId); } catch (err) {}
+    /* Capture only when a gesture is actually about to start. Capturing on
+     * every touch — including a one-finger touch on a map that is not
+     * `pannable`, meant to fall through to the page's own scroll — is what
+     * broke scrolling on iOS Safari: WebKit does not reliably fire
+     * pointercancel when its native scroll wins over a captured pointer, so
+     * DRAG/PTRS were left thinking a gesture was still live, and the *next*
+     * touch — anywhere, not just over the map — inherited that broken state.
+     * Leaving an ordinary swipe uncaptured means iOS never has a reason to
+     * hand it to us at all. */
     if (PTRS.size === 2) {                       // pinch beats pan
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       DRAG = { pinch: true, from: spread(), zoom: scaleNow(), moved: 99 };
     } else if (PTRS.size === 1 && svg.classList.contains("pannable")) {
+      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       DRAG = { from: at(e), pan: { x: PAN.x, y: PAN.y }, scale: scaleNow(), moved: 0 };
     }
   });
@@ -1049,6 +1059,7 @@ function initPan() {
     applyViewBox();
   });
   const end = (e) => {
+    if (!PTRS.has(e.pointerId)) return;   // not one of ours — a touch elsewhere
     PTRS.delete(e.pointerId);
     try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
     if (!DRAG || PTRS.size) return;
@@ -1059,8 +1070,14 @@ function initPan() {
                            { capture: true, once: true });
     }
   };
-  svg.addEventListener("pointerup", end);
-  svg.addEventListener("pointercancel", end);
+  /* On window, not svg: an uncaptured pointer — an ordinary scroll swipe that
+   * started over a non-pannable map — finishes wherever the finger lifts,
+   * which by then is very likely outside the map entirely once the page has
+   * scrolled under it. A listener on svg alone would never see that pointerup
+   * and PTRS would carry a dead entry forever, silently pushing the next
+   * two-finger touch into thinking a pinch was already half-started. */
+  window.addEventListener("pointerup", end);
+  window.addEventListener("pointercancel", end);
 
   /* Wheel and trackpad zoom, where they cannot be confused with scrolling the
    * page: on a wide screen the page does not scroll, and on a narrow one only

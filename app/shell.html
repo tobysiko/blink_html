@@ -289,7 +289,12 @@
   /* Shrinkable, so it can never push the bottom of itself off the window: if
      the map takes its floor, this scrolls inside instead of being clipped. */
   .lower{flex:0 1 auto; min-height:0; border-top:1px solid var(--line);
-    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto}
+    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    /* Stop a scroll that hits the end of this panel from rubber-banding the
+       body behind it — the body is locked (overflow:hidden) during play, so
+       without this an overscroll here can read as the scroll simply dying. */
+    overscroll-behavior:contain}
 
   #map{grid-area:3/2/4/3; width:100%; height:100%; display:block; align-self:stretch;
     justify-self:stretch; min-width:0; min-height:0}
