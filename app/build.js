@@ -8,12 +8,19 @@ const cp = require('child_process');
  * tree was dirty — because a build made from uncommitted edits is not the
  * commit it claims to be, and saying so is the whole point. */
 function gitStamp() {
-  const run = (cmd) => cp.execSync(cmd, { cwd: __dirname, stdio: ['ignore', 'pipe', 'ignore'] })
+  const root = __dirname + '/..';
+  const run = (cmd) => cp.execSync(cmd, { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
     .toString().trim();
   try {
+    /* "Dirty" must mean the SOURCE is uncommitted. The files this script
+     * writes are outputs of this very run, so counting them would make every
+     * build dirty forever — commit, rebuild, dirty again. */
+    const outs = ['Blink-play-v0.22.html', 'deploy', 'rulebook.html',
+                  'card-effects.html', 'map-objectives.html']
+      .map((f) => `':(exclude)${f}'`).join(' ');
     return { commit: run('git rev-parse --short=10 HEAD'),
              branch: run('git rev-parse --abbrev-ref HEAD'),
-             dirty: run('git status --porcelain') !== '',
+             dirty: run(`git status --porcelain -- . ${outs}`) !== '',
              built: new Date().toISOString().slice(0, 19) + 'Z' };
   } catch (e) {
     // no git, or not a checkout: say so rather than inventing a number
