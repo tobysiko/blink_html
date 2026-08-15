@@ -233,13 +233,18 @@ function pump(a) {
     REQ = r.value;
     /* Show the game from the seat that is being asked. With one human this
      * never moves; with several it is what makes hot seat work at all. */
-    if (G.isHuman(REQ.seat)) {
+    if (G.isHuman(REQ.seat) && !netOn()) {
+      /* Hot seat: the board moves to whoever is being asked, behind a cover.
+       * Remote: it stays on your own seat — the others' hands are not yours
+       * to see, and there is no device to hand over. */
       if (REQ.seat !== ME) { ME = REQ.seat; lastMeldLimit = null; }
       if (maybePass(REQ.seat)) { noteBlock(); render(); return; }
     }
     noteBlock();
     if (G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
-    render(); playEvents(); return;
+    render(); playEvents();
+    if (netOn()) drainNet();               // anything that arrived mid-round
+    return;
   }
   IT = null; REQ = null;
   BLOCK = null;
@@ -251,11 +256,20 @@ function pump(a) {
 }
 
 function answer(a, keepSel) {
-  if (REQ) {
-    const tok = encodeAns(REQ, a);
-    LOG.push(tok);
-    reportAnswered(REP, tok);
+  if (!REQ) return;
+  const tok = encodeAns(REQ, a);
+  /* Remote: the server decides the order things happen in, so this goes on
+   * the wire and takes effect when it comes back. One round trip, and nobody
+   * is ever looking at a board the others cannot see. */
+  if (netOn() && NET.status === "playing") {
+    if (REQ.seat !== netMySeat()) return;
+    if (!keepSel) SEL = blankSel();
+    if (!netSend({ t: "answer", step: LOG.length, token: tok })) netBar();
+    render();
+    return;
   }
+  LOG.push(tok);
+  reportAnswered(REP, tok);
   if (!keepSel) SEL = blankSel();
   pump(a);
 }
@@ -276,59 +290,27 @@ function answer(a, keepSel) {
  * already seen resolve.
  */
 let LOG = [], GARGS = null, MARK = 0, BLOCK = null;
-// the requests that belong to one seat's map turn, research and all
-const TURN_REQ = new Set(["turn", "waterexplore", "conquest", "retire", "buy",
-                          "colony"]);
+/* Which requests belong to one seat's map turn — the list lives in session.js,
+ * because the server enforces the same limit from the other side. */
 
 /* Where "this turn" starts. Called on every request and every answer; the
  * block is identified by round + seat, which a map turn has exactly one of. */
 function noteBlock() {
-  if (!G || !REQ || !G.isHuman(REQ.seat) || !TURN_REQ.has(REQ.type)) {
+  if (!G || !REQ || !G.isHuman(REQ.seat) || !TURN_REQ.includes(REQ.type)) {
     BLOCK = null;
     return;
   }
   const key = G.round + ":" + REQ.seat;
   if (key !== BLOCK) { BLOCK = key; MARK = LOG.length; }
 }
-const canUndo = () => !!(BLOCK !== null && LOG.length > MARK && !RESUMING);
+const canUndo = () => !!(BLOCK !== null && LOG.length > MARK && !RESUMING
+  && (!netOn() || (REQ && REQ.seat === netMySeat())));
 let RESUMING = false;
 
-/* An answer, written down so it survives its Game object. Card objects are
- * recorded by WHERE they were, not by what they were: the same replay puts the
- * same card in the same place, and two cards of one rank and suit are
- * genuinely interchangeable anyway. */
-function encodeAns(req, a) {
-  if (a === null || a === undefined) return null;
-  if (req.type === "turn") {
-    const st = req.state, p = G.P[req.seat], o = { kind: a.kind };
-    if (a.kind === "spend") { o.i = st.cards.indexOf(a.card); o.cell = a.cell; o.act = a.act; }
-    else if (a.kind === "cash") o.i = st.cards.indexOf(a.card);
-    else if (a.kind === "move") { o.src = a.src; o.dest = a.dest; }
-    else if (a.kind === "fortify") o.cell = a.cell;
-    else if (["colony", "conquest", "cashRow"].includes(a.kind)) o.i = p.vrow.indexOf(a.card);
-    return o;
-  }
-  if (req.options) {
-    const i = req.options.indexOf(a);
-    if (i >= 0) return { pick: i };
-  }
-  return { raw: a };                      // a plain {cell, terrain} and the like
-}
-
-function decodeAns(g, req, tok) {
-  if (tok === null || tok === undefined) return null;
-  if (req.type === "turn") {
-    const st = req.state, p = g.P[req.seat], k = tok.kind;
-    if (k === "spend") return { kind: k, card: st.cards[tok.i], cell: tok.cell, act: tok.act };
-    if (k === "cash") return { kind: k, card: st.cards[tok.i] };
-    if (k === "move") return { kind: k, src: tok.src, dest: tok.dest };
-    if (k === "fortify") return { kind: k, cell: tok.cell };
-    if (["colony", "conquest", "cashRow"].includes(k)) return { kind: k, card: p.vrow[tok.i] };
-    return { kind: k };                   // research, end
-  }
-  if (tok.pick !== undefined) return req.options[tok.pick];
-  return tok.raw;
-}
+/* The codec lives in session.js, with the server that also replays these
+ * tokens — one encoder and one decoder, or a whole table desynchronises. */
+const encodeAns = (req, a) => encodeAnswer(G, req, a);
+const decodeAns = (g, req, tok) => decodeAnswer(g, req, tok);
 
 /* Deal the same game again and give the first `len` answers back to it. */
 function replay(len) {
@@ -379,12 +361,15 @@ function updateUndo() {
 
 function doUndo() {
   if (!canUndo()) return;
+  /* Remote: the server holds the same limit and works it out from the log
+   * rather than taking this page's word for it. */
+  if (netOn() && NET.status === "playing") { netSend({ t: "undo" }); return; }
   RESUMING = true;
   const target = LOG.length - 1;
   LOG.length = target;
   const out = replay(target);
   G = out.g; IT = out.it; REQ = out.req;
-  G.events.length = 0;                    // do not re-animate the whole game
+  if (G.events) G.events.length = 0;      // do not re-animate the whole game
   SEL = blankSel(); lastZone = null; lastMeldLimit = null;
   /* Research is a multi-step action, so landing back inside one has to put the
    * panel back in the state the request implies. */
@@ -443,6 +428,7 @@ function restartGame() {
 }
 function abortGame() {
   if (!G || !window.confirm(t("nav.abort.ask"))) return;
+  if (netOn()) { netClose(); history.replaceState(null, "", location.pathname); }
   G = null; IT = null; REQ = null; LOG = []; BLOCK = null; MARK = 0;
   SEL = blankSel(); RESEARCH = null; TRICK = null;
   $("#setup").classList.remove("hide");
@@ -2072,6 +2058,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   setLang(pickLang());
   applyLang();
+  netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
 
@@ -2131,7 +2118,272 @@ function renderNav() {
   };
   set("#undo", t("nav.undo"), t("nav.undo.tip"));
   set("#restart", t("nav.restart"), t("nav.restart.tip"));
+  /* Re-dealing is not one client's decision when other people are at the
+   * table, so it is simply not offered there. */
+  const rs = $("#restart");
+  if (rs) rs.hidden = netOn();
   set("#abort", t("nav.abort"), t("nav.abort.tip"));
   updateFlag();
   updateUndo();
+}
+
+/* =====================================================================
+ * Playing with people who are not in the room
+ *
+ * The local game and the remote one are the SAME game — same engine, same
+ * screen, same clicks. Three things differ, and they are all consequences of
+ * one rule: the server decides the order in which answers happen.
+ *
+ *   1. Your answer is sent, not applied. It takes effect when it comes back,
+ *      because a client that moved first and asked afterwards would be showing
+ *      you a board nobody else can see.
+ *   2. The view never follows somebody else's turn. In hot seat the board
+ *      moves to whoever is being asked; here it stays on your own seat, and
+ *      the other players' hands are none of your business.
+ *   3. Undo is a request. The server holds the same limit — back to the start
+ *      of your own map turn — and works it out from the log rather than
+ *      trusting you about it.
+ * ===================================================================== */
+
+let LOBBY = null;                  // the last state message, while we wait
+
+function netHandlers() {
+  return {
+    welcome: (m) => {
+      LOBBY = m.state;
+      if (m.state.phase === "lobby") showLobby();
+      else startNetGame(m.state);          // walked back into a running game
+    },
+    seats: (st) => { LOBBY = st; if (!G) showLobby(); else renderTable(); },
+    start: (st) => startNetGame(st),
+    answer: (m) => applyRemote(m.step, m.token),
+    undo: (m) => applyRemoteUndo(m.step),
+    sync: (st) => resyncFrom(st),
+    status: () => netBar(),
+    error: (why) => netSay(t(why) === why ? why : t(why), true),
+  };
+}
+
+/* ---- the lobby ---- */
+
+function showLobby() {
+  document.body.classList.add("lobby");
+  document.body.classList.remove("playing");
+  netBar();
+  const st = LOBBY;
+  if (!st) return;
+  const iAmHost = st.seats.some((x) => x.you && x.seat === st.host);
+  $("#lobby-lede").textContent = iAmHost ? t("net.lobby.ledeHost")
+    : t("net.lobby.lede", { host: (st.seats[st.host] || {}).name || seatName(st.host) });
+  $("#lobby-link").value = netLink(st.code);
+  $("#lobby-copy").textContent = t("net.copy");
+  $("#lobby-code").textContent = t("net.codeIs", { code: st.code });
+  $("#lobby-note").textContent = t("net.note", {
+    n: st.seats.filter((x) => x.taken).length, total: st.n });
+
+  const box = $("#lobby-seats");
+  box.innerHTML = "";
+  for (const x of st.seats) {
+    const row = el("div", "lseat" + (x.you ? " mine" : "") + (x.taken && !x.here ? " away" : ""));
+    row.appendChild(el("span", "dot")).style.background = SEAT_C[x.seat];
+    row.appendChild(el("span", "who", x.taken ? x.name : t("net.seat.free")));
+    if (x.you) row.appendChild(el("span", "tag", t("net.seat.you")));
+    else if (x.taken && !x.here) row.appendChild(el("span", "tag", t("net.seat.away")));
+    else if (!x.taken) {
+      const b = el("button", null, t("net.seat.take"));
+      b.addEventListener("click", () => netSend({ t: "sit", seat: x.seat }));
+      row.appendChild(b);
+    }
+    box.appendChild(row);
+  }
+  const go = $("#lobby-start");
+  go.textContent = t("net.start");
+  go.hidden = !iAmHost;
+  $("#lobby-leave").textContent = t("net.leave");
+}
+
+/* ---- the game itself ---- */
+
+function startNetGame(st) {
+  LOBBY = st;
+  document.body.classList.remove("lobby");
+  lastMeldLimit = null;
+  GARGS = { n: st.n, seed: st.seed,
+            opts: Object.assign({ humans: st.humans.slice() }, st.rules) };
+  HUMANS = st.humans.slice();
+  ME = netMySeat();
+  PASSED = ME;                                  // no device is being handed over
+  REP = newReport(BUILD, GARGS, {
+    lang: getLang(), session: st.code,
+    players: st.seats.map((x) => ({ seat: x.seat, kind: x.taken ? "human" : "bot",
+                                    style: null, name: x.name })),
+  });
+  NETQ = [];
+  ZOOM = null; PAN = { x: 0, y: 0 };
+  hidePass();
+  $("#setup").classList.add("hide");
+  $("#game").classList.add("show");
+  document.body.classList.add("playing");
+  /* Straight to the position, whether that is the start or the middle of a
+   * game somebody is walking back into. */
+  rebuildFrom(st.log || []);
+  netBar();
+}
+
+/* Build the game from a list of answers and nothing else.
+ *
+ * Not by feeding them to the running generator one at a time: `nextRound` is
+ * asynchronous — it is on a timer so bot turns can be watched — so a loop that
+ * pumped answers would stop dead at the first round boundary with the rest of
+ * the game unplayed. Replay is synchronous, which is exactly what catching up
+ * and resynchronising both need. It is also the same function undo uses.
+ */
+function rebuildFrom(log) {
+  LOG = log.slice();
+  const out = replay(LOG.length);
+  G = out.g; IT = out.it; REQ = out.req;
+  if (G && G.events) G.events.length = 0;       // history, not a replay to watch
+  SEL = blankSel(); RESEARCH = null; lastZone = null;
+  MARK = 0; BLOCK = null; RESUMING = false;
+  syncTrick();
+  noteBlock();
+  render();
+  if (!IT && G && !G.finished()) nextRound();   // a round boundary: carry on
+}
+
+/* Answers arrive from everybody, including as the echo of your own. They are
+ * queued rather than applied on the spot, because between two rounds this
+ * client is briefly not waiting on anything — the next round is on a timer —
+ * and an answer that turned up in that gap would otherwise look like a
+ * desynchronisation and trigger a pointless full resync. */
+let NETQ = [];
+let DRAINING = false;
+
+function applyRemote(step, tok) {
+  NETQ.push({ step, tok });
+  drainNet();
+}
+
+function drainNet() {
+  if (DRAINING || !G) return;
+  DRAINING = true;
+  try {
+    while (NETQ.length) {
+      const { step, tok } = NETQ[0];
+      if (step < LOG.length) { NETQ.shift(); continue; }   // already have it
+      if (step > LOG.length) {                             // we missed one
+        NETQ.length = 0;
+        netSend({ t: "sync" });
+        return;
+      }
+      if (!REQ) return;                       // between rounds; try again later
+      NETQ.shift();
+      LOG.push(tok);
+      reportAnswered(REP, tok);
+      const a = decodeAns(G, REQ, tok);
+      SEL = blankSel();
+      pump(a);
+    }
+  } finally { DRAINING = false; }
+}
+
+function applyRemoteUndo(step) {
+  if (!G || step >= LOG.length) return;
+  NETQ.length = 0;
+  const kept = LOG.slice(0, step);
+  reportUndone(REP, step);
+  rebuildFrom(kept);
+}
+
+/* When the server and this page disagree, the server is right — and the cheap
+ * way to agree again is to build the whole game from the log rather than to
+ * work out which message went missing. */
+function resyncFrom(st) {
+  if (!st) return;
+  if (!G || st.phase === "lobby") { LOBBY = st; return showLobby(); }
+  NETQ.length = 0;
+  rebuildFrom(st.log || []);
+}
+
+/* ---- the two lines a player sees about the connection ---- */
+
+function netBar() {
+  const bar = $("#netbar");
+  if (!bar) return;
+  if (!netOn() || NET.status !== "lost") { bar.hidden = true; return; }
+  bar.textContent = t("net.lost");
+  bar.hidden = false;
+}
+function netSay(text, bad) {
+  const n = $("#net-msg");
+  if (!n) return;
+  n.textContent = text || "";
+  n.classList.toggle("bad", !!bad);
+}
+
+/* ---- wiring the setup page ---- */
+
+function netSetup() {
+  const box = $("#remote");
+  if (!box) return;
+  if (!BUILD.api) { box.hidden = true; return; }   // a local file has no table
+  box.hidden = false;
+  const nameBox = $("#net-name");
+  if (!nameBox.value) nameBox.value = defaultName();
+
+  $("#net-host").addEventListener("click", () => {
+    netSay(t("net.opening"));
+    netCreate(Object.assign({ n: playerCount(), build: BUILD.commit },
+                            netRules())).then((code) => {
+      netConnect(code, nameBox.value.trim(), netHandlers());
+    }).catch(() => netSay(t("net.failed"), true));
+  });
+  $("#net-join").addEventListener("click", () => joinCode($("#net-code").value));
+  $("#net-code").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") joinCode($("#net-code").value);
+  });
+  $("#lobby-start").addEventListener("click", () => netSend({ t: "start" }));
+  $("#lobby-leave").addEventListener("click", () => {
+    netClose();
+    document.body.classList.remove("lobby");
+    history.replaceState(null, "", location.pathname);
+  });
+  $("#lobby-copy").addEventListener("click", () => {
+    const f = $("#lobby-link");
+    f.select();
+    const done = () => { $("#lobby-copy").textContent = t("net.copied"); };
+    if (navigator.clipboard) navigator.clipboard.writeText(f.value).then(done, done);
+    else { try { document.execCommand("copy"); } catch (e) { /* select is enough */ } done(); }
+  });
+
+  /* Arriving on somebody's link: no setup page, just a name and a seat. */
+  const code = netCodeInUrl();
+  if (code) {
+    $("#net-code").value = code;
+    netSay(t("net.joining", { code }));
+    joinCode(code);
+  }
+}
+
+function joinCode(raw) {
+  const code = String(raw || "").trim().toUpperCase();
+  if (code.length < 4) return netSay(t("net.badcode"), true);
+  try { netConnect(code, $("#net-name").value.trim(), netHandlers()); }
+  catch (e) { netSay(t("net.failed"), true); }
+}
+
+/* The rules a hosted table is played under: whatever the setup page says. */
+function netRules() {
+  const mv = $("#meld-rules").value;
+  return {
+    seed: Number($("#seed").value) || undefined,
+    trickRule: $("#trick-rule").value,
+    deck: $("#deck").value,
+    objectives: $("#objectives").value,
+    retireRule: $("#retire-rule").value,
+    botLevel: radioValue("#bot-level", "normal"),
+    comboMelds: mv === "combo" || mv === "both",
+    friendsOf10: mv === "friends" || mv === "both",
+    growLimits: $("#grow-limits").value === "grow",
+  };
 }

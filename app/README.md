@@ -401,6 +401,72 @@ reaching for the rules never costs you a game. `build.js` copies them from
 `../source/` next to the page in both builds — a rules link that 404s is worse
 than no link at all.
 
+## Playing with people who are not in the room
+
+A link, a name, a seat. No account, nothing to install, and any seat nobody
+takes is played by a bot.
+
+**Nothing about the board crosses the wire.** A game is a pure function of its
+seed, its options and the answers people gave, so a session is:
+
+```
+seed · options · who is sitting where · the list of answers
+```
+
+Every client runs its own copy of the engine and stays in step by applying the
+same answers in the same order. A whole finished three-player game is **1,164
+bytes** on the wire, reconnecting is "here is the list again", and joining
+halfway through is the same replay the undo button already uses.
+
+**The server is still the authority.** Trusting clients about whose turn it is
+would be trusting them about everything, so `session.js` replays the log, finds
+the request the engine is waiting on, and accepts an answer only if it comes
+from the player holding that seat, arrives at the step the log is actually at,
+and decodes into a legal option. Four ways a message can be wrong, all four
+refused *by name* — a server that merely survives bad input has no idea it
+received any, and an exception inside a Durable Object takes the session down.
+
+Three things differ from a local game, all consequences of one rule — the
+server decides the order answers happen in:
+
+| | local | remote |
+|---|---|---|
+| your answer | applied at once | sent, and applied when it comes back |
+| the view | follows whoever is asked (hot seat) | stays on your own seat |
+| undo | a local rewind | a request; the server holds the same limit |
+
+Reconnecting is expected rather than exceptional: phones sleep and trains go
+into tunnels. The player token is kept per session, reconnection backs off and
+retries, and a bar across the bottom says so — a game that silently stops
+responding is indistinguishable from one that has crashed.
+
+### Where it runs
+
+`server/` holds a Cloudflare Worker with one Durable Object per session, and
+`server/dev.js`, the same service on your own machine. Both are **pure
+transport** around `sessionHandle()` in `app/session.js`, because two
+implementations of "who may do what" is one too many and the one that would
+drift is the one nobody tests.
+
+```
+node server/build.js                    # glue engine + session + worker
+node server/dev.js                      # http://localhost:8787
+BLINK_API=http://localhost:8787 node app/build.js
+npx wrangler deploy                     # from server/
+```
+
+A build with no `BLINK_API` simply does not offer the feature: the standalone
+file has to work with no network at all.
+
+`session_test.js` checks the rules with no sockets in the way, including a
+whole game played to the end. `net_test.js` runs the real thing — the dev
+server on a port, two jsdom pages loading the built file, a real WebSocket —
+and watches for the failure this architecture could plausibly have: **two
+boards that quietly stop agreeing**, which would leave two people playing
+different games while both screens look fine. It compares the two positions on
+every single move, and drops the guest's connection halfway through to prove it
+comes back to the same board and the same seat.
+
 ## Taking a move back
 
 The header carries what you do to the *game* rather than in it: **Undo**,
@@ -625,6 +691,9 @@ node zone_test.js            # every step lights one area, and it is clickable
 node view_test.js            # hexes stay clickable; big boards pan, not shrink
 node setup_test.js           # the setup page, hot seat, watch mode, restart, leave
 node undo_test.js            # undo rewinds your turn exactly, and no further
+node report_test.js          # the report re-deals the game it claims to record
+node session_test.js         # who may answer what, and when — no sockets
+node net_test.js             # two real browsers, one table, one socket
 node ui_playthrough_test.js  # clicks four games to completion through the DOM
 ```
 

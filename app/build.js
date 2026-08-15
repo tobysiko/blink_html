@@ -40,14 +40,16 @@ const strip = (f) => fs.readFileSync(f, 'utf8')
   .replace(/if \(typeof module[\s\S]*$/, '');       // drop the node export tail
 const eng = strip('engine.js');
 const lang = strip('i18n.js');
+const sess = strip('session.js');
 const rep = strip('report.js');
+const net = fs.readFileSync('net.js', 'utf8');
 const ui  = fs.readFileSync('ui.js', 'utf8');
 const out = fs.readFileSync('shell.html', 'utf8')
   .replace('/*__ENGINE__*/',
     "document.documentElement.className += ' js';   // scripts run: hide the no-JS notice\n"
     + 'const BUILD = ' + JSON.stringify(BUILD) + ';\n'
-    + lang + '\n' + eng + '\n' + rep)
-  .replace('/*__UI__*/', ui);
+    + lang + '\n' + eng + '\n' + sess + '\n' + rep)
+  .replace('/*__UI__*/', net + '\n' + ui);
 fs.writeFileSync('../Blink-play-v0.22.html', out);
 console.log('built ../Blink-play-v0.22.html', (out.length/1024).toFixed(1)+' KB');
 

@@ -88,7 +88,16 @@ setTimeout(() => {
   ok(!!d.querySelector('#advanced > summary .chev'),
      'Advanced has no visual cue that it expands');
 
-  /* Somewhere to read the actual rules, without leaving the game. */
+  /* Somewhere to read the actual rules, without leaving the game — and the
+   * objectives filed as what they are, a variant you have to switch on. */
+  const groups = qa('#setup .docs');
+  ok(groups.length === 2, `${groups.length} document groups, expected rules and variants`);
+  ok(groups[1] && groups[1].contains(d.querySelector('#doc-objectives')),
+     'map objectives is not under the variant-rules heading');
+  ok(groups[0] && !groups[0].contains(d.querySelector('#doc-objectives')),
+     'map objectives is still filed with the base rules');
+  ok(groups[1] && /variant|Variant/i.test(groups[1].querySelector('.sublab').textContent),
+     'the second group is not headed as variant rules');
   for (const id of ['#doc-rules', '#doc-effects', '#doc-objectives']) {
     const a = d.querySelector(id);
     ok(!!a && a.getAttribute('href'), `${id} is missing or has no href`);

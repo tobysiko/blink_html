@@ -1,0 +1,23 @@
+name = "blink-sessions"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# One Durable Object per session: a small piece of state with a single writer
+# and a handful of sockets on it, which is exactly what they are for.
+[[durable_objects.bindings]]
+name = "SESSIONS"
+class_name = "BlinkSession"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["BlinkSession"]
+
+# Playtest reports land here. Create it once:
+#   npx wrangler r2 bucket create blink-reports
+[[r2_buckets]]
+binding = "REPORTS"
+bucket_name = "blink-reports"
+
+# Reading reports back needs a key, because they carry names and free text
+# people wrote for the designer. Set it once, never commit it:
+#   npx wrangler secret put ADMIN_KEY

@@ -84,6 +84,56 @@
   .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
     font-weight:600; color:var(--deep)}
 
+  /* play with friends */
+  .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
+    margin-top:22px; background:#FDFCF7}
+  .remote > legend{padding:0 6px; margin-left:-6px}
+  .remote[hidden]{display:none}
+  .remoterow{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .remoterow .go{flex:none}
+  .remoterow .or{color:var(--hint); font-size:12px}
+  .remoterow input{flex:1; min-width:110px; padding:10px; min-height:44px;
+    border:1px solid var(--line); border-radius:8px; font:inherit;
+    text-transform:uppercase; letter-spacing:1px; box-sizing:border-box}
+  /* a label only a screen reader needs: the placeholder says it to everyone else */
+  .sr{position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap}
+  #net-msg:empty{display:none}
+  #net-msg{margin-top:10px; padding:8px 10px; border-radius:8px; background:#EFEBE1}
+  #net-msg.bad{background:#FBE6DC; color:#8C3A16}
+
+  #lobby{display:none}
+  body.lobby #lobby{display:block}
+  body.lobby #setup, body.lobby #game{display:none}
+  #lobby .wrap2{max-width:600px; margin:32px auto 60px; background:var(--panel);
+    border:1px solid var(--line); border-radius:12px; padding:24px}
+  #lobby h2{margin:0 0 6px; color:var(--deep); font-size:22px}
+  #lobby .lede{color:var(--hint); margin:0 0 20px; font-size:13.5px}
+  #lobby-link{font-family:ui-monospace, Menlo, monospace; font-size:12.5px}
+  #lobby-seats{margin:16px 0 2px; border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line); padding:4px 0}
+  #lobby .go.big{margin-top:16px}
+  #lobby #lobby-leave{margin-top:8px; width:100%}
+  .lseat{display:flex; align-items:center; gap:10px; padding:9px 0;
+    border-top:1px solid #EFEBE1}
+  .lseat:first-child{border-top:0}
+  .lseat .dot{width:16px; height:16px; border-radius:50%; flex:none;
+    border:1.5px solid rgba(0,0,0,.35)}
+  .lseat .who{flex:1; font-weight:600}
+  .lseat .tag{font-size:11.5px; color:var(--hint); text-transform:uppercase;
+    letter-spacing:.5px}
+  .lseat.mine{background:#EAF2E6; border-radius:8px; padding-left:8px;
+    padding-right:8px; margin:2px -8px}
+  .lseat.away .who{opacity:.5}
+  .lseat button{border:1px solid var(--line); border-radius:8px; background:#fff;
+    font:inherit; font-size:12px; padding:6px 10px; min-height:36px; cursor:pointer}
+
+  /* the connection, when it is not fine */
+  #netbar{position:fixed; left:0; right:0; bottom:0; z-index:70; padding:9px 14px;
+    background:#8C3A16; color:#FFF3E8; font-size:12.5px; font-weight:600;
+    text-align:center}
+  #netbar[hidden]{display:none}
+
   #nojs{max-width:620px; margin:40px auto; padding:18px 20px; background:#FFF4E2;
     border:2px solid #C9992B; border-radius:10px; font-size:14px; line-height:1.5}
   #nojs b{color:#7A5C13}
@@ -187,6 +237,8 @@
   /* where to read the actual rules */
   .docs{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:20px;
     padding-top:16px; border-top:1px solid var(--line)}
+  /* a second group is a sub-heading, not a second section */
+  .docs + .docs{margin-top:10px; padding-top:0; border-top:0}
   .docs .sublab{width:auto}
   .doclink{display:inline-flex; align-items:center; min-height:38px; padding:6px 12px;
     border:1px solid var(--line); border-radius:20px; background:#fff;
@@ -738,6 +790,8 @@
 
 <!-- Raised mid-game, when the confusion is still fresh. Where you were is
      taken from the game, not typed. -->
+<div id="netbar" hidden></div>
+
 <div id="flagbox" hidden>
   <div class="sheet">
     <h3 id="flag-title"></h3>
@@ -866,19 +920,66 @@
 
   <button class="go big" id="start" data-i18n="setup.start">Start</button>
 
+  <!-- Two groups, because they are two different promises. The first is the
+       game as it stands; the second is only in play if somebody switched it
+       on in Advanced. Filing them together would imply the objectives are
+       part of the base rules, which they are not. -->
   <nav class="docs" aria-labelledby="docs-label">
     <span class="sublab" id="docs-label" data-i18n="setup.docs">Read the rules</span>
     <a class="doclink" id="doc-rules" href="rulebook.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.rules">Rulebook</a>
     <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.effects">Card effects</a>
+  </nav>
+  <nav class="docs" aria-labelledby="vdocs-label">
+    <span class="sublab" id="vdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
     <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.objectives">Map objectives</a>
   </nav>
 
+  <!-- Playing with people who are not in the room. Only offered when the
+       build knows where the session service is. -->
+  <fieldset class="field remote" id="remote" hidden>
+    <legend data-i18n="net.title">Play with friends</legend>
+    <p class="hint" data-i18n="net.lede"></p>
+    <div class="field">
+      <label for="net-name" data-i18n="net.name">Your name</label>
+      <input id="net-name" type="text" maxlength="24" autocomplete="nickname">
+    </div>
+    <div class="remoterow">
+      <button type="button" class="go" id="net-host" data-i18n="net.host"></button>
+      <span class="or" data-i18n="net.or">or</span>
+      <label class="sr" for="net-code" data-i18n="net.code.ph">table code</label>
+      <input id="net-code" type="text" maxlength="9" autocapitalize="characters"
+        spellcheck="false" placeholder="table code">
+      <button type="button" class="go alt" id="net-join" data-i18n="net.join"></button>
+    </div>
+    <p class="hint" id="net-msg"></p>
+  </fieldset>
+
   <!-- Which build this is. A playtest report that cannot name its version is
        an anecdote, so the version is on the page, not buried in a comment. -->
   <p class="buildline" id="buildline"></p>
+</div>
+
+<!-- The lobby: who has arrived, where they are sitting, and the link. -->
+<div id="lobby">
+  <div class="wrap2">
+    <h2 data-i18n="net.lobby">Waiting to start</h2>
+    <p class="lede" id="lobby-lede"></p>
+    <div class="field">
+      <label for="lobby-link" data-i18n="net.link">Send this link</label>
+      <div class="seedrow">
+        <input id="lobby-link" type="text" readonly>
+        <button type="button" id="lobby-copy" class="go alt"></button>
+      </div>
+      <p class="hint" id="lobby-code"></p>
+    </div>
+    <div id="lobby-seats"></div>
+    <p class="hint" id="lobby-note"></p>
+    <button class="go big" id="lobby-start"></button>
+    <button class="go alt" id="lobby-leave"></button>
+  </div>
 </div>
 
 <div id="game">
@@ -914,6 +1015,9 @@
           data-i18n="setup.docs.rules">Rulebook</a>
         <a class="doclink" href="card-effects.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.effects">Card effects</a>
+      </nav>
+      <nav class="docs gamedocs" aria-labelledby="gvdocs-label">
+        <span class="sublab" id="gvdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
         <a class="doclink" href="map-objectives.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.objectives">Map objectives</a>
       </nav>
@@ -923,7 +1027,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":null,"reportUrl":null,"commit":"f4faad79e9","branch":"main","dirty":true,"built":"2026-08-15T09:43:18Z"};
+const BUILD = {"version":"v0.22","api":null,"reportUrl":null,"commit":"c85a0e2601","branch":"main","dirty":true,"built":"2026-08-15T13:43:53Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1004,6 +1108,7 @@ en: {
   "setup.docs.rules": "Rulebook",
   "setup.docs.effects": "Card effects",
   "setup.docs.objectives": "Map objectives",
+  "setup.docs.variantRules": "Variant rules",
   "build.line": "{version} · build {commit} · {built}",
   "build.dirty": "built from uncommitted edits",
 
@@ -1015,6 +1120,52 @@ en: {
   "step.conquest": "a conquest", "step.objective": "choosing an objective",
   "step.colony": "founding a colony", "step.none": "between turns",
   "log.flagged": "Flagged round {r} for the designer.",
+
+  "net.title": "Play with friends",
+  "net.lede": "Open a table and send the link. Anyone with it can take a seat — no account, nothing to install. Empty seats are played by bots.",
+  "net.name": "Your name",
+  "net.host": "Open a table",
+  "net.join": "Join",
+  "net.or": "or",
+  "net.code.ph": "table code",
+  "net.opening": "Opening a table…",
+  "net.joining": "Joining {code}…",
+  "net.failed": "Could not reach the table service. Try again, or play locally.",
+  "net.badcode": "No table with that code. Check it and try again.",
+  "net.lobby": "Waiting to start",
+  "net.lobby.lede": "The table is open. It starts when {host} says so.",
+  "net.lobby.ledeHost": "Send the link to the others. Start whenever you like — any empty seat is played by a bot.",
+  "net.link": "Send this link",
+  "net.copy": "Copy",
+  "net.copied": "Copied",
+  "net.codeIs": "Or read out the code: {code}",
+  "net.seat.you": "you",
+  "net.seat.free": "free — a bot will play it",
+  "net.seat.away": "away",
+  "net.seat.take": "Sit here",
+  "net.start": "Start the game",
+  "net.leave": "Leave the table",
+  "net.note": "{n} of {total} seats taken.",
+  "net.waiting": "Waiting for {who}…",
+  "net.lost": "Connection lost — trying again…",
+  "net.back": "Back.",
+  "net.over": "The table has closed.",
+  "session.started": "That game has already started.",
+  "session.full": "That table is full.",
+  "session.notHost": "Only the player who opened the table can start it.",
+  "session.notYourTurn": "It is not your turn.",
+  "session.seatTaken": "Somebody is already sitting there.",
+  "session.stale": "Somebody got there first.",
+  "session.illegal": "The table refused that move.",
+  "session.unknown": "This table does not know you — try the link again.",
+  "session.nobody": "Nobody is sitting down yet.",
+  "session.noUndo": "There is nothing to take back this turn.",
+  "session.notPlaying": "The game is not running.",
+  "session.noRequest": "The game is not waiting for anybody.",
+  "session.noSeat": "No such seat.",
+  "session.badMessage": "The table did not understand that.",
+  "session.unknownMessage": "The table did not understand that.",
+  "session.threw": "The table refused that move.",
 
   "flag.btn": "Flag",
   "flag.tip": "Something confusing, wrong or annoying? Mark this moment.",
@@ -1362,6 +1513,7 @@ de: {
   "setup.docs.rules": "Regelheft",
   "setup.docs.effects": "Karteneffekte",
   "setup.docs.objectives": "Kartenziele",
+  "setup.docs.variantRules": "Varianten",
   "build.line": "{version} · Build {commit} · {built}",
   "build.dirty": "aus nicht eingecheckten Änderungen gebaut",
 
@@ -1373,6 +1525,52 @@ de: {
   "step.conquest": "eine Eroberung", "step.objective": "Ziel wählen",
   "step.colony": "Kolonie gründen", "step.none": "zwischen den Zügen",
   "log.flagged": "Runde {r} für den Autor gemeldet.",
+
+  "net.title": "Mit Freunden spielen",
+  "net.lede": "Tisch eröffnen und den Link verschicken. Wer ihn hat, kann Platz nehmen — kein Konto, keine Installation. Freie Plätze übernehmen Bots.",
+  "net.name": "Dein Name",
+  "net.host": "Tisch eröffnen",
+  "net.join": "Beitreten",
+  "net.or": "oder",
+  "net.code.ph": "Tischcode",
+  "net.opening": "Tisch wird eröffnet…",
+  "net.joining": "Beitritt zu {code}…",
+  "net.failed": "Der Tischdienst ist nicht erreichbar. Noch einmal versuchen — oder lokal spielen.",
+  "net.badcode": "Kein Tisch mit diesem Code. Bitte prüfen.",
+  "net.lobby": "Warten auf den Start",
+  "net.lobby.lede": "Der Tisch ist offen. {host} startet die Partie.",
+  "net.lobby.ledeHost": "Schick den anderen den Link. Starte, wann du willst — freie Plätze übernehmen Bots.",
+  "net.link": "Diesen Link verschicken",
+  "net.copy": "Kopieren",
+  "net.copied": "Kopiert",
+  "net.codeIs": "Oder den Code vorlesen: {code}",
+  "net.seat.you": "du",
+  "net.seat.free": "frei — ein Bot übernimmt",
+  "net.seat.away": "abwesend",
+  "net.seat.take": "Hier setzen",
+  "net.start": "Partie starten",
+  "net.leave": "Tisch verlassen",
+  "net.note": "{n} von {total} Plätzen besetzt.",
+  "net.waiting": "Warten auf {who}…",
+  "net.lost": "Verbindung verloren — neuer Versuch…",
+  "net.back": "Wieder da.",
+  "net.over": "Der Tisch ist geschlossen.",
+  "session.started": "Diese Partie läuft bereits.",
+  "session.full": "Dieser Tisch ist voll.",
+  "session.notHost": "Nur wer den Tisch eröffnet hat, kann starten.",
+  "session.notYourTurn": "Du bist nicht an der Reihe.",
+  "session.seatTaken": "Dort sitzt schon jemand.",
+  "session.stale": "Jemand war schneller.",
+  "session.illegal": "Der Tisch hat diesen Zug abgelehnt.",
+  "session.unknown": "Dieser Tisch kennt dich nicht — bitte den Link erneut öffnen.",
+  "session.nobody": "Es sitzt noch niemand.",
+  "session.noUndo": "In diesem Zug gibt es nichts zurückzunehmen.",
+  "session.notPlaying": "Die Partie läuft nicht.",
+  "session.noRequest": "Die Partie wartet auf niemanden.",
+  "session.noSeat": "Diesen Platz gibt es nicht.",
+  "session.badMessage": "Der Tisch hat das nicht verstanden.",
+  "session.unknownMessage": "Der Tisch hat das nicht verstanden.",
+  "session.threw": "Der Tisch hat diesen Zug abgelehnt.",
 
   "flag.btn": "Melden",
   "flag.tip": "Etwas unklar, falsch oder ärgerlich? Diesen Moment markieren.",
@@ -4055,6 +4253,448 @@ function playOut(n, seed, opts) {
 }
 
 
+/* A game of Blink played by people who are not in the same room.
+ *
+ * The whole design rests on one property the engine already has: a game is a
+ * pure function of its seed, its options and the answers people gave. So a
+ * session does not need to hold a board, a hand, or a map. It holds:
+ *
+ *     seed · options · who is sitting where · the list of answers
+ *
+ * Every client runs its own copy of the engine and stays in step by applying
+ * the same answers in the same order. Nothing about the board crosses the
+ * wire, which is why a session is a few hundred bytes and why reconnecting is
+ * just "here is the list again".
+ *
+ * The server is still the authority, because trusting clients about whose turn
+ * it is would be trusting them about everything. It replays the log, finds the
+ * request the engine is waiting on, and accepts an answer only if:
+ *
+ *   - it comes from the player holding that seat,
+ *   - it arrives at the step the log is actually at (so a double-click or a
+ *     race cannot play the same card twice),
+ *   - and the engine can decode it into a legal option.
+ *
+ * Undo is the same rule seen from the other side: a player may drop answers
+ * back to the point where their own map turn began, and no further.
+ *
+ * This file has no idea what a WebSocket is. It is a set of functions over a
+ * plain object, so it runs unchanged in a Cloudflare Durable Object, in a
+ * throwaway node server, and inside a test with no sockets at all.
+ */
+
+const SESSION_PROTOCOL = 1;
+
+/* Codes are read out loud and typed on phones, so: no vowels (no accidental
+ * words), no 0/O or 1/I, and a dash in the middle to make it sayable. */
+const CODE_ALPHABET = "23456789BCDFGHJKLMNPQRSTVWXYZ";
+function makeCode(rand) {
+  const r = rand || Math.random;
+  let s = "";
+  for (let i = 0; i < 8; i++) {
+    if (i === 4) s += "-";
+    s += CODE_ALPHABET[Math.floor(r() * CODE_ALPHABET.length)];
+  }
+  return s;
+}
+
+/* Somebody who has not typed a name still needs one on the table. */
+const DEFAULT_NAMES = [
+  "Wanderer", "Mason", "Navigator", "Cartographer", "Forager", "Shepherd",
+  "Smith", "Miner", "Weaver", "Herald", "Sailor", "Astronomer",
+];
+function defaultName(rand, taken) {
+  const r = rand || Math.random;
+  const free = DEFAULT_NAMES.filter((n) => !(taken || []).includes(n));
+  const pool = free.length ? free : DEFAULT_NAMES;
+  return pool[Math.floor(r() * pool.length)];
+}
+
+function newSession(opts, rand) {
+  const o = opts || {};
+  const n = Math.min(4, Math.max(2, o.n || 3));
+  return {
+    protocol: SESSION_PROTOCOL,
+    code: o.code || makeCode(rand),
+    build: o.build || null,             // which commit the host was running
+    created: new Date().toISOString(),
+    touched: new Date().toISOString(),
+    n,
+    seed: o.seed === undefined ? Math.floor((rand || Math.random)() * 1e6) : o.seed,
+    /* Everything the Game constructor takes except `humans`, which is derived
+     * from who has actually claimed a seat when the host presses start. */
+    rules: {
+      trickRule: o.trickRule || "dock",
+      deck: o.deck || "abc",
+      objectives: o.objectives || "off",
+      retireRule: o.retireRule || "lowest",
+      botStyle: "mixed",
+      seatStyles: o.seatStyles || new Array(n).fill(null),
+      botLevel: o.botLevel || "normal",
+      comboMelds: !!o.comboMelds,
+      friendsOf10: !!o.friendsOf10,
+      growLimits: !!o.growLimits,
+    },
+    /* One entry per seat. `player` is null for a bot seat. */
+    seats: new Array(n).fill(null).map((_, i) => ({ seat: i, player: null, name: null })),
+    players: {},          // token -> {token, name, seat, joined, seen, gone}
+    phase: "lobby",       // lobby -> playing -> over
+    log: [],              // the answers, in order: this IS the game
+    flags: [],
+    started: null,
+    ended: null,
+  };
+}
+
+/* ---------------------------------------------------------------- joining */
+
+function sessionJoin(s, req, rand) {
+  const name = String((req && req.name) || "").trim().slice(0, 24);
+  /* Coming back to a session you were already in must return you to YOUR
+   * seat, not hand you a new one — a dropped phone is the common case. */
+  if (req && req.token && s.players[req.token]) {
+    const p = s.players[req.token];
+    p.gone = false;
+    p.seen = new Date().toISOString();
+    if (name) { p.name = name; if (s.seats[p.seat]) s.seats[p.seat].name = name; }
+    return { ok: true, player: p, rejoined: true };
+  }
+  if (s.phase !== "lobby")
+    return { ok: false, why: "session.started" };
+  const free = s.seats.filter((x) => x.player === null);
+  if (!free.length) return { ok: false, why: "session.full" };
+  const want = req && req.seat !== undefined && req.seat !== null
+    ? s.seats.find((x) => x.seat === req.seat && x.player === null)
+    : null;
+  const spot = want || free[0];
+  const token = (req && req.token) || makeCode(rand).replace("-", "") + makeCode(rand).replace("-", "");
+  const taken = Object.values(s.players).map((x) => x.name);
+  const p = { token, name: name || defaultName(rand, taken), seat: spot.seat,
+              joined: new Date().toISOString(), seen: new Date().toISOString(), gone: false };
+  s.players[token] = p;
+  spot.player = token;
+  spot.name = p.name;
+  return { ok: true, player: p, rejoined: false };
+}
+
+function sessionLeave(s, token) {
+  const p = s.players[token];
+  if (!p) return false;
+  p.gone = true;
+  /* In the lobby, leaving frees the seat. Mid-game it does not: the seat is
+   * still yours, the game is still waiting for you, and the link still works.
+   * Dropping a player from a game in progress would leave a hole nobody can
+   * fill without invalidating every answer already given. */
+  if (s.phase === "lobby") {
+    const spot = s.seats.find((x) => x.player === token);
+    if (spot) { spot.player = null; spot.name = null; }
+    delete s.players[token];
+  }
+  return true;
+}
+
+/* Seat swapping, while it is still free to do so. */
+function sessionSit(s, token, seat) {
+  if (s.phase !== "lobby") return { ok: false, why: "session.started" };
+  const p = s.players[token];
+  if (!p) return { ok: false, why: "session.unknown" };
+  const spot = s.seats.find((x) => x.seat === seat);
+  if (!spot) return { ok: false, why: "session.noSeat" };
+  if (spot.player && spot.player !== token) return { ok: false, why: "session.seatTaken" };
+  const old = s.seats.find((x) => x.player === token);
+  if (old) { old.player = null; old.name = null; }
+  spot.player = token; spot.name = p.name;
+  p.seat = seat;
+  return { ok: true };
+}
+
+function humanSeats(s) {
+  return s.seats.filter((x) => x.player !== null).map((x) => x.seat);
+}
+
+function sessionStart(s, token) {
+  if (s.phase !== "lobby") return { ok: false, why: "session.started" };
+  const host = s.seats.find((x) => x.player !== null);
+  if (!host || host.player !== token) return { ok: false, why: "session.notHost" };
+  if (!humanSeats(s).length) return { ok: false, why: "session.nobody" };
+  s.phase = "playing";
+  s.started = new Date().toISOString();
+  return { ok: true };
+}
+
+/* ------------------------------------------------------- running the game */
+
+function gameArgs(s) {
+  return { n: s.n, seed: s.seed,
+           opts: Object.assign({ humans: humanSeats(s) }, s.rules) };
+}
+
+/* Replay the log in a fresh engine and stop at the request nobody has answered
+ * yet. This is the server's whole model of "where are we" — it holds no board
+ * between calls, because the log is the board. */
+function sessionAdvance(s, Engine, upto) {
+  const a = gameArgs(s);
+  const g = new Engine.Game(a.n, a.seed, a.opts);
+  const len = upto === undefined ? s.log.length : Math.min(upto, s.log.length);
+  let it = g.playRound(), r = it.next(), i = 0, guard = 0;
+  for (;;) {
+    if (guard++ > 200000) return { g, req: null, i, overrun: true };
+    if (r.done) {
+      if (g.finished()) return { g, req: null, i, over: true };
+      it = g.playRound(); r = it.next(); continue;
+    }
+    if (i >= len) return { g, req: r.value, i };
+    r = it.next(decodeAnswer(g, r.value, s.log[i++]));
+  }
+}
+
+/* ---- the codec ----
+ *
+ * An answer, in a form that survives its Game object. Cards are recorded by
+ * WHERE they were rather than by what they were: the same replay puts the same
+ * card in the same place, and two cards of one rank and suit are genuinely
+ * interchangeable anyway.
+ *
+ * Both halves live here, together, because undo, the report and the server all
+ * replay the same tokens — an encoder and a decoder that drift apart would
+ * desynchronise a whole table and there would be nothing to see. */
+function encodeAnswer(g, req, a) {
+  if (a === null || a === undefined) return null;
+  if (req.type === "turn") {
+    const st = req.state, p = g.P[req.seat], o = { kind: a.kind };
+    if (a.kind === "spend") { o.i = st.cards.indexOf(a.card); o.cell = a.cell; o.act = a.act; }
+    else if (a.kind === "cash") o.i = st.cards.indexOf(a.card);
+    else if (a.kind === "move") { o.src = a.src; o.dest = a.dest; }
+    else if (a.kind === "fortify") o.cell = a.cell;
+    else if (["colony", "conquest", "cashRow"].includes(a.kind)) o.i = p.vrow.indexOf(a.card);
+    return o;
+  }
+  if (req.options) {
+    const i = req.options.indexOf(a);
+    if (i >= 0) return { pick: i };
+  }
+  return { raw: a };                      // a plain {cell, terrain} and the like
+}
+
+function decodeAnswer(g, req, tok) {
+  if (tok === null || tok === undefined) return null;
+  if (req.type === "turn") {
+    const st = req.state, p = g.P[req.seat], k = tok.kind;
+    if (k === "spend") return { kind: k, card: st.cards[tok.i], cell: tok.cell, act: tok.act };
+    if (k === "cash") return { kind: k, card: st.cards[tok.i] };
+    if (k === "move") return { kind: k, src: tok.src, dest: tok.dest };
+    if (k === "fortify") return { kind: k, cell: tok.cell };
+    if (["colony", "conquest", "cashRow"].includes(k)) return { kind: k, card: p.vrow[tok.i] };
+    return { kind: k };
+  }
+  if (tok.pick !== undefined) return req.options[tok.pick];
+  return tok.raw;
+}
+
+/* Is this token something the engine could actually have been given here?
+ * A client that sends nonsense must be refused rather than corrupting a log
+ * that everybody else is replaying. */
+function legalAnswer(g, req, tok) {
+  if (tok === null || tok === undefined) return true;      // declining is legal
+  if (typeof tok !== "object") return false;
+  if (req.type === "turn") {
+    const kinds = ["spend", "cash", "move", "fortify", "research", "colony",
+                   "conquest", "cashRow", "end"];
+    if (!kinds.includes(tok.kind)) return false;
+    const st = req.state, p = g.P[req.seat];
+    if (tok.kind === "spend" || tok.kind === "cash")
+      return Number.isInteger(tok.i) && tok.i >= 0 && tok.i < st.cards.length;
+    if (["colony", "conquest", "cashRow"].includes(tok.kind))
+      return Number.isInteger(tok.i) && tok.i >= 0 && tok.i < p.vrow.length;
+    return true;
+  }
+  if (tok.pick !== undefined)
+    return Number.isInteger(tok.pick) && req.options
+      && tok.pick >= 0 && tok.pick < req.options.length;
+  return "raw" in tok;
+}
+
+/* An answer from a player. `step` is the log length the client believed it was
+ * answering at — the guard against a double tap and against two clients
+ * answering the same request. */
+function sessionAnswer(s, Engine, token, step, tok) {
+  if (s.phase !== "playing") return { ok: false, why: "session.notPlaying" };
+  const p = s.players[token];
+  if (!p) return { ok: false, why: "session.unknown" };
+  if (step !== s.log.length) return { ok: false, why: "session.stale", step: s.log.length };
+  const at = sessionAdvance(s, Engine);
+  if (!at.req) {
+    if (at.over) { s.phase = "over"; s.ended = new Date().toISOString(); }
+    return { ok: false, why: "session.noRequest" };
+  }
+  if (at.req.seat !== p.seat) return { ok: false, why: "session.notYourTurn" };
+  if (!legalAnswer(at.g, at.req, tok)) return { ok: false, why: "session.illegal" };
+  /* Belt and braces, because the log is shared. `legalAnswer` above refuses
+   * the malformed tokens we can name, cleanly; this catches the ones we
+   * cannot. Both are needed and they are not the same thing: a server that
+   * merely survives bad input has no idea it received any, and an exception
+   * inside a Durable Object takes the whole session down with it. Applied,
+   * then rolled back if it does not survive. */
+  s.log.push(tok);
+  let after;
+  try { after = sessionAdvance(s, Engine); }
+  catch (e) { s.log.pop(); return { ok: false, why: "session.threw" }; }
+  s.touched = new Date().toISOString();
+  if (!after.req && after.over) { s.phase = "over"; s.ended = new Date().toISOString(); }
+  return { ok: true, step, by: p.seat, phase: s.phase };
+}
+
+/* Where the acting seat's own map turn began — the same limit the local game
+ * enforces, worked out here from the log rather than remembered. */
+const TURN_REQ = ["turn", "waterexplore", "conquest", "retire", "buy", "colony"];
+function undoFloor(s, Engine, seat) {
+  const a = gameArgs(s);
+  const g = new Engine.Game(a.n, a.seed, a.opts);
+  let it = g.playRound(), r = it.next(), i = 0, guard = 0;
+  let block = null, mark = null;
+  for (;;) {
+    if (guard++ > 200000) break;
+    if (r.done) {
+      if (g.finished()) break;
+      it = g.playRound(); r = it.next(); continue;
+    }
+    const q = r.value;
+    if (q.seat === seat && TURN_REQ.includes(q.type)) {
+      const key = g.round + ":" + q.seat;
+      if (key !== block) { block = key; mark = i; }
+    } else if (q.seat === seat) {
+      block = null;
+    }
+    if (i >= s.log.length) break;
+    r = it.next(decodeAnswer(g, q, s.log[i++]));
+  }
+  return block === null ? null : mark;
+}
+
+function sessionUndo(s, Engine, token, step) {
+  if (s.phase !== "playing") return { ok: false, why: "session.notPlaying" };
+  const p = s.players[token];
+  if (!p) return { ok: false, why: "session.unknown" };
+  const at = sessionAdvance(s, Engine);
+  if (!at.req || at.req.seat !== p.seat) return { ok: false, why: "session.notYourTurn" };
+  const floor = undoFloor(s, Engine, p.seat);
+  if (floor === null || s.log.length <= floor) return { ok: false, why: "session.noUndo" };
+  const to = step === undefined ? s.log.length - 1 : step;
+  if (to < floor || to >= s.log.length) return { ok: false, why: "session.noUndo" };
+  s.log.length = to;
+  s.touched = new Date().toISOString();
+  return { ok: true, step: to };
+}
+
+function sessionFlag(s, token, flag) {
+  const p = s.players[token];
+  if (!p) return { ok: false, why: "session.unknown" };
+  const f = Object.assign({}, flag, { seat: p.seat, name: p.name,
+                                      step: s.log.length,
+                                      at: new Date().toISOString() });
+  if (typeof f.note === "string") f.note = f.note.slice(0, 800);
+  s.flags.push(f);
+  return { ok: true, flag: f };
+}
+
+/* Everything a client needs to build the game from nothing. Tokens are secret,
+ * so they never appear here. */
+function sessionState(s, forToken) {
+  return {
+    protocol: s.protocol,
+    code: s.code,
+    n: s.n,
+    seed: s.seed,
+    rules: s.rules,
+    phase: s.phase,
+    seats: s.seats.map((x) => ({
+      seat: x.seat,
+      name: x.name,
+      taken: x.player !== null,
+      here: x.player !== null && s.players[x.player] && !s.players[x.player].gone,
+      you: !!forToken && x.player === forToken,
+    })),
+    host: (s.seats.find((x) => x.player !== null) || {}).seat,
+    humans: humanSeats(s),
+    log: s.log,
+    flags: s.flags.length,
+    created: s.created,
+  };
+}
+
+/* ------------------------------------------------------- one message in
+ *
+ * The protocol, in one place. Both servers — the Durable Object and the
+ * throwaway node one — are pure transport around this function, because two
+ * implementations of "who may do what" is one too many, and the one that
+ * would drift is the one nobody tests.
+ *
+ * Returns what to say and to whom: `self` goes back down the socket that
+ * spoke, `all` goes to everybody, and `state: true` means "fill in the state
+ * message per recipient", since which seat is *you* depends on who is asked.
+ */
+function sessionHandle(s, Engine, ctx, msg) {
+  const token = ctx.token;
+  const err = (why) => ({ to: [{ who: "self", msg: { t: "error", why } }] });
+  if (!msg || typeof msg.t !== "string") return err("session.badMessage");
+
+  switch (msg.t) {
+    case "hello": {
+      const r = sessionJoin(s, { name: msg.name, seat: msg.seat, token: msg.token });
+      if (!r.ok) return err(r.why);
+      return {
+        token: r.player.token,
+        /* The token is how a dropped phone gets its seat back, so it goes to
+         * that player and to nobody else. */
+        to: [{ who: "self", msg: { t: "welcome", token: r.player.token,
+                                   seat: r.player.seat, name: r.player.name,
+                                   rejoined: r.rejoined, state: true } },
+             { who: "all", msg: { t: "seats", state: true } }],
+      };
+    }
+    case "sit": {
+      const r = sessionSit(s, token, msg.seat);
+      if (!r.ok) return err(r.why);
+      return { to: [{ who: "all", msg: { t: "seats", state: true } }] };
+    }
+    case "start": {
+      const r = sessionStart(s, token);
+      if (!r.ok) return err(r.why);
+      return { to: [{ who: "all", msg: { t: "start", state: true } }] };
+    }
+    case "answer": {
+      const r = sessionAnswer(s, Engine, token, msg.step, msg.token);
+      if (!r.ok) {
+        /* A stale answer is not something a player should be told off for —
+         * it is a double tap, or two messages that crossed. Send the truth
+         * back and let the client resynchronise silently. */
+        if (r.why === "session.stale")
+          return { to: [{ who: "self", msg: { t: "sync", state: true } }] };
+        return err(r.why);
+      }
+      return { to: [{ who: "all", msg: { t: "answer", step: r.step, token: msg.token,
+                                         by: r.by, phase: s.phase } }] };
+    }
+    case "undo": {
+      const r = sessionUndo(s, Engine, token, msg.step);
+      if (!r.ok) return err(r.why);
+      return { to: [{ who: "all", msg: { t: "undo", step: r.step } }] };
+    }
+    case "flag": {
+      const r = sessionFlag(s, token, msg.flag || {});
+      if (!r.ok) return err(r.why);
+      return { to: [{ who: "self", msg: { t: "flagged", flag: r.flag } }] };
+    }
+    case "sync":
+      return { to: [{ who: "self", msg: { t: "sync", state: true } }] };
+    case "ping":
+      return { to: [{ who: "self", msg: { t: "pong", at: Date.now() } }] };
+    default:
+      return err("session.unknownMessage");
+  }
+}
+
+
 /* A playtest session, written down.
  *
  * The point of this file is that a game played by a stranger comes back as
@@ -4222,6 +4862,183 @@ function reportFilename(rep) {
   return `blink-${rep.build.version}-${rep.build.commit}-${n}p-seed${seed}-${rep.id}.json`;
 }
 
+
+/* Playing with people who are not in the room.
+ *
+ * Nothing about the board crosses the wire. Every client runs its own copy of
+ * the engine and stays in step by applying the same answers in the same order,
+ * because a game is a pure function of seed, options and answers. So this file
+ * is small: it opens a socket, sends what you did, and applies what everybody
+ * else did.
+ *
+ * The rules of who may do what are the server's, in session.js. What is left
+ * here is the part that is genuinely a client's problem:
+ *
+ *   - **Your answer is not applied until it comes back.** The server is the
+ *     authority on order, and a client that moved first and asked afterwards
+ *     would show you a board nobody else can see. The wait is one round trip.
+ *   - **A dropped connection is normal.** Phones sleep, trains go into
+ *     tunnels. The player token is kept, reconnection is automatic with a
+ *     backoff, and coming back means being handed the log again — there is
+ *     nothing else to restore.
+ *   - **If we ever disagree with the server, the server is right.** A `sync`
+ *     rebuilds the whole game from the log rather than trying to patch it.
+ */
+
+const NET_RETRY = [400, 900, 2000, 4000, 8000, 15000];
+
+let NET = null;   /* {api, code, token, seat, name, ws, state, tries, timer,
+                     status: "connecting"|"lobby"|"playing"|"lost"|"gone"} */
+
+const netOn = () => !!(NET && NET.code);
+const netMySeat = () => (NET ? NET.seat : null);
+
+/* Tokens are per session and per browser: keeping one lets a refresh — or a
+ * phone that went to sleep for ten minutes — walk back into the same seat. */
+function netToken(code, set) {
+  const key = "blink.session." + code;
+  try {
+    if (set !== undefined) { localStorage.setItem(key, set); return set; }
+    return localStorage.getItem(key);
+  } catch (e) { return null; }          // private mode: you get one connection
+}
+
+function netApi() {
+  return (BUILD.api || "").replace(/\/$/, "");
+}
+
+/* The link you send people. Same page, one parameter — no separate app, no
+ * install, and it still works if they have never heard of the game. */
+function netLink(code) {
+  const u = new URL(location.href);
+  u.search = "?s=" + code;
+  u.hash = "";
+  return u.toString();
+}
+function netCodeInUrl() {
+  const m = /[?&]s=([A-Za-z0-9-]{4,12})/.exec(location.search);
+  return m ? m[1].toUpperCase() : null;
+}
+
+/* ---- opening one ------------------------------------------------------- */
+
+function netCreate(rules) {
+  const api = netApi();
+  if (!api) return Promise.reject(new Error("no session service in this build"));
+  return fetch(api + "/session", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(rules),
+  }).then((r) => r.json()).then((r) => {
+    if (!r.ok) throw new Error(r.why || "could not open a session");
+    return r.code;
+  });
+}
+
+function netConnect(code, name, handlers) {
+  const api = netApi();
+  if (!api) throw new Error("no session service in this build");
+  NET = { api, code, name, token: netToken(code), seat: null, ws: null,
+          state: null, tries: 0, timer: null, status: "connecting",
+          on: handlers || {} };
+  netOpen();
+  return NET;
+}
+
+function netOpen() {
+  if (!NET) return;
+  const url = NET.api.replace(/^http/, "ws") + "/session/" + NET.code + "/ws";
+  let ws;
+  try { ws = new WebSocket(url); }
+  catch (e) { return netLost(); }
+  NET.ws = ws;
+  ws.onopen = () => {
+    NET.tries = 0;
+    netSend({ t: "hello", name: NET.name, token: NET.token || undefined });
+  };
+  ws.onmessage = (ev) => {
+    let msg = null;
+    try { msg = JSON.parse(ev.data); } catch (e) { return; }
+    netMessage(msg);
+  };
+  ws.onclose = () => netLost();
+  ws.onerror = () => { /* onclose follows */ };
+}
+
+/* Reconnect with a backoff, and say so on screen. A game that silently stops
+ * responding is indistinguishable from a game that has crashed. */
+function netLost() {
+  if (!NET || NET.status === "gone") return;
+  NET.ws = null;
+  NET.status = "lost";
+  if (NET.on.status) NET.on.status(NET);
+  const wait = NET_RETRY[Math.min(NET.tries++, NET_RETRY.length - 1)];
+  clearTimeout(NET.timer);
+  NET.timer = setTimeout(netOpen, wait);
+}
+
+function netClose() {
+  if (!NET) return;
+  NET.status = "gone";
+  clearTimeout(NET.timer);
+  try { if (NET.ws) NET.ws.close(); } catch (e) { /* already gone */ }
+  NET = null;
+}
+
+function netSend(msg) {
+  if (!NET || !NET.ws || NET.ws.readyState !== 1) return false;
+  try { NET.ws.send(JSON.stringify(msg)); return true; }
+  catch (e) { return false; }
+}
+
+/* ---- what comes back --------------------------------------------------- */
+
+function netMessage(msg) {
+  if (!NET) return;
+  const on = NET.on;
+  switch (msg.t) {
+    case "welcome":
+      NET.token = msg.token;
+      NET.seat = msg.seat;
+      NET.name = msg.name;
+      netToken(NET.code, msg.token);
+      NET.state = msg.state;
+      NET.status = msg.state.phase === "lobby" ? "lobby" : "playing";
+      if (on.welcome) on.welcome(msg);
+      return;
+    case "seats":
+      NET.state = msg.state;
+      if (on.seats) on.seats(msg.state);
+      return;
+    case "start":
+      NET.state = msg.state;
+      NET.status = "playing";
+      if (on.start) on.start(msg.state);
+      return;
+    case "answer":
+      if (on.answer) on.answer(msg);
+      return;
+    case "undo":
+      if (on.undo) on.undo(msg);
+      return;
+    case "sync":
+      NET.state = msg.state;
+      if (on.sync) on.sync(msg.state);
+      return;
+    case "flagged":
+      if (on.flagged) on.flagged(msg.flag);
+      return;
+    case "error":
+      if (on.error) on.error(msg.why);
+      return;
+    default:
+      return;
+  }
+}
+
+if (typeof module !== "undefined" && module.exports)
+  module.exports = { netOn, netMySeat, netLink, netCodeInUrl, netCreate,
+                     netConnect, netClose, netSend, netMessage };
 
 /* Blink v0.22 — playable client.
  *
@@ -4458,13 +5275,18 @@ function pump(a) {
     REQ = r.value;
     /* Show the game from the seat that is being asked. With one human this
      * never moves; with several it is what makes hot seat work at all. */
-    if (G.isHuman(REQ.seat)) {
+    if (G.isHuman(REQ.seat) && !netOn()) {
+      /* Hot seat: the board moves to whoever is being asked, behind a cover.
+       * Remote: it stays on your own seat — the others' hands are not yours
+       * to see, and there is no device to hand over. */
       if (REQ.seat !== ME) { ME = REQ.seat; lastMeldLimit = null; }
       if (maybePass(REQ.seat)) { noteBlock(); render(); return; }
     }
     noteBlock();
     if (G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
-    render(); playEvents(); return;
+    render(); playEvents();
+    if (netOn()) drainNet();               // anything that arrived mid-round
+    return;
   }
   IT = null; REQ = null;
   BLOCK = null;
@@ -4476,11 +5298,20 @@ function pump(a) {
 }
 
 function answer(a, keepSel) {
-  if (REQ) {
-    const tok = encodeAns(REQ, a);
-    LOG.push(tok);
-    reportAnswered(REP, tok);
+  if (!REQ) return;
+  const tok = encodeAns(REQ, a);
+  /* Remote: the server decides the order things happen in, so this goes on
+   * the wire and takes effect when it comes back. One round trip, and nobody
+   * is ever looking at a board the others cannot see. */
+  if (netOn() && NET.status === "playing") {
+    if (REQ.seat !== netMySeat()) return;
+    if (!keepSel) SEL = blankSel();
+    if (!netSend({ t: "answer", step: LOG.length, token: tok })) netBar();
+    render();
+    return;
   }
+  LOG.push(tok);
+  reportAnswered(REP, tok);
   if (!keepSel) SEL = blankSel();
   pump(a);
 }
@@ -4501,59 +5332,27 @@ function answer(a, keepSel) {
  * already seen resolve.
  */
 let LOG = [], GARGS = null, MARK = 0, BLOCK = null;
-// the requests that belong to one seat's map turn, research and all
-const TURN_REQ = new Set(["turn", "waterexplore", "conquest", "retire", "buy",
-                          "colony"]);
+/* Which requests belong to one seat's map turn — the list lives in session.js,
+ * because the server enforces the same limit from the other side. */
 
 /* Where "this turn" starts. Called on every request and every answer; the
  * block is identified by round + seat, which a map turn has exactly one of. */
 function noteBlock() {
-  if (!G || !REQ || !G.isHuman(REQ.seat) || !TURN_REQ.has(REQ.type)) {
+  if (!G || !REQ || !G.isHuman(REQ.seat) || !TURN_REQ.includes(REQ.type)) {
     BLOCK = null;
     return;
   }
   const key = G.round + ":" + REQ.seat;
   if (key !== BLOCK) { BLOCK = key; MARK = LOG.length; }
 }
-const canUndo = () => !!(BLOCK !== null && LOG.length > MARK && !RESUMING);
+const canUndo = () => !!(BLOCK !== null && LOG.length > MARK && !RESUMING
+  && (!netOn() || (REQ && REQ.seat === netMySeat())));
 let RESUMING = false;
 
-/* An answer, written down so it survives its Game object. Card objects are
- * recorded by WHERE they were, not by what they were: the same replay puts the
- * same card in the same place, and two cards of one rank and suit are
- * genuinely interchangeable anyway. */
-function encodeAns(req, a) {
-  if (a === null || a === undefined) return null;
-  if (req.type === "turn") {
-    const st = req.state, p = G.P[req.seat], o = { kind: a.kind };
-    if (a.kind === "spend") { o.i = st.cards.indexOf(a.card); o.cell = a.cell; o.act = a.act; }
-    else if (a.kind === "cash") o.i = st.cards.indexOf(a.card);
-    else if (a.kind === "move") { o.src = a.src; o.dest = a.dest; }
-    else if (a.kind === "fortify") o.cell = a.cell;
-    else if (["colony", "conquest", "cashRow"].includes(a.kind)) o.i = p.vrow.indexOf(a.card);
-    return o;
-  }
-  if (req.options) {
-    const i = req.options.indexOf(a);
-    if (i >= 0) return { pick: i };
-  }
-  return { raw: a };                      // a plain {cell, terrain} and the like
-}
-
-function decodeAns(g, req, tok) {
-  if (tok === null || tok === undefined) return null;
-  if (req.type === "turn") {
-    const st = req.state, p = g.P[req.seat], k = tok.kind;
-    if (k === "spend") return { kind: k, card: st.cards[tok.i], cell: tok.cell, act: tok.act };
-    if (k === "cash") return { kind: k, card: st.cards[tok.i] };
-    if (k === "move") return { kind: k, src: tok.src, dest: tok.dest };
-    if (k === "fortify") return { kind: k, cell: tok.cell };
-    if (["colony", "conquest", "cashRow"].includes(k)) return { kind: k, card: p.vrow[tok.i] };
-    return { kind: k };                   // research, end
-  }
-  if (tok.pick !== undefined) return req.options[tok.pick];
-  return tok.raw;
-}
+/* The codec lives in session.js, with the server that also replays these
+ * tokens — one encoder and one decoder, or a whole table desynchronises. */
+const encodeAns = (req, a) => encodeAnswer(G, req, a);
+const decodeAns = (g, req, tok) => decodeAnswer(g, req, tok);
 
 /* Deal the same game again and give the first `len` answers back to it. */
 function replay(len) {
@@ -4604,12 +5403,15 @@ function updateUndo() {
 
 function doUndo() {
   if (!canUndo()) return;
+  /* Remote: the server holds the same limit and works it out from the log
+   * rather than taking this page's word for it. */
+  if (netOn() && NET.status === "playing") { netSend({ t: "undo" }); return; }
   RESUMING = true;
   const target = LOG.length - 1;
   LOG.length = target;
   const out = replay(target);
   G = out.g; IT = out.it; REQ = out.req;
-  G.events.length = 0;                    // do not re-animate the whole game
+  if (G.events) G.events.length = 0;      // do not re-animate the whole game
   SEL = blankSel(); lastZone = null; lastMeldLimit = null;
   /* Research is a multi-step action, so landing back inside one has to put the
    * panel back in the state the request implies. */
@@ -4668,6 +5470,7 @@ function restartGame() {
 }
 function abortGame() {
   if (!G || !window.confirm(t("nav.abort.ask"))) return;
+  if (netOn()) { netClose(); history.replaceState(null, "", location.pathname); }
   G = null; IT = null; REQ = null; LOG = []; BLOCK = null; MARK = 0;
   SEL = blankSel(); RESEARCH = null; TRICK = null;
   $("#setup").classList.remove("hide");
@@ -6297,6 +7100,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   setLang(pickLang());
   applyLang();
+  netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
 
@@ -6356,9 +7160,274 @@ function renderNav() {
   };
   set("#undo", t("nav.undo"), t("nav.undo.tip"));
   set("#restart", t("nav.restart"), t("nav.restart.tip"));
+  /* Re-dealing is not one client's decision when other people are at the
+   * table, so it is simply not offered there. */
+  const rs = $("#restart");
+  if (rs) rs.hidden = netOn();
   set("#abort", t("nav.abort"), t("nav.abort.tip"));
   updateFlag();
   updateUndo();
+}
+
+/* =====================================================================
+ * Playing with people who are not in the room
+ *
+ * The local game and the remote one are the SAME game — same engine, same
+ * screen, same clicks. Three things differ, and they are all consequences of
+ * one rule: the server decides the order in which answers happen.
+ *
+ *   1. Your answer is sent, not applied. It takes effect when it comes back,
+ *      because a client that moved first and asked afterwards would be showing
+ *      you a board nobody else can see.
+ *   2. The view never follows somebody else's turn. In hot seat the board
+ *      moves to whoever is being asked; here it stays on your own seat, and
+ *      the other players' hands are none of your business.
+ *   3. Undo is a request. The server holds the same limit — back to the start
+ *      of your own map turn — and works it out from the log rather than
+ *      trusting you about it.
+ * ===================================================================== */
+
+let LOBBY = null;                  // the last state message, while we wait
+
+function netHandlers() {
+  return {
+    welcome: (m) => {
+      LOBBY = m.state;
+      if (m.state.phase === "lobby") showLobby();
+      else startNetGame(m.state);          // walked back into a running game
+    },
+    seats: (st) => { LOBBY = st; if (!G) showLobby(); else renderTable(); },
+    start: (st) => startNetGame(st),
+    answer: (m) => applyRemote(m.step, m.token),
+    undo: (m) => applyRemoteUndo(m.step),
+    sync: (st) => resyncFrom(st),
+    status: () => netBar(),
+    error: (why) => netSay(t(why) === why ? why : t(why), true),
+  };
+}
+
+/* ---- the lobby ---- */
+
+function showLobby() {
+  document.body.classList.add("lobby");
+  document.body.classList.remove("playing");
+  netBar();
+  const st = LOBBY;
+  if (!st) return;
+  const iAmHost = st.seats.some((x) => x.you && x.seat === st.host);
+  $("#lobby-lede").textContent = iAmHost ? t("net.lobby.ledeHost")
+    : t("net.lobby.lede", { host: (st.seats[st.host] || {}).name || seatName(st.host) });
+  $("#lobby-link").value = netLink(st.code);
+  $("#lobby-copy").textContent = t("net.copy");
+  $("#lobby-code").textContent = t("net.codeIs", { code: st.code });
+  $("#lobby-note").textContent = t("net.note", {
+    n: st.seats.filter((x) => x.taken).length, total: st.n });
+
+  const box = $("#lobby-seats");
+  box.innerHTML = "";
+  for (const x of st.seats) {
+    const row = el("div", "lseat" + (x.you ? " mine" : "") + (x.taken && !x.here ? " away" : ""));
+    row.appendChild(el("span", "dot")).style.background = SEAT_C[x.seat];
+    row.appendChild(el("span", "who", x.taken ? x.name : t("net.seat.free")));
+    if (x.you) row.appendChild(el("span", "tag", t("net.seat.you")));
+    else if (x.taken && !x.here) row.appendChild(el("span", "tag", t("net.seat.away")));
+    else if (!x.taken) {
+      const b = el("button", null, t("net.seat.take"));
+      b.addEventListener("click", () => netSend({ t: "sit", seat: x.seat }));
+      row.appendChild(b);
+    }
+    box.appendChild(row);
+  }
+  const go = $("#lobby-start");
+  go.textContent = t("net.start");
+  go.hidden = !iAmHost;
+  $("#lobby-leave").textContent = t("net.leave");
+}
+
+/* ---- the game itself ---- */
+
+function startNetGame(st) {
+  LOBBY = st;
+  document.body.classList.remove("lobby");
+  lastMeldLimit = null;
+  GARGS = { n: st.n, seed: st.seed,
+            opts: Object.assign({ humans: st.humans.slice() }, st.rules) };
+  HUMANS = st.humans.slice();
+  ME = netMySeat();
+  PASSED = ME;                                  // no device is being handed over
+  REP = newReport(BUILD, GARGS, {
+    lang: getLang(), session: st.code,
+    players: st.seats.map((x) => ({ seat: x.seat, kind: x.taken ? "human" : "bot",
+                                    style: null, name: x.name })),
+  });
+  NETQ = [];
+  ZOOM = null; PAN = { x: 0, y: 0 };
+  hidePass();
+  $("#setup").classList.add("hide");
+  $("#game").classList.add("show");
+  document.body.classList.add("playing");
+  /* Straight to the position, whether that is the start or the middle of a
+   * game somebody is walking back into. */
+  rebuildFrom(st.log || []);
+  netBar();
+}
+
+/* Build the game from a list of answers and nothing else.
+ *
+ * Not by feeding them to the running generator one at a time: `nextRound` is
+ * asynchronous — it is on a timer so bot turns can be watched — so a loop that
+ * pumped answers would stop dead at the first round boundary with the rest of
+ * the game unplayed. Replay is synchronous, which is exactly what catching up
+ * and resynchronising both need. It is also the same function undo uses.
+ */
+function rebuildFrom(log) {
+  LOG = log.slice();
+  const out = replay(LOG.length);
+  G = out.g; IT = out.it; REQ = out.req;
+  if (G && G.events) G.events.length = 0;       // history, not a replay to watch
+  SEL = blankSel(); RESEARCH = null; lastZone = null;
+  MARK = 0; BLOCK = null; RESUMING = false;
+  syncTrick();
+  noteBlock();
+  render();
+  if (!IT && G && !G.finished()) nextRound();   // a round boundary: carry on
+}
+
+/* Answers arrive from everybody, including as the echo of your own. They are
+ * queued rather than applied on the spot, because between two rounds this
+ * client is briefly not waiting on anything — the next round is on a timer —
+ * and an answer that turned up in that gap would otherwise look like a
+ * desynchronisation and trigger a pointless full resync. */
+let NETQ = [];
+let DRAINING = false;
+
+function applyRemote(step, tok) {
+  NETQ.push({ step, tok });
+  drainNet();
+}
+
+function drainNet() {
+  if (DRAINING || !G) return;
+  DRAINING = true;
+  try {
+    while (NETQ.length) {
+      const { step, tok } = NETQ[0];
+      if (step < LOG.length) { NETQ.shift(); continue; }   // already have it
+      if (step > LOG.length) {                             // we missed one
+        NETQ.length = 0;
+        netSend({ t: "sync" });
+        return;
+      }
+      if (!REQ) return;                       // between rounds; try again later
+      NETQ.shift();
+      LOG.push(tok);
+      reportAnswered(REP, tok);
+      const a = decodeAns(G, REQ, tok);
+      SEL = blankSel();
+      pump(a);
+    }
+  } finally { DRAINING = false; }
+}
+
+function applyRemoteUndo(step) {
+  if (!G || step >= LOG.length) return;
+  NETQ.length = 0;
+  const kept = LOG.slice(0, step);
+  reportUndone(REP, step);
+  rebuildFrom(kept);
+}
+
+/* When the server and this page disagree, the server is right — and the cheap
+ * way to agree again is to build the whole game from the log rather than to
+ * work out which message went missing. */
+function resyncFrom(st) {
+  if (!st) return;
+  if (!G || st.phase === "lobby") { LOBBY = st; return showLobby(); }
+  NETQ.length = 0;
+  rebuildFrom(st.log || []);
+}
+
+/* ---- the two lines a player sees about the connection ---- */
+
+function netBar() {
+  const bar = $("#netbar");
+  if (!bar) return;
+  if (!netOn() || NET.status !== "lost") { bar.hidden = true; return; }
+  bar.textContent = t("net.lost");
+  bar.hidden = false;
+}
+function netSay(text, bad) {
+  const n = $("#net-msg");
+  if (!n) return;
+  n.textContent = text || "";
+  n.classList.toggle("bad", !!bad);
+}
+
+/* ---- wiring the setup page ---- */
+
+function netSetup() {
+  const box = $("#remote");
+  if (!box) return;
+  if (!BUILD.api) { box.hidden = true; return; }   // a local file has no table
+  box.hidden = false;
+  const nameBox = $("#net-name");
+  if (!nameBox.value) nameBox.value = defaultName();
+
+  $("#net-host").addEventListener("click", () => {
+    netSay(t("net.opening"));
+    netCreate(Object.assign({ n: playerCount(), build: BUILD.commit },
+                            netRules())).then((code) => {
+      netConnect(code, nameBox.value.trim(), netHandlers());
+    }).catch(() => netSay(t("net.failed"), true));
+  });
+  $("#net-join").addEventListener("click", () => joinCode($("#net-code").value));
+  $("#net-code").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") joinCode($("#net-code").value);
+  });
+  $("#lobby-start").addEventListener("click", () => netSend({ t: "start" }));
+  $("#lobby-leave").addEventListener("click", () => {
+    netClose();
+    document.body.classList.remove("lobby");
+    history.replaceState(null, "", location.pathname);
+  });
+  $("#lobby-copy").addEventListener("click", () => {
+    const f = $("#lobby-link");
+    f.select();
+    const done = () => { $("#lobby-copy").textContent = t("net.copied"); };
+    if (navigator.clipboard) navigator.clipboard.writeText(f.value).then(done, done);
+    else { try { document.execCommand("copy"); } catch (e) { /* select is enough */ } done(); }
+  });
+
+  /* Arriving on somebody's link: no setup page, just a name and a seat. */
+  const code = netCodeInUrl();
+  if (code) {
+    $("#net-code").value = code;
+    netSay(t("net.joining", { code }));
+    joinCode(code);
+  }
+}
+
+function joinCode(raw) {
+  const code = String(raw || "").trim().toUpperCase();
+  if (code.length < 4) return netSay(t("net.badcode"), true);
+  try { netConnect(code, $("#net-name").value.trim(), netHandlers()); }
+  catch (e) { netSay(t("net.failed"), true); }
+}
+
+/* The rules a hosted table is played under: whatever the setup page says. */
+function netRules() {
+  const mv = $("#meld-rules").value;
+  return {
+    seed: Number($("#seed").value) || undefined,
+    trickRule: $("#trick-rule").value,
+    deck: $("#deck").value,
+    objectives: $("#objectives").value,
+    retireRule: $("#retire-rule").value,
+    botLevel: radioValue("#bot-level", "normal"),
+    comboMelds: mv === "combo" || mv === "both",
+    friendsOf10: mv === "friends" || mv === "both",
+    growLimits: $("#grow-limits").value === "grow",
+  };
 }
 
 </script>

@@ -84,6 +84,56 @@
   .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
     font-weight:600; color:var(--deep)}
 
+  /* play with friends */
+  .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
+    margin-top:22px; background:#FDFCF7}
+  .remote > legend{padding:0 6px; margin-left:-6px}
+  .remote[hidden]{display:none}
+  .remoterow{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .remoterow .go{flex:none}
+  .remoterow .or{color:var(--hint); font-size:12px}
+  .remoterow input{flex:1; min-width:110px; padding:10px; min-height:44px;
+    border:1px solid var(--line); border-radius:8px; font:inherit;
+    text-transform:uppercase; letter-spacing:1px; box-sizing:border-box}
+  /* a label only a screen reader needs: the placeholder says it to everyone else */
+  .sr{position:absolute; width:1px; height:1px; margin:-1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap}
+  #net-msg:empty{display:none}
+  #net-msg{margin-top:10px; padding:8px 10px; border-radius:8px; background:#EFEBE1}
+  #net-msg.bad{background:#FBE6DC; color:#8C3A16}
+
+  #lobby{display:none}
+  body.lobby #lobby{display:block}
+  body.lobby #setup, body.lobby #game{display:none}
+  #lobby .wrap2{max-width:600px; margin:32px auto 60px; background:var(--panel);
+    border:1px solid var(--line); border-radius:12px; padding:24px}
+  #lobby h2{margin:0 0 6px; color:var(--deep); font-size:22px}
+  #lobby .lede{color:var(--hint); margin:0 0 20px; font-size:13.5px}
+  #lobby-link{font-family:ui-monospace, Menlo, monospace; font-size:12.5px}
+  #lobby-seats{margin:16px 0 2px; border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line); padding:4px 0}
+  #lobby .go.big{margin-top:16px}
+  #lobby #lobby-leave{margin-top:8px; width:100%}
+  .lseat{display:flex; align-items:center; gap:10px; padding:9px 0;
+    border-top:1px solid #EFEBE1}
+  .lseat:first-child{border-top:0}
+  .lseat .dot{width:16px; height:16px; border-radius:50%; flex:none;
+    border:1.5px solid rgba(0,0,0,.35)}
+  .lseat .who{flex:1; font-weight:600}
+  .lseat .tag{font-size:11.5px; color:var(--hint); text-transform:uppercase;
+    letter-spacing:.5px}
+  .lseat.mine{background:#EAF2E6; border-radius:8px; padding-left:8px;
+    padding-right:8px; margin:2px -8px}
+  .lseat.away .who{opacity:.5}
+  .lseat button{border:1px solid var(--line); border-radius:8px; background:#fff;
+    font:inherit; font-size:12px; padding:6px 10px; min-height:36px; cursor:pointer}
+
+  /* the connection, when it is not fine */
+  #netbar{position:fixed; left:0; right:0; bottom:0; z-index:70; padding:9px 14px;
+    background:#8C3A16; color:#FFF3E8; font-size:12.5px; font-weight:600;
+    text-align:center}
+  #netbar[hidden]{display:none}
+
   #nojs{max-width:620px; margin:40px auto; padding:18px 20px; background:#FFF4E2;
     border:2px solid #C9992B; border-radius:10px; font-size:14px; line-height:1.5}
   #nojs b{color:#7A5C13}
@@ -187,6 +237,8 @@
   /* where to read the actual rules */
   .docs{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:20px;
     padding-top:16px; border-top:1px solid var(--line)}
+  /* a second group is a sub-heading, not a second section */
+  .docs + .docs{margin-top:10px; padding-top:0; border-top:0}
   .docs .sublab{width:auto}
   .doclink{display:inline-flex; align-items:center; min-height:38px; padding:6px 12px;
     border:1px solid var(--line); border-radius:20px; background:#fff;
@@ -738,6 +790,8 @@
 
 <!-- Raised mid-game, when the confusion is still fresh. Where you were is
      taken from the game, not typed. -->
+<div id="netbar" hidden></div>
+
 <div id="flagbox" hidden>
   <div class="sheet">
     <h3 id="flag-title"></h3>
@@ -866,19 +920,66 @@
 
   <button class="go big" id="start" data-i18n="setup.start">Start</button>
 
+  <!-- Two groups, because they are two different promises. The first is the
+       game as it stands; the second is only in play if somebody switched it
+       on in Advanced. Filing them together would imply the objectives are
+       part of the base rules, which they are not. -->
   <nav class="docs" aria-labelledby="docs-label">
     <span class="sublab" id="docs-label" data-i18n="setup.docs">Read the rules</span>
     <a class="doclink" id="doc-rules" href="rulebook.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.rules">Rulebook</a>
     <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.effects">Card effects</a>
+  </nav>
+  <nav class="docs" aria-labelledby="vdocs-label">
+    <span class="sublab" id="vdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
     <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.objectives">Map objectives</a>
   </nav>
 
+  <!-- Playing with people who are not in the room. Only offered when the
+       build knows where the session service is. -->
+  <fieldset class="field remote" id="remote" hidden>
+    <legend data-i18n="net.title">Play with friends</legend>
+    <p class="hint" data-i18n="net.lede"></p>
+    <div class="field">
+      <label for="net-name" data-i18n="net.name">Your name</label>
+      <input id="net-name" type="text" maxlength="24" autocomplete="nickname">
+    </div>
+    <div class="remoterow">
+      <button type="button" class="go" id="net-host" data-i18n="net.host"></button>
+      <span class="or" data-i18n="net.or">or</span>
+      <label class="sr" for="net-code" data-i18n="net.code.ph">table code</label>
+      <input id="net-code" type="text" maxlength="9" autocapitalize="characters"
+        spellcheck="false" placeholder="table code">
+      <button type="button" class="go alt" id="net-join" data-i18n="net.join"></button>
+    </div>
+    <p class="hint" id="net-msg"></p>
+  </fieldset>
+
   <!-- Which build this is. A playtest report that cannot name its version is
        an anecdote, so the version is on the page, not buried in a comment. -->
   <p class="buildline" id="buildline"></p>
+</div>
+
+<!-- The lobby: who has arrived, where they are sitting, and the link. -->
+<div id="lobby">
+  <div class="wrap2">
+    <h2 data-i18n="net.lobby">Waiting to start</h2>
+    <p class="lede" id="lobby-lede"></p>
+    <div class="field">
+      <label for="lobby-link" data-i18n="net.link">Send this link</label>
+      <div class="seedrow">
+        <input id="lobby-link" type="text" readonly>
+        <button type="button" id="lobby-copy" class="go alt"></button>
+      </div>
+      <p class="hint" id="lobby-code"></p>
+    </div>
+    <div id="lobby-seats"></div>
+    <p class="hint" id="lobby-note"></p>
+    <button class="go big" id="lobby-start"></button>
+    <button class="go alt" id="lobby-leave"></button>
+  </div>
 </div>
 
 <div id="game">
@@ -914,6 +1015,9 @@
           data-i18n="setup.docs.rules">Rulebook</a>
         <a class="doclink" href="card-effects.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.effects">Card effects</a>
+      </nav>
+      <nav class="docs gamedocs" aria-labelledby="gvdocs-label">
+        <span class="sublab" id="gvdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
         <a class="doclink" href="map-objectives.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.objectives">Map objectives</a>
       </nav>
