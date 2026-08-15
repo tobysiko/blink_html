@@ -50,10 +50,12 @@ COMBO_MELDS = False
 # tier -> (name, units, meld limit, food per recycle, free moves,
 #          ascension coins taken once on arrival, rank cap when buying)
 # food is NOT cumulative; free moves refresh every map phase
+# units are 2/4/6/4/4 as printed on the player board (RULEBOOK-CORRECTIONS item 3);
+# the old 2/4/5/5/4 also summed to 20, which is why the mismatch went unnoticed
 BANDS = [("Tribe",        2, 2, 0, 1, 0, 11),
          ("Settlement",   4, 3, 1, 2, 1, 13),
-         ("Kingdom",      5, 4, 2, 3, 2, 15),
-         ("Empire",       5, 5, 3, 4, 3, 17),
+         ("Kingdom",      6, 4, 2, 3, 2, 15),
+         ("Empire",       4, 5, 3, 4, 3, 17),
          ("Civilization", 4, 6, 4, 5, 4, 20)]
 
 STARTS = {
