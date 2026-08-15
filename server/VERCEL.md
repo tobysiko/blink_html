@@ -88,11 +88,31 @@ tunnel, and the path `net_test.js` exercises on every run.
    Then commit and push both repos. The page stamps itself with the commit it
    came from, so every playtest report names the exact version that produced it.
 
-6. **Somewhere durable for the reports.** Storage → Blob, and
-   `npm install @vercel/blob`. It sets `BLOB_READ_WRITE_TOKEN`. Without it the
-   report route answers `stored: false` and the page downloads the file for
-   the player to send on — which is honest, but relies on them actually
-   sending it.
+6. **Somewhere durable for the reports.** Blob is not in the Marketplace —
+   it is a first-party Vercel product, so it is under Storage → Create
+   Database → **Blob**, not under the Redis-style integrations. Faster from a
+   terminal:
+
+   ```
+   cd ~/Code/deep-diversions
+   npx vercel link          # once, to point the CLI at this project
+   npx vercel blob create-store blink-reports --access public
+   ```
+
+   Either way it sets `BLOB_READ_WRITE_TOKEN` on the project. **Redeploy after
+   creating it** — a running function does not gain an environment variable it
+   did not start with.
+
+   Without a Blob store the report route answers `stored: false` and the page
+   downloads the file for the player to send on. That is honest, but it relies
+   on them actually sending it.
+
+   A note on `--access public`: it means the URL is unguessable, not secret.
+   Nobody can list the store without `ADMIN_KEY`, but a leaked report URL
+   would open for anyone who had it. Reports carry names and free text people
+   wrote for you, so if that is not good enough, create the store with
+   `--access private` and change the one `access:` line in
+   `server/vercel.src.js` to match.
 
 7. Optional: `ADMIN_KEY` as an environment variable, to read reports back.
    Writing one needs no key — that is a playtester finishing a game. Reading
