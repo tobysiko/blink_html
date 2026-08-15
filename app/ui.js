@@ -65,6 +65,7 @@ let MAPGEO = null;                    // last measured board + viewport, for pan
 /* The research action is four steps deep, so the client tracks where it is and
  * what has happened so far. Kept outside SEL because answer() clears SEL. */
 let RESEARCH = null;
+let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
@@ -145,6 +146,17 @@ function seatSelections() {
   return { humans, styles };
 }
 
+/* Who is sitting where, in the report's terms. Names arrive later when a game
+ * is played remotely; locally a seat is "you" or the style it was dealt. */
+function seatRoster(styles, humans) {
+  const out = [];
+  for (let i = 0; i < playerCount(); i++)
+    out.push({ seat: i, kind: humans.includes(i) ? "human" : "bot",
+               style: humans.includes(i) ? null : (styles[i] || "auto"),
+               name: null });
+  return out;
+}
+
 function startGame(force) {
   lastMeldLimit = null;
   const n = playerCount();
@@ -169,6 +181,7 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow" } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
+  REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
   IT = null; REQ = null; SEL = blankSel();
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
@@ -225,6 +238,7 @@ function pump(a) {
       if (maybePass(REQ.seat)) { noteBlock(); render(); return; }
     }
     noteBlock();
+    if (G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
     render(); playEvents(); return;
   }
   IT = null; REQ = null;
@@ -237,7 +251,11 @@ function pump(a) {
 }
 
 function answer(a, keepSel) {
-  if (REQ) LOG.push(encodeAns(REQ, a));
+  if (REQ) {
+    const tok = encodeAns(REQ, a);
+    LOG.push(tok);
+    reportAnswered(REP, tok);
+  }
   if (!keepSel) SEL = blankSel();
   pump(a);
 }
@@ -339,6 +357,17 @@ function syncTrick() {
   TRICK.done = new Set(G.turnDone || []);
 }
 
+/* The flag button carries its own count: one flag raised is a thing you want
+ * to see was recorded, and the count is game state, not language. */
+function updateFlag() {
+  const f = $("#flag");
+  if (!f) return;
+  const n = REP ? REP.flags.length : 0;
+  f.textContent = n ? t("flag.count", { n }) : t("flag.btn");
+  f.title = t("flag.tip");
+  f.classList.toggle("has", n > 0);
+}
+
 /* Greyed out is not enough on its own — the button says WHY it is grey. */
 function updateUndo() {
   const b = $("#undo");
@@ -366,8 +395,44 @@ function doUndo() {
   if (REQ && G.isHuman(REQ.seat)) ME = REQ.seat;
   syncTrick();
   noteBlock();
+  reportUndone(REP, LOG.length);
+  if (REQ && G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
   RESUMING = false;
   render();
+}
+
+/* ---- raising a flag ----
+ *
+ * The moment somebody is confused is the moment worth recording, and it is
+ * gone by the end of the game. One button, one optional sentence; the round,
+ * the seat, the step in the replay and what the game was asking are taken from
+ * the game itself, because those are exactly the things a person would get
+ * wrong if asked to type them.
+ */
+function openFlag() {
+  if (!G || !REP) return;
+  const box = $("#flagbox");
+  if (!box) return;
+  $("#flag-title").textContent = t("flag.title");
+  $("#flag-where").textContent = t("flag.where", {
+    r: G.round,
+    who: REQ ? seatName(REQ.seat) : seatName(ME),
+    step: t(REQ ? "step." + REQ.type : "step.none"),
+  });
+  $("#flag-notelab").textContent = t("flag.note");
+  const note = $("#flag-note");
+  note.placeholder = t("flag.placeholder");
+  note.value = "";
+  $("#flag-save").textContent = t("flag.save");
+  $("#flag-cancel").textContent = t("flag.cancel");
+  box.hidden = false;
+  note.focus();
+}
+function closeFlag() { const b = $("#flagbox"); if (b) b.hidden = true; }
+function saveFlag() {
+  const f = reportFlag(REP, G, REQ, $("#flag-note").value);
+  closeFlag();
+  if (f) { G.say("log.flagged", { r: f.r }); render(); }
 }
 
 /* ---- starting over, and walking away ---- */
@@ -706,6 +771,7 @@ function render() {
   renderPrompt();
   renderZone();
   updateUndo();
+  updateFlag();
 }
 
 /* ---- where do I click? ----
@@ -1800,6 +1866,7 @@ function renderFinal(bar) {
     s += `<td><b>${d.total}</b></td></tr>`;
   }
   bar.innerHTML = s + `</table>`;
+  renderFeedback(bar);
   const again = el("button", "go", t("btn.newGame"));
   again.addEventListener("click", () => {
     $("#setup").classList.remove("hide");
@@ -1807,6 +1874,113 @@ function renderFinal(bar) {
     document.body.classList.remove("playing");
   });
   bar.appendChild(again);
+}
+
+/* ---- the end-of-game form ----
+ *
+ * Asked here and nowhere else, because this is the one moment a player has
+ * both the whole game in their head and nothing left to do. Four questions,
+ * two of them one tap; everything else is optional. What is actually sent is
+ * stated plainly above the button — a report that quietly ships a browser
+ * string is not a report anybody should trust.
+ */
+let FB = { rating: null, again: null };
+function renderFeedback(bar) {
+  if (!REP) return;
+  if (REP.sent) {                                   // already handed over
+    bar.appendChild(el("p", "fbdone", t("fb.sent", { id: REP.id })));
+    return;
+  }
+  reportFinish(REP, G);
+  const box = el("div", "fb");
+  const seg = (name, opts, cur, pick) => {
+    const g = el("div", "seg");
+    for (const [v, label] of opts) {
+      const b = el("button", "fbopt" + (cur === v ? " on" : ""), label);
+      b.type = "button";
+      b.addEventListener("click", () => { pick(v); renderPrompt(); });
+      g.appendChild(b);
+    }
+    return g;
+  };
+  box.appendChild(el("h3", null, t("fb.title")));
+  box.appendChild(el("p", "hint", t("fb.lede")));
+
+  box.appendChild(el("label", "fblab", `${t("fb.rating")} <span class="muted">${
+    t("fb.rating.1")} → ${t("fb.rating.5")}</span>`));
+  box.appendChild(seg("rating", [1, 2, 3, 4, 5].map((n) => [n, String(n)]),
+    FB.rating, (v) => { FB.rating = v; }));
+
+  box.appendChild(el("label", "fblab", t("fb.again")));
+  box.appendChild(seg("again", [["yes", t("fb.again.yes")], ["maybe", t("fb.again.maybe")],
+    ["no", t("fb.again.no")]], FB.again, (v) => { FB.again = v; }));
+
+  const area = (id, label, ph, rows) => {
+    box.appendChild(el("label", "fblab", label));
+    const a = el("textarea");
+    a.id = id; a.rows = rows || 3; a.placeholder = ph;
+    a.value = FB[id] || "";
+    a.addEventListener("input", () => { FB[id] = a.value; });
+    box.appendChild(a);
+  };
+  area("confusing", t("fb.confusing"), t("fb.confusing.ph"), 3);
+  area("best", t("fb.best"), t("fb.best.ph"), 2);
+  box.appendChild(el("label", "fblab", t("fb.name")));
+  const nm = el("input");
+  nm.id = "fb-name"; nm.type = "text"; nm.placeholder = t("fb.name.ph");
+  nm.value = FB.name || "";
+  nm.addEventListener("input", () => { FB.name = nm.value; });
+  box.appendChild(nm);
+
+  box.appendChild(el("p", "hint what", t("fb.what", {
+    id: REP.id, size: Math.round(reportSize(REP) / 1024) + " kB",
+    flags: REP.flags.length })));
+
+  const row = el("div", "fbrow");
+  const send = el("button", "go", t("fb.send"));
+  send.addEventListener("click", () => {
+    send.disabled = true; send.textContent = t("fb.sending");
+    finishFeedback().then((how) => {
+      REP.sent = how;
+      renderPrompt();
+    });
+  });
+  const down = el("button", "go alt", t("fb.download"));
+  down.addEventListener("click", () => {
+    reportFeedback(REP, FB);
+    downloadReport(REP);
+    REP.sent = "download";
+    renderPrompt();
+  });
+  row.appendChild(send); row.appendChild(down);
+  box.appendChild(row);
+  bar.appendChild(box);
+}
+
+/* Post it if there is somewhere to post it, and fall back to a file if not —
+ * a playtester who has just written three sentences must never lose them to a
+ * network error. */
+function finishFeedback() {
+  reportFeedback(REP, FB);
+  const url = BUILD.reportUrl;
+  if (!url) { downloadReport(REP); return Promise.resolve("download"); }
+  return fetch(url, { method: "POST", headers: { "content-type": "application/json" },
+                      body: JSON.stringify(REP) })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return "post"; })
+    .catch(() => { downloadReport(REP); return "failed"; });
+}
+
+function downloadReport(rep) {
+  try {
+    const blob = new Blob([JSON.stringify(rep, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = reportFilename(rep);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { console.error(e); }
 }
 
 // --------------------------------------------------------------- sidebar
@@ -1878,6 +2052,13 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#undo").addEventListener("click", doUndo);
   $("#restart").addEventListener("click", restartGame);
   $("#abort").addEventListener("click", abortGame);
+  $("#flag").addEventListener("click", openFlag);
+  $("#flag-cancel").addEventListener("click", closeFlag);
+  $("#flag-save").addEventListener("click", saveFlag);
+  $("#flagbox").addEventListener("click", (e) => { if (e.target.id === "flagbox") closeFlag(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("#flagbox").hidden) closeFlag();
+  });
   $("#reseed").addEventListener("click", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);
   });
@@ -1951,5 +2132,6 @@ function renderNav() {
   set("#undo", t("nav.undo"), t("nav.undo.tip"));
   set("#restart", t("nav.restart"), t("nav.restart.tip"));
   set("#abort", t("nav.abort"), t("nav.abort.tip"));
+  updateFlag();
   updateUndo();
 }

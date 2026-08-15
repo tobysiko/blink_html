@@ -42,9 +42,47 @@
   .hbtn:disabled{opacity:.35; cursor:not-allowed}
   .hbtn:focus-visible{outline:2px solid #F4F1EA; outline-offset:2px}
   body:not(.playing) .hnav{display:none}
+  /* Raising a flag is the one header button you press because something is
+     WRONG, so it does not look like the others. */
+  .flagbtn{border-color:rgba(255,190,120,.55); color:#FFD7A8}
+  .flagbtn:hover:not(:disabled){background:rgba(255,190,120,.18)}
+  .flagbtn.has{background:rgba(255,190,120,.22); border-color:#FFD7A8}
   @media (max-width: 560px){ .hbtn{padding:3px 7px} header .right{font-size:10.5px} }
   @media (max-width: 430px){ .hnav{gap:4px; margin-left:6px}
     .hbtn{padding:3px 5px; font-size:11px} header{gap:8px; padding:7px 9px} }
+
+  /* one modal shape, used by the flag dialog */
+  #flagbox{position:fixed; inset:0; z-index:60; background:rgba(30,40,32,.55);
+    display:flex; align-items:center; justify-content:center; padding:18px}
+  #flagbox[hidden]{display:none}
+  #flagbox .sheet{background:var(--panel); border-radius:12px; padding:20px;
+    max-width:420px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  #flagbox h3{margin:0 0 4px; color:var(--deep); font-size:17px}
+  #flagbox label{display:block; margin:12px 0 5px; font-weight:700; font-size:13px}
+  #flagbox textarea{width:100%; padding:10px; border:1px solid var(--line);
+    border-radius:8px; font:inherit; resize:vertical; box-sizing:border-box}
+  #flagbox .row{display:flex; gap:8px; margin-top:14px}
+  #flagbox .row .go{flex:1}
+
+  /* the end-of-game form */
+  .fb{margin:14px 0 6px; padding:14px 0 0; border-top:1px solid var(--line)}
+  .fb h3{margin:0 0 4px; color:var(--deep); font-size:15px}
+  .fblab{display:block; margin:12px 0 5px; font-weight:700; font-size:12.5px}
+  .fblab .muted{font-weight:400}
+  .fb .seg{display:flex; border:1px solid var(--line); border-radius:8px;
+    overflow:hidden; background:#fff}
+  .fbopt{flex:1; padding:9px 4px; min-height:40px; border:0; border-left:1px solid var(--line);
+    background:transparent; font:inherit; font-weight:600; cursor:pointer; color:var(--ink)}
+  .fbopt:first-child{border-left:0}
+  .fbopt:hover{background:#EFEBE1}
+  .fbopt.on{background:var(--deep); color:#FBFAF6}
+  .fb textarea, .fb input[type=text]{width:100%; padding:9px; border:1px solid var(--line);
+    border-radius:8px; font:inherit; box-sizing:border-box; resize:vertical}
+  .fb .what{margin-top:12px; font-style:italic}
+  .fbrow{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .fbrow .go{flex:1; min-width:150px}
+  .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
+    font-weight:600; color:var(--deep)}
 
   #nojs{max-width:620px; margin:40px auto; padding:18px 20px; background:#FFF4E2;
     border:2px solid #C9992B; border-radius:10px; font-size:14px; line-height:1.5}
@@ -692,10 +730,26 @@
     <button id="undo" class="hbtn" disabled></button>
     <button id="restart" class="hbtn"></button>
     <button id="abort" class="hbtn"></button>
+    <button id="flag" class="hbtn flagbtn"></button>
   </nav>
 </header>
 
 <div id="fx"></div>
+
+<!-- Raised mid-game, when the confusion is still fresh. Where you were is
+     taken from the game, not typed. -->
+<div id="flagbox" hidden>
+  <div class="sheet">
+    <h3 id="flag-title"></h3>
+    <p class="hint" id="flag-where"></p>
+    <label for="flag-note" id="flag-notelab"></label>
+    <textarea id="flag-note" rows="3"></textarea>
+    <div class="row">
+      <button class="go" id="flag-save"></button>
+      <button class="go alt" id="flag-cancel"></button>
+    </div>
+  </div>
+</div>
 <!-- Hot seat: with more than one person at the table the board must not be
      visible while the device changes hands. -->
 <div id="pass" hidden>

@@ -42,9 +42,47 @@
   .hbtn:disabled{opacity:.35; cursor:not-allowed}
   .hbtn:focus-visible{outline:2px solid #F4F1EA; outline-offset:2px}
   body:not(.playing) .hnav{display:none}
+  /* Raising a flag is the one header button you press because something is
+     WRONG, so it does not look like the others. */
+  .flagbtn{border-color:rgba(255,190,120,.55); color:#FFD7A8}
+  .flagbtn:hover:not(:disabled){background:rgba(255,190,120,.18)}
+  .flagbtn.has{background:rgba(255,190,120,.22); border-color:#FFD7A8}
   @media (max-width: 560px){ .hbtn{padding:3px 7px} header .right{font-size:10.5px} }
   @media (max-width: 430px){ .hnav{gap:4px; margin-left:6px}
     .hbtn{padding:3px 5px; font-size:11px} header{gap:8px; padding:7px 9px} }
+
+  /* one modal shape, used by the flag dialog */
+  #flagbox{position:fixed; inset:0; z-index:60; background:rgba(30,40,32,.55);
+    display:flex; align-items:center; justify-content:center; padding:18px}
+  #flagbox[hidden]{display:none}
+  #flagbox .sheet{background:var(--panel); border-radius:12px; padding:20px;
+    max-width:420px; width:100%; box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  #flagbox h3{margin:0 0 4px; color:var(--deep); font-size:17px}
+  #flagbox label{display:block; margin:12px 0 5px; font-weight:700; font-size:13px}
+  #flagbox textarea{width:100%; padding:10px; border:1px solid var(--line);
+    border-radius:8px; font:inherit; resize:vertical; box-sizing:border-box}
+  #flagbox .row{display:flex; gap:8px; margin-top:14px}
+  #flagbox .row .go{flex:1}
+
+  /* the end-of-game form */
+  .fb{margin:14px 0 6px; padding:14px 0 0; border-top:1px solid var(--line)}
+  .fb h3{margin:0 0 4px; color:var(--deep); font-size:15px}
+  .fblab{display:block; margin:12px 0 5px; font-weight:700; font-size:12.5px}
+  .fblab .muted{font-weight:400}
+  .fb .seg{display:flex; border:1px solid var(--line); border-radius:8px;
+    overflow:hidden; background:#fff}
+  .fbopt{flex:1; padding:9px 4px; min-height:40px; border:0; border-left:1px solid var(--line);
+    background:transparent; font:inherit; font-weight:600; cursor:pointer; color:var(--ink)}
+  .fbopt:first-child{border-left:0}
+  .fbopt:hover{background:#EFEBE1}
+  .fbopt.on{background:var(--deep); color:#FBFAF6}
+  .fb textarea, .fb input[type=text]{width:100%; padding:9px; border:1px solid var(--line);
+    border-radius:8px; font:inherit; box-sizing:border-box; resize:vertical}
+  .fb .what{margin-top:12px; font-style:italic}
+  .fbrow{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .fbrow .go{flex:1; min-width:150px}
+  .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
+    font-weight:600; color:var(--deep)}
 
   #nojs{max-width:620px; margin:40px auto; padding:18px 20px; background:#FFF4E2;
     border:2px solid #C9992B; border-radius:10px; font-size:14px; line-height:1.5}
@@ -692,10 +730,26 @@
     <button id="undo" class="hbtn" disabled></button>
     <button id="restart" class="hbtn"></button>
     <button id="abort" class="hbtn"></button>
+    <button id="flag" class="hbtn flagbtn"></button>
   </nav>
 </header>
 
 <div id="fx"></div>
+
+<!-- Raised mid-game, when the confusion is still fresh. Where you were is
+     taken from the game, not typed. -->
+<div id="flagbox" hidden>
+  <div class="sheet">
+    <h3 id="flag-title"></h3>
+    <p class="hint" id="flag-where"></p>
+    <label for="flag-note" id="flag-notelab"></label>
+    <textarea id="flag-note" rows="3"></textarea>
+    <div class="row">
+      <button class="go" id="flag-save"></button>
+      <button class="go alt" id="flag-cancel"></button>
+    </div>
+  </div>
+</div>
 <!-- Hot seat: with more than one person at the table the board must not be
      visible while the device changes hands. -->
 <div id="pass" hidden>
@@ -869,7 +923,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","commit":"976f953a34","branch":"main","dirty":false,"built":"2026-08-15T09:26:44Z"};
+const BUILD = {"version":"v0.22","api":null,"reportUrl":null,"commit":"f4faad79e9","branch":"main","dirty":true,"built":"2026-08-15T09:43:18Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -952,6 +1006,50 @@ en: {
   "setup.docs.objectives": "Map objectives",
   "build.line": "{version} · build {commit} · {built}",
   "build.dirty": "built from uncommitted edits",
+
+  "step.meld": "playing a meld", "step.turn": "the map turn",
+  "step.bonus": "the winner's extra card", "step.discard": "giving up a card",
+  "step.setaside": "setting a card aside", "step.buy": "taking from the market",
+  "step.retire": "retiring a card", "step.effectA": "declaring A",
+  "step.feed": "a famine", "step.waterexplore": "the water advantage",
+  "step.conquest": "a conquest", "step.objective": "choosing an objective",
+  "step.colony": "founding a colony", "step.none": "between turns",
+  "log.flagged": "Flagged round {r} for the designer.",
+
+  "flag.btn": "Flag",
+  "flag.tip": "Something confusing, wrong or annoying? Mark this moment.",
+  "flag.title": "Flag this moment",
+  "flag.where": "Round {r} · {who} · {step}",
+  "flag.note": "What happened? (optional)",
+  "flag.placeholder": "e.g. I expected to be able to sail here",
+  "flag.save": "Flag it",
+  "flag.cancel": "Never mind",
+  "flag.done": "Flagged — round {r}. Carry on.",
+  "flag.count": "{n} flagged",
+
+  "fb.title": "How was that?",
+  "fb.lede": "This is a prototype in playtesting. Anything you say here goes to the designer with the exact game you just played, so it can be replayed card for card.",
+  "fb.rating": "Overall",
+  "fb.rating.1": "Bad",
+  "fb.rating.5": "Great",
+  "fb.again": "Would you play it again?",
+  "fb.again.yes": "Yes",
+  "fb.again.maybe": "Maybe",
+  "fb.again.no": "No",
+  "fb.confusing": "What was confusing or annoying?",
+  "fb.confusing.ph": "The thing you had to work out for yourself is the useful bit.",
+  "fb.best": "What was the best moment?",
+  "fb.best.ph": "Optional.",
+  "fb.name": "Your name (optional)",
+  "fb.name.ph": "so the designer can write back",
+  "fb.send": "Send the playtest report",
+  "fb.download": "Download the report instead",
+  "fb.skip": "No thanks",
+  "fb.sending": "Sending…",
+  "fb.sent": "Sent — thank you. Report {id}.",
+  "fb.failed": "Could not send it. The report has been downloaded instead — please email it over.",
+  "fb.saved": "Saved as {file}.",
+  "fb.what": "Report {id} · {size} · {flags} flagged · the whole game, replayable",
   "lang.en": "English", "lang.de": "German",
   "flag.en": "🇬🇧", "flag.de": "🇩🇪",
   "nav.undo": "Undo",
@@ -1266,6 +1364,50 @@ de: {
   "setup.docs.objectives": "Kartenziele",
   "build.line": "{version} · Build {commit} · {built}",
   "build.dirty": "aus nicht eingecheckten Änderungen gebaut",
+
+  "step.meld": "Kombination legen", "step.turn": "der Kartenzug",
+  "step.bonus": "die Extrakarte des Siegers", "step.discard": "Karte abgeben",
+  "step.setaside": "Karte beiseitelegen", "step.buy": "aus dem Markt nehmen",
+  "step.retire": "Karte ausmustern", "step.effectA": "A ansagen",
+  "step.feed": "eine Hungersnot", "step.waterexplore": "der Wasservorteil",
+  "step.conquest": "eine Eroberung", "step.objective": "Ziel wählen",
+  "step.colony": "Kolonie gründen", "step.none": "zwischen den Zügen",
+  "log.flagged": "Runde {r} für den Autor gemeldet.",
+
+  "flag.btn": "Melden",
+  "flag.tip": "Etwas unklar, falsch oder ärgerlich? Diesen Moment markieren.",
+  "flag.title": "Diesen Moment melden",
+  "flag.where": "Runde {r} · {who} · {step}",
+  "flag.note": "Was ist passiert? (optional)",
+  "flag.placeholder": "z. B. Ich dachte, ich könnte hierher segeln",
+  "flag.save": "Melden",
+  "flag.cancel": "Abbrechen",
+  "flag.done": "Gemeldet — Runde {r}. Weiter geht's.",
+  "flag.count": "{n} gemeldet",
+
+  "fb.title": "Wie war die Partie?",
+  "fb.lede": "Das ist ein Prototyp im Test. Alles hier geht zusammen mit der gerade gespielten Partie an den Autor — sie lässt sich Karte für Karte nachspielen.",
+  "fb.rating": "Insgesamt",
+  "fb.rating.1": "Schlecht",
+  "fb.rating.5": "Super",
+  "fb.again": "Würdest du sie noch einmal spielen?",
+  "fb.again.yes": "Ja",
+  "fb.again.maybe": "Vielleicht",
+  "fb.again.no": "Nein",
+  "fb.confusing": "Was war unklar oder ärgerlich?",
+  "fb.confusing.ph": "Gerade das, was du dir selbst zusammenreimen musstest, hilft am meisten.",
+  "fb.best": "Was war der beste Moment?",
+  "fb.best.ph": "Optional.",
+  "fb.name": "Dein Name (optional)",
+  "fb.name.ph": "damit der Autor antworten kann",
+  "fb.send": "Testbericht senden",
+  "fb.download": "Bericht stattdessen herunterladen",
+  "fb.skip": "Nein danke",
+  "fb.sending": "Wird gesendet…",
+  "fb.sent": "Gesendet — vielen Dank. Bericht {id}.",
+  "fb.failed": "Senden nicht möglich. Der Bericht wurde heruntergeladen — bitte per E-Mail schicken.",
+  "fb.saved": "Als {file} gespeichert.",
+  "fb.what": "Bericht {id} · {size} · {flags} gemeldet · die ganze Partie, nachspielbar",
   "lang.en": "Englisch", "lang.de": "Deutsch",
   "flag.en": "🇬🇧", "flag.de": "🇩🇪",
   "nav.undo": "Rückgängig",
@@ -3913,6 +4055,174 @@ function playOut(n, seed, opts) {
 }
 
 
+/* A playtest session, written down.
+ *
+ * The point of this file is that a game played by a stranger comes back as
+ * something you can *act* on rather than a sentence in an email. Three things
+ * make that true:
+ *
+ *   1. It names its build. A report that cannot say which version produced it
+ *      is an anecdote. `BUILD.commit` is baked in at build time, along with
+ *      whether the tree was dirty, because a build made from uncommitted edits
+ *      is not the commit it claims to be.
+ *
+ *   2. It carries the whole game, not a summary. The engine is deterministic —
+ *      seed plus options plus the answers people gave *is* the game — so the
+ *      replay log reconstructs it exactly, card for card. That is the same
+ *      machinery undo uses, so it costs nothing extra and is already tested.
+ *
+ *   3. It records where people HESITATED. Every human decision is timed from
+ *      the moment it appears on screen to the moment it is answered. A long
+ *      pause is the shape of confusion, and it is invisible in a score table.
+ *
+ * Plus what a person says: flags raised mid-game, and the end-of-game form.
+ *
+ * The whole thing is a plain object. Nothing here touches the network — the
+ * transport decides whether it is posted, downloaded, or kept.
+ */
+
+const REPORT_SCHEMA = 3;
+
+/* Short, unambiguous, sayable out loud — these end up in filenames and get
+ * read down a phone. No 0/O or 1/I. */
+const ID_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+function shortId(n) {
+  let s = "";
+  for (let i = 0; i < (n || 8); i++)
+    s += ID_ALPHABET[Math.floor(Math.random() * ID_ALPHABET.length)];
+  return s;
+}
+
+function newReport(build, gargs, extra) {
+  const o = extra || {};
+  return {
+    schema: REPORT_SCHEMA,
+    id: shortId(8),
+    build: {
+      version: build.version, commit: build.commit, branch: build.branch,
+      dirty: build.dirty, built: build.built,
+    },
+    started: new Date().toISOString(),
+    ended: null,
+    lang: o.lang || null,
+    session: o.session || null,          // set when the game is played remotely
+    players: o.players || [],            // [{seat, kind, style, name}]
+    setup: {
+      n: gargs.n,
+      seed: gargs.seed,
+      humans: (gargs.opts.humans || []).slice(),
+      seatStyles: (gargs.opts.seatStyles || []).slice(),
+      botLevel: gargs.opts.botLevel,
+      trickRule: gargs.opts.trickRule,
+      deck: gargs.opts.deck,
+      objectives: gargs.opts.objectives,
+      retireRule: gargs.opts.retireRule,
+      comboMelds: !!gargs.opts.comboMelds,
+      friendsOf10: !!gargs.opts.friendsOf10,
+      growLimits: !!gargs.opts.growLimits,
+    },
+    replay: [],        // the answer tokens: this alone re-deals the whole game
+    decisions: [],     // {r, s, t, ms} — one per human decision, in order
+    flags: [],         // {at, r, s, t, note} — raised by a person, mid-game
+    outcome: null,
+    counters: null,
+    feedback: null,
+    ui: {              // what the page could actually show them
+      w: typeof window === "undefined" ? null : window.innerWidth,
+      h: typeof window === "undefined" ? null : window.innerHeight,
+      touch: typeof window === "undefined" ? null
+        : (("ontouchstart" in window) || navigator.maxTouchPoints > 0),
+      agent: typeof navigator === "undefined" ? null : navigator.userAgent,
+    },
+  };
+}
+
+/* --- while the game runs ---------------------------------------------- */
+
+/* Called when a request appears on screen. Timing starts here, not when the
+ * previous answer was given: the gap between them is the bots playing, and
+ * blaming a person for that would make every report lie. */
+function reportAsked(rep, req, round) {
+  if (!rep || !req) return;
+  rep._pending = { r: round, s: req.seat, t: req.type, at: Date.now() };
+}
+
+function reportAnswered(rep, token) {
+  if (!rep) return;
+  if (rep._pending) {
+    const p = rep._pending;
+    rep.decisions.push({ r: p.r, s: p.s, t: p.t, ms: Date.now() - p.at });
+    rep._pending = null;
+  }
+  if (token !== undefined) rep.replay.push(token);
+}
+
+/* Undo rewinds the game, so it has to rewind the record too — otherwise the
+ * replay log no longer produces the game that was played. The decision that
+ * was taken back is kept, marked, because "they did this and immediately took
+ * it back" is one of the more useful things in the whole file. */
+function reportUndone(rep, length) {
+  if (!rep) return;
+  rep.replay.length = Math.min(rep.replay.length, length);
+  for (let i = rep.decisions.length - 1; i >= 0; i--) {
+    if (!rep.decisions[i].undone) { rep.decisions[i].undone = true; break; }
+  }
+  rep.undos = (rep.undos || 0) + 1;
+}
+
+/* Somebody hit the flag. Where they were is the whole value, so it is taken
+ * from the game rather than typed. */
+function reportFlag(rep, g, req, note) {
+  if (!rep) return null;
+  const f = {
+    at: new Date().toISOString(),
+    r: g ? g.round : null,
+    s: req ? req.seat : null,
+    t: req ? req.type : null,
+    step: rep.replay.length,          // exactly where in the replay to look
+    note: (note || "").slice(0, 800),
+  };
+  rep.flags.push(f);
+  return f;
+}
+
+/* --- when it is over --------------------------------------------------- */
+
+function reportFinish(rep, g) {
+  if (!rep || !g) return rep;
+  rep.ended = new Date().toISOString();
+  rep.seconds = Math.round((Date.parse(rep.ended) - Date.parse(rep.started)) / 1000);
+  rep.outcome = {
+    rounds: g.round,
+    endedOn: g.endedOn,
+    scores: g.score().map((x) => ({
+      seat: x.seat, total: x.total, pop: x.pop, row: x.vrow, dom: x.dom,
+      obj: x.obj, objDone: x.objDone, gold: x.gold, band: x.band,
+    })),
+  };
+  rep.counters = Object.assign({}, g.stats);
+  return rep;
+}
+
+function reportFeedback(rep, answers) {
+  if (!rep) return rep;
+  rep.feedback = Object.assign({ at: new Date().toISOString() }, answers || {});
+  return rep;
+}
+
+/* One line a person can read before they send it. Deliberately not a summary
+ * of the game — a summary of the RECORD, so they can see what they are
+ * handing over. */
+function reportSize(rep) {
+  return JSON.stringify(rep).length;
+}
+
+function reportFilename(rep) {
+  const seed = rep.setup.seed, n = rep.setup.n;
+  return `blink-${rep.build.version}-${rep.build.commit}-${n}p-seed${seed}-${rep.id}.json`;
+}
+
+
 /* Blink v0.22 — playable client.
  *
  * The engine yields a request whenever a human seat must decide; this file
@@ -3980,6 +4290,7 @@ let MAPGEO = null;                    // last measured board + viewport, for pan
 /* The research action is four steps deep, so the client tracks where it is and
  * what has happened so far. Kept outside SEL because answer() clears SEL. */
 let RESEARCH = null;
+let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
@@ -4060,6 +4371,17 @@ function seatSelections() {
   return { humans, styles };
 }
 
+/* Who is sitting where, in the report's terms. Names arrive later when a game
+ * is played remotely; locally a seat is "you" or the style it was dealt. */
+function seatRoster(styles, humans) {
+  const out = [];
+  for (let i = 0; i < playerCount(); i++)
+    out.push({ seat: i, kind: humans.includes(i) ? "human" : "bot",
+               style: humans.includes(i) ? null : (styles[i] || "auto"),
+               name: null });
+  return out;
+}
+
 function startGame(force) {
   lastMeldLimit = null;
   const n = playerCount();
@@ -4084,6 +4406,7 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow" } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
+  REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
   IT = null; REQ = null; SEL = blankSel();
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
@@ -4140,6 +4463,7 @@ function pump(a) {
       if (maybePass(REQ.seat)) { noteBlock(); render(); return; }
     }
     noteBlock();
+    if (G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
     render(); playEvents(); return;
   }
   IT = null; REQ = null;
@@ -4152,7 +4476,11 @@ function pump(a) {
 }
 
 function answer(a, keepSel) {
-  if (REQ) LOG.push(encodeAns(REQ, a));
+  if (REQ) {
+    const tok = encodeAns(REQ, a);
+    LOG.push(tok);
+    reportAnswered(REP, tok);
+  }
   if (!keepSel) SEL = blankSel();
   pump(a);
 }
@@ -4254,6 +4582,17 @@ function syncTrick() {
   TRICK.done = new Set(G.turnDone || []);
 }
 
+/* The flag button carries its own count: one flag raised is a thing you want
+ * to see was recorded, and the count is game state, not language. */
+function updateFlag() {
+  const f = $("#flag");
+  if (!f) return;
+  const n = REP ? REP.flags.length : 0;
+  f.textContent = n ? t("flag.count", { n }) : t("flag.btn");
+  f.title = t("flag.tip");
+  f.classList.toggle("has", n > 0);
+}
+
 /* Greyed out is not enough on its own — the button says WHY it is grey. */
 function updateUndo() {
   const b = $("#undo");
@@ -4281,8 +4620,44 @@ function doUndo() {
   if (REQ && G.isHuman(REQ.seat)) ME = REQ.seat;
   syncTrick();
   noteBlock();
+  reportUndone(REP, LOG.length);
+  if (REQ && G.isHuman(REQ.seat)) reportAsked(REP, REQ, G.round);
   RESUMING = false;
   render();
+}
+
+/* ---- raising a flag ----
+ *
+ * The moment somebody is confused is the moment worth recording, and it is
+ * gone by the end of the game. One button, one optional sentence; the round,
+ * the seat, the step in the replay and what the game was asking are taken from
+ * the game itself, because those are exactly the things a person would get
+ * wrong if asked to type them.
+ */
+function openFlag() {
+  if (!G || !REP) return;
+  const box = $("#flagbox");
+  if (!box) return;
+  $("#flag-title").textContent = t("flag.title");
+  $("#flag-where").textContent = t("flag.where", {
+    r: G.round,
+    who: REQ ? seatName(REQ.seat) : seatName(ME),
+    step: t(REQ ? "step." + REQ.type : "step.none"),
+  });
+  $("#flag-notelab").textContent = t("flag.note");
+  const note = $("#flag-note");
+  note.placeholder = t("flag.placeholder");
+  note.value = "";
+  $("#flag-save").textContent = t("flag.save");
+  $("#flag-cancel").textContent = t("flag.cancel");
+  box.hidden = false;
+  note.focus();
+}
+function closeFlag() { const b = $("#flagbox"); if (b) b.hidden = true; }
+function saveFlag() {
+  const f = reportFlag(REP, G, REQ, $("#flag-note").value);
+  closeFlag();
+  if (f) { G.say("log.flagged", { r: f.r }); render(); }
 }
 
 /* ---- starting over, and walking away ---- */
@@ -4621,6 +4996,7 @@ function render() {
   renderPrompt();
   renderZone();
   updateUndo();
+  updateFlag();
 }
 
 /* ---- where do I click? ----
@@ -5715,6 +6091,7 @@ function renderFinal(bar) {
     s += `<td><b>${d.total}</b></td></tr>`;
   }
   bar.innerHTML = s + `</table>`;
+  renderFeedback(bar);
   const again = el("button", "go", t("btn.newGame"));
   again.addEventListener("click", () => {
     $("#setup").classList.remove("hide");
@@ -5722,6 +6099,113 @@ function renderFinal(bar) {
     document.body.classList.remove("playing");
   });
   bar.appendChild(again);
+}
+
+/* ---- the end-of-game form ----
+ *
+ * Asked here and nowhere else, because this is the one moment a player has
+ * both the whole game in their head and nothing left to do. Four questions,
+ * two of them one tap; everything else is optional. What is actually sent is
+ * stated plainly above the button — a report that quietly ships a browser
+ * string is not a report anybody should trust.
+ */
+let FB = { rating: null, again: null };
+function renderFeedback(bar) {
+  if (!REP) return;
+  if (REP.sent) {                                   // already handed over
+    bar.appendChild(el("p", "fbdone", t("fb.sent", { id: REP.id })));
+    return;
+  }
+  reportFinish(REP, G);
+  const box = el("div", "fb");
+  const seg = (name, opts, cur, pick) => {
+    const g = el("div", "seg");
+    for (const [v, label] of opts) {
+      const b = el("button", "fbopt" + (cur === v ? " on" : ""), label);
+      b.type = "button";
+      b.addEventListener("click", () => { pick(v); renderPrompt(); });
+      g.appendChild(b);
+    }
+    return g;
+  };
+  box.appendChild(el("h3", null, t("fb.title")));
+  box.appendChild(el("p", "hint", t("fb.lede")));
+
+  box.appendChild(el("label", "fblab", `${t("fb.rating")} <span class="muted">${
+    t("fb.rating.1")} → ${t("fb.rating.5")}</span>`));
+  box.appendChild(seg("rating", [1, 2, 3, 4, 5].map((n) => [n, String(n)]),
+    FB.rating, (v) => { FB.rating = v; }));
+
+  box.appendChild(el("label", "fblab", t("fb.again")));
+  box.appendChild(seg("again", [["yes", t("fb.again.yes")], ["maybe", t("fb.again.maybe")],
+    ["no", t("fb.again.no")]], FB.again, (v) => { FB.again = v; }));
+
+  const area = (id, label, ph, rows) => {
+    box.appendChild(el("label", "fblab", label));
+    const a = el("textarea");
+    a.id = id; a.rows = rows || 3; a.placeholder = ph;
+    a.value = FB[id] || "";
+    a.addEventListener("input", () => { FB[id] = a.value; });
+    box.appendChild(a);
+  };
+  area("confusing", t("fb.confusing"), t("fb.confusing.ph"), 3);
+  area("best", t("fb.best"), t("fb.best.ph"), 2);
+  box.appendChild(el("label", "fblab", t("fb.name")));
+  const nm = el("input");
+  nm.id = "fb-name"; nm.type = "text"; nm.placeholder = t("fb.name.ph");
+  nm.value = FB.name || "";
+  nm.addEventListener("input", () => { FB.name = nm.value; });
+  box.appendChild(nm);
+
+  box.appendChild(el("p", "hint what", t("fb.what", {
+    id: REP.id, size: Math.round(reportSize(REP) / 1024) + " kB",
+    flags: REP.flags.length })));
+
+  const row = el("div", "fbrow");
+  const send = el("button", "go", t("fb.send"));
+  send.addEventListener("click", () => {
+    send.disabled = true; send.textContent = t("fb.sending");
+    finishFeedback().then((how) => {
+      REP.sent = how;
+      renderPrompt();
+    });
+  });
+  const down = el("button", "go alt", t("fb.download"));
+  down.addEventListener("click", () => {
+    reportFeedback(REP, FB);
+    downloadReport(REP);
+    REP.sent = "download";
+    renderPrompt();
+  });
+  row.appendChild(send); row.appendChild(down);
+  box.appendChild(row);
+  bar.appendChild(box);
+}
+
+/* Post it if there is somewhere to post it, and fall back to a file if not —
+ * a playtester who has just written three sentences must never lose them to a
+ * network error. */
+function finishFeedback() {
+  reportFeedback(REP, FB);
+  const url = BUILD.reportUrl;
+  if (!url) { downloadReport(REP); return Promise.resolve("download"); }
+  return fetch(url, { method: "POST", headers: { "content-type": "application/json" },
+                      body: JSON.stringify(REP) })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return "post"; })
+    .catch(() => { downloadReport(REP); return "failed"; });
+}
+
+function downloadReport(rep) {
+  try {
+    const blob = new Blob([JSON.stringify(rep, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = reportFilename(rep);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { console.error(e); }
 }
 
 // --------------------------------------------------------------- sidebar
@@ -5793,6 +6277,13 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#undo").addEventListener("click", doUndo);
   $("#restart").addEventListener("click", restartGame);
   $("#abort").addEventListener("click", abortGame);
+  $("#flag").addEventListener("click", openFlag);
+  $("#flag-cancel").addEventListener("click", closeFlag);
+  $("#flag-save").addEventListener("click", saveFlag);
+  $("#flagbox").addEventListener("click", (e) => { if (e.target.id === "flagbox") closeFlag(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !$("#flagbox").hidden) closeFlag();
+  });
   $("#reseed").addEventListener("click", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);
   });
@@ -5866,6 +6357,7 @@ function renderNav() {
   set("#undo", t("nav.undo"), t("nav.undo.tip"));
   set("#restart", t("nav.restart"), t("nav.restart.tip"));
   set("#abort", t("nav.abort"), t("nav.abort.tip"));
+  updateFlag();
   updateUndo();
 }
 

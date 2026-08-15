@@ -28,18 +28,25 @@ function gitStamp() {
              built: new Date().toISOString().slice(0, 19) + 'Z' };
   }
 }
-const BUILD = Object.assign({ version: 'v0.22' }, gitStamp());
+/* Where playtest reports and remote sessions go. Unset in a local build, so
+ * the standalone file falls back to downloading the report — it must work with
+ * no network at all. Set BLINK_API to point a build at the session service. */
+const API = process.env.BLINK_API || null;
+const BUILD = Object.assign({ version: 'v0.22', api: API,
+                              reportUrl: API ? API.replace(/\/$/, '') + '/report' : null },
+                            gitStamp());
 console.log(`build ${BUILD.version} ${BUILD.commit}${BUILD.dirty ? '+dirty' : ''} (${BUILD.branch})`);
 const strip = (f) => fs.readFileSync(f, 'utf8')
   .replace(/if \(typeof module[\s\S]*$/, '');       // drop the node export tail
 const eng = strip('engine.js');
 const lang = strip('i18n.js');
+const rep = strip('report.js');
 const ui  = fs.readFileSync('ui.js', 'utf8');
 const out = fs.readFileSync('shell.html', 'utf8')
   .replace('/*__ENGINE__*/',
     "document.documentElement.className += ' js';   // scripts run: hide the no-JS notice\n"
     + 'const BUILD = ' + JSON.stringify(BUILD) + ';\n'
-    + lang + '\n' + eng)
+    + lang + '\n' + eng + '\n' + rep)
   .replace('/*__UI__*/', ui);
 fs.writeFileSync('../Blink-play-v0.22.html', out);
 console.log('built ../Blink-play-v0.22.html', (out.length/1024).toFixed(1)+' KB');
