@@ -157,9 +157,9 @@
   .field{border:0; padding:0; margin:0 0 18px; min-width:0}
   .field > label, .field > legend{display:block; padding:0; margin:0 0 6px;
     font-weight:700; font-size:13px; color:var(--ink); letter-spacing:.2px}
-  .field select, .field input[type=number]{width:100%; padding:11px 10px;
-    border:1px solid var(--line); border-radius:8px; background:#fff; font:inherit;
-    color:var(--ink); min-height:44px}
+  .field select, .field input[type=number], .field input[type=text]{width:100%;
+    padding:11px 10px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; font:inherit; color:var(--ink); min-height:44px}
   .hint{color:var(--hint); font-size:12px; margin:6px 0 0; line-height:1.45}
 
   /* focus you can actually see, on every control */
@@ -918,25 +918,6 @@
     </div>
   </details>
 
-  <button class="go big" id="start" data-i18n="setup.start">Start</button>
-
-  <!-- Two groups, because they are two different promises. The first is the
-       game as it stands; the second is only in play if somebody switched it
-       on in Advanced. Filing them together would imply the objectives are
-       part of the base rules, which they are not. -->
-  <nav class="docs" aria-labelledby="docs-label">
-    <span class="sublab" id="docs-label" data-i18n="setup.docs">Read the rules</span>
-    <a class="doclink" id="doc-rules" href="rulebook.html" target="_blank" rel="noopener"
-      data-i18n="setup.docs.rules">Rulebook</a>
-    <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
-      data-i18n="setup.docs.effects">Card effects</a>
-  </nav>
-  <nav class="docs" aria-labelledby="vdocs-label">
-    <span class="sublab" id="vdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
-    <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
-      data-i18n="setup.docs.objectives">Map objectives</a>
-  </nav>
-
   <!-- Playing with people who are not in the room. Only offered when the
        build knows where the session service is. -->
   <fieldset class="field remote" id="remote" hidden>
@@ -956,6 +937,25 @@
     </div>
     <p class="hint" id="net-msg"></p>
   </fieldset>
+
+  <button class="go big" id="start" data-i18n="setup.start">Start</button>
+
+  <!-- Two groups, because they are two different promises. The first is the
+       game as it stands; the second is only in play if somebody switched it
+       on in Advanced. Filing them together would imply the objectives are
+       part of the base rules, which they are not. -->
+  <nav class="docs" aria-labelledby="docs-label">
+    <span class="sublab" id="docs-label" data-i18n="setup.docs">Read the rules</span>
+    <a class="doclink" id="doc-rules" href="rulebook.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.rules">Rulebook</a>
+    <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.effects">Card effects</a>
+  </nav>
+  <nav class="docs" aria-labelledby="vdocs-label">
+    <span class="sublab" id="vdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
+    <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.objectives">Map objectives</a>
+  </nav>
 
   <!-- Which build this is. A playtest report that cannot name its version is
        an anecdote, so the version is on the page, not buried in a comment. -->
@@ -1027,7 +1027,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"e39b8e66cd","branch":"main","dirty":false,"built":"2026-08-15T15:31:53Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"40176ead50","branch":"main","dirty":true,"built":"2026-08-15T15:32:46Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
