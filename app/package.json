@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "jsdom": "^30.0.1",
+    "terser": "^5.50.0"
+  }
+}

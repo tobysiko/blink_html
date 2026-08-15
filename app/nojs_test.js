@@ -11,7 +11,7 @@ const check = (runScripts, label, cb) => {
     cb({ label,
       htmlClass: d.documentElement.className.trim() || '(none)',
       notice: vis('#nojs'), setup: vis('#setup'),
-      seatOptions: d.querySelectorAll('#my-seat option').length });
+      seatRows: d.querySelectorAll('#seats .seatrow').length });
   }, runScripts ? 250 : 50);
 };
 let n=0; const out=[];
@@ -21,6 +21,6 @@ function done(){
   out.sort((a,b)=>a.label.localeCompare(b.label));
   for (const r of out) console.log(
     `${r.label.padEnd(34)} html="${r.htmlClass.padEnd(3)}"  notice=${String(r.notice).padEnd(5)}`+
-    `  setup=${String(r.setup).padEnd(5)}  seat options=${r.seatOptions}`);
+    `  setup=${String(r.setup).padEnd(5)}  seat rows=${r.seatRows}`);
   process.exit(0);
 }

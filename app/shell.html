@@ -8,12 +8,20 @@
   :root{
     --bg:#F4F1EA; --ink:#2B2620; --mut:#8A8378; --line:#C9C2B4;
     --green:#37704A; --deep:#1E4229; --panel:#FFFDF8;
+    /* --mut is 3.5:1 on the panel — fine for a chip, too thin for a sentence.
+       Hints and the setup lede use this instead, at 5.6:1. */
+    --hint:#6B6459;
   }
   *{box-sizing:border-box}
   body{
-    margin:0; background:var(--bg); color:var(--ink); overflow:hidden;
+    margin:0; background:var(--bg); color:var(--ink);
     font:13.5px/1.4 "Segoe UI",-apple-system,system-ui,sans-serif;
   }
+  /* The GAME is a fixed-height app layout and must not scroll; the setup page
+     is a form that grows — with the advanced rules open it is taller than a
+     laptop window, and `overflow:hidden` on the body would simply cut the
+     Start button off with no way to reach it. */
+  body.playing{overflow:hidden}
   header{
     background:var(--deep); color:#F4F1EA; padding:7px 14px;
     display:flex; align-items:baseline; gap:12px; height:36px;
@@ -21,6 +29,22 @@
   header h1{font-size:16px; margin:0; letter-spacing:.5px}
   header .sub{font-size:11.5px; opacity:.75}
   header .right{margin-left:auto; font-size:11.5px; opacity:.85}
+  /* only present in the hosted build, where there is a site to go back to */
+  header .back{color:#F4F1EA; opacity:.8; font-size:11.5px; text-decoration:none;
+    border:1px solid rgba(244,241,234,.35); border-radius:5px; padding:1px 7px}
+  header .back:hover{opacity:1; border-color:rgba(244,241,234,.8)}
+  /* what to do with the game itself, always in the same place */
+  .hnav{display:flex; gap:6px; margin-left:10px; align-self:center}
+  .hbtn{min-height:26px; padding:3px 10px; border-radius:6px; font:inherit;
+    font-size:11.5px; font-weight:600; cursor:pointer; text-decoration:none;
+    border:1px solid rgba(244,241,234,.4); background:transparent; color:#F4F1EA}
+  .hbtn:hover:not(:disabled){background:rgba(244,241,234,.16)}
+  .hbtn:disabled{opacity:.35; cursor:not-allowed}
+  .hbtn:focus-visible{outline:2px solid #F4F1EA; outline-offset:2px}
+  body:not(.playing) .hnav{display:none}
+  @media (max-width: 560px){ .hbtn{padding:3px 7px} header .right{font-size:10.5px} }
+  @media (max-width: 430px){ .hnav{gap:4px; margin-left:6px}
+    .hbtn{padding:3px 5px; font-size:11px} header{gap:8px; padding:7px 9px} }
 
   #nojs{max-width:620px; margin:40px auto; padding:18px 20px; background:#FFF4E2;
     border:2px solid #C9992B; border-radius:10px; font-size:14px; line-height:1.5}
@@ -30,37 +54,275 @@
 
   html:not(.js) #setup, html:not(.js) #game{display:none}
 
-  #setup{max-width:560px; margin:60px auto; background:var(--panel);
-    border:1px solid var(--line); border-radius:10px; padding:24px}
-  #setup h2{margin:0 0 4px; color:var(--deep)}
-  #setup p{color:var(--mut); margin:0 0 18px}
-  #setup label{display:block; margin:12px 0 4px; font-weight:600; font-size:13px}
-  #setup select,#setup input{width:100%; padding:7px 9px; border:1px solid var(--line);
-    border-radius:6px; background:#fff; font:inherit}
+  /* ---- the setup page ----
+     Three things decide a game — language, how many players, and who is in
+     each seat — so those are the page, and every rules variant is folded away
+     behind one disclosure. Controls are grouped in fieldsets with real
+     legends, every input has a real label, and nothing is smaller than a
+     finger. */
+  #setup{max-width:600px; margin:32px auto 60px; background:var(--panel);
+    border:1px solid var(--line); border-radius:12px; padding:24px 24px 28px}
+  #setup h2{margin:0 0 6px; color:var(--deep); font-size:22px}
+  #setup .lede{color:var(--hint); margin:0 0 20px; font-size:13.5px; line-height:1.5}
   #setup.hide{display:none}
 
-  /* map | sidebar on the right; play area and player board stay put below */
+  .field{border:0; padding:0; margin:0 0 18px; min-width:0}
+  .field > label, .field > legend{display:block; padding:0; margin:0 0 6px;
+    font-weight:700; font-size:13px; color:var(--ink); letter-spacing:.2px}
+  .field select, .field input[type=number]{width:100%; padding:11px 10px;
+    border:1px solid var(--line); border-radius:8px; background:#fff; font:inherit;
+    color:var(--ink); min-height:44px}
+  .hint{color:var(--hint); font-size:12px; margin:6px 0 0; line-height:1.45}
+
+  /* focus you can actually see, on every control */
+  #setup :focus-visible, .seg input:focus-visible + label{
+    outline:3px solid var(--deep); outline-offset:2px; border-radius:8px}
+
+  /* segmented radios — one tap target each, keyboard-native */
+  .seg{display:flex; gap:0; border:1px solid var(--line); border-radius:9px;
+    overflow:hidden; background:#fff}
+  .seg input{position:absolute; opacity:0; width:1px; height:1px; margin:-1px;
+    overflow:hidden; clip:rect(0 0 0 0)}
+  .seg label{flex:1; text-align:center; padding:12px 6px; font-weight:600;
+    cursor:pointer; border-left:1px solid var(--line); min-height:46px;
+    display:flex; align-items:center; justify-content:center; color:var(--ink)}
+  .seg label:first-of-type{border-left:0}
+  .seg input:checked + label{background:var(--deep); color:#FBFAF6}
+  .seg input:not(:checked) + label:hover{background:#EFEBE1}
+
+  .seedrow{display:flex; gap:8px}
+  .seedrow input{flex:1}
+  #reseed{flex:none; width:46px; min-height:44px; border:1px solid var(--line);
+    border-radius:8px; background:#fff; font-size:18px; cursor:pointer; color:var(--ink)}
+  #reseed:hover{background:#EFEBE1}
+
+  /* language as flags, all of them visible at once */
+  #lang label{padding:9px 6px; gap:9px; line-height:1.1}
+  /* margin, not gap: the flag must sit off its name whatever the label's
+     display mode ends up being */
+  #lang .flag{font-size:23px; line-height:1; margin-right:8px}
+  #lang .lname{font-size:13px; font-weight:600}
+  /* a phone is narrow enough to stack the flag over its name */
+  @media (max-width: 400px){ #lang label{flex-direction:column; gap:4px}
+    #lang .flag{margin-right:0} #lang .lname{font-size:11px} }
+
+  /* players + seats + difficulty are one decision, so one panel */
+  .table-panel{border:1px solid var(--line); border-radius:10px; padding:14px;
+    background:#FDFCF7}
+  .table-panel > legend{padding:0 6px; margin-left:-6px}
+  .sub{display:flex; align-items:center; gap:10px; margin:2px 0 10px}
+  .sublab{flex:none; width:74px; font-size:12px; font-weight:700; color:var(--hint);
+    text-transform:uppercase; letter-spacing:.5px}
+  .sub .seg{flex:1}
+  .table-panel #seats{margin:10px 0 2px; border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line); padding:4px 0}
+
+  /* one row per seat: colour, name, and what sits there */
+  .seatrow{display:flex; align-items:center; gap:10px; padding:7px 0;
+    border-top:1px solid #EFEBE1}
+  .seatrow:first-child{border-top:0}
+  .seatrow .dot{width:16px; height:16px; border-radius:50%; flex:none;
+    border:1.5px solid rgba(0,0,0,.35)}
+  .seatrow .who{flex:none; width:86px; font-weight:600; margin:0}
+  .seatrow select{flex:1; min-width:0; padding:9px 8px; min-height:44px;
+    border:1px solid var(--line); border-radius:8px; background:#fff; font:inherit}
+  .seatrow.human{background:#EAF2E6; border-radius:8px; padding-left:8px;
+    padding-right:8px; margin:2px -8px}
+
+  #advanced{border:1px solid var(--line); border-radius:9px; padding:0 14px;
+    margin:22px 0 20px; background:#FDFCF7}
+  #advanced[open]{padding-bottom:6px}
+  #advanced > summary{cursor:pointer; padding:13px 0; font-weight:700;
+    color:var(--deep); min-height:44px; display:flex; align-items:center; gap:9px;
+    list-style:none}
+  #advanced > summary::-webkit-details-marker{display:none}
+  /* the disclosure needs to LOOK like one — a chevron that turns when it opens */
+  .chev{flex:none; width:0; height:0; border:6px solid transparent;
+    border-left-color:var(--deep); transition:transform .18s ease;
+    transform-origin:30% 50%}
+  #advanced[open] > summary .chev{transform:rotate(90deg)}
+  #advanced > summary:hover{color:#123019}
+  #advanced > summary:focus-visible{outline:3px solid var(--deep); outline-offset:2px}
+  #advanced .field{margin-bottom:14px}
+  @media (prefers-reduced-motion: reduce){ .chev{transition:none} }
+
+  /* where to read the actual rules */
+  .docs{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:20px;
+    padding-top:16px; border-top:1px solid var(--line)}
+  .docs .sublab{width:auto}
+  .doclink{display:inline-flex; align-items:center; min-height:38px; padding:6px 12px;
+    border:1px solid var(--line); border-radius:20px; background:#fff;
+    color:var(--deep); text-decoration:none; font-size:12.5px; font-weight:600}
+  .doclink:hover{background:#EFEBE1; border-color:var(--deep)}
+  .doclink::after{content:" ↗"; opacity:.55; margin-left:4px}
+  /* the same links on the board: smaller, and out of the way of the hand */
+  .gamedocs{margin-top:8px; padding-top:8px; gap:5px}
+  .gamedocs .sublab{font-size:10px; width:auto}
+  .gamedocs .doclink{min-height:26px; padding:3px 9px; font-size:10.5px;
+    border-radius:14px}
+
+  .buildline{margin:14px 0 0; font-size:11px; color:var(--hint);
+    font-family:ui-monospace, SFMono-Regular, Menlo, monospace}
+  .buildline .dirty{color:#B4541E; font-weight:700}
+
+  .go.big{width:100%; padding:15px; font-size:16px; min-height:52px}
+
+  /* One column, map-first: market above it, your cards below, and the melds
+     everyone played as overlays in the map's own corners. */
+  #setup.hide{display:none}
   #game{display:none; height:calc(100vh - 36px)}
   #game.show{display:block}
-  .wrap{display:grid; height:100%;
-    grid-template-columns:1fr 300px;
-    grid-template-rows:minmax(120px,1fr) auto auto;}
-  #mapbox{grid-column:1; grid-row:1; position:relative; min-height:0; padding:6px}
-  aside{grid-column:2; grid-row:1 / span 3; border-left:1px solid var(--line);
-    background:var(--panel); overflow-y:auto; padding:8px 10px; min-height:0}
-  #table{grid-column:1; grid-row:2; border-top:1px solid var(--line);
-    background:#EFEBE1; padding:5px 10px 7px}
-  .lower{grid-column:1; grid-row:3; border-top:1px solid var(--line);
-    background:var(--panel); padding:7px 10px 9px; max-height:44vh; overflow-y:auto}
+  .wrap{display:flex; flex-direction:column; height:100%; min-height:0}
 
-  #map{width:100%; height:100%; display:block}
-  #zoom{position:absolute; right:12px; top:10px; display:flex; gap:3px}
-  #zoom button{width:24px; height:24px; border:1px solid var(--line); background:#fff;
-    border-radius:5px; cursor:pointer; font:inherit; line-height:1; color:var(--ink)}
-  #legend{position:absolute; left:12px; bottom:6px; font-size:10.5px; color:var(--mut)}
-  #legend span{margin-right:9px}
-  #legend i{display:inline-block; width:8px; height:8px; border-radius:2px;
-    margin-right:3px; vertical-align:-1px}
+  #market{flex:none; padding:5px 8px 4px; border-bottom:1px solid var(--line);
+    background:#EFEBE1; display:flex; gap:4px; align-items:center; overflow-x:auto}
+
+  /* ---- the table, as a grid ----
+     Melds used to be absolutely positioned OVER the map, which is fine until
+     they hold cards: at four players three boxes and your own squeezed the
+     board into a strip. Now every meld owns a cell and the map takes whatever
+     is left, so nothing overlaps and the map area grows and shrinks with the
+     cards actually on the table.
+
+        row 1   toolbar — order strip, terrain key, zoom
+        row 2   the player across from you
+        row 3   left player | MAP | right player
+        row 4   your own meld, against the map's near edge          */
+  /* The board keeps a floor of the window whatever the melds do: the play area
+     below it scrolls, the map does not get squeezed out of existence. */
+  #mapbox{flex:1 1 auto; min-height:44vh; padding:4px; display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    grid-template-rows:auto auto minmax(140px,1fr) auto;
+    gap:4px; align-items:center; justify-items:center}
+  #maptop{grid-area:1/1/2/4; justify-self:stretch; display:flex; gap:8px;
+    align-items:center}
+  /* Shrinkable, so it can never push the bottom of itself off the window: if
+     the map takes its floor, this scrolls inside instead of being clipped. */
+  .lower{flex:0 1 auto; min-height:0; border-top:1px solid var(--line);
+    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto}
+
+  #map{grid-area:3/2/4/3; width:100%; height:100%; display:block; align-self:stretch;
+    justify-self:stretch; min-width:0; min-height:0}
+  /* Only a board too big to fit claims the gesture — otherwise a swipe over
+     the map still scrolls the page, which is what a phone expects. */
+  #map.pannable{cursor:grab; touch-action:none}
+  #map.pannable:active{cursor:grabbing}
+  #zoom{margin-left:auto; display:flex; gap:3px}
+  #zoom button{width:22px; height:22px; border:1px solid var(--line);
+    background:rgba(255,255,255,.85); border-radius:5px; cursor:pointer;
+    font:inherit; line-height:1; color:var(--ink)}
+  /* the fit button only means something once the view has been moved */
+  #zfit{opacity:.35; transition:opacity .2s ease}
+  #zfit.live{opacity:1; border-color:var(--deep); color:var(--deep)}
+  #legend{display:flex; align-items:center; gap:3px; font-size:9px; color:var(--mut);
+    background:rgba(255,253,248,.7); border-radius:5px; padding:1px 4px}
+  #legend i{display:block; width:12px; height:12px; border-radius:3px;
+    text-align:center; line-height:12px; color:#fff; font-size:8px; font-weight:700}
+
+  /* ---- the order strip: who acts, in what order, what is left ---- */
+  #turnbar{display:flex; align-items:center; gap:12px;
+    background:rgba(255,253,248,.9); border:1px solid var(--line);
+    border-radius:20px; padding:3px 8px}
+  .tchip{position:relative; display:flex; align-items:center; gap:3px;
+    line-height:1; transition:opacity .3s ease}
+  .tchip i{width:13px; height:13px; border-radius:50%; background:var(--c);
+    border:1.5px solid rgba(0,0,0,.35); display:block}
+  .tchip b{font-size:10px; color:var(--mut); font-weight:700}
+  .tchip.me i{box-shadow:0 0 0 2px var(--panel), 0 0 0 3.5px var(--deep)}
+  .tchip.me b{color:var(--deep)}
+  .tchip.done{opacity:.32}
+  .tchip.now i{animation:beat 1.1s ease-in-out infinite}
+  .tchip.won b{color:#7A5C13}
+  /* the direction of play, drawn once between each pair */
+  .tchip+.tchip::before{content:""; position:absolute; left:-9px; top:50%;
+    width:0; height:0; border:3.5px solid transparent; border-left-color:var(--line);
+    transform:translateY(-50%)}
+  .crown{width:15px; height:10px; fill:#E8C24A; stroke:#7A5C13; stroke-width:1.4;
+    stroke-linejoin:round; flex:none}
+  .tchip .crown{width:12px; height:8px; margin-left:-1px}
+
+  /* ---- the other players: laid out around the map as around a table ----
+     You sit at the near edge; the next player clockwise is on your left. Their
+     melds are printed exactly like yours, because deciding whether to contest
+     a trick means reading their cards, not counting their chips. */
+  /* `display:contents` lets each meld be placed in the map's own grid, so the
+     wrapper adds no box of its own. Below 900px it becomes a flex row again
+     and the whole table sits above the map instead of around it. */
+  #corners{display:contents}
+  .corner{display:flex; flex-direction:column; gap:3px; max-width:100%;
+    background:rgba(255,253,248,.92); border:2px solid var(--line);
+    border-radius:9px; padding:3px 5px;
+    box-shadow:0 1px 4px rgba(0,0,0,.10)}
+  .corner.left{grid-area:3/1/4/2}
+  .corner.right{grid-area:3/3/4/4}
+  .corner.top{grid-area:2/2/3/3}
+  .corner.won{border-color:#C9992B; background:rgba(255,250,236,.95)}
+  .corner.acting{border-color:var(--deep); animation:beat 1.1s ease-in-out infinite}
+  .corner.done{opacity:.55}
+  .corner.crowned{animation:crowned .9s ease-out}
+  @keyframes beat{0%,100%{box-shadow:0 1px 4px rgba(0,0,0,.10)}
+                  50%{box-shadow:0 0 0 4px rgba(30,66,41,.18)}}
+  @keyframes crowned{0%{box-shadow:0 0 0 0 rgba(232,194,74,.85)}
+                     100%{box-shadow:0 0 0 14px rgba(232,194,74,0)}}
+  .ohead{display:flex; align-items:center; gap:4px}
+  /* which bot this is — identity, not rules text, so it stays small and quiet */
+  .sty{font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut);
+    font-weight:700}
+  /* the seat's colour is its name; the number is its place in the order */
+  .pin{width:17px; height:17px; border-radius:50%; flex:none; color:#fff;
+    border:1.5px solid rgba(0,0,0,.35); display:flex; align-items:center;
+    justify-content:center; font-size:10px; font-weight:700;
+    text-shadow:0 1px 1px rgba(0,0,0,.5)}
+  /* Beside the map, a meld wraps at three cards so it cannot eat the board's
+     width. Above it, width is free and height is not, so it stays one row. */
+  .ocards{display:flex; gap:3px; flex-wrap:wrap; max-width:214px}
+  .corner.top .ocards{max-width:none}
+  .ometa{display:flex; align-items:center; gap:5px; margin-left:auto;
+    font-size:10px; color:var(--mut); line-height:1.1}
+  .ometa .sc{font-size:13px; font-weight:700; color:var(--deep)}
+  .vdots{display:flex; gap:1.5px}
+  .vdots i{width:5px; height:5px; border-radius:1px; background:var(--deep);
+    display:block; opacity:.75}
+
+  /* Cards land one player at a time, in the order of play, so a trick reads as
+     a round of a card game rather than a table that was already finished. */
+  @keyframes lay{from{opacity:0; transform:translateY(-14px) rotate(-7deg) scale(.9)}
+                 to{opacity:1; transform:none}}
+  .corner.laid .cf,#mymeld.laid .cf{animation:lay .34s cubic-bezier(.2,.8,.3,1) backwards}
+  .corner.laid .cf:nth-child(2),#mymeld.laid .cf:nth-child(3){animation-delay:70ms}
+  .corner.laid .cf:nth-child(3),#mymeld.laid .cf:nth-child(4){animation-delay:140ms}
+  .corner.laid .cf:nth-child(4),#mymeld.laid .cf:nth-child(5){animation-delay:210ms}
+  .corner.laid .cf:nth-child(5),#mymeld.laid .cf:nth-child(6){animation-delay:280ms}
+  .corner.laid .cf:nth-child(n+6),#mymeld.laid .cf:nth-child(n+7){animation-delay:350ms}
+  @media (prefers-reduced-motion: reduce){
+    .corner.laid .cf,#mymeld.laid .cf{animation:none}
+    .corner.acting,.tchip.now i,.corner.crowned{animation:none}
+  }
+
+  /* Your own meld: on the map, at the edge nearest your hand, because these are
+     the cards you are about to spend ON the map. Never in a corner — it was
+     appearing twice, once as a rival-style overlay and once as the strip. */
+  #mymeld{grid-area:4/1/5/4; max-width:100%;
+    display:flex; gap:4px; align-items:center; flex-wrap:wrap;
+    justify-content:center; padding:3px 6px; border-radius:9px;
+    background:rgba(255,253,248,.94); border:2px solid var(--deep);
+    box-shadow:0 -1px 6px rgba(0,0,0,.10)}
+  /* Always present, always one slot per card your tier allows — the limit is a
+     shape you can see rather than a number on the board. Empty slots are as
+     faint as they can be and still read: they are permission, not a target. */
+  .mslot{width:66px; min-height:56px; border:1px dashed var(--line);
+    border-radius:6px; opacity:.45; flex:none}
+  #mymeld.idle .mslot{opacity:.28}
+  #mymeld.grew{animation:grew .6s ease-out}
+  @keyframes grew{0%{box-shadow:0 0 0 0 rgba(30,66,41,.45)}
+                  100%{box-shadow:0 0 0 10px rgba(30,66,41,0)}}
+  @media (prefers-reduced-motion: reduce){ #mymeld.grew{animation:none} }
+  #mymeld.idle{border-color:var(--line); opacity:.72; box-shadow:none}
+  #mymeld.won{border-color:#C9992B; background:rgba(255,250,236,.95); opacity:1}
+  #mymeld.crowned{animation:crowned .9s ease-out}
+  #mymeld .cf{cursor:pointer}
+  /* the card you set aside for a coin: played, but not spent on the map */
+  .cf.aside{opacity:.45; filter:grayscale(.5)}
 
   .tile{stroke:#1C1F1D; stroke-width:1; opacity:.94}
   .tile.hot{stroke:#111; stroke-width:3; cursor:pointer; opacity:1}
@@ -159,8 +421,51 @@
   .rs.done{color:var(--mut)}
   .rs.done .marker{color:var(--green)}
   .rs .rr{color:var(--deep); font-weight:600; font-size:11px}
+  .rdrew{font-size:11.5px; color:var(--ink); background:#EDF4EA; border-radius:5px;
+    padding:4px 7px; margin-bottom:4px; display:flex; align-items:center; gap:5px;
+    flex-wrap:wrap}
   .rfoot{font-size:11px; color:var(--mut); margin-top:4px;
     border-top:1px solid #D9E4D4; padding-top:3px}
+
+  /* ---- things in flight ----
+     A layer over everything that nothing can click through to. Tokens are
+     created at a source point, transitioned to a destination, and removed. It
+     is deliberately independent of the board: render() rebuilds the DOM
+     wholesale, so a transition on a board node would be destroyed mid-flight. */
+  #fx{position:fixed; inset:0; pointer-events:none; z-index:50; overflow:hidden}
+
+  /* ---- hand the device over ---- */
+  #pass{position:fixed; inset:0; z-index:60; background:var(--deep);
+    display:flex; align-items:center; justify-content:center; padding:24px}
+  #pass[hidden]{display:none}
+  .passcard{background:var(--panel); border-radius:14px; padding:28px 26px;
+    max-width:380px; width:100%; text-align:center}
+  .passcard .dot{width:44px; height:44px; border-radius:50%; display:inline-block;
+    border:2px solid rgba(0,0,0,.35); margin-bottom:12px}
+  .passcard .passto{font-size:20px; font-weight:700; margin:0 0 6px; color:var(--ink)}
+  .passcard .hint{margin:0 0 18px}
+  .tok{position:absolute; left:0; top:0; will-change:transform;
+    transition:transform .5s cubic-bezier(.32,.72,.35,1), opacity .5s ease}
+  .tok.unit{width:14px; height:14px; border-radius:50%;
+    border:1.5px solid #1C1F1D; margin:-7px 0 0 -7px}
+  .tok.coin{width:13px; height:13px; border-radius:50%; background:#E8C24A;
+    border:1.5px solid #7A5C13; margin:-6px 0 0 -6px}
+  .tok.card{width:16px; height:22px; border-radius:3px; background:#FBFAF6;
+    border:2px solid var(--suit,#8A8378); margin:-11px 0 0 -8px}
+  .tok.card.back{background:repeating-linear-gradient(135deg,#1E4229 0 4px,#2A5638 4px 8px);
+    border-color:var(--deep)}
+  .tok.tile{width:16px; height:16px; margin:-8px 0 0 -8px; border-radius:3px;
+    opacity:.9}
+  .tok.gone{opacity:0}
+  .ring{position:absolute; left:0; top:0; width:12px; height:12px; margin:-6px 0 0 -6px;
+    border-radius:50%; border:2px solid var(--deep);
+    animation:ping .55s ease-out forwards}
+  .ring.bad{border-color:#B33A2E}
+  @keyframes ping{from{transform:scale(.5); opacity:.9}
+                  to{transform:scale(3.4); opacity:0}}
+  @media (prefers-reduced-motion: reduce){
+    .tok{transition:none} .ring{animation:none; display:none}
+  }
 
   /* ---- one card face, three sizes ---- */
   .cf{display:inline-flex; background:#FBFAF6; border:1.5px solid var(--suit);
@@ -254,15 +559,56 @@
   .go.terr.ocean{background:#256A8C}.go.terr.mountain{background:#8A837A}
 
   /* ---- sidebar ---- */
-  aside h3{margin:4px 0 5px; font-size:11px; text-transform:uppercase;
-    letter-spacing:.6px; color:var(--deep)}
-  #market{margin-top:6px}
-  .grid{display:flex; flex-wrap:wrap; gap:4px; margin-top:3px}
+
+  .grid{display:flex; gap:4px}
+  /* The face-down upgrade deck, at the head of the market: every research
+     turns its top card over onto the row, and it is the game's clock. */
+  .deckpile{flex:none; width:44px; min-height:58px; border-radius:7px;
+    border:2px solid var(--deep); display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:2px; color:#F4F1EA;
+    background:repeating-linear-gradient(135deg,#1E4229 0 5px,#2A5638 5px 10px);
+    box-shadow:1px 1px 0 rgba(30,66,41,.45), 2px 2px 0 rgba(30,66,41,.25)}
+  .deckpile b{font-size:15px; line-height:1}
+  .deckpile em{font-style:normal; font-size:8px; opacity:.75; letter-spacing:.4px}
+  .deckpile.empty{background:none; border-style:dashed; border-color:var(--line);
+    color:var(--mut); box-shadow:none}
+  .deckpile.dealing{animation:deal .45s ease-out}
+  @keyframes deal{0%{transform:translateY(0)} 35%{transform:translateY(-4px)}
+                  100%{transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){ .deckpile.dealing{animation:none} }
+  /* The shared discard, at the far end of the market. Every player who matches
+     the trick winner's count feeds it a played card, and every hand refills
+     from it — so it is a stack in play, not a bin. */
+  .deckpile.shared{margin-left:auto; border-color:#7A5C13;
+    background:repeating-linear-gradient(135deg,#6B4E12 0 5px,#8A6A22 5px 10px);
+    box-shadow:1px 1px 0 rgba(122,92,19,.45), 2px 2px 0 rgba(122,92,19,.25)}
+  .deckpile.shared.empty{background:none; border-style:dashed; border-color:var(--line);
+    color:var(--mut); box-shadow:none}
+
+  /* ---- the area that is waiting for you ----
+     A step that needs a click lights the ONE place it can be made, and the
+     cards in it that are legal are lifted out of the rest. Reading is
+     optional; the table says where to look. */
+  .needs{position:relative; border-radius:9px;
+    animation:needs 1.5s ease-in-out infinite}
+  @keyframes needs{0%,100%{box-shadow:0 0 0 0 rgba(30,66,41,.0)}
+                   50%{box-shadow:0 0 0 4px rgba(30,66,41,.22)}}
+  #market.needs,#hand.needs{border-radius:0}
+  button.cf.want{border-color:var(--deep); border-width:2px;
+    animation:want 1.5s ease-in-out infinite}
+  @keyframes want{0%,100%{transform:translateY(0); box-shadow:0 0 0 0 rgba(30,66,41,0)}
+                  50%{transform:translateY(-3px); box-shadow:0 3px 8px rgba(30,66,41,.28)}}
+  .slot.hot{animation:want 1.5s ease-in-out infinite}
+  @media (prefers-reduced-motion: reduce){
+    .needs,button.cf.want,.slot.hot{animation:none}
+    button.cf.want{box-shadow:0 0 0 2px var(--deep)}
+    .needs{box-shadow:0 0 0 3px rgba(30,66,41,.25)}
+  }
   .slot{position:relative; padding:2px; border:1px solid var(--line);
     border-radius:7px; background:#fff; cursor:default; min-width:70px; min-height:58px;
     display:flex; align-items:center; justify-content:center}
   .slot.hot{border-color:#111; border-width:2px; cursor:pointer; background:#FFF9E4}
-  .slot.over{opacity:.4}
+  .slot.over{opacity:.55; border-style:dashed; background:#F4F1EA}
   .slot em{position:absolute; right:3px; bottom:1px; font-size:9px; color:var(--mut);
     font-style:normal}
   .pl .vrow{display:flex; align-items:center; gap:3px; flex-wrap:wrap; font-size:12px}
@@ -273,8 +619,8 @@
   .plhead .score{margin-left:auto; font-weight:700; color:var(--deep)}
   .dot{width:10px; height:10px; border-radius:50%; display:inline-block; flex:none}
   .muted{color:var(--mut)}
-  #log{font-size:10.5px; color:var(--mut); max-height:130px; overflow-y:auto;
-    border-top:1px solid var(--line); padding-top:5px; margin-top:6px}
+  #log{font-size:10px; color:var(--mut); max-height:44px; overflow-y:auto;
+    border-top:1px solid var(--line); padding-top:4px; margin-top:6px}
   #log b{color:var(--ink)}
 
   table.final{border-collapse:collapse; margin:6px 0; font-size:13px}
@@ -287,35 +633,45 @@
      phone neither survives: the sidebar has nowhere to go and the card table
      needs the width. So below 900px everything stacks in reading order —
      map, what everyone played, your cards, the market, then rivals. */
+  /* Below 900px there is no width to put anyone beside the map, so the table
+     stops surrounding it: every rival goes into ONE wrapping row above the
+     board, the map gets the full width, and the page scrolls. The map area is
+     sized in vh and grows if the melds above it are small. */
   @media (max-width: 900px){
     body{overflow:auto}
     #game{height:auto}
-    .wrap{grid-template-columns:1fr; grid-template-rows:none; height:auto}
-    #mapbox{grid-column:1; grid-row:auto; height:42vh; min-height:220px}
-    #table{grid-column:1; grid-row:auto}
-    .lower{grid-column:1; grid-row:auto; max-height:none; overflow:visible}
-    aside{grid-column:1; grid-row:auto; border-left:none;
-      border-top:1px solid var(--line); max-height:none}
-    #log{max-height:110px}
-    .seatcard{min-width:120px}
-    .vpanel{gap:8px}
-    .cf.full{width:100%; max-width:280px}
+    .wrap{height:auto}
+    .lower{max-height:none; overflow:visible}
+    #mapbox{min-height:0; grid-template-columns:minmax(0,1fr);
+      grid-template-rows:auto auto minmax(180px,42vh) auto}
+    #maptop{grid-area:1/1/2/2}
+    #corners{display:flex; flex-wrap:wrap; gap:4px; align-items:stretch;
+      justify-content:center; grid-area:2/1/3/2; width:100%}
+    .corner{flex:1 1 44%; min-width:0}
+    .corner.left,.corner.right,.corner.top{grid-area:auto}
+    #map{grid-area:3/1/4/2}
+    #mymeld{grid-area:4/1/5/2}
+    .ocards{max-width:none}
+    .ometa{gap:3px}
   }
   @media (max-width: 560px){
     body{font-size:13px}
-    #setup{margin:20px 10px; padding:16px}   /* was flush to both edges */
-    #mapbox{height:36vh; min-height:180px}
+    header .sub{display:none}                 /* the title bar stops wrapping */
+    #mapbox{grid-template-rows:auto auto minmax(160px,38vh) auto}
     .tname{width:74px}
-    .uslots{min-width:0}
-    .food,.mv{display:none}          /* the tier row keeps meld limit, units, cap */
-    .cf.mid{width:58px}
-    .vslot{min-width:58px}
-    .slot{min-width:62px}
-    .seats{gap:5px}
-    .seatcard{flex:1 1 100%}
+    .food,.mv{display:none}
+    .cf.mid{width:56px}
+    .vslot{min-width:56px}
+    .slot{min-width:58px}
     .go{padding:6px 10px}
-    .acts{gap:5px}
     .go.end{margin-left:0; width:100%}
+    .corner{padding:2px 3px; gap:2px; flex-basis:47%}
+    .ometa span:not(.sc){display:none}
+    /* nothing scrolls sideways out of reach: the whole market wraps instead */
+    #market{flex-wrap:wrap; overflow-x:visible}
+    .grid{flex-wrap:wrap}
+    .deckpile.shared{margin-left:0}           /* no gap once the row has wrapped */
+    #legend{display:none}
   }
 </style>
 </head>
@@ -324,80 +680,190 @@
      in Quick Look, which renders the markup but does NOT execute JavaScript —
      the symptom is an empty seat list and a Start button that does nothing. -->
 <div id="nojs">
-  <b>This page needs JavaScript, and it is not running.</b>
-  <p>You are most likely previewing the file in <b>Files</b> on iOS or iPadOS.
-     Quick Look shows the page but never runs its scripts, so the seat list is
-     empty and <b>Start</b> does nothing. The file itself is fine.</p>
-  <p><b>To play:</b> open it in a real browser — put it on any web host or
-     GitHub Pages and open the link in Safari, or open the file from an app with
-     a built-in browser (Documents by Readdle, Textastic, Koder). On a computer,
-     double-clicking the file works.</p>
+  <b data-i18n="nojs.title">This page needs JavaScript, and it is not running.</b>
+  <p data-i18n="nojs.p1"></p>
+  <p data-i18n="nojs.p2"></p>
 </div>
 <header>
   <h1>Blink</h1>
-  <span class="sub">Climbing the Ladder of Civilization · rules v0.22</span>
-  <span class="right">round <b id="roundno">0</b> <span id="endnote"></span></span>
+  <span class="sub" data-i18n="app.sub">Climbing the Ladder of Civilization · rules v0.22</span>
+  <span class="right"><span data-i18n="app.round">round</span> <b id="roundno">0</b> <span id="endnote"></span></span>
+  <nav class="hnav" id="hnav" aria-label="Game">
+    <button id="undo" class="hbtn" disabled></button>
+    <button id="restart" class="hbtn"></button>
+    <button id="abort" class="hbtn"></button>
+  </nav>
 </header>
 
+<div id="fx"></div>
+<!-- Hot seat: with more than one person at the table the board must not be
+     visible while the device changes hands. -->
+<div id="pass" hidden>
+  <div class="passcard">
+    <span class="dot" id="pass-dot"></span>
+    <p class="passto" id="pass-name"></p>
+    <p class="hint" id="pass-note"></p>
+    <button class="go big" id="pass-go" data-i18n="pass.ready">I'm ready</button>
+  </div>
+</div>
 <div id="setup">
-  <h2>Set up a game</h2>
-  <p>You play one seat; the others are run by the tuned v0.22 bot. Every option
-     the game offers you is generated by the rules engine, so you cannot play an
-     illegal move — and scoring is worked out for you.</p>
-  <label for="n-players">Players</label>
-  <select id="n-players"><option>2</option><option selected>3</option><option>4</option></select>
-  <label for="my-seat">Your seat</label>
-  <select id="my-seat">
-    <option value="0">0 — Crimson</option>
-    <option value="1">1 — Azure</option>
-    <option value="2">2 — Violet</option>
-  </select>
-  <label for="trick-rule">Trick resolution</label>
-  <select id="trick-rule">
-    <option value="dock" selected>Classic — winner uses every card; matching the winner's count sets one aside for 1 gold</option>
-    <option value="bonus">v0.22 as printed — winner spends one extra card; matchers discard one from hand</option>
-  </select>
-  <label for="deck">Card effects</label>
-  <select id="deck">
-    <option value="abc" selected>A / B / C — base rules as printed (win the trick · colonies · gold)</option>
-    <option value="abd">A / B / D — proposal: conquest replaces take-gold</option>
-  </select>
-  <label for="objectives">Map objectives <span class="muted">(advanced module)</span></label>
-  <select id="objectives">
-    <option value="off" selected>Off</option>
-    <option value="secret">Secret — dealt two, keep one, 4 points</option>
-    <option value="open">Open — two face up, shared by everyone</option>
-    <option value="both">Keep both — dealt two, both score</option>
-  </select>
-  <label for="seed">Seed <span class="muted">(same seed = same deal)</span></label>
-  <input id="seed" type="number" value="1">
-  <button class="go" id="start" style="margin-top:18px">Start</button>
+  <h2 data-i18n="setup.title">Set up a game</h2>
+  <p class="lede" data-i18n="setup.lede"></p>
+
+  <fieldset class="field">
+    <legend data-i18n="setup.lang">Language</legend>
+    <div class="seg flags" id="lang"></div>
+  </fieldset>
+
+  <!-- Players, who sits where, and how sharp they are: one decision, so one
+       panel. The seat rows are the middle of it because that is the part a
+       person actually thinks about. -->
+  <fieldset class="field table-panel">
+    <legend data-i18n="setup.table">The table</legend>
+
+    <div class="sub">
+      <span class="sublab" id="np-label" data-i18n="setup.players.lab">Players</span>
+      <div class="seg" id="n-players" role="group" aria-labelledby="np-label">
+        <input type="radio" name="np" id="np-2" value="2"><label for="np-2">2</label>
+        <input type="radio" name="np" id="np-3" value="3" checked><label for="np-3">3</label>
+        <input type="radio" name="np" id="np-4" value="4"><label for="np-4">4</label>
+      </div>
+    </div>
+
+    <div id="seats"></div>
+    <p class="hint" id="seats-note"></p>
+
+    <div class="sub">
+      <span class="sublab" id="lv-label" data-i18n="setup.level.lab">Sharpness</span>
+      <div class="seg" id="bot-level" role="group" aria-labelledby="lv-label">
+        <input type="radio" name="lv" id="lv-easy" value="easy"><label for="lv-easy"
+          data-i18n="setup.level.easy.short">Easy</label>
+        <input type="radio" name="lv" id="lv-normal" value="normal" checked><label for="lv-normal"
+          data-i18n="setup.level.normal.short">Normal</label>
+        <input type="radio" name="lv" id="lv-hard" value="hard"><label for="lv-hard"
+          data-i18n="setup.level.hard.short">Hard</label>
+      </div>
+    </div>
+    <p class="hint" id="level-note"></p>
+  </fieldset>
+
+  <div class="field">
+    <label for="seed" data-i18n="setup.seed">Seed</label>
+    <div class="seedrow">
+      <input id="seed" type="number" value="1" inputmode="numeric" aria-describedby="seed-note">
+      <button type="button" id="reseed" data-i18n="setup.reseed" data-i18n-attr="title"
+        title="New seed" aria-label="New seed">⟳</button>
+    </div>
+    <p class="hint" id="seed-note" data-i18n="setup.seed.note"></p>
+  </div>
+
+  <details id="advanced">
+    <summary><span class="chev" aria-hidden="true"></span><span
+      data-i18n="setup.advanced">Advanced rules</span></summary>
+    <p class="hint" data-i18n="setup.advanced.note"></p>
+
+    <div class="field">
+      <label for="trick-rule" data-i18n="setup.trick">Trick resolution</label>
+      <select id="trick-rule">
+        <option value="dock" selected data-i18n="setup.trick.dock"></option>
+        <option value="bonus" data-i18n="setup.trick.bonus"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="deck" data-i18n="setup.deck">Card effects</label>
+      <select id="deck">
+        <option value="abc" selected data-i18n="setup.deck.abc"></option>
+        <option value="abd" data-i18n="setup.deck.abd"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="meld-rules" data-i18n="setup.meldRules">Meld variants</label>
+      <select id="meld-rules">
+        <option value="off" selected data-i18n="setup.meldRules.off"></option>
+        <option value="combo" data-i18n="setup.meldRules.combo"></option>
+        <option value="friends" data-i18n="setup.meldRules.friends"></option>
+        <option value="both" data-i18n="setup.meldRules.both"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="grow-limits" data-i18n="setup.limits">Population limits</label>
+      <select id="grow-limits">
+        <option value="off" selected data-i18n="setup.limits.off"></option>
+        <option value="grow" data-i18n="setup.limits.grow"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="retire-rule" data-i18n="setup.retire">Research retires</label>
+      <select id="retire-rule">
+        <option value="lowest" selected data-i18n="setup.retire.lowest"></option>
+        <option value="any" data-i18n="setup.retire.any"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="objectives" data-i18n="setup.objectives">Map objectives</label>
+      <select id="objectives">
+        <option value="off" selected data-i18n="setup.objectives.off"></option>
+        <option value="secret" data-i18n="setup.objectives.secret"></option>
+        <option value="open" data-i18n="setup.objectives.open"></option>
+        <option value="both" data-i18n="setup.objectives.both"></option>
+      </select>
+    </div>
+  </details>
+
+  <button class="go big" id="start" data-i18n="setup.start">Start</button>
+
+  <nav class="docs" aria-labelledby="docs-label">
+    <span class="sublab" id="docs-label" data-i18n="setup.docs">Read the rules</span>
+    <a class="doclink" id="doc-rules" href="rulebook.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.rules">Rulebook</a>
+    <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.effects">Card effects</a>
+    <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
+      data-i18n="setup.docs.objectives">Map objectives</a>
+  </nav>
+
+  <!-- Which build this is. A playtest report that cannot name its version is
+       an anecdote, so the version is on the page, not buried in a comment. -->
+  <p class="buildline" id="buildline"></p>
 </div>
 
 <div id="game">
   <div class="wrap">
+    <div id="market"></div>
     <div id="mapbox">
-      <svg id="map"></svg>
-      <div id="zoom"><button id="zout" title="zoom out">−</button
-        ><button id="zin" title="zoom in">+</button></div>
-      <div id="legend">
-        <span><i style="background:#C9992B"></i>Plains ·3</span>
-        <span><i style="background:#37704A"></i>Forest ·2</span>
-        <span><i style="background:#256A8C"></i>Ocean ·1</span>
-        <span><i style="background:#8A837A"></i>Mountain ·1</span>
-        <span>dashed = space a tile may be laid on</span>
+      <div id="maptop">
+        <div id="turnbar"></div>
+        <div id="legend">
+          <i style="background:#C9992B" title="Plains — holds 3"></i>3
+          <i style="background:#37704A" title="Forest — holds 2"></i>2
+          <i style="background:#256A8C" title="Ocean — holds 1"></i>1
+          <i style="background:#8A837A" title="Mountain — holds 1"></i>1
+        </div>
+        <div id="zoom"><button id="zout" title="zoom out">−</button
+          ><button id="zin" title="zoom in">+</button
+          ><button id="zfit" title="show the whole board · press again for playing size"
+            >⤢</button></div>
       </div>
+      <div id="corners"></div>
+      <svg id="map"></svg>
+      <div id="mymeld"></div>
     </div>
-    <div id="table"></div>
     <div class="lower">
       <div id="prompt"></div>
+      <div id="hand"></div>
       <div id="player"></div>
-      <div id="market"></div>
-    </div>
-    <aside>
-      <div id="side"></div>
       <div id="log"></div>
-    </aside>
+      <!-- The rules, within reach of the table rather than behind a menu. -->
+      <nav class="docs gamedocs" aria-labelledby="gdocs-label">
+        <span class="sublab" id="gdocs-label" data-i18n="setup.docs">Rules</span>
+        <a class="doclink" href="rulebook.html" target="_blank" rel="noopener"
+          data-i18n="setup.docs.rules">Rulebook</a>
+        <a class="doclink" href="card-effects.html" target="_blank" rel="noopener"
+          data-i18n="setup.docs.effects">Card effects</a>
+        <a class="doclink" href="map-objectives.html" target="_blank" rel="noopener"
+          data-i18n="setup.docs.objectives">Map objectives</a>
+      </nav>
+    </div>
   </div>
 </div>
 

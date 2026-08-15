@@ -9,9 +9,10 @@ v0.22 bot.
 | file | what it is |
 |---|---|
 | `engine.js` | the rules, ported from `../sim/engine.py` at the v0.22 defaults |
+| `i18n.js` | every string a player reads, English and German side by side |
 | `ui.js` | rendering and input only — it contains no rules |
 | `shell.html` | markup and CSS, with `/*__ENGINE__*/` and `/*__UI__*/` placeholders |
-| `build.js` | inlines the two scripts into `../Blink-play-v0.22.html` |
+| `build.js` | inlines the three scripts into `../Blink-play-v0.22.html` |
 
 Rebuild after any edit:
 
@@ -53,12 +54,17 @@ cashes victory cards in any order, then answers `{kind:'end'}`. Requests are
 moves → fortify), so `verify.js` still measures the same engine the sim
 measures. The free-form turn is a human affordance, not a rules change.
 
-**Research is shown as one action, not a chain of prompts.** Clicking Research
-opens a preview listing all three steps and the cost; nothing is spent until
-"Begin research". From then on every step renders inside the same panel with
-✓ / ▸ / · progress and what each step produced, and it closes with an explicit
-completion line. The steps are irreversible once begun — the draw has happened
-and the turn's research is used — so the preview says so before you commit.
+**Research asks for two decisions, not three.** Give up a card from your hand,
+take one from the market. The draw onto the market is **automatic** — the card
+lands on the position showing the highest rank, burying it (`autoGridSlot`,
+ties to the leftmost). That was a real rules change: §10 still says "onto a grid
+position of your choice", and the bot used to bury whatever it valued least.
+
+Clicking Research opens a preview listing both steps and the cost; nothing is
+spent until "Begin research". Each step then renders in the same panel with
+✓ / ▸ / · progress and what it produced, closing with an explicit completion
+line. The market is checked for a buyable card *before* you are asked to give
+one up, so nobody loses a card and then finds there is nothing they may take.
 
 Two constraints the open turn has to enforce that a fixed sequence got for free:
 
@@ -111,13 +117,470 @@ The effect strip on **hand** cards exists for the retire decision: what a card
 will be worth once it is in the row is exactly what you are judging when you
 choose which to retire.
 
-## Map scale
+## Layout
 
-`ZOOM` in `ui.js` is pixels per engine unit and defaults to `0.5` — a hex is 30
-units, so 15 px of radius. The map is fitted to its panel but never scaled
-*above* `ZOOM`, which is why a six-tile opening board no longer fills the screen.
-Large boards hit the fit limit and shrink normally. The − / + buttons on the map
-adjust it between 0.25 and 1.1.
+One column, map first:
+
+```
+market      a row of face-up cards; anything above your rank cap is dashed and faded
+map         with every seat's meld overlaid around its edges, as at a table
+prompt      one short line and the buttons
+hand        your cards, directly under the map
+board       tiers and victory row
+log         a quiet strip
+```
+
+**The map is the table.** You sit at the near edge (`#mymeld`), and the other
+players are placed **clockwise from you**: the next seat on your left, then
+across the top, then on your right. So two players face each other, three sit in
+a triangle, four fill all four edges — and the direction play travels is the
+direction your eye travels.
+
+`#mapbox` is a **grid**, not a stack of overlays. Every meld owns a cell and the
+map takes what is left:
+
+```
+row 1   order strip · terrain key · zoom
+row 2               [ across ]
+row 3   [ left ]  [   MAP    ]  [ right ]
+row 4          [ your own meld ]
+```
+
+Melds used to be absolutely positioned *over* the board, which is fine while
+they are empty and unusable once they hold cards: at four players three boxes
+and your own squeezed the map into a strip and drew hexes underneath them. Now
+nothing overlaps and the board area grows and shrinks with the cards actually on
+the table. `#corners` is `display:contents` so each meld lands in the map's own
+grid without the wrapper adding a box.
+
+**Below 900 px the table stops surrounding the map.** There is no width to sit
+anyone beside it, so every rival goes into one wrapping row *above* the board,
+the map takes the full width, and the page scrolls. Below 560 px the market
+wraps instead of scrolling sideways — otherwise the shared pile sits off-screen
+where nobody would find it.
+
+| players | rivals sit |
+|---|---|
+| 2 | top |
+| 3 | left, right |
+| 4 | left, top, right |
+
+**Every meld is printed the same way.** A rival's cards are the same faces you
+hold — rank, terrain band and effect strip — because deciding whether to contest
+a trick means reading their cards, not counting their chips. Each seat also
+shows its own faint slot per card its tier allows, so you can see a rival's meld
+limit (and therefore what they could still play) without asking.
+
+A seat's colour is its name — the same colour as its units on the map. The
+number in the disc is its **place in the order**. State is the frame, not a
+word: a gold frame and crown won the trick, a dark pulsing frame is acting now,
+faded has finished its turn. A card set aside for a coin is greyed out where it
+lies, so you can see what a matcher gave up. The overlays are
+`pointer-events:none` and never intercept a click meant for a hex underneath.
+
+**The order strip** (`#turnbar`, top-left of the map) is the same information in
+one line: one chip per seat, left to right, in the order they act, with a small
+arrow between them. Before the trick settles it shows the order of play around
+the table; afterwards it shows the ranking the trick produced, winner first and
+crowned. Dimmed means finished, the pulsing one is acting now, and your own chip
+carries a dark ring. It answers "who is left, and in what order" without a
+sentence.
+
+Text was cut back throughout in favour of colour, dashes and highlight: the
+market has no heading, the terrain legend is four coloured chips carrying their
+capacity, and prompts are a bolded verb plus a muted clause rather than a
+paragraph.
+
+## The meld area
+
+`#mymeld` is always on screen at the bottom edge of the map, and always holds
+**one slot per card your current tier allows**. Filled slots hold real cards;
+the rest are faint dashed placeholders. The meld limit is therefore a shape you
+can see at all times rather than a number to go and read off the player board,
+and climbing a tier visibly adds a slot (with a one-off pulse).
+
+The placeholders are deliberately quiet — 28% opacity when idle, 45% when it is
+your move. Playing fewer cards than the limit is a real line in this game, so an
+empty slot has to read as permission, not as an unfinished task.
+
+It doubles as the place a meld is *built*: during the card phase your picks
+appear in the slots as you choose them, and clicking one there takes it back.
+
+## Animation
+
+Units, coins, cards and tiles animate when they move. It is deliberately not a
+rewrite, and the reason is the existing architecture: `render()` rebuilds the
+DOM wholesale, so a CSS transition on a board node would be destroyed
+mid-flight. Instead the engine *records* what moved and the client flies a
+throwaway token across a separate `#fx` overlay.
+
+- `engine.js` — `fx(type, data)` pushes to `game.events` at each mutation:
+  `unit-in`, `unit-out`, `unit-move`, `tile`, `gold`, `card`, `shield`, `deal`,
+  and the trick beats `meld`, `trick`, `turnstart`, `turnend`. Pure recording;
+  no decision reads it, so the bots play identically (`fx_test.js` checks 60
+  games are byte-identical). The queue is capped at 400 in case nothing drains
+  it.
+- `ui.js` — `playEvents()` drains the queue after every step and maps each event
+  to a token flying between two screen points. Hex positions come from the SVG's
+  own `getScreenCTM`, furniture from `getBoundingClientRect`.
+
+Two things fall out of it:
+
+- **Bot turns are watchable.** The inter-round delay is now `220 + queue length`
+  (capped at 1.4 s), so a bot's whole turn plays as a sequence instead of
+  resolving in a single frame. That was a listed gap.
+- **It degrades to nothing.** No geometry (jsdom, an SVG without
+  `getScreenCTM`), or `prefers-reduced-motion: reduce`, and the effects are
+  skipped — but the queue still drains, so nothing accumulates.
+
+## The trick, as a round of a card game
+
+The engine settles a whole card phase in one tick: every bot melds, the trick is
+awarded and the map phase starts before the client is asked anything. Replayed
+raw, that is a single flash. So **the client keeps its own picture of the
+trick** (`TRICK` in `ui.js`) and advances it one beat at a time:
+
+| beat | ms | what it does |
+|---|---|---|
+| `meld` | 330 | that seat's cards drop into its slots, in the order of play |
+| `trick` | 560 | the crown lands, the order strip renumbers to the ranking |
+| `turnstart` | 170 | that seat starts pulsing |
+| `turnend` | 120 | that seat fades out; the remaining order is what is left |
+
+Nothing on the table renders from the engine directly — `laid()`, `uiWinner()`,
+`uiOrder()`, `uiActing()` and `uiDone()` read the client's picture, so a seat
+that has not had its beat yet shows an *empty place*, not a meld it has secretly
+already played. An empty place at the table is not a lie; a face-down card that
+is actually face up would be.
+
+Two safeguards, because a staged view can desynchronise:
+
+- **Every accessor falls through to the engine when animation is off**
+  (`fxEnabled()` is false in jsdom, in a hidden tab, or under
+  `prefers-reduced-motion`). Nothing is ever withheld from a reader who cannot
+  see animation.
+- **A catch-up pass runs when each queue drains** (`syncTrick`), so a dropped
+  beat — a cleared queue, a round cut short — cannot leave a meld face down for
+  the rest of the round.
+
+`trick_test.js` lends jsdom a fake `cellPoint` so the staging actually runs, then
+checks the clock: nothing on the table at 120 ms, seat 1 laid by 480 ms, seat 2
+by 860 ms, the crown only after the last card, and everything face up after the
+catch-up pass. `fx_test.js` checks the engine emits exactly one `meld` per seat
+per round, one fully-ranked `trick`, and that the map phase follows the order
+the trick announced.
+
+## Where do I click?
+
+Every request that wants a click wants it in exactly **one** place. That place
+lights up and stays lit until the action is taken, and the cards inside it that
+are legal are lifted out of the rest — raised, dark-bordered, pulsing — while
+the illegal ones go dead. Reading the prompt is optional.
+
+| step | lights | live things in it |
+|---|---|---|
+| play a meld | hand | every card (the meld is built by clicking) |
+| give up a card (retire / discard / winner's extra) | hand | only the cards the engine would accept |
+| take a card | market | only slots at or below your rank cap |
+| set one aside | your meld area | the cards you played |
+| famine, declare A | victory row | the cards you hold there |
+| secret objective | the two cards | both |
+| conquest, water advantage | the map | the hexes you may strike or claim |
+
+`turn` deliberately lights nothing: the map phase is free-form, and lighting
+everything would say nothing. When the zone changes it is scrolled into view,
+because on a phone the hand and the market are below the map and a step waiting
+off-screen reads as a frozen game.
+
+`zone_test.js` drives whole games asserting three things at **every** request:
+exactly one area is lit, it is the one the click goes in, and it contains
+something live. It found a real fault immediately — an animation beat rebuilding
+the meld area silently removed the highlight from a step that was still waiting.
+
+## Moving, and the water advantage
+
+The movement rules were checked line by line against §07 and hold — `move_test.js`
+builds a board per sentence. What was missing was any way to *see* the rule.
+
+A move "by sea" starts **and** ends on Ocean. Stepping onto the water from land
+is an ordinary land move and earns nothing; sailing from water to water earns
+the water advantage — one free tile of any terrain, first sea move each turn.
+Nothing on screen distinguished the two, so the hexes now say which is which:
+**Move here** / **Sail here** / **Sail — free tile** while the advantage is
+still unspent this turn. Sources that can sail read **Sail from**.
+
+**The free tile is not bound by your reach** (a rules change — see
+`RULEBOOK-CORRECTIONS.md` item 13). It was, and that made the advantage fail on
+26% of first sea moves: a ship in an enclosed pocket has no empty cell beside
+it, and a ship at the frontier has only cells touching one tile. The map had
+somewhere legal every time; reach was the wall. Touch-two still applies, so the
+map stays one body — but a voyage may lay its tile anywhere, which is the only
+thing in the game that reaches ground you have never stood on.
+
+The advantage is also **spent only when it is offered**: if the map has nowhere
+legal at all, it keeps for a later sea move in the same turn.
+
+Worth knowing at the table: at Tribe (one free move) the advantage is
+unreachable in a single turn — you need a unit already standing on Ocean, so it
+costs a move to get there and a second to collect. That is a design consequence,
+not a bug, but it is why the rule can feel like it never happens.
+
+## Colonies (effect B)
+
+Two things were wrong, and together they made the effect look like it did
+nothing:
+
+- **No reach constraint at all.** B used every legal space on the board, so a
+  colony could be founded anywhere the map allowed — measured over 200 bot
+  games, **58% of colonies landed outside their founder's reach**, a mean of
+  2.2 steps away and as far as 8, sometimes on a rival's doorstep. A colony is
+  an explore, so §06 applies in full: touch two tiles, and be in your reach.
+  The 6–10 band is the one exception the card prints — "up to 2 tiles out".
+- **The player never chose the cell.** The engine took the lowest-sorted key,
+  which is an arbitrary corner of the map. You spent a victory card and a tile
+  appeared somewhere you were not looking — and with the map now zoomed and
+  pannable, quite possibly off screen.
+
+Both are fixed. `colonyCells()` is the single rule, used by the bot and the
+person alike; a person is now **asked for every tile** — the cell, and the
+terrain too for the 16–20 band that may take any — and may stop early. The map
+lights up for the choice like any other map click.
+
+Measured cost of the reach fix, bot-only, 250 games: none detectable (3p score
+30.4 → 31.1, colonies per game 6.1 → 6.1). The bot barely cares where its
+colony lands; a person cares a great deal.
+
+## The shared pile
+
+The set-aside card — what you give up for matching the trick winner's card count
+— goes **face down to the shared pile**, and every hand refills from that pile.
+It is a forced step: the only decision is which card.
+
+This was a bug worth stating plainly. Under the classic trick rule the card went
+to the player's own discard and came straight back to them, so the shared pile
+was **never fed and never drawn from** — 0 cards per game, measured. §09's
+promise that "cards you lose flow into the shared pile, and cards other players
+lost flow back to you" was simply not happening. It is now: 13.4 cards a game
+change hands at 3 players. See `RULEBOOK-CORRECTIONS.md` item 10.
+
+The pile is drawn beside the upgrade deck with its size on it, and cards visibly
+fly into it and out of it, because a stack that matters should be a stack you
+can see.
+
+## Setting up a game
+
+The setup page asks three questions in the order a table asks them, and hides
+everything else.
+
+**Language is flags, side by side.** A dropdown hides the option people came
+for; two flags with their names beside them cost one line and answer the
+question before it is asked. `?lang=de` and the browser's own preference still
+work — the flags are just the visible form of the same setting.
+
+**Players, seats and sharpness are one panel**, because they are one decision:
+how many are playing, who is at each seat, and how hard the ones that are not
+people should be. Each seat is a row carrying its colour disc, its name and one
+select — *You (this device)*, *Automatic mix*, or a named style. The seat you
+are sitting in is tinted, so the answer to "which one am I" is visible rather
+than remembered. Choosing more than one *You* is hot seat; choosing none is a
+game you watch.
+
+Defaults: **three players, you in seat one, an automatic mix of styles, normal
+sharpness.** Everything else — trick rule, deck, meld variants, population
+limits, retire rule, objectives — is folded into **Advanced rules and
+variants**, a closed disclosure with a chevron that turns when it opens. A
+`<details>` with no marker reads as a heading and never gets opened.
+
+The seed sits under the panel with a reroll button, because it is the last
+thing you touch and the first thing you change when you want the same deal
+again.
+
+At the bottom, and again on the board while you play, are the three documents:
+**Rulebook**, **Card effects**, **Map objectives**. They open in a new tab, so
+reaching for the rules never costs you a game. `build.js` copies them from
+`../source/` next to the page in both builds — a rules link that 404s is worse
+than no link at all.
+
+## Taking a move back
+
+The header carries what you do to the *game* rather than in it: **Undo**,
+**Restart** (the same seed, dealt again) and **Leave**. Restart and Leave ask
+first.
+
+Undo is limited to **your own map turn**, and that limit is the design:
+
+- Inside your turn, a misclick is a misclick. You spent a card on the wrong hex,
+  moved the wrong unit, opened a research you did not mean to. Take it back.
+- The card phase is not undoable. A meld is a commitment made without seeing
+  anyone else's, and unplaying one after the trick has resolved is not an undo,
+  it is a look at the answers. The button is greyed there and says why.
+
+**It works by replay, not by rewind.** The engine is a running generator and
+cannot be wound backwards — but a game is a pure function of its seed, its
+options and the answers people gave, because the shuffle is seeded and the bots
+draw noise from the same stream. So every answer is written down as a small
+token (`encodeAns`), and undo deals the same game again from the beginning and
+gives back every answer except the last (`replay`). Cards are recorded by
+*where* they were, not by what they were, since the same replay puts the same
+card in the same place.
+
+`MARK` is the point in that log where the acting seat's turn began, and undo
+refuses to step past it. `undo_test.js` snapshots everything a player can see —
+gold, hands, discards, victory rows, reserves, every tile and the supply —
+takes an action, undoes it, and fails unless the two snapshots are identical;
+then it plays a whole game undoing every third action, to prove replay survives
+being leaned on. Three deliberate breakages were checked to fail it.
+
+## Language
+
+English and German, chosen from the setup screen, defaulting to the browser's
+own preference and overridable with `?lang=de`. Switching re-renders everything,
+mid-game included.
+
+**Everything a player reads is in `i18n.js`**, the two languages written as
+adjacent pairs so they can be reviewed as pairs. Two rules keep it that way:
+
+- **The engine holds no sentences.** `say()` stores a *key and its variables*
+  (`say("log.trick", { seat })`), and the client makes the sentence. The same
+  goes for the reasons an action is unavailable — `colonyBlocked` is now
+  `"why.colony.noReach"`, not English prose. The engine is language-free, which
+  is also why the node tests can read it without a catalogue.
+- **`t(key, vars)` fills `{placeholders}`**, and `tn(key, n, vars)` also
+  resolves `card(s)` / `Feld(er)` plurals, so plural handling lives in one place
+  rather than fifty call sites.
+
+`i18n_test.js` guards the parts of a translation that fail quietly:
+
+- a key in one language and not the other;
+- **placeholders that differ between languages** — a `{n}` dropped in German
+  would silently swallow a number;
+- **markup that differs** — an unbalanced `<b>` in one language only;
+- a key the code asks for that nobody wrote, including the ones built at run
+  time (`"fx.a." + band`, `"seat." + i`), which are listed by prefix;
+- **user-facing English still hard-coded** in `ui.js`, by scanning for prose in
+  the template literals that reach the screen;
+- and finally it plays a game in each language and fails if an untranslated key
+  (`ask.something`) ever reaches the screen.
+
+**The German is a first pass and needs your eye**, particularly the terms that
+would end up printed: *Kombination* (meld), *Stich* (trick), *Wert* (rank),
+*Siegreihe* (victory row), *Kartenlimit* (meld limit), *Stufe* (tier). The card
+effect text and the objective names are printed-component voice — they should
+match whatever a German rulebook settles on, not the other way round.
+
+## Meld variants
+
+Two of the five variants in `Blink-variants.html` are setup options, because
+both are pure legality changes — they widen what counts as a meld and touch
+nothing else:
+
+- **Combination melds** — play two or more melds of 2+ cards as one meld. A
+  single card may never be part of a combination, and every card belongs to
+  exactly one component.
+- **Friends of 10s** — any two cards whose ranks sum to 10, 20 or 30.
+
+Both live in `isLegalMeld`, which the client and the engine share, so a variant
+cannot be legal for a bot and illegal for a person. `enumerateMelds` already
+filtered every subset through it, so nothing else had to change.
+
+Measured (`RULEBOOK-CORRECTIONS.md` item 18): combinations are a **pace**
+variant, not a power one — 4+ card melds up 26–34%, games half a round to a
+round shorter, scores flat. The booklet's much larger figures were taken under
+v0.20 pattern rules; the v0.22 meld limit caps most of the gain. Friends of 10s
+turns out to be **negligible** — 0.7 singles a game become pairs, and nothing
+else moves. That answers an open question the booklet had left since v0.1.
+
+`variants_test.js` pins the legality table, including the cases that must stay
+illegal (a pair plus a single is not a combination) and the one the booklet
+leaves open: with both variants on, a friends pair **is** a legal component.
+
+## The opponents
+
+Two independent settings, because they are two different things.
+
+**Style is a weight vector.** Every number a bot weighs lives in one object
+(`TUNED`), so a style is a small override of it rather than a different code
+path — and each one is a real policy, not a handicap:
+
+| | plays for | measured fingerprint, 3p |
+|---|---|---|
+| **Settler** | ground, and walls to keep it | most population (17.8), most fortifications, almost no kills |
+| **Raider** | the map at knifepoint | 62 kills a game against the baseline's 13 — and the lowest score |
+| **Scholar** | the market's tallest ideas | fewest walls, most colonies, buys high |
+| **Merchant** | a full purse and a quiet border | cashes freely, walls heavily, rarely fights |
+| **Balanced** | the tuned baseline | the policy every measurement in this project uses |
+
+Head to head, every pairing: **55 / 50 / 49 / 48 / 48 %**. A 7-point spread —
+choosing a style picks an opponent, not an outcome.
+
+**Difficulty is decision noise.** With probability ε a bot takes a legal option
+that is not its best, at the two decisions the turn hangs off — the meld, and
+where each card is spent. ε is 0.35 / 0.15 / **0** for Easy / Normal / Hard, so
+a hard table reproduces every number ever measured here. Measured, three tuned
+bots at one table, one per level: **easy 7%, normal 29%, hard 64%.**
+
+`bots_test.js` asserts both claims — that difficulty is ordered, that no style
+dominates (>68%) or collapses (<32%), and that every style leaves a *different*
+mark on the game. That last check is the one that matters: it fails a style
+whose numbers are indistinguishable from the baseline, which is how a label
+gets mistaken for a policy. It caught exactly that twice while these were tuned.
+
+One knob is deliberately **not** available to any style
+(`STYLE_LOCKED`): when effect B is worth spending. It is worth 71% of games on
+its own, which is a question about the game rather than a personality — see
+`RULEBOOK-CORRECTIONS.md` item 15.
+
+## What research retires
+
+A setup option, because it is a rules proposal rather than a rule:
+
+- **your lowest card** (default) — research may retire only the lowest rank you
+  hold, every copy of it. Research is then an upgrade in the plain sense.
+- **any card** — §10 as printed.
+
+The app has never implemented the *"or discard"* half of §10 ("retire one card
+from your hand or discard"); neither does `sim/engine.py`. That gap is listed in
+`RULEBOOK-CORRECTIONS.md` item 11, along with the measured cost of the lowest
+rule — it is large, and it lands entirely on the victory row.
+
+## Map scale, and panning
+
+Scale is pixels per engine unit; a hex is 30 units of radius, so it measures
+52 × 60 units. The old fixed `0.5` drew **26 × 30 px** hexes — usable with a
+mouse on a six-tile opening board, too small for a thumb, and it kept shrinking
+as the map grew until nothing could be hit reliably.
+
+The scale now **fits the board but is clamped to a range that stays usable**:
+
+| | | |
+|---|---|---|
+| `ZOOM_MIN` | 0.72 | **37 × 43 px** — about a fingertip; the smallest honest target |
+| `ZOOM_MAX` | 1.10 | **57 × 66 px** — no bigger than a real printed tile |
+
+So a small board is drawn at a comfortable size instead of filling the panel,
+and a board too big to fit is **panned rather than shrunk** — past the floor,
+the map becomes a window onto the board.
+
+- **Drag to pan**, mouse or finger, but only when there is somewhere to pan to.
+  The map takes `touch-action: none` solely while it is `pannable`, so on a
+  phone a swipe over a board that fits still scrolls the page.
+- **Pinch to zoom** with two fingers; **wheel** zooms where it cannot be
+  confused with scrolling the page (a wide window, or a board already panning).
+- **− / +** take over from the automatic scale starting at whatever it had
+  chosen, so the first press never jumps.
+- **⤢** is two things, because a big board needs both: press once and it zooms
+  out — below the usable floor, deliberately — until the whole board is on
+  screen, for looking rather than clicking; press again and the map goes back to
+  playing size, centred. It is faded until the view has actually been moved.
+- **Panning is clamped** to one hex of overscroll, and an axis with room to
+  spare does not pan at all.
+- **A highlight you cannot see is worse than no highlight**: if a step has legal
+  cells and not one of them is on screen, the map pans to their centroid by
+  itself.
+
+`view_test.js` checks all of this. The scale and pan maths are pure functions
+taking measurements as arguments (`mapScale`, `clampPan`, `viewBoxOf`) precisely
+so they can be checked where there is no layout engine.
 
 ## Opening it on a phone
 
@@ -150,6 +613,18 @@ jsdom (`npm install jsdom`; nothing else in the project depends on it):
 ```
 node visible_test.js         # asserts the app is VISIBLE after Start
 node nojs_test.js            # the no-JavaScript notice appears, and only then
+node fx_test.js              # animation cannot affect the game, and drains
+node bots_test.js            # difficulty is ordered; no style dominates or is fake
+node i18n_test.js            # both languages complete, nothing hard-coded
+node limits_test.js          # growing population limits, and the shedding cascade
+node variants_test.js        # the meld variants, case by case
+node move_test.js            # movement and the water advantage, on built maps
+node colony_test.js          # effect B: reach, touch-two, and who picks the cell
+node trick_test.js           # the trick is staged in order, on the clock
+node zone_test.js            # every step lights one area, and it is clickable
+node view_test.js            # hexes stay clickable; big boards pan, not shrink
+node setup_test.js           # the setup page, hot seat, watch mode, restart, leave
+node undo_test.js            # undo rewinds your turn exactly, and no further
 node ui_playthrough_test.js  # clicks four games to completion through the DOM
 ```
 
@@ -200,13 +675,18 @@ actual phone rendering wants a look on a real device.
 
 ## Known gaps
 
-- **Expansions are not implemented.** No Wasteland/Disaster, no trade, no map
-  objectives — base game only, as in the sim.
-- **Optional variants are not implemented**: combination melds, super melds,
-  friends of 10s. They are flags in `sim/engine.py` and would each be a small
-  addition to `enumerateMelds`.
+- **Expansions are not implemented.** No Wasteland/Disaster, no trade. Map
+  objectives are in, as a setup option (off / secret / open / keep both);
+  everything else is the base game, as in the sim.
+- **Pattern placement is not implemented.** Combination melds, friends of 10s
+  and growing population limits are setup options; the v0.20 pattern-placement
+  variant is the one still missing, and it is the large one — it changes what a
+  meld *does* on the map rather than what counts as one.
 - **No solo Automa.** `Blink-solo-mode-v0.1` is a separate design.
 - The starting draft is played for you (the bot's `draftPick`). Drafting by
   hand would be the next thing worth exposing, since it is a real decision.
-- Bots resolve instantly with no animation; the log names the trick winner and
-  the map redraws, but a fast bot turn can be easy to miss.
+- **Only three widths have actually been looked at** — 390, 768 and 1200 px, in
+  Chrome, by loading the page in sized iframes. Real iOS Safari (toolbar
+  collapse, safe-area insets, `vh` behaviour while scrolling) has not been
+  checked, and `vh` on iOS is the classic place a layout that measures fine in
+  Chrome does not survive.

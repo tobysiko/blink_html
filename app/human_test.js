@@ -11,12 +11,13 @@ function autoHuman(G, req, rng) {
     case 'discard':
     case 'setaside':
     case 'retire': return pick(req.options);
-    case 'gridslot':
     case 'buy': return pick(req.options);
     case 'effectA': return rng() < 0.3 ? req.options[0] : null;
     case 'feed': return rng() < 0.7 ? req.options[0] : null;
     case 'waterexplore':
       return rng() < 0.8 ? { cell: pick(req.options), terrain: pick(req.terrains) } : null;
+    case 'colony':
+      return rng() < 0.9 ? { cell: pick(req.options), terrain: pick(req.terrains) } : null;
     case 'conquest': return rng() < 0.85 ? pick(req.options) : null;
     case 'objective': return pick(req.options);
     case 'turn': {
@@ -63,7 +64,25 @@ for (const n of [2, 3, 4]) {
       const G = new E.Game(n, s * 31337 + seat,
         { humans: [seat], trickRule: (s % 2 ? 'dock' : 'bonus'),
           deck: (s % 3 === 0 ? 'abd' : 'abc'),
+          retireRule: (s % 5 === 0 ? 'any' : 'lowest'),
+          comboMelds: s % 7 === 0, friendsOf10: s % 11 === 0,
+          growLimits: s % 6 === 0,
+          botStyle: ['tuned','mixed','raider','scholar'][s % 4],
+          botLevel: ['hard','normal','easy'][s % 3],
           objectives: ['off','secret','open','both'][s % 4] });
+      /* Every card in the game at the start. Nothing may vanish: the set-aside
+       * card now leaves the player's own economy for the shared pile, and a
+       * routing change is exactly how a card gets dropped on the floor. */
+      const allCards = () => {
+        const cnt = new Map();
+        const add = (c) => cnt.set(c.r + c.s, (cnt.get(c.r + c.s) || 0) + 1);
+        for (const q of G.P) { q.hand.forEach(add); q.discard.forEach(add);
+                               q.played.forEach(add); q.vrow.forEach(add); }
+        G.removed.forEach(add); G.pile.forEach(add); G.deck.forEach(add);
+        G.grid.forEach((st) => st.forEach(add));
+        return cnt;
+      };
+      const TOTAL = allCards().size;
       let guard = 0;
       while (!G.finished() && guard++ < 300) {
         const it = G.playRound();
@@ -94,18 +113,15 @@ for (const n of [2, 3, 4]) {
         for (const t of G.m.tiles.values()) tc[t.terrain]++;
         for (const t of E.TER) if (tc[t] !== 15) throw new Error('tile conservation ' + t);
         // no card may be duplicated or lost
-        const cnt = new Map();
-        const add = (c) => cnt.set(c.r + c.s, (cnt.get(c.r + c.s) || 0) + 1);
-        for (const q of G.P) { q.hand.forEach(add); q.discard.forEach(add);
-                               q.played.forEach(add); q.vrow.forEach(add); }
-        G.removed.forEach(add); G.pile.forEach(add); G.deck.forEach(add);
-        G.grid.forEach((st) => st.forEach(add));
+        const cnt = allCards();
         for (const [k, v] of cnt) if (v > 1) throw new Error('duplicated card ' + k);
+        if (cnt.size !== TOTAL)
+          throw new Error(`cards lost: ${cnt.size} of ${TOTAL} n=${n} seed=${s}`);
       }
       if (!G.finished()) { unfinished++; console.log('DID NOT FINISH', n, s, seat); }
       games++;
     }
   }
 }
-console.log(`${games} human-seat games clean — both trick rules, both decks, all objective modes; ${unfinished} unfinished`);
+console.log(`${games} human-seat games clean — both trick rules, both decks, both retire rules, the meld variants, growing population limits, every bot style and level, all objective modes, no card lost or duplicated; ${unfinished} unfinished`);
 console.log('request types exercised:', [...seen].sort().join(', '));

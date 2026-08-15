@@ -37,13 +37,8 @@ function run(seed, n, seat, deck, obj, cb) {
   const note = (k) => { seenKinds[k] = (seenKinds[k] || 0) + 1; };
 
   setTimeout(() => {
-    q('#n-players').value = String(n);
-    q('#n-players').dispatchEvent(new w.Event('change'));
-    q('#my-seat').value = String(seat);
-    q('#seed').value = String(seed);
-    if (deck) q('#deck').value = deck;
-    if (obj) q('#objectives').value = obj;
-    q('#start').click();
+    require('./test_setup.js').start(w, d, { players: n, seat, seed,
+      advanced: Object.assign({}, deck ? { deck } : {}, obj ? { objectives: obj } : {}) });
 
     let steps = 0;
     const tick = () => {
@@ -64,9 +59,9 @@ function run(seed, n, seat, deck, obj, cb) {
         }
         const play = btn(/Play meld/);
         if (play) click(play);
-      } else if (/Your map turn/.test(t)) {
+      } else if (/Your turn/.test(t)) {
         note('turn');
-        const cards = qa('.meldstrip button');
+        const cards = qa('#mymeld button');
         if (cards.length) {
           click(cards[0]);
           const s = hexBadged('Settle') || hot();
@@ -84,10 +79,10 @@ function run(seed, n, seat, deck, obj, cb) {
         } else {
           note('end'); click(btn(/^End turn/));
         }
-      } else if (/Free move/.test(t)) {
+      } else if (/^\s*Move\b|Move —/.test(t)) {
         const h = hot();
         if (h) click(h); else click(btn(/Cancel/) || btn(/Pick another/));
-      } else if (/Fortify\./.test(t)) {
+      } else if (/Fortify —/.test(t)) {
         const h = hot();
         if (h && Math.random() < 0.6) click(h); else click(btn(/Cancel/));
       } else if (q('.vpanel')) {
@@ -98,24 +93,24 @@ function run(seed, n, seat, deck, obj, cb) {
         } else {
           note('vcard-keep'); click(btn(/Keep this card/) || btn(/Play no effect/));
         }
-      } else if (/Set one of your played cards aside/.test(t)) {
+      } else if (/matched the winner/.test(t)) {
+        // forced, and made on the cards themselves in the meld area
         note('setaside');
-        const r = q('.rowpick button');
-        if (r) click(r);
-      } else if (/extra card from hand|face down, to the shared pile|Retire a card/.test(t)) {
+        const r = q('#mymeld button[data-aside]');
+        if (r) click(r); else { note('setaside-STUCK'); return done(t); }
+      } else if (/spend one extra card|shared pile|Give up|Retire a card/.test(t)) {
         const c = qa('#hand button').find((b) => !b.className.includes('dead'));
         if (c) click(c);
-      } else if (/Place the drawn card/.test(t)) {
-        click(q('.slot.hot') || q('.slot'));
       } else if (/Take a card/.test(t)) {
         const s = q('.slot.hot');
         if (s) click(s); else click(btn(/Cancel/));
-      } else if (/Declare step/.test(t)) {
+      } else if (/Declare —|Declare\b/.test(t)) {
         note('declareA');
         if (qa('.vslot button.cf').length && Math.random() < 0.5) click(qa('.vslot button.cf')[0]);
         else click(btn(/Skip/));
       } else if (/Famine/.test(t)) {
-        const r = q('.rowpick button');
+        note('famine');
+        const r = q('.vrowbox button.want');       // cashed on the row itself
         if (r) click(r); else click(btn(/Take the loss/));
       } else if (/Raid|Seize|Conquer|Overrun/.test(t)) {
         note('conquest');
@@ -127,6 +122,10 @@ function run(seed, n, seat, deck, obj, cb) {
         note('water');
         const h = hot();
         if (h) click(h); else click(btn(/Skip/));
+      } else if (/Found a colony/.test(t)) {
+        note('colony-cell');
+        const h = hot();
+        if (h) click(h); else click(btn(/Stop here/));
       } else if (/Which terrain/.test(t)) {
         click(q('.go.terr'));
       }

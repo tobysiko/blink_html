@@ -44,6 +44,23 @@ function makeRng(seed) {
 const TER = ["plains", "forest", "ocean", "mountain"];
 const SUIT_LETTER = { plains: "P", forest: "F", ocean: "O", mountain: "M" };
 const HOLDS = { plains: 3, forest: 2, ocean: 1, mountain: 1 };
+
+/* Variant: population limits that grow with your board (Blink-variants.html).
+ * The limit that applies to a tile is its OWNER'S, so two players may legally
+ * stack the same terrain differently.
+ *
+ * The booklet prints four bands — Founding / Growth / Expansion / Empire — from
+ * a version of the game that had four. v0.22 has five tiers, so Civilization
+ * repeats Empire's row: the variant's own line is that "Mountain and Ocean stay
+ * low throughout — hostile ground never becomes comfortable", and a fifth,
+ * higher row would be the one thing it says not to do. */
+const BAND_HOLDS = [
+  { plains: 2, forest: 1, ocean: 1, mountain: 1 },   // Tribe        (Founding)
+  { plains: 2, forest: 2, ocean: 1, mountain: 1 },   // Settlement   (Growth)
+  { plains: 3, forest: 2, ocean: 1, mountain: 1 },   // Kingdom      (Expansion)
+  { plains: 3, forest: 3, ocean: 2, mountain: 2 },   // Empire       (Empire)
+  { plains: 3, forest: 3, ocean: 2, mountain: 2 },   // Civilization (as Empire)
+];
 const ATTACK_COST = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
 const BAG_EACH = 15;
 
@@ -162,10 +179,81 @@ class Tile {
 /* THE RULE: the ranks of the cards must form an unbroken run — every rank
  * between the lowest and the highest must be present. Duplicates of any rank
  * are free and suits are irrelevant. One card is always legal. */
-function isLegalMeld(cards) {
-  if (!cards || !cards.length) return false;
+/* ---- the meld rule, and the two variants that widen it ----
+ * Base v0.22 (§05): a meld is any cards whose ranks form an unbroken run.
+ *   combination melds — two or more multi-card melds played as one meld. Every
+ *     component must be legal on its own and hold at least two cards; a single
+ *     card can never be part of a combination.
+ *   friends of 10s — any two cards whose ranks sum to 10, 20 or 30.
+ * Both are off unless a game turns them on. */
+let MELD_RULES = { combo: false, friends: false };
+function setMeldRules(r) {
+  MELD_RULES = { combo: !!(r && r.combo), friends: !!(r && r.friends) };
+}
+function meldRules() { return MELD_RULES; }
+
+function isRun(cards) {
   const ranks = new Set(cards.map((c) => c.r));
   return Math.max(...ranks) - Math.min(...ranks) + 1 === ranks.size;
+}
+function isFriends(cards) {
+  if (cards.length !== 2) return false;
+  const s = cards[0].r + cards[1].r;
+  return s === 10 || s === 20 || s === 30;
+}
+/* One piece of a combination: a legal meld in its own right, never a single. */
+function isComponent(cards) {
+  if (cards.length < 2) return false;
+  return isRun(cards) || (MELD_RULES.friends && isFriends(cards));
+}
+/* Can these cards be cut into two or more legal pieces? Melds are capped at
+ * six cards, so the search is tiny — the lowest unused card must belong to
+ * some piece, and every piece containing it is tried. */
+function canCombine(cards) {
+  const n = cards.length;
+  if (n < 4) return false;                       // two pieces of two, at least
+  const used = new Array(n).fill(false);
+  const rec = (parts) => {
+    const first = used.indexOf(false);
+    if (first === -1) return parts >= 2;
+    const rest = [];
+    for (let i = first + 1; i < n; i++) if (!used[i]) rest.push(i);
+    for (let mask = 1; mask < (1 << rest.length); mask++) {
+      const idx = [first];
+      for (let b = 0; b < rest.length; b++) if (mask & (1 << b)) idx.push(rest[b]);
+      if (!isComponent(idx.map((i) => cards[i]))) continue;
+      for (const i of idx) used[i] = true;
+      const ok = rec(parts + 1);
+      for (const i of idx) used[i] = false;
+      if (ok) return true;
+    }
+    return false;
+  };
+  return rec(0);
+}
+
+function isLegalMeld(cards) {
+  if (!cards || !cards.length) return false;
+  if (isRun(cards)) return true;
+  if (MELD_RULES.friends && isFriends(cards)) return true;
+  if (MELD_RULES.combo && canCombine(cards)) return true;
+  return false;
+}
+
+/* Why a selection is not a meld, in the terms the current rules allow. */
+function meldFault(cards) {
+  if (!cards || !cards.length) return "no cards";
+  if (isLegalMeld(cards)) return null;
+  const rs = [...new Set(cards.map((c) => c.r))].sort((a, b) => a - b);
+  const gaps = [];
+  for (let r = rs[0]; r <= rs[rs.length - 1]; r++) if (!rs.includes(r)) gaps.push(r);
+  const run = gaps.length ? `not an unbroken run — missing ${gaps.join(", ")}`
+                          : "not an unbroken run";
+  if (!MELD_RULES.combo && !MELD_RULES.friends) return run;
+  const extra = [];
+  if (MELD_RULES.combo) extra.push("nor two or more melds of 2+ cards each");
+  if (MELD_RULES.friends) extra.push("nor a pair summing to 10, 20 or 30");
+  return `${run}, ${extra.join(", ")}`;
 }
 
 function cardSort(a, b) { return a.r - b.r || a.s.localeCompare(b.s); }
@@ -330,6 +418,23 @@ function reach(m, pi, civ) {
   return out;
 }
 
+/* The same thing, `n` steps out. Only effect B's 6-10 band uses n = 2 — "found
+ * a DISTANT colony: as above, up to 2 tiles out". Everything else in the game
+ * reaches exactly one. */
+function reachOut(m, pi, n) {
+  const spaces = m.legalSpaces();
+  const out = new Set(m.civ(pi));
+  let frontier = new Set(out);
+  for (let step = 0; step < n; step++) {
+    const next = new Set();
+    for (const c of frontier)
+      for (const u of adjacentKeys(m, c))
+        if ((m.tiles.has(u) || spaces.has(u)) && !out.has(u)) { out.add(u); next.add(u); }
+    frontier = next;
+  }
+  return out;
+}
+
 /* Every legal (cell, action) for ONE card, judged against the map NOW. */
 function cardOptions(m, card, p, gold, reachable, spaces) {
   spaces = spaces || m.legalSpaces();
@@ -449,12 +554,110 @@ function vrowScore(ranks) {
                                 : r.length + r[r.length - 3];
 }
 
+/* ---- how a bot values the world ----
+ * Every number a bot weighs lives here, so a "style" is a small override of
+ * this object rather than a different code path. TUNED is the policy every
+ * measurement in RULEBOOK-CORRECTIONS.md was taken with; leave it alone.
+ */
+const TUNED = {
+  // spending a card
+  CASH_THRESHOLD: 1.0,     // below this a card is cashed for a coin instead
+  SETTLE_V: 3.0,           // worth of putting a unit down
+  MAJORITY_V: 1.2,         // ...on a terrain where you are not already ahead
+  ROUGH_V: 0.6,            // ...on ground that costs gold to take from you
+  EXPLORE_V: 1.0,          // worth of laying new ground
+  EXPLORE_SUIT_V: 0.3,     // ...that your hand can use again
+  ATTACK_V: 1.4,           // worth of a strike, before its price
+  ATTACK_COST_W: 0.9,      // how much its price puts you off
+  ATTACK_LONE_V: 1.0,      // ...a tile you would empty outright
+  // choosing a meld
+  MELD_GREED: 0.30,        // how much you value the hand you keep back
+  // the victory row
+  ROW_HORIZON: 2, ROW_PAD_RANK: 12, C_GOLD_PER_POINT: 2,
+  RETIRE_GAIN_W: 3.0, RETIRE_RANK_W: 1.2,
+  BLIND_RESEARCH_ODDS: 0.35,   // fish for an upgrade at worse odds than this? no
+  D_DENIAL_W: 0.5,         // what a rival's lost point is worth to you
+  // policies that are not weights
+  COLONY_MIN_ROW: 4,       // hold effect B until the row is this deep
+  FORTIFY_MIN_GOLD: 2,     // keep this much in hand before spending on walls
+  /* Research only with a hand this short or shorter — the "hold back until your
+   * lowest card is a high one" line. 10 means "whenever I can afford it".
+   *
+   * MEASURED, and the answer is not what the line promises: waiting moves the
+   * mean rank retired by about one (9.6 -> 10.7 at the extreme) and costs half
+   * your upgrades (12.8 -> 4.9 a game), which the row feels immediately because
+   * every card in it is a point. Win rate against the tuned bot falls 47% ->
+   * 8%. Kept as a lever because it is a real decision a person can make; NOT
+   * used by any style, because a style must not be a handicap. */
+  RESEARCH_MAX_HAND: 10,
+  // buying from the market: match what you hold, sit next to it, or chase rank
+  BUY_MATCH_W: 3.0, BUY_NEAR_W: 1.5, BUY_RANK_W: 0.08,
+  BUY_RANDOM: 0,           // 1 = the pre-14-Aug behaviour: buy anything affordable
+};
+
+/* Deliberately NOT a style knob — see bots_test.js and RULEBOOK-CORRECTIONS
+ * item 15. Measured head to head against the baseline, changing this one
+ * number from 4 to 3 is worth 71% of games on its own, while every other
+ * weight in every style is within noise of par. Letting a style carry it would
+ * mean picking that style is picking to win, and would hide a real question
+ * about effect B's price behind a flavour label. */
+const STYLE_LOCKED = ["COLONY_MIN_ROW"];
+
+/* Four ways to play the same game. Each is a delta from TUNED, and each is a
+ * real policy rather than a handicap — difficulty is a separate axis (noise).
+ * The numbers are deliberately modest: a style should change what a bot
+ * REACHES FOR, not how well it plays. */
+const BOT_STYLES = {
+  tuned: { label: "Balanced", note: "the tuned baseline every measurement uses", w: {} },
+  settler: {
+    label: "Settler",
+    note: "takes ground and holds it; fights only when the price is low",
+    w: { SETTLE_V: 3.8, MAJORITY_V: 1.8, ATTACK_V: 0.7, ATTACK_COST_W: 1.4,
+         EXPLORE_V: 1.3, FORTIFY_MIN_GOLD: 1 },
+  },
+  raider: {
+    label: "Raider",
+    note: "prices ground in blood; cashes cards to pay for it",
+    w: { ATTACK_V: 2.6, ATTACK_COST_W: 0.35, ATTACK_LONE_V: 1.6, D_DENIAL_W: 0.9,
+         CASH_THRESHOLD: 1.35, SETTLE_V: 2.6, EXPLORE_V: 0.7 },
+  },
+  scholar: {
+    label: "Scholar",
+    note: "buys ideas early and often, and feeds the victory row",
+    w: { BLIND_RESEARCH_ODDS: 0.15, RETIRE_GAIN_W: 4.2, RETIRE_RANK_W: 1.6,
+         ROW_HORIZON: 3, C_GOLD_PER_POINT: 3,
+         BUY_RANK_W: 0.5, BUY_MATCH_W: 2.0,      // chases the tallest idea it may take
+         CASH_THRESHOLD: 1.2, SETTLE_V: 2.7 },
+  },
+  merchant: {
+    label: "Merchant",
+    note: "keeps the purse full, walls what it owns, waits out trouble",
+    w: { CASH_THRESHOLD: 1.35, FORTIFY_MIN_GOLD: 1, C_GOLD_PER_POINT: 1,
+         ATTACK_V: 1.0, MELD_GREED: 0.18, ROUGH_V: 1.0, MAJORITY_V: 1.5 },
+  },
+};
+const STYLE_KEYS = Object.keys(BOT_STYLES);
+
+/* Difficulty is NOT a worse weight vector — that produces bots that are bad in
+ * strange ways. It is the chance of taking a legal option at random instead of
+ * the best one, which degrades a policy evenly and never plays illegally.
+ * `hard` is 0, so a hard table reproduces every number ever measured here. */
+const BOT_LEVELS = { easy: 0.35, normal: 0.15, hard: 0 };
+
+function botWeights(style) {
+  const s = BOT_STYLES[style] || BOT_STYLES.tuned;
+  const w = Object.assign({}, TUNED, s.w);
+  for (const k of STYLE_LOCKED) w[k] = TUNED[k];
+  return w;
+}
+
 /* Score ONE card spent on one cell. A card scoring below CASH_THRESHOLD is
  * cashed for a coin instead — that comparison is the central decision. */
 function valueCard(game, p, k, card, act) {
   const m = game.m;
+  const w = p.w || TUNED;
   if (act === "settle") {
-    let v = 3.0;
+    let v = w.SETTLE_V;
     const t = m.tiles.get(k);
     let mine = 0;
     for (const x of m.tiles.values()) if (x.terrain === t.terrain && x.owner === p.i) mine++;
@@ -465,19 +668,19 @@ function valueCard(game, p, k, card, act) {
       for (const x of m.tiles.values()) if (x.terrain === t.terrain && x.owner === q.i) n++;
       best = Math.max(best, n);
     }
-    if (mine <= best) v += 1.2;                       // contesting a majority
-    if (t.terrain === "forest" || t.terrain === "mountain") v += 0.6;
+    if (mine <= best) v += w.MAJORITY_V;               // contesting a majority
+    if (t.terrain === "forest" || t.terrain === "mountain") v += w.ROUGH_V;
     return v;
   }
   if (act === "explore") {
-    let v = 1.0;
-    if (p.hand.some((c) => c.s === card.s)) v += 0.3;
+    let v = w.EXPLORE_V;
+    if (p.hand.some((c) => c.s === card.s)) v += w.EXPLORE_SUIT_V;
     return v;
   }
   if (act === "attack") {
     const t = m.tiles.get(k);
-    let v = 1.4 - 0.9 * ATTACK_COST[t.terrain];
-    if (t.units.length === 1) v += 1.0;
+    let v = w.ATTACK_V - w.ATTACK_COST_W * ATTACK_COST[t.terrain];
+    if (t.units.length === 1) v += w.ATTACK_LONE_V;
     return v;
   }
   return 0.2;
@@ -488,6 +691,7 @@ const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 /* A stronger meld chooser — see pro_bot in engine.py. */
 function proBot(game, p, what, options) {
   const m = game.m;
+  const w = p.w || TUNED;
   const spaces = m.legalSpaces();
   const civ = m.civ(p.i);
   const reachable = civ.size ? reach(m, p.i, civ)
@@ -497,13 +701,18 @@ function proBot(game, p, what, options) {
     const id = card.r + card.s;
     if (!cache.has(id)) {
       const opts = cardOptions(m, card, p.i, p.gold, reachable, spaces);
-      cache.set(id, Math.max(game.CASH_THRESHOLD,
+      cache.set(id, Math.max(w.CASH_THRESHOLD,
         ...opts.map(([k, a]) => valueCard(game, p, k, card, a))));
     }
     return cache.get(id);
   };
   const rivals = game.P.filter((q) => q.i !== p.i).map((q) => q.meldLimit());
   const topRival = rivals.length ? Math.max(...rivals) : 0;
+
+  /* A less certain bot sometimes plays a legal meld that is not its best —
+   * that is the whole of "difficulty", and it is applied here because the meld
+   * is the decision the rest of the turn hangs off. */
+  if (p.noise && game.rng.random() < p.noise) return game.rng.choice(options);
 
   let best = null, bestV = -1e9;
   for (const cards of options) {
@@ -513,7 +722,7 @@ function proBot(game, p, what, options) {
               : Math.pow(0.12, topRival - n + 1);
     v += win * (1.1 + 0.35 * mean(cards.map(cardValue)));
     const rest = p.hand.filter((c) => !cards.includes(c));
-    v += game.MELD_GREED * handPower(rest);
+    v += w.MELD_GREED * handPower(rest);
     if (p.gold < p.food()) v += 0.25 * n;
     if (v > bestV) { best = cards; bestV = v; }
   }
@@ -547,6 +756,29 @@ class Game {
     this.MAJORITY = opts.majority || "area";
     /* off | secret (deal two, keep one) | open (two face up, shared) | both */
     this.OBJECTIVES_MODE = opts.objectives || "off";
+    /* "lowest" — research retires the LOWEST rank you hold (any suit of it).
+     *            Research is then an upgrade in the plain sense: your worst
+     *            card leaves and a better one arrives.
+     * "any"    — rulebook §10 as printed: "retire one card from your hand or
+     *            discard", no restriction. Kept so the two can be measured. */
+    this.RETIRE_RULE = opts.retireRule || "lowest";
+    /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
+     * different one to each seat; `botLevel` is easy | normal | hard. Both are
+     * policy, never rules: no style may do anything a person could not. */
+    this.BOT_STYLE = opts.botStyle || "tuned";
+    this.BOT_LEVEL = opts.botLevel || "hard";
+    /* Per-seat styles, when the table was set one seat at a time. A null entry
+     * falls back to BOT_STYLE (or the mixed bag). */
+    this.SEAT_STYLES = opts.seatStyles || null;
+    /* Meld variants (Blink-variants.html). Module-level, like the victory-row
+     * rule, because the client asks the same free functions the engine does. */
+    this.MELD_VARIANTS = { combo: !!opts.comboMelds, friends: !!opts.friendsOf10 };
+    setMeldRules(this.MELD_VARIANTS);
+    /* Variant: population limits per band. `Tile.capacityFor(seat)` already
+     * asked the map for them and fell back to the fixed table, so switching it
+     * on is one assignment. */
+    this.GROW_LIMITS = !!opts.growLimits;
+    if (this.GROW_LIMITS) this.m.limits = BAND_HOLDS;
     this.round = 0;
     this.stats = {};
     this.log = [];
@@ -555,26 +787,36 @@ class Game {
     this.pile = [];            // shared face-down discard pile (§04, §09)
     this.removed = [];         // cards spent on effects; out of the game
     this.m.bandOf = (seat) => this.P[seat].band();
+    this._dealStyles();
     for (const pl of this.P) pl.takeUnit();          // the starting unit
     this._deal();
   }
 
-  // ---- flags, at the v0.22 base-game defaults ----------------------
-  get CASH_THRESHOLD() { return 1.0; }
-  get MELD_GREED() { return 0.30; }
+  // ---- rules, at the v0.22 base-game defaults ----------------------
   get MARKET_GRID() { return this.GRID_SIZE; }
-  get ROW_HORIZON() { return 2; }
-  get ROW_PAD_RANK() { return 12; }
-  get C_GOLD_PER_POINT() { return 2; }
-  get BLIND_RESEARCH_ODDS() { return 0.35; }
-  get RETIRE_GAIN_W() { return 3.0; }
-  get RETIRE_RANK_W() { return 1.2; }
   get CONSOLATION_GOLD() { return 1; }
-  get D_DENIAL_W() { return 0.5; }      // what a rival's lost point is worth to you
+  /* Bot weights are per SEAT (`p.w`), not per game — see TUNED and BOT_STYLES.
+   * These stay only so old callers and tests that ask the game for a weight
+   * still get the tuned answer. */
+  get CASH_THRESHOLD() { return TUNED.CASH_THRESHOLD; }
+  get MELD_GREED() { return TUNED.MELD_GREED; }
 
   isHuman(i) { return this.humans.has(i); }
+
+  /* A record of what physically moved, for the client to animate. Recording
+   * only — nothing here changes a decision, so the bots play identically with
+   * it on. The client drains the queue after every step; the cap is a guard in
+   * case nobody is listening (headless runs, tests). */
+  fx(type, data) {
+    if (!this.events) this.events = [];
+    if (this.events.length > 400) this.events.length = 0;
+    this.events.push(Object.assign({ type }, data));
+  }
   inc(k, n) { this.stats[k] = (this.stats[k] || 0) + (n === undefined ? 1 : n); }
-  say(s) { this.log.push([this.round, s]); }
+  /* The log is read by a person, so the engine stores a KEY and its variables
+   * rather than a sentence — the client renders it in whatever language is on.
+   * Nothing in the engine may contain text a player sees. */
+  say(key, vars) { this.log.push([this.round, key, vars || null]); }
 
   // --- setup ---------------------------------------------------
   _deal() {
@@ -620,7 +862,26 @@ class Game {
     for (let i = 0; i < this.MARKET_GRID; i++)
       this.grid.push(this.deck.length ? [this.deck.pop()] : []);
     this.leader = 0;
+    this.playOrder = null;                    // set each round, leader first
     this._dealObjectives();
+  }
+
+  /* Give every seat its weights. A human seat gets the tuned set so that
+   * anything the client asks the engine to value on their behalf is answered
+   * neutrally, and no noise — a person's mistakes are their own. */
+  _dealStyles() {
+    const opts = STYLE_KEYS.filter((k) => k !== "tuned");
+    let bag = [];
+    this.P.forEach((p, i) => {
+      let style = (this.SEAT_STYLES && this.SEAT_STYLES[i]) || this.BOT_STYLE;
+      if (style === "mixed" || style === "auto") {
+        if (!bag.length) { bag = opts.slice(); this.rng.shuffle(bag); }
+        style = bag.pop();
+      }
+      p.style = this.isHuman(i) ? "you" : style;
+      p.w = botWeights(this.isHuman(i) ? "tuned" : style);
+      p.noise = this.isHuman(i) ? 0 : (BOT_LEVELS[this.BOT_LEVEL] || 0);
+    });
   }
 
   /* Twelve cards is enough for four players to be dealt two each with four
@@ -665,6 +926,7 @@ class Game {
 
   // --- one round -----------------------------------------------
   *playRound() {
+    setMeldRules(this.MELD_VARIANTS);      // safe if two games are interleaved
     if (this.OBJECTIVES_MODE === "secret" && !this._objChosen) {
       this._objChosen = true;
       for (const p of this.P) {
@@ -681,12 +943,15 @@ class Game {
     this.round += 1;
     const order = [];
     for (let k = 0; k < this.n; k++) order.push((this.leader + k) % this.n);
+    /* Who lays cards in what order — the leader first, then clockwise. Public
+     * information: at a table you can see whose turn it is to play. */
+    this.playOrder = order.slice();
 
     // ---------------- card phase ----------------
     /* Clear the table first. A seat that has not played yet must show nothing,
      * not last round's meld — the play area is public information about THIS
      * trick, and a stale card would be a lie. */
-    for (const q of this.P) { q.tableau = null; q.tableauBonus = null; }
+    for (const q of this.P) { q.tableau = null; q.tableauBonus = null; q.asideCard = null; }
     this.trickOrder = null; this.winner = null; this.turnDone = new Set();
     for (const i of order) {
       const p = this.P[i];
@@ -703,6 +968,9 @@ class Game {
        * until the next card phase. */
       p.tableau = cards.slice();
       p.tableauBonus = null;
+      /* One beat per player: bots resolve in the same tick, so without this the
+       * whole trick would appear at once instead of going round the table. */
+      this.fx("meld", { seat: i, n: cards.length });
       p.bonus = 0; p.ties = false; p.spentA = 0; p.aBand = null;
       for (const c of cards) p.hand.splice(p.hand.indexOf(c), 1);
       this.inc("meld_" + cards.length);
@@ -734,13 +1002,15 @@ class Game {
     this.winner = winner;
     // captured BEFORE the map phase: the winner acts first and clears `played`
     const winSize = this.P[winner].played.length;
-    this.say(`Seat ${winner} won the trick.`);
+    this.say("log.trick", { seat: winner });
 
     // ---------------- map phase ----------------
     this.trickOrder = ranked.slice();
+    this.fx("trick", { seat: winner, order: ranked.slice(), last: loser });
     for (const i of ranked) {
       const p = this.P[i];
       this.acting = i;
+      this.fx("turnstart", { seat: i });
       const cards = p.played.slice();
       const spent = cards.slice();
       const use = cards.slice();
@@ -778,14 +1048,23 @@ class Game {
          * aside unused — it earns 1 gold instead (§06). Playing FEWER than the
          * winner costs nothing, because you are already below the cap. */
         if (i !== winner && cards.length === winSize && cards.length) {
-          const aside = yield* this._pickSetAside(p, use);
-          if (aside) {
-            use.splice(use.indexOf(aside), 1);
-            p.asideCard = aside;
-            p.gold += 1;
-            this.inc("docked_card"); this.inc("cards_to_gold");
-            this.inc("gold_in_docked");
-          }
+          /* Forced, not offered: matching the winner's count costs you a card,
+           * and the only decision is which one. A null answer (a client that
+           * shows no way to comply) still gives one up — the bot's choice. */
+          const aside = (yield* this._pickSetAside(p, use)) || use[0];
+          use.splice(use.indexOf(aside), 1);
+          spent.splice(spent.indexOf(aside), 1);
+          p.asideCard = aside;
+          /* §09: the card leaves your economy for the SHARED pile — this is the
+           * tap that feeds everyone's refill. Under the old routing it went to
+           * the player's own discard and came straight back, so the shared pile
+           * was never fed and nobody ever drew from it. */
+          this.pile.push(aside);
+          p.gold += 1;
+          this.inc("docked_card"); this.inc("cards_to_gold");
+          this.inc("gold_in_docked"); this.inc("to_shared_pile");
+          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "pile" });
+          this.fx("gold", { seat: p.i, amount: 1, from: "pile" });
         } else {
           p.asideCard = null;
         }
@@ -798,8 +1077,7 @@ class Game {
          * The bot below keeps the fixed sequence, so the sim's numbers still
          * describe the same engine. */
         p.played = [];
-        // a card set aside was still played: it belongs in the personal discard
-        for (const c of cards) if (!use.includes(c)) p.discard.push(c);
+        // the card set aside has already gone to the shared pile, not to yours
         yield* this._humanTurn(p, use);
       } else {
         yield* this._place(p, use);
@@ -818,6 +1096,7 @@ class Game {
         if (!p.hand.length) { yield* this._reclaimForFood(p); yield* this._recycle(p); }
       }
       this.turnDone.add(i);
+      this.fx("turnend", { seat: i });
     }
     this.acting = null;
 
@@ -827,7 +1106,10 @@ class Game {
 
   _payAscension(p) {
     const owed = p.ascensionDue();
-    if (owed) { p.gold += owed; this.inc("gold_in_ascension", owed); this.inc("ascensions"); }
+    if (owed) {
+      p.gold += owed; this.inc("gold_in_ascension", owed); this.inc("ascensions");
+      this.fx("gold", { seat: p.i, amount: owed, from: "board" });
+    }
   }
 
   // --- the human map turn ---------------------------------------
@@ -868,33 +1150,42 @@ class Game {
     for (const [k, t] of this.m.tiles)
       if (t.owner === p.i && t.gold < t.units.length) fortifyCells.push(k);
     const colonyBlocked =
-      st.bUsed ? "one victory card on colonies per turn"
-      : p.reserveEmpty() ? "no units left in your reserve"
-      : !spaces.size ? "nowhere legal to lay a tile" : null;
+      st.bUsed ? "why.colony.used"
+      : p.reserveEmpty() ? "why.colony.noUnits"
+      : !spaces.size ? "why.colony.noSpace" : null;
+    /* A card is only offered if it could actually found something: the terrain
+     * is still in the supply AND there is a space for it in reach. Offering a
+     * card that then does nothing is how the effect came to look broken. */
     const colonyCards = colonyBlocked ? []
       : p.vrow.filter((c) => {
           const sameSuit = effectBv22(c.r)[2];
-          return sameSuit ? this.m.supply[c.s] > 0
-                          : TER.some((t) => this.m.supply[t] > 0);
+          const supplyOk = sameSuit ? this.m.supply[c.s] > 0
+                                    : TER.some((t) => this.m.supply[t] > 0);
+          return supplyOk && this.colonyCells(p, c).length > 0;
         });
+    const colonyNoRoom = !colonyBlocked && !colonyCards.length && p.vrow.length
+      ? "why.colony.noReach" : null;
     return {
       cards,
       moves: st.moves,
       moveSources: st.moves > 0 ? this.moveSources(p) : [],
       canResearch: !st.researched && p.vrow.length < 5 && p.gold >= 1 && p.hand.length > 0,
-      researchBlocked: st.researched ? "already researched this turn"
-        : p.vrow.length >= 5 ? "victory row is full"
-        : p.gold < 1 ? "needs 1 gold"
-        : !p.hand.length ? "no card in hand to retire" : null,
-      colonyCards, colonyBlocked,
+      researchBlocked: st.researched ? "why.research.done"
+        : p.vrow.length >= 5 ? "why.research.rowFull"
+        : p.gold < 1 ? "why.research.gold"
+        : !p.hand.length ? "why.research.noCard" : null,
+      colonyCards, colonyBlocked: colonyBlocked || colonyNoRoom,
+      /* Is the water advantage still on the table this turn? The client marks
+       * the sea moves that would collect it. */
+      waterReady: !st.waterUsed,
       deck: this.DECK,
       cashCards: this.DECK === "abc" ? p.vrow.slice() : [],
       conquestTargets: this.DECK === "abd" ? this.conquestTargets(p) : [],
-      conquestBlocked: this.DECK !== "abd" ? "not in this deck"
+      conquestBlocked: this.DECK !== "abd" ? "why.conquest.deck"
         : this.conquestTargets(p).length ? null
         : this._anyRivalAdjacent(p)
-          ? "not enough gold for that terrain's attack cost"
-          : "no rival unit is touching your civilization",
+          ? "why.conquest.gold"
+          : "why.conquest.none",
       fortifyCells: p.gold >= 1 ? fortifyCells : [],
     };
   }
@@ -928,7 +1219,8 @@ class Game {
           p.discard.push(ans.card);
           p.gold += 1;
           this.inc("cards_to_gold"); this.inc("gold_in_cashed");
-          this.say(`You cashed ${ans.card.r}${SUIT_LETTER[ans.card.s]} for 1 gold.`);
+          this.fx("gold", { seat: p.i, amount: 1, from: "hand" });
+          this.say("log.cashed", { card: ans.card.r + SUIT_LETTER[ans.card.s] });
           break;
         }
         case "move": {
@@ -940,19 +1232,25 @@ class Game {
           /* The water advantage (§07): your FIRST sea move each turn grants one
            * free explore of ANY terrain. It is a real choice, so it is asked. */
           if (fromSea && toSea && !st.waterUsed) {
-            st.waterUsed = true;
-            const sp = this.m.legalSpaces();
-            const rr = reach(this.m, p.i);
-            const cells = Array.from(sp).filter((c) => rr.has(c)).sort();
+            const cells = this.waterExploreCells();
             const terrains = TER.filter((t) => this.m.supply[t] > 0);
             if (cells.length && terrains.length) {
+              /* Spent only when it is actually offered. It used to be marked
+               * used before this check, so sailing into open water — where
+               * nothing legal is in reach — burned the advantage for the whole
+               * turn without ever showing the player a choice. */
+              st.waterUsed = true;
               const pick = yield { type: "waterexplore", seat: p.i,
                                    options: cells, terrains };
               if (pick) {
                 this.m.doExplore(pick.cell, pick.terrain);
                 this.inc("water_explore");
-                this.say("Water advantage — a free tile.");
+                this.say("log.water");
               }
+            } else {
+              // say so: silence here reads as a broken rule
+              this.inc("water_nowhere");
+              this.say("log.waterNone");
             }
           }
           break;
@@ -973,10 +1271,7 @@ class Game {
           break;
         }
         case "colony": {
-          if (!st.bUsed && this._playColony(p, ans.card)) {
-            st.bUsed = true;
-            this.say("Colonies founded.");
-          }
+          if (!st.bUsed && (yield* this._playColonyHuman(p, ans.card))) st.bUsed = true;
           break;
         }
         case "conquest": {
@@ -1005,6 +1300,7 @@ class Game {
             const victim = this.m.removeUnit(cell);
             if (victim === null) { this.inc("absorbed_by_fortification"); continue; }
             this.P[victim].returnUnit();
+            this.fx("unit-out", { seat: victim, from: cell });
             this.inc("killed_by_attack"); this.inc("conquest_kill");
             if (maySettle && !t.units.length && p.takeUnit()) {
               this.m.settle(cell, p.i);
@@ -1012,7 +1308,7 @@ class Game {
               this.inc("conquest_settle");
             }
           }
-          this.say("Conquest resolved.");
+          this.say("log.conquest");
           break;
         }
         case "cashRow": {
@@ -1022,7 +1318,7 @@ class Game {
             this.removed.push(ans.card);
             p.gold += effectC(ans.card.r);
             this.inc("effect_c_used"); this.inc("gold_in_effect_c", effectC(ans.card.r));
-            this.say(`Victory card cashed for ${effectC(ans.card.r)} gold.`);
+            this.say("log.cashRow", { n: effectC(ans.card.r) });
           }
           break;
         }
@@ -1036,7 +1332,7 @@ class Game {
       this.inc("cards_to_gold"); this.inc("gold_in_unplaceable");
     }
     if (st.cards.length)
-      this.say(`${st.cards.length} unused card(s) → ${st.cards.length} gold.`);
+      this.say("log.unusedGold", { n: st.cards.length });
     st.cards = [];
     yield* refill(this);
   }
@@ -1069,7 +1365,7 @@ class Game {
     let worst = null, wv = 1e9;
     for (const c of use) {
       const opts = cardOptions(this.m, c, p.i, p.gold, reachable, spaces);
-      const v = Math.max(this.CASH_THRESHOLD,
+      const v = Math.max(p.w.CASH_THRESHOLD,
         ...opts.map(([k, a]) => valueCard(this, p, k, c, a)));
       if (v < wv) { wv = v; worst = c; }
     }
@@ -1089,7 +1385,7 @@ class Game {
     let best = null, bestV = -1e9;
     for (const c of p.hand) {
       const opts = cardOptions(this.m, c, p.i, p.gold, reachable, spaces);
-      const v = Math.max(this.CASH_THRESHOLD,
+      const v = Math.max(p.w.CASH_THRESHOLD,
         ...opts.map(([k, a]) => valueCard(this, p, k, c, a)));
       if (v > bestV) { best = c; bestV = v; }
     }
@@ -1109,12 +1405,17 @@ class Game {
                                : reach(this.m, p.i);
 
       let best = null;                               // [value, card, cell, act]
+      const all = [];
       for (const card of todo) {
         for (const [k, act] of cardOptions(this.m, card, p.i, p.gold, reachable, spaces)) {
           const v = valueCard(this, p, k, card, act);
+          all.push([v, card, k, act]);
           if (best === null || v > best[0]) best = [v, card, k, act];
         }
       }
+      // a less certain bot sometimes spends a card somewhere other than its best
+      if (best !== null && p.noise && this.rng.random() < p.noise)
+        best = this.rng.choice(all);
       if (best === null) {                           // nothing legal for any card
         this.inc("no_legal_placement", todo.length);
         this.inc("cards_to_gold", todo.length);
@@ -1142,7 +1443,10 @@ class Game {
     this.inc("cards_resolved");
     if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
     if (act === "explore") {
-      if (this.m.doExplore(cell, card.s)) this.inc("explore");
+      if (this.m.doExplore(cell, card.s)) {
+        this.inc("explore");
+        this.fx("tile", { seat: p.i, to: cell });
+      }
       else { p.gold += 1; this.inc("cards_to_gold"); }
     } else if (act === "settle") {
       /* Holding back — taking gold rather than climbing into a tier you cannot
@@ -1155,6 +1459,7 @@ class Game {
       } else if (p.takeUnit()) {
         this.inc("settle");
         this.m.settle(cell, p.i);
+        this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
       } else {
         this.inc("settle_no_reserve"); this.inc("cards_to_gold"); p.gold += 1;
@@ -1165,8 +1470,13 @@ class Game {
       if (p.gold >= cost && tile.units.length) {
         p.gold -= cost; this.inc("gold_out_attack", cost);
         const victim = this.m.removeUnit(cell);
-        if (victim === null) this.inc("absorbed_by_fortification");
-        else { this.inc("killed_by_attack"); this.P[victim].returnUnit(); }
+        if (victim === null) {
+          this.inc("absorbed_by_fortification");
+          this.fx("shield", { seat: p.i, at: cell });
+        } else {
+          this.inc("killed_by_attack"); this.P[victim].returnUnit();
+          this.fx("unit-out", { seat: victim, from: cell });
+        }
       } else { p.gold += 1; this.inc("cards_to_gold"); }
     }
   }
@@ -1177,14 +1487,41 @@ class Game {
     return vrowScore(row.concat([card.r])) - vrowScore(row);
   }
 
+  /* Which cards research may retire. Under "lowest" it is the lowest rank in
+   * hand and every copy of it, so the only decision is which SUIT to lose —
+   * and that is a real decision, because a suit is the terrain a card can be
+   * spent on. Under "any" it is the whole hand, as §10 prints it. */
+  retirable(p) {
+    if (!p.hand.length) return [];
+    if (this.RETIRE_RULE !== "lowest") return p.hand.slice();
+    const low = Math.min(...p.hand.map((c) => c.r));
+    return p.hand.filter((c) => c.r === low);
+  }
+
   *_pickRetire(p) {
-    if (!p.hand.length) return null;
+    const pool = this.retirable(p);
+    if (!pool.length) return null;
     let best = null, bv = -1e9;
-    for (const c of p.hand) {
+    for (const c of pool) {
       const rest = p.hand.filter((x) => x !== c);
-      const v = this.RETIRE_GAIN_W * this._vrowGain(p, c)
-              + this.RETIRE_RANK_W * c.r + handPower(rest);
+      const v = p.w.RETIRE_GAIN_W * this._vrowGain(p, c)
+              + p.w.RETIRE_RANK_W * c.r + handPower(rest);
       if (v > bv) { best = c; bv = v; }
+    }
+    return best;
+  }
+
+  /* WHICH card to buy. `_buyValue` existed from the first port and was never
+   * called: the line here was `this.rng.choice(avail)`, so every bot in every
+   * measurement taken before 14 Aug 2026 chose its upgrades by coin flip. See
+   * RULEBOOK-CORRECTIONS item 16 for what fixing it is worth. */
+  _chooseBuy(p, avail, pool) {
+    if (p.w.BUY_RANDOM || (p.noise && this.rng.random() < p.noise))
+      return this.rng.choice(avail);
+    let best = avail[0], bv = -1e9;
+    for (const k of avail) {
+      const v = this._buyValue(p, this.gridTop(k), pool);
+      if (v > bv) { bv = v; best = k; }
     }
     return best;
   }
@@ -1193,7 +1530,9 @@ class Game {
     if (!card) return -1e9;
     const ranks = pool.map((c) => c.r);
     const cnt = (r) => ranks.filter((x) => x === r).length;
-    return 3.0 * cnt(card.r) + 1.5 * (cnt(card.r - 1) + cnt(card.r + 1)) + 0.08 * card.r;
+    return p.w.BUY_MATCH_W * cnt(card.r)
+         + p.w.BUY_NEAR_W * (cnt(card.r - 1) + cnt(card.r + 1))
+         + p.w.BUY_RANK_W * card.r;
   }
 
   /* Research — ONCE per turn (§10). Draw the top of the upgrade deck onto a
@@ -1203,6 +1542,9 @@ class Game {
     if (p.vrow.length >= 5) return;
     if (p.gold < 1) { this.inc("upgrade_no_gold"); return; }
     if (!p.hand.length) { this.inc("upgrade_no_card_to_retire"); return; }
+    /* Wait for the hand to run short, so the card retired is a high one. A
+     * policy, not a rule — see RESEARCH_MAX_HAND. */
+    if (p.hand.length > p.w.RESEARCH_MAX_HAND) { this.inc("research_held_for_timing"); return; }
     const pool = p.hand.concat(p.discard);
     const cap0 = p.rankCap();
 
@@ -1213,30 +1555,45 @@ class Game {
     if (!visible) {
       const odds = this.deck.length
         ? this.deck.filter((c) => c.r <= cap0).length / this.deck.length : 0;
-      if (odds < this.BLIND_RESEARCH_ODDS) { this.inc("research_declined_blind"); return; }
+      if (odds < p.w.BLIND_RESEARCH_ODDS) { this.inc("research_declined_blind"); return; }
     }
 
-    if (this.deck.length) {                            // 1. draw onto the grid
-      const card = this.deck.pop();
-      const empty = this.grid.findIndex((st) => !st.length);
-      let k = empty;
-      if (empty < 0) {
-        k = 0; let bv = 1e9;
-        for (let j = 0; j < this.grid.length; j++) {
-          const v = this._buyValue(p, this.gridTop(j), pool);
-          if (v < bv) { bv = v; k = j; }
-        }
-      }
-      this.grid[k].push(card);
-      this.inc("grid_draws");
-    }
+    this._drawOntoGrid();                              // 1. draw onto the grid
 
     const avail = this.buyable(p);                     // 2. what may this tier buy?
     if (!avail.length) { this.inc("upgrade_blocked_by_cap"); return; }
-    const k = this.rng.choice(avail);
+    const k = this._chooseBuy(p, avail, pool);
     const retire = yield* this._pickRetire(p);
     if (retire === null) return;
     this._completeResearch(p, k, retire);
+  }
+
+  /* Where a drawn card lands. NOT the player's choice any more: it goes on the
+   * position showing the HIGHEST rank, burying it. Ties break to the leftmost
+   * position so the rule is deterministic and a person can predict it.
+   *
+   * The consequence is the point: the tallest card on the market is the one
+   * most likely to be covered, so the top of the market keeps sinking out of
+   * reach. That tightens access to high ranks on top of the rank cap, rather
+   * than letting each player bury whatever suits them. */
+  autoGridSlot() {
+    let best = 0, bestRank = -1;
+    for (let k = 0; k < this.grid.length; k++) {
+      const t = this.gridTop(k);
+      const r = t ? t.r : 0;
+      if (r > bestRank) { bestRank = r; best = k; }
+    }
+    return best;
+  }
+
+  _drawOntoGrid() {
+    if (!this.deck.length) return null;
+    const card = this.deck.pop();
+    const k = this.autoGridSlot();
+    this.grid[k].push(card);
+    this.inc("grid_draws");
+    this.fx("deal", { card, slot: k, left: this.deck.length });
+    return { card, slot: k };
   }
 
   buyable(p) {
@@ -1254,10 +1611,13 @@ class Game {
     const buy = this.gridTop(k);
     p.hand.splice(p.hand.indexOf(retire), 1);
     p.vrow.push(retire);
+    this.fx("card", { seat: p.i, card: retire, from: "hand", to: "vrow" });
     p.gold -= 1;
     this.inc("gold_out_upgrade"); this.inc("upgrades");
+    this.fx("gold", { seat: p.i, amount: -1, to: "market" });
     this.grid[k].pop();
     p.hand.push(buy);
+    this.fx("card", { seat: p.i, card: buy, from: "market", to: "hand", slot: k });
     for (let j = 0; j < this.grid.length; j++)
       if (!this.grid[j].length && this.deck.length) this.grid[j].push(this.deck.pop());
     return buy;
@@ -1266,28 +1626,30 @@ class Game {
   /* The same research, asked step by step. Returns true if it completed — a
    * player who backs out at the buy step keeps their gold and their card, but
    * the drawn card stays on the grid, because it has been seen. */
+  /* Two decisions: which card leaves your hand, and which one you take. The
+   * draw is automatic (autoGridSlot), so it is shown, not chosen. */
   *_researchHuman(p) {
     if (p.vrow.length >= 5 || p.gold < 1 || !p.hand.length) return false;
-    if (this.deck.length) {
-      const card = this.deck.pop();
-      const k = yield { type: "gridslot", seat: p.i, card,
-                        options: this.grid.map((_, j) => j) };
-      this.grid[k === null || k === undefined ? 0 : k].push(card);
-      this.inc("grid_draws");
-    }
+    const drew = this._drawOntoGrid();
+
+    /* Check the market BEFORE asking for a card, so nobody gives one up only to
+     * find there is nothing they may take. */
     const avail = this.buyable(p);
     if (!avail.length) {
       this.inc("upgrade_blocked_by_cap");
-      this.say("Nothing on the grid is at or below your rank cap.");
+      this.say("log.noBuy");
       return false;
     }
-    const k = yield { type: "buy", seat: p.i, options: avail };
-    if (k === null || k === undefined) return false;
-    const retire = yield { type: "retire", seat: p.i, options: p.hand.slice() };
+    const retire = yield {
+      type: "retire", seat: p.i, options: this.retirable(p), drew,
+      rule: this.RETIRE_RULE,
+    };
     if (!retire) return false;
+    const k = yield { type: "buy", seat: p.i, options: avail, retire, drew };
+    if (k === null || k === undefined) return false;
     const buy = this._completeResearch(p, k, retire);
-    this.say(`Researched: retired ${retire.r}${SUIT_LETTER[retire.s]}, took ` +
-             `${buy.r}${SUIT_LETTER[buy.s]}.`);
+    this.say("log.researched", { out: retire.r + SUIT_LETTER[retire.s],
+                                 in: buy.r + SUIT_LETTER[buy.s] });
     return true;
   }
 
@@ -1323,44 +1685,100 @@ class Game {
     /* The four-card guard is the BOT'S, matched to D's so the two can be
      * compared. The rule is one card per turn, a legal space, and a tile of
      * the right terrain still in the supply. */
-    if (p.reserveEmpty() || p.vrow.length < 4) return;
+    if (p.reserveEmpty() || p.vrow.length < p.w.COLONY_MIN_ROW) return;
     for (const c of p.vrow.slice().sort(cardSort)) if (this._playColony(p, c)) return;
     if (false) yield null;                           // keeps the generator signature
   }
 
-  _playColony(p, c) {
+  /* Where a colony may be founded. Exploring is exploring (§06): the space
+   * must touch two tiles already on the map AND be in your reach. The 6-10
+   * band is the one exception the card prints — "up to 2 tiles out".
+   *
+   * This was missing entirely: B used every legal space on the board, so a
+   * colony could be founded on the far side of the map, next to somebody
+   * else's civilization. */
+  colonyCells(p, card) {
+    const dist = effectBv22(card.r)[3] || 1;
+    const spaces = this.m.legalSpaces();
+    if (!spaces.size) return [];
+    // swept off the map: the §06 re-entry exemption, or B could never restart you
+    if (this.m.civ(p.i).size === 0) return Array.from(spaces).sort();
+    const rr = reachOut(this.m, p.i, dist);
+    return Array.from(spaces).filter((k) => rr.has(k)).sort();
+  }
+
+  /* One colony tile: lay it, settle a unit on it if the card still owes one,
+   * and fortify from the GENERAL supply. Shared by both paths so the rule
+   * cannot drift between the bot and the person. */
+  _foundColony(p, cell, terr, settleIt) {
+    if (!this.m.doExplore(cell, terr)) return false;
+    this.inc("colony_tile");
+    this.fx("tile", { seat: p.i, to: cell });
+    if (settleIt && p.takeUnit()) {
+      this.m.settle(cell, p.i);
+      this._payAscension(p);
+      this.inc("colony_unit");
+      this.fx("unit-in", { seat: p.i, to: cell });
+      if (this.m.fortify(cell)) { this.inc("colony_fortify"); this.fx("shield", { at: cell }); }
+    }
+    return true;
+  }
+
+  _playColony(p, c) {                                // bot path
     if (p.reserveEmpty()) return false;
     const [tiles, units, sameSuit] = effectBv22(c.r);
-    let spaces = this.m.legalSpaces();
-    if (!spaces.size) return false;
     const want = sameSuit ? c.s : null;
     if (want !== null && this.m.supply[want] <= 0) return false;
-    const usable = Array.from(spaces).sort();
-    if (!usable.length) return false;
+    if (!this.colonyCells(p, c).length) return false;
 
     p.vrow.splice(p.vrow.indexOf(c), 1);
     this.removed.push(c);
     this.inc("effect_b_used");
 
     let placed = 0, settled = 0;
-    for (const cell of usable) {
-      if (placed >= tiles) break;
+    while (placed < tiles) {
+      const usable = this.colonyCells(p, c);         // re-read: the map just grew
+      if (!usable.length) break;
       let terr = want;
       if (terr === null) {                           // ranks 16-20: any terrain
         const opts = TER.filter((t) => this.m.supply[t] > 0);
         if (!opts.length) break;
         terr = opts.reduce((a, b) => (this.m.supply[b] > this.m.supply[a] ? b : a));
       }
-      if (!this.m.doExplore(cell, terr)) continue;
-      placed += 1; this.inc("colony_tile");
-      if (settled < units && p.takeUnit()) {
-        this.m.settle(cell, p.i);
-        this._payAscension(p);
-        settled += 1; this.inc("colony_unit");
-        if (this.m.fortify(cell)) this.inc("colony_fortify");   // general supply
-      }
-      spaces = this.m.legalSpaces();
+      if (!this._foundColony(p, usable[0], terr, settled < units)) break;
+      placed += 1;
+      if (settled < units) settled += 1;
     }
+    return true;
+  }
+
+  /* The same effect, asked. Where a colony lands is a real decision — it is
+   * new ground, and it decides who your next neighbour is — so a person picks
+   * the cell, and the terrain too when the card allows any. */
+  *_playColonyHuman(p, c) {
+    if (p.reserveEmpty()) return false;
+    const [tiles, units, sameSuit] = effectBv22(c.r);
+    const want = sameSuit ? c.s : null;
+    if (want !== null && this.m.supply[want] <= 0) return false;
+    if (!this.colonyCells(p, c).length) return false;
+
+    p.vrow.splice(p.vrow.indexOf(c), 1);
+    this.removed.push(c);
+    this.inc("effect_b_used");
+
+    let placed = 0, settled = 0;
+    while (placed < tiles) {
+      const options = this.colonyCells(p, c);
+      const terrains = want !== null ? [want] : TER.filter((t) => this.m.supply[t] > 0);
+      if (!options.length || !terrains.length) break;
+      const pick = yield { type: "colony", seat: p.i, card: c, options, terrains,
+                           left: tiles - placed, settles: Math.max(0, units - settled) };
+      if (!pick) break;                              // may stop early; the card is spent
+      if (!this._foundColony(p, pick.cell, pick.terrain || terrains[0], settled < units)) break;
+      placed += 1;
+      if (settled < units) settled += 1;
+    }
+    this.say("log.colony", { n: placed });
     return true;
   }
 
@@ -1395,7 +1813,7 @@ class Game {
         ? Math.min(kills, thin.length) : 0;
       /* A kill is a point off a RIVAL, not onto you; only the settle adds to
        * your own total. Pricing denial at 1.0 made every card a strike. */
-      const gain = takes + this.D_DENIAL_W * Math.min(kills, targets.length);
+      const gain = takes + p.w.D_DENIAL_W * Math.min(kills, targets.length);
       const coins = prices.slice(0, kills).reduce((a, b) => a + b, 0);
       if (coins > p.gold) continue;                   // cannot pay the terrain
       // a coin is worth roughly a third of a point in this economy
@@ -1419,7 +1837,8 @@ class Game {
         const cost = ATTACK_COST[t.terrain];
         if (p.gold < cost) break;
         p.gold -= cost;
-        this.inc("gold_out_attack", cost); this.inc("gold_out_conquest", cost);
+        this.inc("gold_out_attack", cost);
+        if (cost) this.fx("gold", { seat: p.i, amount: -cost, to: cell }); this.inc("gold_out_conquest", cost);
         const victim = this.m.removeUnit(cell);
         done += 1;
         if (victim === null) { this.inc("absorbed_by_fortification"); continue; }
@@ -1440,11 +1859,11 @@ class Game {
    * very end, so pricing it at today's score is wrong — pad the row with the
    * cards still to come and price the sale against that. */
   _rowCost(p, card) {
-    const horizon = this.endedOn ? 0 : this.ROW_HORIZON;
+    const horizon = this.endedOn ? 0 : p.w.ROW_HORIZON;
     const row = p.vrow.map((c) => c.r);
     const rest = row.slice();
     rest.splice(rest.indexOf(card.r), 1);
-    const pad = new Array(horizon).fill(this.ROW_PAD_RANK);
+    const pad = new Array(horizon).fill(p.w.ROW_PAD_RANK);
     return vrowScore(row.concat(pad)) - vrowScore(rest.concat(pad));
   }
 
@@ -1458,7 +1877,7 @@ class Game {
       const gain = effectC(low.r);
       const need = ahead ? p.food() + 1 : Math.max(1, p.food());
       const broke = p.gold < need;
-      if (!broke || gain < cost * this.C_GOLD_PER_POINT) return;
+      if (!broke || gain < cost * p.w.C_GOLD_PER_POINT) return;
       p.vrow.splice(p.vrow.indexOf(low), 1);
       this.removed.push(low);
       p.gold += gain;
@@ -1572,14 +1991,62 @@ class Game {
     t.gold = Math.min(t.gold, t.units.length);          // a moved unit loses its coin
     this.m.settle(destKey, p.i);
     this.inc("free_move");
+    this.fx("unit-move", { seat: p.i, from: srcKey, to: destKey });
+  }
+
+  /* Where the water advantage may lay its free tile: a legal space (touch-two,
+   * §06) that is in your reach. `civ` may be supplied to ask the question of a
+   * civilization you do not have yet — which is what deciding whether a sea
+   * move will pay requires, since the destination only becomes yours once the
+   * unit has moved. */
+  exploreCells(p, civ) {
+    const spaces = this.m.legalSpaces();
+    if (!spaces.size) return [];
+    if (!civ) {
+      const rr = reach(this.m, p.i);
+      return Array.from(spaces).filter((c) => rr.has(c)).sort();
+    }
+    const out = [];
+    for (const c of spaces)
+      for (const nb of nbrKeys(...unK(c)))
+        if (civ.has(nb)) { out.push(c); break; }
+    return out.sort();
+  }
+
+  /* ---- where the water advantage may lay its tile ----
+   * NOT limited by reach. A card explore acts next to your civilization (§06);
+   * a voyage does not, and that is the whole difference between the two.
+   *
+   * The reach limit made the advantage fail in two geometries, and measured
+   * across scripted games it fired on only 74% of first sea moves:
+   *   - the ship sails into an enclosed pocket, so there is no empty cell
+   *     beside it at all (26% of first sea moves);
+   *   - the ship sails to the frontier, where every cell beside it touches
+   *     only the ship's own tile and so fails touch-two — the case a person
+   *     hits constantly and a scripted bot almost never does.
+   * In both, legal spaces existed elsewhere on the map every single time.
+   *
+   * Touch-two still holds: §06's "Blink has no bridges" is the structural rule
+   * that keeps the map one reachable body, and a voyage does not get to break
+   * it. What a voyage buys is that the ground it finds need not be your own. */
+  waterExploreCells() {
+    return Array.from(this.m.legalSpaces()).sort();
+  }
+
+  /* Would THIS sea move collect the advantage? Now only a question about the
+   * map: is there anywhere legal to lay a tile, and is there a tile to lay. */
+  waterPays(p, srcKey, destKey) {
+    const src = this.m.tiles.get(srcKey), dest = this.m.tiles.get(destKey);
+    if (!src || !dest) return false;
+    if (src.terrain !== "ocean" || dest.terrain !== "ocean") return false;
+    if (!TER.some((t) => this.m.supply[t] > 0)) return false;
+    return this.waterExploreCells().length > 0;
   }
 
   /* The first sea move each turn grants one free explore of ANY terrain (§07).
    * Touch-two and reach still apply. */
   _waterExplore(p) {
-    const spaces = this.m.legalSpaces();
-    const reachable = reach(this.m, p.i);
-    const opts = Array.from(spaces).filter((c) => reachable.has(c)).sort();
+    const opts = this.waterExploreCells();
     if (!opts.length) return null;
     const avail = TER.filter((t) => this.m.supply[t] > 0);
     if (!avail.length) return null;
@@ -1640,7 +2107,10 @@ class Game {
   }
 
   *_maybeFortify(p) {
-    if (p.gold < p.food() + 3)    if (p.gold < p.food() + 3) return;         // only out of genuine surplus
+    /* Only out of genuine surplus: feed first, then keep this style's cushion.
+     * (The line was a duplicated `if` — harmless, since a bare `if` nests, but
+     * it hid the knob.) */
+    if (p.gold < p.food() + 1 + p.w.FORTIFY_MIN_GOLD) return;
     const cand = this.fortifyCandidates(p);
     if (!cand.length) return;
     if (this.m.fortify(cand[0][1])) { p.gold -= 1; this.inc("fortified"); }
@@ -1660,6 +2130,34 @@ class Game {
       }
     }
     if (false) yield null;                     // keeps the generator signature
+  }
+
+  /* Variant: growing population limits. "If starvation drops your band, your
+   * cities shed the difference — every tile of yours holding more than your new
+   * limit sends the surplus back to the reserve. Those returned units refill
+   * your reserve, which can drop your band again — repeat until no stack is
+   * over its limit."
+   *
+   * So it is a cascade, and it can run more than once: units come back, the
+   * reserve refills from the bottom, the band falls, and the new limit is
+   * lower still. Only starvation culls — nothing lost in combat does this. */
+  _shedOverLimit(p) {
+    if (!this.GROW_LIMITS) return;
+    for (let pass = 0; pass < 10; pass++) {
+      let shed = 0;
+      for (const [k, t] of this.m.tiles) {
+        if (t.owner !== p.i) continue;
+        while (t.units.length > t.capacityFor(p.i)) {
+          this.m.takeUnitOff(k);
+          p.returnUnit();
+          shed++;
+          this.inc("shed_over_limit");
+          this.fx("unit-out", { seat: p.i, from: k, why: "over the limit" });
+        }
+      }
+      if (!shed) return;
+      this.say("log.shed", { n: shed });
+    }
   }
 
   _wouldClimb(p) {
@@ -1698,20 +2196,28 @@ class Game {
       const c = this.rng.choice(cells);
       this.m.takeUnitOff(c);
       this.inc("starved_back");
+      this.fx("unit-out", { seat: p.i, from: c, why: "starved" });
       p.returnUnit();
     }
+    if (short) this._shedOverLimit(p);
     owed = Math.min(owed, p.gold);
     this.inc("gold_out_food", Math.min(owed, p.gold));
     p.gold = Math.max(0, p.gold - owed);
     this.inc("recycles"); this.inc("food_paid", owed);
 
-    // take back everything you played, then draw from the SHARED pile up to ten
+    /* §09: take back everything you played, then draw from the SHARED pile up
+     * to ten. The pile is shuffled first, so what comes back is whatever the
+     * table has been throwing away — not your own cards in order. */
     p.hand = p.discard; p.discard = [];
-    this.rng.shuffle(this.pile);
+    if (this.pile.length) this.rng.shuffle(this.pile);
+    let drew = 0;
     while (p.hand.length < 10 && this.pile.length) {
-      p.hand.push(this.pile.pop());
-      this.inc("drawn_from_pile");
+      const c = this.pile.pop();
+      p.hand.push(c);
+      this.inc("drawn_from_pile"); drew++;
+      this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
     }
+    this.say("log.recycle", { back: p.hand.length - drew, drew });
   }
 
   // --- end and score --------------------------------------------
@@ -1757,15 +2263,15 @@ class Game {
   _checkEnd() {
     if (this.endedOn) return;
     if (this.P.some((p) => p.reserveEmpty())) {
-      this.endedOn = "last unit placed";
+      this.endedOn = "end.lastUnit";
     } else if (!this.deck.length && this.grid.every((st) => st.length <= 1)) {
       /* The market THINNING to a single layer ends the game, not the deck
        * emptying: while the deck lasts every upgrade deepens the grid. */
-      this.endedOn = "market down to a single layer";
+      this.endedOn = "end.marketThin";
     }
     if (this.endedOn) {
       this.finalRounds = this.round + 1;   // finish this round, then ONE more
-      this.say("END TRIGGERED — " + this.endedOn + ".");
+      this.say("log.endTriggered", { why: this.endedOn });
     }
   }
 
@@ -1853,5 +2359,7 @@ if (typeof module !== "undefined" && module.exports) {
     Tile, GameMap, Player, Game, playOut,
     enumerateMelds, isLegalMeld, handPower, reach, cardOptions, valueCard,
     vrowScore, setVrowRule, setTiers, effectA, effectText, effectD, effectDText, OBJECTIVES, effectBv22, effectC, bandOfRank, proBot, makeRng,
+    TUNED, BOT_STYLES, BOT_LEVELS, STYLE_KEYS, botWeights,
+    setMeldRules, meldRules, meldFault, isRun, isFriends, canCombine, BAND_HOLDS,
   };
 }
