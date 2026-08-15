@@ -56,10 +56,24 @@ const vercel = head.replace('server/build.js from', 'server/build.js from')
   + '/* ---------------- server/vercel.src.js --------- */\n'
   + fs.readFileSync(path.join(__dirname, 'vercel.src.js'), 'utf8');
 
+/* The bundle is CommonJS, and the site it is dropped into is very likely a
+ * Vite or Next project with `"type": "module"` — under which a .js file is
+ * ESM, `module.exports` assigns to nothing, and Vercel finds no handler. The
+ * nearest package.json wins, so one goes beside the function. */
+const API_PKG = JSON.stringify({ type: 'commonjs' }) + '\n';
+
 const apiDir = path.join(__dirname, 'api');
 fs.mkdirSync(apiDir, { recursive: true });
 fs.writeFileSync(path.join(apiDir, 'blink.js'), vercel);
+fs.writeFileSync(path.join(apiDir, 'package.json'), API_PKG);
 console.log(`built server/api/blink.js  ${(vercel.length / 1024).toFixed(1)} KB`);
+
+/* Refuse to ship a function that exports nothing. This exact failure reached
+ * production once, and its only symptom was FUNCTION_INVOCATION_FAILED with no
+ * stack — a build is the cheapest place to notice. */
+if (!/^module\.exports = server;$/m.test(vercel))
+  throw new Error('the built function exports no handler — Vercel would fail '
+    + 'to invoke it with no useful error');
 
 /* Drop it straight into the site repo when that is checked out beside this
  * one, the same way the play page is copied — the function has to live in the
@@ -71,6 +85,7 @@ if (fs.existsSync(siteRoot) && fs.existsSync(path.join(siteRoot, 'package.json')
   const dest = path.join(siteRoot, 'api');
   fs.mkdirSync(dest, { recursive: true });
   fs.writeFileSync(path.join(dest, 'blink.js'), vercel);
+  fs.writeFileSync(path.join(dest, 'package.json'), API_PKG);
   console.log(`copied to ${path.join(dest, 'blink.js')} — commit the site repo too`);
 } else {
   console.log('site repo not found; copy server/api/blink.js into its api/ folder');

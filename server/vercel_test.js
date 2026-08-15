@@ -1,0 +1,147 @@
+/* Does the built function actually work when Vercel loads it?
+ *
+ * This exists because of a deployment whose only symptom was
+ *
+ *     A server error has occurred
+ *     FUNCTION_INVOCATION_FAILED
+ *
+ * with no stack, no log line and nothing to grep. Two separate faults produced
+ * it, and both are the kind that only appear once the file leaves this repo:
+ *
+ *   1. **The bundle exported nothing.** Editing the source truncated the last
+ *      two lines, and `module.exports = server` went with them. Everything
+ *      still parsed; there was simply no handler to invoke.
+ *
+ *   2. **The site is an ES module project.** `"type": "module"` in the site's
+ *      package.json makes every .js file ESM — under which `module.exports`
+ *      assigns to an object nobody reads, so again: no handler. The fix is a
+ *      package.json beside the function saying `commonjs`, and the failure
+ *      without it is silent.
+ *
+ * So this loads the generated file the way the platform does — in a temporary
+ * directory with a `"type": "module"` package.json above it, which is the
+ * hostile case — and then actually serves requests through it.
+ */
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const http = require('http');
+
+const fail = [];
+const ok = (c, what) => { if (!c) fail.push(what); };
+
+const BUILT = path.join(__dirname, 'api', 'blink.js');
+const PKG = path.join(__dirname, 'api', 'package.json');
+
+if (!fs.existsSync(BUILT)) {
+  console.error('server/api/blink.js is missing — run: node server/build.js');
+  process.exit(2);
+}
+
+/* Stage it exactly as a Vite or Next site would: an ESM package at the root,
+ * the function in api/. If the commonjs marker is missing, this is where it
+ * shows. */
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'blink-fn-'));
+fs.mkdirSync(path.join(root, 'api'));
+fs.writeFileSync(path.join(root, 'package.json'),
+  JSON.stringify({ name: 'site', private: true, type: 'module' }));
+fs.copyFileSync(BUILT, path.join(root, 'api', 'blink.js'));
+ok(fs.existsSync(PKG), 'the build did not emit api/package.json — under a '
+  + '"type": "module" site the function would export nothing at all');
+if (fs.existsSync(PKG)) fs.copyFileSync(PKG, path.join(root, 'api', 'package.json'));
+
+let mod = null;
+try { mod = require(path.join(root, 'api', 'blink.js')); }
+catch (e) { fail.push('the built function will not load: ' + e.message); }
+
+const server = mod && (typeof mod.listen === 'function' ? mod
+  : (mod.default && typeof mod.default.listen === 'function' ? mod.default : null));
+ok(!!server, 'the built function exports no http server — this is exactly what '
+  + 'FUNCTION_INVOCATION_FAILED looks like, and it has no other symptom');
+
+if (!server) { report(); }
+else {
+  /* And serve for real. A handler that exports correctly and then throws on
+   * the first request is the same outage with a different cause. */
+  server.listen(0, async () => {
+    const port = server.address().port;
+    const get = (p) => new Promise((done) => {
+      http.get({ host: '127.0.0.1', port, path: p }, (res) => {
+        let b = '';
+        res.on('data', (c) => { b += c; });
+        res.on('end', () => done({ status: res.statusCode, body: b }));
+      }).on('error', (e) => done({ status: 0, body: e.message }));
+    });
+    const post = (p, obj) => new Promise((done) => {
+      const data = JSON.stringify(obj);
+      const req = http.request({ host: '127.0.0.1', port, path: p, method: 'POST',
+        headers: { 'content-type': 'application/json', 'content-length': Buffer.byteLength(data) } },
+        (res) => {
+          let b = '';
+          res.on('data', (c) => { b += c; });
+          res.on('end', () => done({ status: res.statusCode, body: b }));
+        });
+      req.on('error', (e) => done({ status: 0, body: e.message }));
+      req.end(data);
+    });
+
+    /* The route the deploy check uses. If this is not a clean 200 with JSON,
+     * nothing else about the service matters. */
+    const h = await get('/api/blink/health');
+    ok(h.status === 200, `/health answered ${h.status}: ${h.body.slice(0, 120)}`);
+    let health = null;
+    try { health = JSON.parse(h.body); } catch (e) { fail.push('/health is not JSON: ' + h.body.slice(0, 80)); }
+    ok(health && health.ok === true, '/health does not report ok');
+    ok(health && typeof health.store === 'string',
+       '/health does not say which store it is using — that is the one thing '
+       + 'it is for');
+    ok(health && health.store === 'memory',
+       `/health says store=${health && health.store}, but no REDIS_URL is set here`);
+
+    /* The rewrite sends every /api/blink/* path to this one file, so the
+     * routing has to happen inside it. */
+    const bare = await get('/api/blink');
+    ok(bare.status === 200, `the bare /api/blink path answered ${bare.status}`);
+
+    const made = await post('/api/blink/session', { n: 3, seed: 5, objectives: 'off' });
+    ok(made.status === 200, `opening a table answered ${made.status}: ${made.body.slice(0, 120)}`);
+    let session = null;
+    try { session = JSON.parse(made.body); } catch (e) { /* reported below */ }
+    ok(session && session.ok && /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(session.code || ''),
+       'opening a table did not return a readable code: ' + made.body.slice(0, 100));
+
+    if (session && session.code) {
+      const got = await get('/api/blink/session/' + session.code);
+      ok(got.status === 200, `reading the table back answered ${got.status}`);
+      const gone = await get('/api/blink/session/ZZZZ-ZZZZ');
+      ok(gone.status === 404, `an unknown table answered ${gone.status}, expected 404`);
+    }
+
+    /* A report with nowhere durable to go must SAY so rather than accept it
+     * and drop it — the page relies on that flag to fall back to a download. */
+    const rep = await post('/api/blink/report', { schema: 3, id: 'TEST1234', started: '2026-08-15' });
+    ok(rep.status === 200, `posting a report answered ${rep.status}`);
+    let stored = null;
+    try { stored = JSON.parse(rep.body); } catch (e) { /* reported below */ }
+    ok(stored && stored.stored === false,
+       'with no Blob token the service claimed to have stored a report');
+
+    /* And reports are not readable without the key. */
+    const peek = await get('/api/blink/reports');
+    ok(peek.status === 403, `listing reports without a key answered ${peek.status}, expected 403`);
+
+    const nope = await get('/api/blink/nonsense');
+    ok(nope.status === 404, `an unknown route answered ${nope.status}`);
+
+    server.close();
+    report(`health, routing, open a table, read it back, 404s, report flagged `
+      + `as unstored, reports refused without a key`);
+  });
+}
+
+function report(what) {
+  try { fs.rmSync(root, { recursive: true, force: true }); } catch (e) { /* */ }
+  console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
+    : `vercel function: loads and serves inside a "type": "module" site — ${what}`);
+  process.exit(fail.length ? 1 : 0);
+}

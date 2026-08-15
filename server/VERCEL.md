@@ -118,6 +118,23 @@ tunnel, and the path `net_test.js` exercises on every run.
    Writing one needs no key — that is a playtester finishing a game. Reading
    them does, because they carry names and free text people wrote for you.
 
+## When it answers FUNCTION_INVOCATION_FAILED
+
+That error has no stack and no log line, so it is worth knowing the two things
+that cause it here. Both are now caught before deployment — `node
+server/build.js` refuses to write a bundle with no handler, and
+`node server/vercel_test.js` loads the built file the way the platform does and
+serves real requests through it.
+
+- **The bundle exports nothing.** Vercel takes whatever the file exports and,
+  if it is an http server, serves it. Lose `module.exports = server` and
+  everything still parses; there is simply nothing to invoke.
+- **The site is an ES module project.** `"type": "module"` in the site's
+  package.json makes every `.js` file ESM, and in ESM `module.exports` assigns
+  to an object nobody reads — so again, no handler. `api/package.json` saying
+  `{"type":"commonjs"}` fixes it, and the build now writes that file next to
+  the function.
+
 ## Checking it
 
 ```

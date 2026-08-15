@@ -180,3 +180,11 @@ async function getReports(store, p, url) {
   return { ok: true, reports: out.blobs.map((b) => ({
     key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
 }
+
+/* Vercel runs this by taking whatever the file exports and, if it is an http
+ * server, serving it. Truncating the file while editing once removed these two
+ * lines, and the deployment's only symptom was FUNCTION_INVOCATION_FAILED with
+ * no stack — hence vercel_test.js, which loads the built file the way the
+ * platform does and checks there is something here with a `.listen` on it. */
+module.exports = server;
+module.exports.default = server;

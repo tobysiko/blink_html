@@ -86,7 +86,8 @@ is a playtester finishing a game.
 ## Messages
 
 Tests: `../app/session_test.js` for the rules with no sockets,
-`store_test.js` for the two failures a multi-instance host introduces, and
+`store_test.js` for the two failures a multi-instance host introduces,
+`vercel_test.js` for whether the built function loads and serves at all, and
 `../app/net_test.js` for two real browsers over a real socket.
 
 Client to server: `hello` · `sit` · `start` · `answer` · `undo` · `flag` ·
