@@ -83,6 +83,7 @@ function newSession(opts, rand) {
        * to the TABLE and travel with the session — a guest whose client decided
        * these for itself would be replaying a different game. */
       meldScore: o.meldScore === "sum" ? "sum" : "count",
+      aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
     },
     /* One entry per seat. `player` is null for a bot seat. */

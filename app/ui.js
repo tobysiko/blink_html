@@ -21,9 +21,19 @@ const styleNote = (k) => t("style." + k + ".note");
 const fxBand = (r) => bandOfRank(r);
 function fxText(r) {
   const b = fxBand(r);
-  return { a: t("fx.a." + b), aShort: t("fx.aShort." + b),
-           b: t("fx.b." + b), bShort: t("fx.bShort." + b),
-           c: t("fx.c." + b), cShort: t("fx.cShort." + b) };
+  const out = { a: t("fx.a." + b), aShort: t("fx.aShort." + b),
+                b: t("fx.b." + b), bShort: t("fx.bShort." + b),
+                c: t("fx.c." + b), cShort: t("fx.cShort." + b) };
+  /* When the trick is won on total rank, A does something else entirely and the
+   * card has to say so — a face still reading "+1 card" while the rule counts
+   * totals is the game lying to the player at the moment they choose. The
+   * number comes from the ladder the game is running, not from the string. */
+  if (G && G.MELD_SCORE === "sum") {
+    const [add, ties] = effectASum(r, G.A_SUM_LADDER);
+    out.a = t(ties ? "fx.aSum.ties" : "fx.aSum", { n: add });
+    out.aShort = t(ties ? "fx.aSumShort.ties" : "fx.aSumShort", { n: add });
+  }
+  return out;
 }
 function fxTextD(r) {
   const b = fxBand(r);
@@ -172,6 +182,14 @@ function chosenLayout() {
   return pick === "rulebook" ? null : pick;
 }
 
+/* Effect A's ladder only means anything when the trick is won on total rank,
+ * so the control is hidden under the printed rule rather than sitting there
+ * doing nothing. */
+function syncALadderRow() {
+  const row = $("#a-ladder-row"), sel = $("#meld-score");
+  if (row && sel) row.hidden = sel.value !== "sum";
+}
+
 /* Show the custom box only when it is wanted, and say what the typed column
  * comes to — a total that is not 20 is usually a typo, and seeing it is the
  * cheapest way to catch one. */
@@ -213,6 +231,7 @@ function startGame(force) {
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
                              meldScore: $("#meld-score").value,
+                             aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
@@ -2170,6 +2189,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#bot-level").addEventListener("change", levelNote);
   if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
   if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
+  if ($("#meld-score")) $("#meld-score").addEventListener("change", syncALadderRow);
   $("#pass-go").addEventListener("click", () => {
     PASSED = PENDING_SEAT === null ? PASSED : PENDING_SEAT;
     PENDING_SEAT = null;
@@ -2180,6 +2200,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setLang(pickLang());
   applyLang();
   syncLayoutRow();                  // after applyLang, so the hint is translated
+  syncALadderRow();
   netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
@@ -2508,6 +2529,7 @@ function netRules() {
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
     meldScore: $("#meld-score").value,
+    aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
     layout: chosenLayout(),
   };
 }

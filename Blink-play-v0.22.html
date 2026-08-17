@@ -930,6 +930,18 @@
         <option value="sum" data-i18n="setup.meldScore.sum"></option>
       </select>
     </div>
+    <!-- Only meaningful under total-rank scoring, where "+1 card" buys nothing
+         and effect A adds to the total instead. -->
+    <div class="field" id="a-ladder-row" hidden>
+      <label for="a-ladder" data-i18n="setup.aLadder">Effect A adds</label>
+      <select id="a-ladder">
+        <option value="steps" data-i18n="setup.aLadder.steps"></option>
+        <option value="double" data-i18n="setup.aLadder.double"></option>
+        <option value="band" selected data-i18n="setup.aLadder.band"></option>
+        <option value="steep" data-i18n="setup.aLadder.steep"></option>
+        <option value="rank" data-i18n="setup.aLadder.rank"></option>
+      </select>
+    </div>
     <div class="field">
       <label for="deck" data-i18n="setup.deck">Card effects</label>
       <select id="deck">
@@ -1097,7 +1109,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"aa2364b4e1","branch":"main","dirty":false,"built":"2026-08-17T16:56:42Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"a6d2b504dc","branch":"main","dirty":true,"built":"2026-08-17T19:20:29Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1152,6 +1164,12 @@ en: {
   "setup.meldScore": "Trick is won by",
   "setup.meldScore.count": "Most cards — ranks only break a tie (as printed)",
   "setup.meldScore.sum": "Highest total rank — one 20 beats three 6s, card count breaks a tie",
+  "setup.aLadder": "Effect A adds",
+  "setup.aLadder.steps": "+1 / +2 / +3 / +4 by band — quietest",
+  "setup.aLadder.double": "+2 / +4 / +6 / +8 by band",
+  "setup.aLadder.band": "+3 / +6 / +9 / +12 by band — about one more card",
+  "setup.aLadder.steep": "+4 / +8 / +12 / +16 by band — loudest",
+  "setup.aLadder.rank": "The card's own rank — no table to look up",
   "setup.layout": "Player board",
   "setup.layout.rulebook": "Printed board — 2/4/6/4/4 units",
   "setup.layout.sim": "Sim — 2/4/5/5/4 units",
@@ -1524,6 +1542,13 @@ en: {
   "fx.a.3": "+2 cards, and wins ties",
   "fx.aShort.0": "+1 card", "fx.aShort.1": "+1 card · ties",
   "fx.aShort.2": "+2 cards", "fx.aShort.3": "+2 cards · ties",
+  /* A reads differently when the trick is won on total rank: the number comes
+     from the ladder the game is running, so it is a placeholder rather than
+     four more printed strings. */
+  "fx.aSum": "+{n} to your meld's total for winning this trick",
+  "fx.aSum.ties": "+{n} to your meld's total, and wins ties",
+  "fx.aSumShort": "+{n} total",
+  "fx.aSumShort.ties": "+{n} total · ties",
   "fx.b.0": "Found a colony: 1 new tile of this suit, 1 unit on it, fortified",
   "fx.b.1": "Distant colony: as above, and the tile may sit up to 2 out",
   "fx.b.2": "Open a frontier: 2 new tiles of this suit, 1 unit on one, fortified",
@@ -1588,6 +1613,12 @@ de: {
   "setup.meldScore": "Stich gewinnt",
   "setup.meldScore.count": "Meiste Karten — Werte entscheiden nur bei Gleichstand (wie gedruckt)",
   "setup.meldScore.sum": "Höchste Wertsumme — eine 20 schlägt drei 6er, Kartenzahl bei Gleichstand",
+  "setup.aLadder": "Effekt A gibt",
+  "setup.aLadder.steps": "+1 / +2 / +3 / +4 je Stufe — am leisesten",
+  "setup.aLadder.double": "+2 / +4 / +6 / +8 je Stufe",
+  "setup.aLadder.band": "+3 / +6 / +9 / +12 je Stufe — etwa eine Karte mehr",
+  "setup.aLadder.steep": "+4 / +8 / +12 / +16 je Stufe — am lautesten",
+  "setup.aLadder.rank": "Der Wert der Karte selbst — keine Tabelle nötig",
   "setup.layout": "Spielertableau",
   "setup.layout.rulebook": "Gedrucktes Tableau — 2/4/6/4/4 Einheiten",
   "setup.layout.sim": "Simulation — 2/4/5/5/4 Einheiten",
@@ -1951,6 +1982,10 @@ de: {
   "fx.a.3": "+2 Karten, und gewinnt Gleichstände",
   "fx.aShort.0": "+1 Karte", "fx.aShort.1": "+1 Karte · Gleichstand",
   "fx.aShort.2": "+2 Karten", "fx.aShort.3": "+2 Karten · Gleichstand",
+  "fx.aSum": "+{n} auf die Summe deines Auslegens",
+  "fx.aSum.ties": "+{n} auf die Summe, und gewinnt Gleichstände",
+  "fx.aSumShort": "+{n} Summe",
+  "fx.aSumShort.ties": "+{n} Summe · Gleichstand",
   "fx.b.0": "Kolonie gründen: 1 neues Feld dieser Farbe, 1 Einheit darauf, befestigt",
   "fx.b.1": "Ferne Kolonie: wie oben, das Feld darf bis zu 2 Felder entfernt liegen",
   "fx.b.2": "Grenzland öffnen: 2 neue Felder dieser Farbe, 1 Einheit auf einem, befestigt",
@@ -2526,7 +2561,8 @@ class Player {
     this.reserve = this.bands.map((b) => b[1]);
     this.vrow = [];
     this.played = [];
-    this.bonus = 0;
+    this.bonus = 0;        // effect A under "count" scoring: extra cards
+    this.sumBonus = 0;     // effect A under "sum" scoring: points on the total
     this.ties = false;
     this.spentA = 0;
     this.aBand = null;
@@ -2565,6 +2601,48 @@ class Player {
 // --------------------------------------------------------------- scoring
 function bandOfRank(r) { return r <= 5 ? 0 : r <= 10 ? 1 : r <= 15 ? 2 : 3; }
 function effectA(r) { const b = bandOfRank(r); return [b < 2 ? 1 : 2, b === 1 || b === 3]; }
+
+/* ---- effect A when the trick is won on total rank ----
+ *
+ * "+1 card" is a strong effect when the trick goes to the most cards — a
+ * winning meld is about three and a half cards, so one more is a quarter again
+ * as much meld. Under sum scoring it buys almost nothing: it moves a tie-break
+ * that only runs when two totals are exactly equal. So A needs its own reading
+ * under that rule, adding to the TOTAL rather than to the count.
+ *
+ * The ladder is by band, like every other effect on the card, and is a named
+ * table rather than a literal because the right size is a question for the
+ * table and not for me. `effect_a_sum_*` in the stats measures what it does.
+ *
+ *   "steps"  1/2/3/4   the plainest reading of "+1, +2, +3"
+ *   "double" 2/4/6/8   what steps measured as, if steps proves too quiet
+ *   "band"   3/6/9/12  roughly a card of that band, so spending A is close to
+ *                      playing one more card of the rank you gave up
+ *
+ * Ties are unchanged: the middle two bands still win a tie, which under sum
+ * scoring is rarer but not empty — equal totals happen.
+ */
+const A_SUM_LADDERS = {
+  steps: [1, 2, 3, 4],
+  double: [2, 4, 6, 8],
+  band: [3, 6, 9, 12],
+  steep: [4, 8, 12, 16],
+  /* Not a band table: the card adds its OWN rank, which is the most literal
+   * reading of "depending on rank" and the only rung that needs no table at
+   * all — "add this card to your total" is a sentence a player never has to
+   * look up. Written as null and handled below. */
+  rank: null,
+};
+let A_SUM_LADDER = "band";
+function setASumLadder(which) {
+  if (which in A_SUM_LADDERS) A_SUM_LADDER = which;
+}
+function effectASum(r, ladder) {
+  const b = bandOfRank(r);
+  const which = (ladder && ladder in A_SUM_LADDERS) ? ladder : A_SUM_LADDER;
+  const table = A_SUM_LADDERS[which];
+  return [table ? table[b] : r, b === 1 || b === 3];
+}
 function effectBv22(r) {
   return [[1, 1, true, 1], [1, 1, true, 2], [2, 1, true, 1], [2, 2, false, 1]][bandOfRank(r)];
 }
@@ -2587,7 +2665,20 @@ const EFFECT_TEXT = [
     b: "Two colonies: 2 new tiles of ANY terrain, 1 unit on each, both fortified",
     c: "5 gold", aShort: "+2 cards · ties", bShort: "2 colonies, any terrain", cShort: "5g" },
 ];
-function effectText(rank) { return EFFECT_TEXT[bandOfRank(rank)]; }
+/* What A prints when the trick is won on total rank. The rest of the card is
+ * unchanged — B and C do not care how the trick is decided — so only the two A
+ * fields are overlaid, and they are generated from the ladder in play rather
+ * than written out, or the card would lie the moment a rung is retuned. */
+function effectText(rank, opts) {
+  const base = EFFECT_TEXT[bandOfRank(rank)];
+  if (!opts || opts.meldScore !== "sum") return base;
+  const [add, ties] = effectASum(rank, opts.aSumLadder);
+  return Object.assign({}, base, {
+    a: ties ? `+${add} to your meld's total, and wins ties`
+            : `+${add} to your meld's total for winning this trick`,
+    aShort: ties ? `+${add} total · ties` : `+${add} total`,
+  });
+}
 
 /* Effect D — conquest. From the deck-with-D proposal: D REPLACES C rather than
  * joining it ("three effects is the printable number"), because gold is the one
@@ -2855,6 +2946,14 @@ class Game {
      * This changes what a hand is FOR, so it is a whole-game option rather than
      * a variant toggle: under "sum" holding one high card is a plan. */
     this.MELD_SCORE = opts.meldScore === "sum" ? "sum" : "count";
+    /* Which rung effect A adds to a total under sum scoring. Only consulted
+     * when MELD_SCORE is "sum"; under "count" A still prints and does "+1/+2
+     * cards" exactly as before. */
+    /* `in`, not truthiness: the "rank" rung is stored as null because it is not
+     * a table, and a truthiness test silently dropped it back to the default —
+     * which showed up as two ladders measuring identically to three decimals. */
+    this.A_SUM_LADDER = (opts.aSumLadder in A_SUM_LADDERS)
+      ? opts.aSumLadder : A_SUM_LADDER;
     /* "abc" — the base rules as printed. "abd" — the proposal: conquest takes
      * the third slot and the take-gold effect leaves the deck entirely, which
      * also removes the row as a famine valve. */
@@ -3082,7 +3181,7 @@ class Game {
       /* One beat per player: bots resolve in the same tick, so without this the
        * whole trick would appear at once instead of going round the table. */
       this.fx("meld", { seat: i, n: cards.length });
-      p.bonus = 0; p.ties = false; p.spentA = 0; p.aBand = null;
+      p.bonus = 0; p.sumBonus = 0; p.ties = false; p.spentA = 0; p.aBand = null;
       for (const c of cards) p.hand.splice(p.hand.indexOf(c), 1);
       this.inc("meld_" + cards.length);
       yield* this._maybeDeclareABlind(p);          // A is declared blind (§10)
@@ -3096,17 +3195,18 @@ class Game {
      * tie-break. Everything after that is unchanged, so the two rules share one
      * comparator and cannot drift apart.
      *
-     * Note what effect A does under each. A prints "+1 card" and adds to
-     * `bonus`, which is a card count — decisive under "count" and nearly
-     * irrelevant under "sum", where it only moves the tie-break. That is a real
-     * consequence of the proposal, not an oversight here: if A is meant to
-     * matter under sum scoring it needs to add ranks, and that is a card-text
-     * decision. `stats.meld_sum_*` is recorded so it can be measured. */
+     * Effect A is read differently by each rule, because "+1 card" is worth a
+     * quarter of a meld under one and almost nothing under the other. Under
+     * "count" it adds cards (`bonus`); under "sum" it adds points to the total
+     * (`sumBonus`, from effectASum). Both are computed here so the comparator
+     * has them whichever rule is running. */
     const keyOf = (seat) => {
       const i = order[seat], p = this.P[i];
       const ranks = p.played.map((c) => c.r).sort((a, b) => b - a);
       return { size: p.played.length + p.bonus,
-               sum: ranks.reduce((a, b) => a + b, 0),
+               bareSize: p.played.length,
+               sum: ranks.reduce((a, b) => a + b, 0) + p.sumBonus,
+               bare: ranks.reduce((a, b) => a + b, 0),
                ties: p.ties ? 1 : 0,
                a: -p.spentA, lex: ranks, seat };
     };
@@ -3144,8 +3244,29 @@ class Game {
       this.inc("meld_sum_tricks");
       if (byCount && top && byCount.seat !== top.seat) this.inc("meld_sum_differs");
       if (top) {
-        this.inc("meld_sum_total", top.sum);
+        this.inc("meld_sum_total", top.bare);       // the cards alone, not A
         this.inc("meld_sum_cards", top.lex.length);
+      }
+      /* Did effect A actually decide this trick? Take the bonus away and ask
+       * whether the same seat still wins. Counted the same way under BOTH
+       * rules — cards under "count", points under "sum" — because the only
+       * useful question about a new A is whether it matters as much as the old
+       * one did, and that needs the two measured on the same footing.
+       *
+       * `a_won` counts tricks won by a seat that had spent A; `a_decided`, the
+       * subset where taking the bonus away loses it. `a_wasted` is A spent by
+       * somebody who lost anyway, which is the other half of "is it worth it". */
+      const gainOf = (k) => (bySum ? k.sum - k.bare : k.size - k.bareSize);
+      const scoreOf = (k) => (bySum ? k.sum : k.size);
+      const bareOf = (k) => (bySum ? k.bare : k.bareSize);
+      if (top) {
+        for (const k of keys) if (gainOf(k) > 0 && k !== top) this.inc("a_wasted");
+        if (gainOf(top) > 0) {
+          this.inc("a_won");
+          const second = keys.filter((k) => k !== top)
+            .reduce((b, k) => (b === null || scoreOf(k) > scoreOf(b) ? k : b), null);
+          if (second && bareOf(top) <= scoreOf(second)) this.inc("a_decided");
+        }
       }
     }
 
@@ -3854,6 +3975,23 @@ class Game {
       if (!p.vrow.length) return;
       card = yield { type: "effectA", seat: p.i, options: p.vrow.slice() };
       if (!card) return;
+    } else if (this.MELD_SCORE === "sum") {
+      /* Under sum scoring "rescue a small meld" is the wrong instinct — a meld
+       * of two big cards may already be winning, and one of five small ones may
+       * not be. The bot spends A when the bonus could plausibly close the gap
+       * to a rival's likely total, which is the same guess its meld chooser
+       * makes. Policy, not rule: a person may spend A whenever they hold one. */
+      if (p.vrow.length < 3) return;
+      const mine = p.played.reduce((a, c) => a + c.r, 0);
+      const rivals = this.P.filter((q) => q.i !== p.i).map((q) => q.meldLimit());
+      const typical = p.hand.length
+        ? p.hand.reduce((a, c) => a + c.r, 0) / p.hand.length : 10.5;
+      const target = (rivals.length ? Math.max(...rivals) : 0) * typical;
+      const best = p.vrow.slice().sort(cardSort)[0];
+      const [gain] = effectASum(best.r, this.A_SUM_LADDER);
+      if (mine + gain < target * 0.8) return;       // hopeless: keep the card
+      if (mine > target * 1.25) return;             // already ahead: keep it
+      card = best;
     } else {
       if (p.vrow.length < 3) return;
       const size = p.played.length;
@@ -3863,8 +4001,17 @@ class Game {
     }
     p.vrow.splice(p.vrow.indexOf(card), 1);
     this.removed.push(card);
-    const [add, ties] = effectA(card.r);
-    p.bonus += add; p.ties = p.ties || ties;
+    /* Two readings of the same card, one per scoring rule: cards under "count",
+     * points on the total under "sum". Both are kept on the player because the
+     * comparator reads whichever the rule needs and a replay must not care. */
+    if (this.MELD_SCORE === "sum") {
+      const [add, ties] = effectASum(card.r, this.A_SUM_LADDER);
+      p.sumBonus += add; p.ties = p.ties || ties;
+      this.inc("effect_a_sum_gain", add);
+    } else {
+      const [add, ties] = effectA(card.r);
+      p.bonus += add; p.ties = p.ties || ties;
+    }
     p.spentA = Math.max(p.spentA, card.r);
     p.aBand = bandOfRank(card.r);
     this.inc("effect_a_used");
@@ -4706,6 +4853,7 @@ function newSession(opts, rand) {
        * to the TABLE and travel with the session — a guest whose client decided
        * these for itself would be replaying a different game. */
       meldScore: o.meldScore === "sum" ? "sum" : "count",
+      aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
     },
     /* One entry per seat. `player` is null for a bot seat. */
@@ -5167,6 +5315,7 @@ function newReport(build, gargs, extra) {
        * player board are not comparable, and without these there is no way to
        * tell afterwards which was which. */
       meldScore: gargs.opts.meldScore || "count",
+      aSumLadder: gargs.opts.aSumLadder || null,
       layout: gargs.opts.layout || null,
     },
     replay: [],        // the answer tokens: this alone re-deals the whole game
@@ -5481,9 +5630,19 @@ const styleNote = (k) => t("style." + k + ".note");
 const fxBand = (r) => bandOfRank(r);
 function fxText(r) {
   const b = fxBand(r);
-  return { a: t("fx.a." + b), aShort: t("fx.aShort." + b),
-           b: t("fx.b." + b), bShort: t("fx.bShort." + b),
-           c: t("fx.c." + b), cShort: t("fx.cShort." + b) };
+  const out = { a: t("fx.a." + b), aShort: t("fx.aShort." + b),
+                b: t("fx.b." + b), bShort: t("fx.bShort." + b),
+                c: t("fx.c." + b), cShort: t("fx.cShort." + b) };
+  /* When the trick is won on total rank, A does something else entirely and the
+   * card has to say so — a face still reading "+1 card" while the rule counts
+   * totals is the game lying to the player at the moment they choose. The
+   * number comes from the ladder the game is running, not from the string. */
+  if (G && G.MELD_SCORE === "sum") {
+    const [add, ties] = effectASum(r, G.A_SUM_LADDER);
+    out.a = t(ties ? "fx.aSum.ties" : "fx.aSum", { n: add });
+    out.aShort = t(ties ? "fx.aSumShort.ties" : "fx.aSumShort", { n: add });
+  }
+  return out;
 }
 function fxTextD(r) {
   const b = fxBand(r);
@@ -5632,6 +5791,14 @@ function chosenLayout() {
   return pick === "rulebook" ? null : pick;
 }
 
+/* Effect A's ladder only means anything when the trick is won on total rank,
+ * so the control is hidden under the printed rule rather than sitting there
+ * doing nothing. */
+function syncALadderRow() {
+  const row = $("#a-ladder-row"), sel = $("#meld-score");
+  if (row && sel) row.hidden = sel.value !== "sum";
+}
+
 /* Show the custom box only when it is wanted, and say what the typed column
  * comes to — a total that is not 20 is usually a typo, and seeing it is the
  * cheapest way to catch one. */
@@ -5673,6 +5840,7 @@ function startGame(force) {
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
                              meldScore: $("#meld-score").value,
+                             aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
@@ -7630,6 +7798,7 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#bot-level").addEventListener("change", levelNote);
   if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
   if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
+  if ($("#meld-score")) $("#meld-score").addEventListener("change", syncALadderRow);
   $("#pass-go").addEventListener("click", () => {
     PASSED = PENDING_SEAT === null ? PASSED : PENDING_SEAT;
     PENDING_SEAT = null;
@@ -7640,6 +7809,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setLang(pickLang());
   applyLang();
   syncLayoutRow();                  // after applyLang, so the hint is translated
+  syncALadderRow();
   netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
@@ -7968,6 +8138,7 @@ function netRules() {
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
     meldScore: $("#meld-score").value,
+    aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
     layout: chosenLayout(),
   };
 }

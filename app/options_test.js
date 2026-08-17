@@ -150,7 +150,96 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(g.MELD_SCORE === 'sum', 'the scoring was lost');
 }
 
-// ================================= 3. and the setup page actually sends them
+// ==================================== 3. effect A when the total is what wins
+
+/* "+1 card" is a quarter of a meld under count scoring and almost nothing under
+ * sum, where it only moves a tie-break. So A reads differently under the two
+ * rules, and the size of the bonus is a ladder that can be retuned. */
+{
+  /* Every rung, at one rank per band. */
+  const at = (ladder) => [3, 8, 13, 18].map((r) => E.effectASum(r, ladder)[0]).join('/');
+  ok(at('steps') === '1/2/3/4', `steps ladder is ${at('steps')}`);
+  ok(at('double') === '2/4/6/8', `double ladder is ${at('double')}`);
+  ok(at('band') === '3/6/9/12', `band ladder is ${at('band')}`);
+  ok(at('steep') === '4/8/12/16', `steep ladder is ${at('steep')}`);
+  /* The one that is not a table at all: the card adds its own rank. */
+  ok(at('rank') === '3/8/13/18', `rank ladder is ${at('rank')}`);
+  ok(E.effectASum(17, 'rank')[0] === 17, 'the rank rung does not add the rank');
+
+  /* Ties are untouched by the ladder — the middle two bands still win them. */
+  for (const l of ['steps', 'double', 'band', 'steep', 'rank']) {
+    ok(E.effectASum(8, l)[1] === true, `${l}: the 6-10 band lost its tie win`);
+    ok(E.effectASum(18, l)[1] === true, `${l}: the 16-20 band lost its tie win`);
+    ok(E.effectASum(3, l)[1] === false, `${l}: the 1-5 band gained a tie win`);
+  }
+
+  /* A game takes the rung, and an unknown one falls back rather than throwing.
+   * `rank` is stored as null because it is not a table, so a truthiness test
+   * here silently dropped it back to the default — which is exactly how two
+   * ladders came to measure identically. */
+  const ladderOf = (v) => new E.Game(3, 1, { humans: [], meldScore: 'sum',
+                                             aSumLadder: v }).A_SUM_LADDER;
+  ok(ladderOf('rank') === 'rank',
+     `the "rank" rung fell back to ${ladderOf('rank')} — it is stored as null `
+     + 'and a truthiness check will drop it');
+  ok(ladderOf('steep') === 'steep', 'the steep rung is not accepted');
+  ok(ladderOf('junk') === 'band', `an unknown rung gave ${ladderOf('junk')}`);
+  ok(ladderOf(undefined) === 'band', 'no rung named did not give the default');
+}
+
+/* Under count scoring A must still do exactly what the card prints — the new
+ * reading is for the new rule only, and must not leak into the printed game. */
+{
+  const g = E.playOut(3, 4242, { trickRule: 'dock' });
+  ok(!g.stats.effect_a_sum_gain,
+     'A added points to a total in a game played under the printed count rule');
+  const s = E.playOut(3, 4242, { trickRule: 'dock', meldScore: 'sum' });
+  ok(s.stats.effect_a_sum_gain > 0,
+     'A never added anything to a total under sum scoring — the new reading is '
+     + 'not reaching the game');
+}
+
+/* And the rungs are actually different games, or the option is decoration. */
+{
+  const sig = (o) => {
+    let gain = 0, decided = 0;
+    for (let seed = 1; seed <= 25; seed++) {
+      const g = E.playOut(3, seed * 7919 + 13,
+                          Object.assign({ trickRule: 'dock', meldScore: 'sum' }, o));
+      gain += g.stats.effect_a_sum_gain || 0;
+      decided += g.stats.a_decided || 0;
+    }
+    return { gain, decided };
+  };
+  const quiet = sig({ aSumLadder: 'steps' });
+  const loud = sig({ aSumLadder: 'steep' });
+  ok(loud.gain > quiet.gain,
+     `the steep ladder granted ${loud.gain} points and the quiet one ${quiet.gain}`
+     + ' — the rungs are not reaching the game');
+  ok(loud.decided >= quiet.decided,
+     `a bigger bonus decided ${loud.decided} tricks against the small one's `
+     + `${quiet.decided} — the ladder looks inverted`);
+}
+
+/* The card has to SAY what it does, or a player reads "+1 card" while the rule
+ * counts totals. */
+{
+  const printed = E.effectText(18);
+  ok(/card/.test(printed.a), `the printed A text lost its card wording: ${printed.a}`);
+  const summed = E.effectText(18, { meldScore: 'sum', aSumLadder: 'band' });
+  ok(/\+12/.test(summed.a) && /total/.test(summed.a),
+     `under sum scoring the 16-20 card should offer +12 to the total: "${summed.a}"`);
+  ok(/ties/.test(summed.a), 'the 16-20 card stopped winning ties');
+  ok(/\+12/.test(summed.aShort), `the short form reads "${summed.aShort}"`);
+  /* B and C are none of this rule's business. */
+  ok(summed.b === printed.b && summed.c === printed.c,
+     'changing how the trick is won rewrote effects B or C');
+  /* And the text follows the ladder rather than being written out. */
+  const steep = E.effectText(18, { meldScore: 'sum', aSumLadder: 'steep' });
+  ok(/\+16/.test(steep.a), `the card does not follow the ladder: "${steep.a}"`);
+}
+
+// ================================= 4. and the setup page actually sends them
 /* The engine having an option means nothing if the page cannot ask for it —
  * which is exactly how the landfall rule came to be "fixed" while the app was
  * unchanged. So the built page is driven: pick the options, start a game, and
@@ -224,6 +313,23 @@ if (!JSDOM) {
       ok(r.shown === '2-3-5-5-5',
          `the player board on screen reads ${r.shown} — it is showing a different `
          + 'board than the game is using');
+      /* The card faces on screen must carry the new A text too. The engine's
+       * effectText() and the page's fxText() are two separate copies — one
+       * translated, one not — so proving the engine changed proves nothing
+       * about what the player reads. */
+      const faces = w.eval('JSON.stringify({'
+        + ' a18: fxText(18).a, a18s: fxText(18).aShort,'
+        + ' a3: fxText(3).a,'
+        + ' b18: fxText(18).b'
+        + '})');
+      const f = JSON.parse(faces);
+      ok(/\+12/.test(f.a18) && /total/i.test(f.a18),
+         `a 16-20 card on screen still reads "${f.a18}" — the player is being `
+         + 'told it adds cards while the rule counts totals');
+      ok(/\+12/.test(f.a18s), `the short form on screen reads "${f.a18s}"`);
+      ok(/\+3\b/.test(f.a3), `a 1-5 card on screen reads "${f.a3}"`);
+      ok(!/total/i.test(f.b18), 'effect B was rewritten by the scoring rule');
+
       ok(!errs.length, 'the page logged errors: ' + errs.slice(0, 2).join(' | '));
       finish();
     }, 700);

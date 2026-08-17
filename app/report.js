@@ -67,6 +67,7 @@ function newReport(build, gargs, extra) {
        * player board are not comparable, and without these there is no way to
        * tell afterwards which was which. */
       meldScore: gargs.opts.meldScore || "count",
+      aSumLadder: gargs.opts.aSumLadder || null,
       layout: gargs.opts.layout || null,
     },
     replay: [],        // the answer tokens: this alone re-deals the whole game

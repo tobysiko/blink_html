@@ -930,6 +930,18 @@
         <option value="sum" data-i18n="setup.meldScore.sum"></option>
       </select>
     </div>
+    <!-- Only meaningful under total-rank scoring, where "+1 card" buys nothing
+         and effect A adds to the total instead. -->
+    <div class="field" id="a-ladder-row" hidden>
+      <label for="a-ladder" data-i18n="setup.aLadder">Effect A adds</label>
+      <select id="a-ladder">
+        <option value="steps" data-i18n="setup.aLadder.steps"></option>
+        <option value="double" data-i18n="setup.aLadder.double"></option>
+        <option value="band" selected data-i18n="setup.aLadder.band"></option>
+        <option value="steep" data-i18n="setup.aLadder.steep"></option>
+        <option value="rank" data-i18n="setup.aLadder.rank"></option>
+      </select>
+    </div>
     <div class="field">
       <label for="deck" data-i18n="setup.deck">Card effects</label>
       <select id="deck">
