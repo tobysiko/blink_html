@@ -924,6 +924,13 @@
       </select>
     </div>
     <div class="field">
+      <label for="meld-score" data-i18n="setup.meldScore">Trick is won by</label>
+      <select id="meld-score">
+        <option value="count" selected data-i18n="setup.meldScore.count"></option>
+        <option value="sum" data-i18n="setup.meldScore.sum"></option>
+      </select>
+    </div>
+    <div class="field">
       <label for="deck" data-i18n="setup.deck">Card effects</label>
       <select id="deck">
         <option value="abc" selected data-i18n="setup.deck.abc"></option>
@@ -961,6 +968,23 @@
         <option value="open" data-i18n="setup.objectives.open"></option>
         <option value="both" data-i18n="setup.objectives.both"></option>
       </select>
+    </div>
+    <div class="field">
+      <label for="layout" data-i18n="setup.layout">Player board</label>
+      <select id="layout">
+        <option value="rulebook" selected data-i18n="setup.layout.rulebook"></option>
+        <option value="sim" data-i18n="setup.layout.sim"></option>
+        <option value="late" data-i18n="setup.layout.late"></option>
+        <option value="custom" data-i18n="setup.layout.custom"></option>
+      </select>
+    </div>
+    <!-- Only shown for "custom": a units-per-tier column for testing a layout
+         that has not earned a name yet. -->
+    <div class="field" id="layout-custom-row" hidden>
+      <label for="layout-custom" data-i18n="setup.layout.units">Units per tier</label>
+      <input id="layout-custom" type="text" maxlength="24" value="2-3-5-5-5"
+             inputmode="numeric" autocomplete="off" spellcheck="false">
+      <p class="hint" id="layout-hint"></p>
     </div>
   </details>
 
@@ -1073,7 +1097,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"61b5f192d9","branch":"main","dirty":false,"built":"2026-08-17T08:33:21Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"c6eb1579ed","branch":"main","dirty":true,"built":"2026-08-17T16:56:33Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1125,6 +1149,17 @@ en: {
   "setup.trick": "Trick resolution",
   "setup.trick.dock": "Classic — winner uses every card; matching the winner's count sets one aside for 1 gold",
   "setup.trick.bonus": "v0.22 as printed — winner spends one extra card; matchers discard one from hand",
+  "setup.meldScore": "Trick is won by",
+  "setup.meldScore.count": "Most cards — ranks only break a tie (as printed)",
+  "setup.meldScore.sum": "Highest total rank — one 20 beats three 6s, card count breaks a tie",
+  "setup.layout": "Player board",
+  "setup.layout.rulebook": "Printed board — 2/4/6/4/4 units",
+  "setup.layout.sim": "Sim — 2/4/5/5/4 units",
+  "setup.layout.late": "Late bloom — 2/3/5/5/5 units",
+  "setup.layout.custom": "Custom (testing)…",
+  "setup.layout.units": "Units per tier",
+  "setup.layout.ok": "{total} units across {n} tiers.",
+  "setup.layout.bad": "Needs {n} numbers, the first above zero — e.g. 2-3-5-5-5. Using the printed board until then.",
   "setup.deck": "Card effects",
   "setup.deck.abc": "A / B / C — base rules as printed (win the trick · colonies · gold)",
   "setup.deck.abd": "A / B / D — proposal: conquest replaces take-gold",
@@ -1550,6 +1585,17 @@ de: {
   "setup.trick": "Stichauswertung",
   "setup.trick.dock": "Klassisch — der Gewinner nutzt jede Karte; wer gleich viele Karten spielt und verliert, legt eine für 1 Gold beiseite",
   "setup.trick.bonus": "v0.22 wie gedruckt — der Gewinner spielt eine Extrakarte; Gleichauf-Spieler werfen eine Handkarte ab",
+  "setup.meldScore": "Stich gewinnt",
+  "setup.meldScore.count": "Meiste Karten — Werte entscheiden nur bei Gleichstand (wie gedruckt)",
+  "setup.meldScore.sum": "Höchste Wertsumme — eine 20 schlägt drei 6er, Kartenzahl bei Gleichstand",
+  "setup.layout": "Spielertableau",
+  "setup.layout.rulebook": "Gedrucktes Tableau — 2/4/6/4/4 Einheiten",
+  "setup.layout.sim": "Simulation — 2/4/5/5/4 Einheiten",
+  "setup.layout.late": "Späte Blüte — 2/3/5/5/5 Einheiten",
+  "setup.layout.custom": "Eigenes (Test)…",
+  "setup.layout.units": "Einheiten je Stufe",
+  "setup.layout.ok": "{total} Einheiten auf {n} Stufen.",
+  "setup.layout.bad": "Braucht {n} Zahlen, die erste über null — z. B. 2-3-5-5-5. Bis dahin gilt das gedruckte Tableau.",
   "setup.deck": "Karteneffekte",
   "setup.deck.abc": "A / B / C — Grundregeln wie gedruckt (Stich · Kolonien · Gold)",
   "setup.deck.abd": "A / B / D — Vorschlag: Eroberung ersetzt Gold nehmen",
@@ -2059,14 +2105,58 @@ const BANDS = [
   ["Civilization", 4, 6, 4, 5, 4, 20],
 ];
 
-/* The two variants, kept so either can still be measured. Defaults above are
- * board units + sim caps. Call setTiers() BEFORE constructing a Game —
- * reserves are built from BANDS. */
-const TIER_UNITS = { sim: [2, 4, 5, 5, 4], rulebook: [2, 4, 6, 4, 4] };
+/* The variants, kept so any can still be measured. Defaults above are board
+ * units + sim caps. setTiers() changes the module default and must be called
+ * BEFORE constructing a Game; a single game is better served by the `layout`
+ * option, which is per-game and leaves this table alone. */
+const TIER_UNITS = {
+  sim: [2, 4, 5, 5, 4],
+  rulebook: [2, 4, 6, 4, 4],
+  /* Asked for on the strength of a playtest: a cheap Tribe, a lean Settlement,
+   * and three broad late tiers. Twenty units like the other two, so it is a
+   * redistribution rather than more material — which is what makes it
+   * comparable. */
+  late: [2, 3, 5, 5, 5],
+};
 const TIER_CAPS = { sim: [11, 13, 15, 17, 20], rulebook: [13, 15, 17, 20, 20] };
 function setTiers(which) {
   const u = TIER_UNITS[which.units || "sim"], c = TIER_CAPS[which.caps || "sim"];
   for (let j = 0; j < BANDS.length; j++) { BANDS[j][1] = u[j]; BANDS[j][6] = c[j]; }
+}
+
+/* ---- per-game tier layout ----
+ *
+ * A layout is just the units column: how many of your twenty (or however many)
+ * units sit in each tier. `layout` may be
+ *
+ *   a name from TIER_UNITS  ("sim", "rulebook", "late")
+ *   "2-3-5-5-5"             a custom column, dashes, commas or spaces
+ *   [2, 3, 5, 5, 5]         the same as an array
+ *
+ * Returned as a fresh BANDS table rather than by mutating the module's. That
+ * matters more than it looks: the server replays many sessions in one process,
+ * and a global table would mean a game with a custom layout silently rewrote
+ * the tiers of every other game being replayed alongside it.
+ */
+function parseLayout(spec) {
+  if (!spec) return null;
+  if (typeof spec === "string" && TIER_UNITS[spec]) return TIER_UNITS[spec].slice();
+  const nums = Array.isArray(spec)
+    ? spec.map(Number)
+    : String(spec).split(/[^0-9]+/).filter((x) => x !== "").map(Number);
+  if (nums.length !== BANDS.length) return null;
+  if (nums.some((n) => !Number.isInteger(n) || n < 0 || n > 99)) return null;
+  /* A layout with nothing in the first tier has no starting unit to place and
+   * the game cannot begin, so it is refused rather than left to fail later. */
+  if (!nums[0]) return null;
+  return nums;
+}
+
+function bandsFor(spec) {
+  const units = parseLayout(spec);
+  const out = BANDS.map((b) => b.slice());
+  if (units) for (let j = 0; j < out.length; j++) out[j][1] = units[j];
+  return out;
 }
 
 /* Map objectives — the advanced module. Every card is the same shape: three
@@ -2423,12 +2513,17 @@ function cardOptions(m, card, p, gold, reachable, spaces) {
 
 // --------------------------------------------------------------- player
 class Player {
-  constructor(i) {
+  /* `bands` is the tier table this player's board is printed with. It defaults
+   * to the module table so every existing caller and test keeps working, and a
+   * game with a custom layout hands its own in — which is what keeps one game's
+   * layout out of another's. */
+  constructor(i, bands) {
     this.i = i;
+    this.bands = bands || BANDS;
     this.hand = [];
     this.discard = [];
     this.gold = 0;
-    this.reserve = BANDS.map((b) => b[1]);
+    this.reserve = this.bands.map((b) => b[1]);
     this.vrow = [];
     this.played = [];
     this.bonus = 0;
@@ -2439,18 +2534,18 @@ class Player {
   }
   band() {
     for (let j = 0; j < this.reserve.length; j++) if (this.reserve[j] > 0) return j;
-    return BANDS.length - 1;
+    return this.bands.length - 1;
   }
-  meldLimit() { return BANDS[this.band()][2]; }
-  rankCap() { return BANDS[this.band()][6]; }
+  meldLimit() { return this.bands[this.band()][2]; }
+  rankCap() { return this.bands[this.band()][6]; }
   ascensionDue() {
     let owed = 0;
     const j = this.band();
-    while (this.reached < j) { this.reached += 1; owed += BANDS[this.reached][5]; }
+    while (this.reached < j) { this.reached += 1; owed += this.bands[this.reached][5]; }
     return owed;
   }
-  food() { return BANDS[this.band()][3]; }
-  freeMoves() { return BANDS[this.band()][4]; }
+  food() { return this.bands[this.band()][3]; }
+  freeMoves() { return this.bands[this.band()][4]; }
   takeUnit() {
     const j = this.band();
     if (this.reserve[j] > 0) { this.reserve[j] -= 1; return true; }
@@ -2459,8 +2554,8 @@ class Player {
   /* A returned unit goes back to the LOWEST band with a free slot — regression
    * is one step, not a reset to Founding. */
   returnUnit() {
-    for (let j = BANDS.length - 1; j >= 0; j--) {
-      if (this.reserve[j] < BANDS[j][1]) { this.reserve[j] += 1; return true; }
+    for (let j = this.bands.length - 1; j >= 0; j--) {
+      if (this.reserve[j] < this.bands[j][1]) { this.reserve[j] += 1; return true; }
     }
     return false;
   }
@@ -2690,12 +2785,36 @@ function proBot(game, p, what, options) {
    * is the decision the rest of the turn hangs off. */
   if (p.noise && game.rng.random() < p.noise) return game.rng.choice(options);
 
+  /* Under sum scoring the trick is won by total rank, not by card count, so the
+   * bot has to estimate its chances the same way the rule decides them — or it
+   * spends the game optimising a quantity that no longer wins anything, and
+   * every measurement taken from bot play describes the wrong game.
+   *
+   * A rival's hand is hidden, so their likely total is a guess: their meld limit
+   * times a typical rank. "Typical" is taken from this bot's own hand, which is
+   * the only sample of the deck's current level it has. Crude, but it moves the
+   * choice in the right direction, which is all the count version does either. */
+  const bySum = game.MELD_SCORE === "sum";
+  const typicalRank = p.hand.length ? mean(p.hand.map((c) => c.r)) : 10.5;
+  const rivalSum = topRival * typicalRank;
+
   let best = null, bestV = -1e9;
   for (const cards of options) {
     const n = cards.length;
     let v = cards.reduce((a, c) => a + cardValue(c), 0);
-    const win = n > topRival ? 0.9 : n === topRival ? 0.45
-              : Math.pow(0.12, topRival - n + 1);
+    let win;
+    if (bySum) {
+      const sum = cards.reduce((a, c) => a + c.r, 0);
+      /* A smooth curve rather than the three steps the count rule uses: sums
+       * are far more granular than card counts, and a cliff at exactly equal
+       * totals would make the bot indifferent across most of the range. */
+      win = rivalSum > 0
+        ? Math.max(0.02, Math.min(0.95, 0.5 + 0.5 * ((sum - rivalSum) / rivalSum)))
+        : 0.9;
+    } else {
+      win = n > topRival ? 0.9 : n === topRival ? 0.45
+          : Math.pow(0.12, topRival - n + 1);
+    }
     v += win * (1.1 + 0.35 * mean(cards.map(cardValue)));
     const rest = p.hand.filter((c) => !cards.includes(c));
     v += w.MELD_GREED * handPower(rest);
@@ -2712,7 +2831,13 @@ class Game {
     this.rng = makeRng(seed === undefined ? 1 : seed);
     this.n = n;
     this.m = new GameMap(n);
-    this.P = []; for (let i = 0; i < n; i++) this.P.push(new Player(i));
+    /* The player board this table is using. `layout` is a name, a "2-3-5-5-5"
+     * string or an array; anything unreadable falls back to the printed board
+     * rather than to a half-applied one. Held on the game and handed to each
+     * player, so two games in one process cannot tread on each other. */
+    this.BANDS = bandsFor(opts.layout);
+    this.LAYOUT = opts.layout || null;
+    this.P = []; for (let i = 0; i < n; i++) this.P.push(new Player(i, this.BANDS));
     this.humans = new Set(opts.humans || []);        // seats a person plays
     /* "dock"  — classic: winner uses every card; a player who matched the
      *           winner's count sets one played card aside for 1 gold.
@@ -2720,6 +2845,16 @@ class Game {
      *           a matcher gives a card from hand face down to the shared pile.
      * The sim was measured on "bonus"; see verify.js. */
     this.TRICK_RULE = opts.trickRule || "dock";
+    /* How a meld is scored for winning the trick.
+     * "count" — v0.22 as printed: most cards wins, and the ranks only break a
+     *           tie. A run of low cards beats one high card.
+     * "sum"   — the proposal: the meld is worth the SUM of the ranks in it, and
+     *           the highest sum wins whatever the card counts are. One 20 beats
+     *           three 6s. Card count then breaks a tie, so a cheaper meld of
+     *           equal value still loses to a bigger one.
+     * This changes what a hand is FOR, so it is a whole-game option rather than
+     * a variant toggle: under "sum" holding one high card is a plan. */
+    this.MELD_SCORE = opts.meldScore === "sum" ? "sum" : "count";
     /* "abc" — the base rules as printed. "abd" — the proposal: conquest takes
      * the third slot and the take-gold effect leaves the deck entirely, which
      * also removes the row as a famine valve. */
@@ -2954,14 +3089,30 @@ class Game {
     }
 
     /* v0.22 ranking: most cards, then highest card, then next-highest, and so
-     * on; earliest played breaks what is left. There are never ties. */
+     * on; earliest played breaks what is left. There are never ties.
+     *
+     * Under MELD_SCORE "sum" the first comparison is the total of the ranks
+     * instead of the number of cards, and the count drops to being the first
+     * tie-break. Everything after that is unchanged, so the two rules share one
+     * comparator and cannot drift apart.
+     *
+     * Note what effect A does under each. A prints "+1 card" and adds to
+     * `bonus`, which is a card count — decisive under "count" and nearly
+     * irrelevant under "sum", where it only moves the tie-break. That is a real
+     * consequence of the proposal, not an oversight here: if A is meant to
+     * matter under sum scoring it needs to add ranks, and that is a card-text
+     * decision. `stats.meld_sum_*` is recorded so it can be measured. */
     const keyOf = (seat) => {
       const i = order[seat], p = this.P[i];
       const ranks = p.played.map((c) => c.r).sort((a, b) => b - a);
-      return { size: p.played.length + p.bonus, ties: p.ties ? 1 : 0,
+      return { size: p.played.length + p.bonus,
+               sum: ranks.reduce((a, b) => a + b, 0),
+               ties: p.ties ? 1 : 0,
                a: -p.spentA, lex: ranks, seat };
     };
+    const bySum = this.MELD_SCORE === "sum";
     const cmp = (x, y) => {
+      if (bySum && x.sum !== y.sum) return y.sum - x.sum;
       if (x.size !== y.size) return y.size - x.size;
       if (x.ties !== y.ties) return y.ties - x.ties;
       if (x.a !== y.a) return x.a - y.a;
@@ -2972,13 +3123,31 @@ class Game {
       }
       return x.seat - y.seat;
     };
-    const ranked = order.map((_, s) => keyOf(s)).sort(cmp).map((x) => order[x.seat]);
+    const keys = order.map((_, s) => keyOf(s));
+    const ranked = keys.slice().sort(cmp).map((x) => order[x.seat]);
     const winner = ranked[0];
     const loser = ranked[ranked.length - 1];
     this.winner = winner;
     // captured BEFORE the map phase: the winner acts first and clears `played`
     const winSize = this.P[winner].played.length;
     this.say("log.trick", { seat: winner });
+
+    /* How often the two scorings would disagree, and whether the sum rule is
+     * rewarding fewer cards or the same cards. Recorded under both rules so a
+     * pair of runs can be compared directly. */
+    {
+      const byCount = keys.slice().sort((x, y) => {
+        if (x.size !== y.size) return y.size - x.size;
+        return x.seat - y.seat;
+      })[0];
+      const top = keys.find((k) => order[k.seat] === winner);
+      this.inc("meld_sum_tricks");
+      if (byCount && top && byCount.seat !== top.seat) this.inc("meld_sum_differs");
+      if (top) {
+        this.inc("meld_sum_total", top.sum);
+        this.inc("meld_sum_cards", top.lex.length);
+      }
+    }
 
     // ---------------- map phase ----------------
     this.trickOrder = ranked.slice();
@@ -4260,11 +4429,11 @@ class Game {
 
   _wouldClimb(p) {
     const j = p.band();
-    return p.reserve[j] === 1 && j + 1 < BANDS.length;
+    return p.reserve[j] === 1 && j + 1 < this.BANDS.length;
   }
   _nextFood(p) {
-    const j = Math.min(p.band() + 1, BANDS.length - 1);
-    return BANDS[j][3];
+    const j = Math.min(p.band() + 1, this.BANDS.length - 1);
+    return this.BANDS[j][3];
   }
 
   *_recycle(p) {
@@ -4432,7 +4601,7 @@ class Game {
       }
       out.push({ seat: p.i, pop, vrow: vp, dom, obj, objDone,
                  total: pop + vp + dom + obj,
-                 gold: p.gold, band: BANDS[p.band()][0], detail });
+                 gold: p.gold, band: this.BANDS[p.band()][0], detail });
     }
     return out;
   }
@@ -4533,6 +4702,11 @@ function newSession(opts, rand) {
       comboMelds: !!o.comboMelds,
       friendsOf10: !!o.friendsOf10,
       growLimits: !!o.growLimits,
+      /* Both of these change the board everyone is looking at, so they belong
+       * to the TABLE and travel with the session — a guest whose client decided
+       * these for itself would be replaying a different game. */
+      meldScore: o.meldScore === "sum" ? "sum" : "count",
+      layout: o.layout || null,
     },
     /* One entry per seat. `player` is null for a bot seat. */
     seats: new Array(n).fill(null).map((_, i) => ({ seat: i, player: null, name: null })),
@@ -4989,6 +5163,11 @@ function newReport(build, gargs, extra) {
       comboMelds: !!gargs.opts.comboMelds,
       friendsOf10: !!gargs.opts.friendsOf10,
       growLimits: !!gargs.opts.growLimits,
+      /* Two reports of games played under different scoring or a different
+       * player board are not comparable, and without these there is no way to
+       * tell afterwards which was which. */
+      meldScore: gargs.opts.meldScore || "count",
+      layout: gargs.opts.layout || null,
     },
     replay: [],        // the answer tokens: this alone re-deals the whole game
     decisions: [],     // {r, s, t, ms} — one per human decision, in order
@@ -5438,6 +5617,39 @@ function seatRoster(styles, humans) {
   return out;
 }
 
+/* The player board layout the setup page is asking for: a preset name, or the
+ * custom column typed into the box. Returns null for the printed default so a
+ * normal game's options look exactly as they always did — which keeps old
+ * reports and session logs comparable. */
+function chosenLayout() {
+  const pick = $("#layout") ? $("#layout").value : "rulebook";
+  if (pick === "custom") {
+    const raw = ($("#layout-custom") ? $("#layout-custom").value : "").trim();
+    /* An unreadable column falls back rather than starting a game whose board
+     * nobody can describe. The hint under the box has already said so. */
+    return parseLayout(raw) ? raw : null;
+  }
+  return pick === "rulebook" ? null : pick;
+}
+
+/* Show the custom box only when it is wanted, and say what the typed column
+ * comes to — a total that is not 20 is usually a typo, and seeing it is the
+ * cheapest way to catch one. */
+function syncLayoutRow() {
+  const row = $("#layout-custom-row"), sel = $("#layout");
+  if (!row || !sel) return;
+  const custom = sel.value === "custom";
+  row.hidden = !custom;
+  if (!custom) return;
+  const hint = $("#layout-hint");
+  if (!hint) return;
+  const units = parseLayout(($("#layout-custom").value || "").trim());
+  hint.textContent = units
+    ? t("setup.layout.ok", { total: units.reduce((a, b) => a + b, 0), n: units.length })
+    : t("setup.layout.bad", { n: BANDS.length });
+  hint.classList.toggle("bad", !units);
+}
+
 function startGame(force) {
   lastMeldLimit = null;
   const n = playerCount();
@@ -5459,7 +5671,9 @@ function startGame(force) {
                              botStyle: "mixed", seatStyles: styles, botLevel,
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
-                             growLimits: $("#grow-limits").value === "grow" } };
+                             growLimits: $("#grow-limits").value === "grow",
+                             meldScore: $("#meld-score").value,
+                             layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
   REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
@@ -6711,8 +6925,11 @@ function renderPlayer() {
         <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
       </div>`;
 
-  for (let j = 0; j < BANDS.length; j++) {
-    const [name, units, meld, food, moves, , cap] = BANDS[j];
+  /* THIS game's tier table, not the module default — a table playing a custom
+   * layout must show the board it is actually using. */
+  const bands = (G && G.BANDS) || BANDS;
+  for (let j = 0; j < bands.length; j++) {
+    const [name, units, meld, food, moves, , cap] = bands[j];
     const here = j === p.band();
     const left = p.reserve[j];
     let pips = "";
@@ -6742,7 +6959,7 @@ function renderPlayer() {
    * rule in the game that takes something away from you without you choosing
    * it, and it should never be the first time a player hears about it. */
   const owe = p.food();
-  const nextFood = BANDS.findIndex((b) => b[3] > 0);
+  const nextFood = bands.findIndex((b) => b[3] > 0);
   s += `<div class="foodnote${owe ? " due" : ""}">${
     owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
         : t("board.foodNoteFree", { tier: tierName(p.band()),
@@ -7411,6 +7628,8 @@ window.addEventListener("DOMContentLoaded", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);
   });
   $("#bot-level").addEventListener("change", levelNote);
+  if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
+  if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
   $("#pass-go").addEventListener("click", () => {
     PASSED = PENDING_SEAT === null ? PASSED : PENDING_SEAT;
     PENDING_SEAT = null;
@@ -7420,6 +7639,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   setLang(pickLang());
   applyLang();
+  syncLayoutRow();                  // after applyLang, so the hint is translated
   netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
@@ -7747,6 +7967,8 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    meldScore: $("#meld-score").value,
+    layout: chosenLayout(),
   };
 }
 

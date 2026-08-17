@@ -157,6 +157,39 @@ function seatRoster(styles, humans) {
   return out;
 }
 
+/* The player board layout the setup page is asking for: a preset name, or the
+ * custom column typed into the box. Returns null for the printed default so a
+ * normal game's options look exactly as they always did — which keeps old
+ * reports and session logs comparable. */
+function chosenLayout() {
+  const pick = $("#layout") ? $("#layout").value : "rulebook";
+  if (pick === "custom") {
+    const raw = ($("#layout-custom") ? $("#layout-custom").value : "").trim();
+    /* An unreadable column falls back rather than starting a game whose board
+     * nobody can describe. The hint under the box has already said so. */
+    return parseLayout(raw) ? raw : null;
+  }
+  return pick === "rulebook" ? null : pick;
+}
+
+/* Show the custom box only when it is wanted, and say what the typed column
+ * comes to — a total that is not 20 is usually a typo, and seeing it is the
+ * cheapest way to catch one. */
+function syncLayoutRow() {
+  const row = $("#layout-custom-row"), sel = $("#layout");
+  if (!row || !sel) return;
+  const custom = sel.value === "custom";
+  row.hidden = !custom;
+  if (!custom) return;
+  const hint = $("#layout-hint");
+  if (!hint) return;
+  const units = parseLayout(($("#layout-custom").value || "").trim());
+  hint.textContent = units
+    ? t("setup.layout.ok", { total: units.reduce((a, b) => a + b, 0), n: units.length })
+    : t("setup.layout.bad", { n: BANDS.length });
+  hint.classList.toggle("bad", !units);
+}
+
 function startGame(force) {
   lastMeldLimit = null;
   const n = playerCount();
@@ -178,7 +211,9 @@ function startGame(force) {
                              botStyle: "mixed", seatStyles: styles, botLevel,
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
-                             growLimits: $("#grow-limits").value === "grow" } };
+                             growLimits: $("#grow-limits").value === "grow",
+                             meldScore: $("#meld-score").value,
+                             layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
   REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
@@ -1430,8 +1465,11 @@ function renderPlayer() {
         <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
       </div>`;
 
-  for (let j = 0; j < BANDS.length; j++) {
-    const [name, units, meld, food, moves, , cap] = BANDS[j];
+  /* THIS game's tier table, not the module default — a table playing a custom
+   * layout must show the board it is actually using. */
+  const bands = (G && G.BANDS) || BANDS;
+  for (let j = 0; j < bands.length; j++) {
+    const [name, units, meld, food, moves, , cap] = bands[j];
     const here = j === p.band();
     const left = p.reserve[j];
     let pips = "";
@@ -1461,7 +1499,7 @@ function renderPlayer() {
    * rule in the game that takes something away from you without you choosing
    * it, and it should never be the first time a player hears about it. */
   const owe = p.food();
-  const nextFood = BANDS.findIndex((b) => b[3] > 0);
+  const nextFood = bands.findIndex((b) => b[3] > 0);
   s += `<div class="foodnote${owe ? " due" : ""}">${
     owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
         : t("board.foodNoteFree", { tier: tierName(p.band()),
@@ -2130,6 +2168,8 @@ window.addEventListener("DOMContentLoaded", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);
   });
   $("#bot-level").addEventListener("change", levelNote);
+  if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
+  if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
   $("#pass-go").addEventListener("click", () => {
     PASSED = PENDING_SEAT === null ? PASSED : PENDING_SEAT;
     PENDING_SEAT = null;
@@ -2139,6 +2179,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   setLang(pickLang());
   applyLang();
+  syncLayoutRow();                  // after applyLang, so the hint is translated
   netSetup();
   window.addEventListener("resize", () => { if (G) renderMap(); });
 });
@@ -2466,5 +2507,7 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    meldScore: $("#meld-score").value,
+    layout: chosenLayout(),
   };
 }

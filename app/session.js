@@ -79,6 +79,11 @@ function newSession(opts, rand) {
       comboMelds: !!o.comboMelds,
       friendsOf10: !!o.friendsOf10,
       growLimits: !!o.growLimits,
+      /* Both of these change the board everyone is looking at, so they belong
+       * to the TABLE and travel with the session — a guest whose client decided
+       * these for itself would be replaying a different game. */
+      meldScore: o.meldScore === "sum" ? "sum" : "count",
+      layout: o.layout || null,
     },
     /* One entry per seat. `player` is null for a bot seat. */
     seats: new Array(n).fill(null).map((_, i) => ({ seat: i, player: null, name: null })),

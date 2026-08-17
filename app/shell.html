@@ -924,6 +924,13 @@
       </select>
     </div>
     <div class="field">
+      <label for="meld-score" data-i18n="setup.meldScore">Trick is won by</label>
+      <select id="meld-score">
+        <option value="count" selected data-i18n="setup.meldScore.count"></option>
+        <option value="sum" data-i18n="setup.meldScore.sum"></option>
+      </select>
+    </div>
+    <div class="field">
       <label for="deck" data-i18n="setup.deck">Card effects</label>
       <select id="deck">
         <option value="abc" selected data-i18n="setup.deck.abc"></option>
@@ -961,6 +968,23 @@
         <option value="open" data-i18n="setup.objectives.open"></option>
         <option value="both" data-i18n="setup.objectives.both"></option>
       </select>
+    </div>
+    <div class="field">
+      <label for="layout" data-i18n="setup.layout">Player board</label>
+      <select id="layout">
+        <option value="rulebook" selected data-i18n="setup.layout.rulebook"></option>
+        <option value="sim" data-i18n="setup.layout.sim"></option>
+        <option value="late" data-i18n="setup.layout.late"></option>
+        <option value="custom" data-i18n="setup.layout.custom"></option>
+      </select>
+    </div>
+    <!-- Only shown for "custom": a units-per-tier column for testing a layout
+         that has not earned a name yet. -->
+    <div class="field" id="layout-custom-row" hidden>
+      <label for="layout-custom" data-i18n="setup.layout.units">Units per tier</label>
+      <input id="layout-custom" type="text" maxlength="24" value="2-3-5-5-5"
+             inputmode="numeric" autocomplete="off" spellcheck="false">
+      <p class="hint" id="layout-hint"></p>
     </div>
   </details>
 

@@ -63,6 +63,11 @@ function newReport(build, gargs, extra) {
       comboMelds: !!gargs.opts.comboMelds,
       friendsOf10: !!gargs.opts.friendsOf10,
       growLimits: !!gargs.opts.growLimits,
+      /* Two reports of games played under different scoring or a different
+       * player board are not comparable, and without these there is no way to
+       * tell afterwards which was which. */
+      meldScore: gargs.opts.meldScore || "count",
+      layout: gargs.opts.layout || null,
     },
     replay: [],        // the answer tokens: this alone re-deals the whole game
     decisions: [],     // {r, s, t, ms} — one per human decision, in order
