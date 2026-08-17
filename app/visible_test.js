@@ -67,8 +67,14 @@ setTimeout(() => {
   if (chips.map((c) => c.querySelector('b').textContent).join('') !== '123')
     fail.push('the order strip is not numbered 1..n');
   if (!d.querySelector('.pboard')) fail.push('no player board');
-  if (d.querySelectorAll('.pboard .tier-row').length !== 5)
+  /* The heading row shares .tier-row because it shares the column layout, so
+     count the tiers themselves — otherwise this passes or fails on whether a
+     header happens to exist, which is a different question and is asked below. */
+  if (d.querySelectorAll('.pboard .tier-row:not(.head)').length !== 5)
     fail.push('player board is missing its five tier rows');
+  if (!d.querySelector('.pboard .tier-row.head'))
+    fail.push('the player board has no column headings — every number on it is '
+      + 'unlabelled, and a phone cannot reach a tooltip');
   if (d.querySelectorAll('.pboard .tier-row.here').length !== 1)
     fail.push('no current tier marked on the player board');
   if (d.querySelectorAll('.vslots .vslot').length !== 5)

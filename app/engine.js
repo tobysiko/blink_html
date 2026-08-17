@@ -1232,7 +1232,7 @@ class Game {
           /* The water advantage (§07): your FIRST sea move each turn grants one
            * free explore of ANY terrain. It is a real choice, so it is asked. */
           if (fromSea && toSea && !st.waterUsed) {
-            const cells = this.waterExploreCells();
+            const cells = this.waterExploreCells(ans.src, ans.dest);
             const terrains = TER.filter((t) => this.m.supply[t] > 0);
             if (cells.length && terrains.length) {
               /* Spent only when it is actually offered. It used to be marked
@@ -1244,6 +1244,11 @@ class Game {
                                    options: cells, terrains };
               if (pick) {
                 this.m.doExplore(pick.cell, pick.terrain);
+                /* The ship goes ashore. Sighting land and then staying at sea
+                 * left the new tile unowned and the voyage with nothing to
+                 * show for itself; landing on it is what makes the advantage
+                 * read as "you found somewhere and took it". */
+                this._doMove(p, ans.dest, pick.cell);
                 this.inc("water_explore");
                 this.say("log.water");
               }
@@ -1914,19 +1919,32 @@ class Game {
       for (const u of this.m.tiles.get(c).neighbours())
         if ((u.owner === null || u.owner === p.i) && u.hasRoom(p.i) && u.key !== srcKey)
           pool.add(u.key);
-    if (t.terrain === "ocean") {          // sea: across unoccupied Ocean
-      const seen2 = new Set([srcKey]), fr = [srcKey];
-      while (fr.length) {
-        const c = fr.pop();
-        for (const u of this.m.tiles.get(c).neighbours()) {
-          if (seen2.has(u.key) || u.terrain !== "ocean") continue;
-          if (u.units.length) continue;   // your own ships block your own lane
-          seen2.add(u.key); fr.push(u.key);
-          pool.add(u.key);                // you may only END on open water
-        }
+    if (t.terrain === "ocean")            // sea: across unoccupied Ocean
+      for (const k of this.seaGroup(srcKey)) if (k !== srcKey) pool.add(k);
+    return pool;
+  }
+
+  /* The open water a ship at `srcKey` can actually reach: Ocean tiles joined to
+   * it by other Ocean, stopping at any tile that already holds a unit. Includes
+   * srcKey itself, so it is also "the body of water this ship is in".
+   *
+   * Pulled out of moveDests because the water advantage needs the same answer.
+   * When the two were computed separately they drifted apart, and the explore
+   * ended up offering the whole map. */
+  seaGroup(srcKey) {
+    const start = this.m.tiles.get(srcKey);
+    const seen = new Set([srcKey]);
+    if (!start || start.terrain !== "ocean") return seen;
+    const fr = [srcKey];
+    while (fr.length) {
+      const c = fr.pop();
+      for (const u of this.m.tiles.get(c).neighbours()) {
+        if (seen.has(u.key) || u.terrain !== "ocean") continue;
+        if (u.units.length) continue;     // your own ships block your own lane
+        seen.add(u.key); fr.push(u.key);
       }
     }
-    return pool;
+    return seen;
   }
 
   moveSources(p) {
@@ -2014,45 +2032,71 @@ class Game {
   }
 
   /* ---- where the water advantage may lay its tile ----
-   * NOT limited by reach. A card explore acts next to your civilization (§06);
-   * a voyage does not, and that is the whole difference between the two.
    *
-   * The reach limit made the advantage fail in two geometries, and measured
-   * across scripted games it fired on only 74% of first sea moves:
-   *   - the ship sails into an enclosed pocket, so there is no empty cell
-   *     beside it at all (26% of first sea moves);
-   *   - the ship sails to the frontier, where every cell beside it touches
-   *     only the ship's own tile and so fails touch-two — the case a person
-   *     hits constantly and a scripted bot almost never does.
-   * In both, legal spaces existed elsewhere on the map every single time.
+   * A voyage finds new land ON THE COAST IT SAILED TO. The eligible cells are
+   * the empty spaces touching the body of water the ship is in — not the whole
+   * map, and not your own civilization's frontier.
+   *
+   * This used to return every legal space on the board, which made the rule
+   * incoherent at the table: a ship could sail two hexes and a player would
+   * then place a tile in a completely unconnected corner of the map, with no
+   * story attached to it and no relation to the voyage that earned it. That is
+   * the bug this replaces. What a voyage buys is still that the ground it
+   * finds need not be your own (a card explore acts next to your civilization,
+   * §06) — but it must be ground the ship could actually have sighted.
    *
    * Touch-two still holds: §06's "Blink has no bridges" is the structural rule
-   * that keeps the map one reachable body, and a voyage does not get to break
-   * it. What a voyage buys is that the ground it finds need not be your own. */
-  waterExploreCells() {
-    return Array.from(this.m.legalSpaces()).sort();
+   * that keeps the map one reachable body, and a voyage does not break it. So
+   * a cell must both touch the water and touch two tiles overall.
+   *
+   * `srcKey` is where the ship started, `destKey` where it ended; the water it
+   * can see is the union of both, since it sailed through. */
+  waterExploreCells(srcKey, destKey) {
+    const spaces = this.m.legalSpaces();
+    if (!spaces.size) return [];
+    const water = new Set();
+    for (const k of [srcKey, destKey]) {
+      if (k === undefined || k === null) continue;
+      for (const w of this.seaGroup(k)) water.add(w);
+      water.add(k);                       // the ship's own tile counts as coast
+    }
+    /* No voyage named — the caller is asking a question about the map rather
+     * than about a ship. Answering "everywhere" here is what the old bug did;
+     * answering "nowhere" is the safe direction, and no caller does this. */
+    if (!water.size) return [];
+    const out = [];
+    for (const k of spaces) {
+      const [c, r] = unK(k);
+      if (nbrKeys(c, r).some((nb) => water.has(nb))) out.push(k);
+    }
+    return out.sort();
   }
 
-  /* Would THIS sea move collect the advantage? Now only a question about the
-   * map: is there anywhere legal to lay a tile, and is there a tile to lay. */
+  /* Would THIS sea move collect the advantage? A question about this voyage:
+   * is there a tile left to lay, and is there anywhere on this coast to lay
+   * it. Asked before the move, so it must be given both ends explicitly. */
   waterPays(p, srcKey, destKey) {
     const src = this.m.tiles.get(srcKey), dest = this.m.tiles.get(destKey);
     if (!src || !dest) return false;
     if (src.terrain !== "ocean" || dest.terrain !== "ocean") return false;
     if (!TER.some((t) => this.m.supply[t] > 0)) return false;
-    return this.waterExploreCells().length > 0;
+    return this.waterExploreCells(srcKey, destKey).length > 0;
   }
 
-  /* The first sea move each turn grants one free explore of ANY terrain (§07).
-   * Touch-two and reach still apply. */
-  _waterExplore(p) {
-    const opts = this.waterExploreCells();
+  /* The first sea move each turn grants one free explore of ANY terrain (§07),
+   * on the coast the ship sailed to. A bot takes the same deal a person is
+   * offered — including going ashore — or the two would be playing different
+   * games and every measurement taken from bot play would be wrong. */
+  _waterExplore(p, srcKey, destKey) {
+    const opts = this.waterExploreCells(srcKey, destKey);
     if (!opts.length) return null;
     const avail = TER.filter((t) => this.m.supply[t] > 0);
     if (!avail.length) return null;
     const terr = avail.reduce((a, b) => (this.m.supply[b] > this.m.supply[a] ? b : a));
-    if (this.m.doExplore(opts[0], terr)) { this.inc("water_explore"); return opts[0]; }
-    return null;
+    if (!this.m.doExplore(opts[0], terr)) return null;
+    this.inc("water_explore");
+    if (destKey !== undefined && destKey !== null) this._doMove(p, destKey, opts[0]);
+    return opts[0];
   }
 
   _seaMove(p) {
@@ -2072,7 +2116,7 @@ class Game {
     const sea = this._seaMove(p);
     if (budget > 0 && sea) {
       this._doMove(p, sea[0], sea[1]);
-      this._waterExplore(p);
+      this._waterExplore(p, sea[0], sea[1]);
       budget -= 1;
     }
     /* Pro seats move ONLY for a reason. There is deliberately no fallback to

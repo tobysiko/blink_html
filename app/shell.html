@@ -20,7 +20,10 @@
   /* The GAME is a fixed-height app layout and must not scroll; the setup page
      is a form that grows — with the advanced rules open it is taller than a
      laptop window, and `overflow:hidden` on the body would simply cut the
-     Start button off with no way to reach it. */
+     Start button off with no way to reach it.
+     Note the class on BOTH sides of the narrow-screen override below. A media
+     query adds no specificity, so a plain `body{overflow:auto}` inside one
+     loses to this rule and the phone layout silently cannot scroll at all. */
   body.playing{overflow:hidden}
   header{
     background:var(--deep); color:#F4F1EA; padding:7px 14px;
@@ -482,14 +485,35 @@
   .uslot{width:11px; height:11px; border-radius:50%; border:1px dashed #B9B4A8;
     display:inline-block}
   .uslot.full{border:1px solid #1C1F1D; border-style:solid}
-  .food{width:52px; flex:none; display:flex; gap:2px; align-items:center}
+  .food{width:56px; flex:none; display:flex; gap:2px; align-items:center}
   .food .free{font-style:italic; font-size:9.5px}
+  .food b{font-weight:700; color:var(--ink)}
+  .tier-row:not(.here) .food b{color:var(--mut); font-weight:600}
   .cslot{width:9px; height:9px; border-radius:50%; border:1px solid #C9992B;
     background:#FBF3DC; display:inline-block}
   .mv{width:30px; flex:none; font-weight:600; color:var(--ink)}
   .tier-row:not(.here) .mv{color:var(--mut); font-weight:400}
   .mv em{font-style:normal; font-size:9px; color:var(--mut); margin-left:1px}
   .cap{width:22px; flex:none; text-align:right; font-weight:600}
+
+  /* The heading row. Every number in this table used to be unlabelled, with
+     its meaning only in a `title` tooltip — invisible on a desktop until you
+     hover, and unreachable on a phone, where a touch has no hover. */
+  .tier-row.head{background:#EFEBE1; color:var(--hint); font-size:9px;
+    text-transform:uppercase; letter-spacing:.3px; font-weight:600;
+    padding-top:3px; padding-bottom:3px}
+  .tier-row.head .mlim{border:none; background:none; font-size:9px; width:17px;
+    color:var(--hint); font-weight:600; letter-spacing:0}
+  .tier-row.head .tname, .tier-row.head .mv, .tier-row.head .cap,
+  .tier-row.head .food{color:var(--hint); font-weight:600}
+  .tier-row.head .cap{text-align:right}
+  .tier-row.head .uslots{min-width:96px}
+
+  /* The feeding cost, in a sentence. The table says what every tier costs;
+     this says what YOURS costs, which is the part that ambushes people. */
+  .foodnote{margin-top:4px; font-size:10.5px; color:var(--hint); line-height:1.35}
+  .foodnote.due{color:var(--ink)}
+  .foodnote.due::before{content:"⚠ "; color:#B4802A}
 
   .vrowbox{margin-top:5px; display:flex; align-items:center; gap:7px; flex-wrap:wrap}
   .vslots{display:flex; gap:4px}
@@ -733,7 +757,12 @@
      board, the map gets the full width, and the page scrolls. The map area is
      sized in vh and grows if the melds above it are small. */
   @media (max-width: 900px){
-    body{overflow:auto}
+    /* `body.playing`, not `body`: a media query contributes nothing to
+       specificity, so the plain selector that used to be here lost to
+       `body.playing{overflow:hidden}` at the top of this file and the whole
+       phone layout could not scroll — the only way to reach the bottom of the
+       board was to pinch-zoom the page and pan the visual viewport. */
+    body, body.playing{overflow:auto}
     #game{height:auto}
     .wrap{height:auto}
     .lower{max-height:none; overflow:visible}
@@ -753,8 +782,20 @@
     body{font-size:13px}
     header .sub{display:none}                 /* the title bar stops wrapping */
     #mapbox{grid-template-rows:auto auto minmax(160px,38vh) auto}
-    .tname{width:74px}
-    .food,.mv{display:none}
+    .tname{width:60px}
+    /* `.food` and `.mv` used to be display:none here. They are the feeding
+       cost and the move allowance — the two numbers a player most needs and
+       cannot deduce from anything else on screen — so on a phone the board was
+       hiding exactly the wrong two columns. They shrink instead: the unit pips
+       give up their width, since those are already drawn on the map. */
+    .uslots{min-width:0; flex:1 1 auto}
+    .uslot{width:9px; height:9px}
+    .food{width:40px}
+    .food .cslot{display:none}                /* the number carries it */
+    .mv{width:24px}
+    .mv em{display:none}
+    .tier-row{gap:5px}
+    .tier-row.head{font-size:8px; letter-spacing:0}
     .cf.mid{width:56px}
     .vslot{min-width:56px}
     .slot{min-width:58px}

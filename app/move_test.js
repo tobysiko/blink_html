@@ -131,17 +131,81 @@ function turnRun(g, seat, answers) {
   }), 'the water advantage offered a space touching fewer than two tiles');
 }
 
-// ------------------------------- the advantage is not limited by reach
-/* The geometry that used to kill it: a ship sails into an enclosed pocket, so
- * there is no empty cell beside it at all. Under the old reach rule the
- * advantage found nothing and paid nothing; a voyage now lays its tile
- * anywhere the map legally takes one.
+// --------------------------- the advantage lands on the coast it sailed to
+/* A voyage finds land where the ship went, not wherever the player fancies.
+ * The eligible cells are the empty spaces touching the water the ship is in;
+ * an unconnected legal space on the far side of the map is not on offer.
  *
- * A seven-hex flower does it — a centre with all six neighbours already tiles.
- * (The other half of the complaint, a ship at the frontier, turns out to be the
- * same case: any destination with at least one neighbouring tile shares two
- * cells with it, and those touch two tiles, so they are legal. The only way to
- * have nothing beside you is to be surrounded.) */
+ * This replaces the opposite rule. The advantage used to offer every legal
+ * space on the board, which at the table meant sailing two hexes and then
+ * placing a tile in a corner the ship had never been near — the rule had no
+ * story and no geography. */
+{
+  /* Two separate bodies of water, far apart, with land between them. The ship
+   * is in the west one; the east one has its own coastline, and none of it is
+   * reachable from where the ship is. */
+  const g = board([
+    // west: the ship's water, and a shore to find
+    [0, 0, 'ocean', 0], [1, 0, 'ocean', null], [0, 1, 'plains', null],
+    // east: a second coastline, unconnected — legal spaces, but not this voyage's
+    [8, 0, 'plains', null], [9, 0, 'plains', null], [8, 1, 'plains', null],
+  ]);
+  g.P[0].reserve = [2, 4, 6, 4, 4];
+
+  const all = g.m.legalSpaces();
+  const offer = g.waterExploreCells('0,0', '1,0');
+  ok(offer.length > 0, 'a voyage along a real coast was offered nothing at all');
+  ok(offer.length < all.size,
+     'the voyage was offered every legal space on the map — the coast it sailed '
+     + 'to is not being used to narrow the offer at all');
+
+  const water = new Set(['0,0', '1,0']);
+  for (const k of offer) {
+    const [c, r] = E.unK(k);
+    ok(E.nbrKeys(c, r).some((n) => water.has(n)),
+       `${k} was offered but touches none of the water the ship sailed`);
+    ok(E.nbrKeys(c, r).filter((n) => g.m.tiles.has(n)).length >= 2,
+       `${k} was offered but touches fewer than two tiles`);
+  }
+  // the far coastline is legal ground, and must still not be on offer
+  const far = [...all].filter((k) => {
+    const [c] = E.unK(k);
+    return c >= 7;
+  });
+  ok(far.length > 0, 'the test board has no far-away legal space — it proves nothing');
+  for (const k of far)
+    ok(!offer.includes(k),
+       `${k} is across the map from the voyage and was still offered`);
+}
+
+/* And the ship goes ashore: sighting land and staying at sea left the new tile
+ * unowned, so the voyage produced a tile for nobody. */
+{
+  const g = board([[0, 0, 'ocean', 0], [1, 0, 'ocean', null], [0, 1, 'plains', null],
+                   [1, 1, 'plains', null]]);
+  g.P[0].reserve = [2, 4, 6, 4, 4];
+  let chosen = null;
+  turnRun(g, 0, [
+    { kind: 'move', src: '0,0', dest: '1,0' },
+    (req) => { chosen = req.options[0]; return { cell: chosen, terrain: 'plains' }; },
+    { kind: 'end' },
+  ]);
+  ok(chosen, 'no free tile was offered on an open coast');
+  const landed = chosen && g.m.tiles.get(chosen);
+  ok(landed, `the chosen cell ${chosen} never became a tile`);
+  ok(landed && landed.units.includes(0),
+     'the ship found land and stayed at sea — the new tile has nobody on it');
+  ok(landed && landed.owner === 0,
+     'the tile the voyage found belongs to nobody');
+  const from = g.m.tiles.get('1,0');
+  ok(from && !from.units.length,
+     'the unit is on the new tile AND still on the water it sailed from');
+}
+
+/* A ship with no coast in reach is offered nothing — and must not have the
+ * advantage burned for the turn. A closed pocket: the ship sails into a centre
+ * whose every neighbour is already a tile, and the water it came from is
+ * itself fully enclosed. */
 {
   const ring = E.nbrKeys(0, 0).map((k) => E.unK(k));
   const spec = [[0, 0, 'ocean', null]];
@@ -155,9 +219,10 @@ function turnRun(g, seat, answers) {
   ok(E.nbrKeys(0, 0).every((k) => g.m.tiles.has(k)),
      'the flower is not closed — the test board is wrong');
   ok(g.m.legalSpaces().size > 0, 'the flower has no legal space anywhere');
-  ok(g.waterPays(g.P[0], src, '0,0'),
-     'sailing into a closed pocket still reports no free tile');
 
+  /* The ring ocean tile still has open cells beside it on the outside of the
+   * flower, so this voyage does find a coast — and every cell offered must
+   * touch the water, not merely be legal somewhere on the board. */
   let offered = null;
   turnRun(g, 0, [
     { kind: 'move', src, dest: '0,0' },
@@ -167,12 +232,12 @@ function turnRun(g, seat, answers) {
   const gotWater = !!offered && offered.type === 'waterexplore';
   ok(gotWater, `no explore was offered after sailing into a closed pocket`
      + `${offered ? ` — got a ${offered.type} request instead` : ""}`);
-  ok(gotWater && offered.options.length === g.m.legalSpaces().size,
-     'the offer is still being narrowed to your own reach');
-  // and every cell offered is a legal space — touch-two still holds
   if (gotWater) {
+    const water = new Set([src, '0,0']);
     for (const k of offered.options) {
       const [c, r] = E.unK(k);
+      ok(E.nbrKeys(c, r).some((n) => water.has(n)),
+         `${k} was offered but touches none of the water the ship sailed`);
       ok(E.nbrKeys(c, r).filter((n) => g.m.tiles.has(n)).length >= 2,
          `${k} was offered but touches fewer than two tiles`);
     }

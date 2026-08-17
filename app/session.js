@@ -290,8 +290,27 @@ function sessionAnswer(s, Engine, token, step, tok) {
 }
 
 /* Where the acting seat's own map turn began — the same limit the local game
- * enforces, worked out here from the log rather than remembered. */
-const TURN_REQ = ["turn", "waterexplore", "conquest", "retire", "buy", "colony"];
+ * enforces, worked out here from the log rather than remembered.
+ *
+ * `bonus`, `discard` and `setaside` are on this list because they happen INSIDE
+ * the acting seat's own block, immediately before the map turn: the trick has
+ * resolved, it is your turn, and the first thing you are asked is which card to
+ * spend or give up. Leaving them off did two things, and the second is worse
+ * than the first:
+ *
+ *   1. the choice itself could not be taken back — and picking which card
+ *      leaves your hand is exactly the kind of decision a player wants back;
+ *   2. it moved the floor. An unlisted request set the block to null, so the
+ *      `turn` that followed looked like a NEW block and re-marked the floor
+ *      after the answer already given. Everything before it in the same turn
+ *      became unreachable, and the player simply found undo dead for no reason
+ *      they could see.
+ *
+ * `feed` is deliberately NOT here: it belongs to the recycle at the end of the
+ * round, not to anyone's turn, and by then the round it would rewind into has
+ * been seen by everybody. */
+const TURN_REQ = ["turn", "waterexplore", "conquest", "retire", "buy", "colony",
+                  "bonus", "discard", "setaside"];
 function undoFloor(s, Engine, seat) {
   const a = gameArgs(s);
   const g = new Engine.Game(a.n, a.seed, a.opts);

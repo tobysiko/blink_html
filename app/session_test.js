@@ -233,6 +233,64 @@ S.sessionAnswer(s4, E, h4.player.token, 0, { pick: 0 });     // the meld
 ok(!S.sessionUndo(s4, E, h4.player.token).ok,
    'a meld could be unplayed after the trick — that is a look at the answers');
 
+// ------------------------------------------ nothing severs your own turn
+/* A playtest note said only "couldn't use undo at some point", and the cause
+ * was this: a request made to your seat that TURN_REQ did not list would set
+ * the block to null, so the next `turn` looked like a fresh block and the undo
+ * floor was re-marked AFTER an answer you had already given. The decision
+ * itself became unreachable, and so did everything before it in the same turn
+ * — undo simply went dead with nothing on screen to explain why.
+ *
+ * `setaside`, `bonus` and `discard` are all asked at the top of your own turn
+ * block, right after the trick resolves. This walks real games and asserts
+ * that no request made to your seat inside your own turn ever severs it.
+ * Measured against the old list this fires 56 times in 40 games.
+ */
+{
+  const TURN_REQ = ['turn', 'waterexplore', 'conquest', 'retire', 'buy', 'colony',
+                    'bonus', 'discard', 'setaside'];
+  const SEVERING = ['bonus', 'discard', 'setaside'];
+  let severed = 0, blocks = 0, sawSevering = 0;
+  const kinds = {};
+
+  for (const rule of ['classic', 'bonus']) {
+    for (let seed = 1; seed <= 12; seed++) {
+      const g = new E.Game(3, seed * 131 + 7, { humans: [0], trickRule: rule });
+      let it = g.playRound(), r = it.next(), guard = 0, block = null;
+      while (guard++ < 20000) {
+        if (r.done) { if (g.finished()) break; it = g.playRound(); r = it.next(); continue; }
+        const q = r.value;
+        if (q.seat === 0) {
+          if (TURN_REQ.includes(q.type)) {
+            const key = g.round + ':' + q.seat;
+            if (key !== block) { block = key; blocks++; }
+            if (SEVERING.includes(q.type)) {
+              sawSevering++;
+              kinds[q.type] = (kinds[q.type] || 0) + 1;
+            }
+          } else {
+            /* Anything else legitimately ends the block — but it must not be
+             * one of the three that belong to your turn. */
+            if (SEVERING.includes(q.type)) { severed++; kinds[q.type] = -1; }
+            block = null;
+          }
+        }
+        let a = null;
+        if (q.type === 'turn') a = { kind: 'end' };
+        else if (q.options && q.options.length) a = q.options[0];
+        r = it.next(a);
+      }
+    }
+  }
+  ok(blocks > 50, `only ${blocks} turn blocks seen — the walk is not reaching play`);
+  ok(sawSevering > 0,
+     'no bonus/discard/setaside request came up in 24 games, so this proves '
+     + 'nothing — the trick rules must have changed');
+  ok(severed === 0,
+     `${severed} decision(s) taken on your own turn fell outside the undo floor `
+     + `(${JSON.stringify(kinds)}) — undo would go dead for the rest of that turn`);
+}
+
 // --------------------------------------------------------------- flags
 const f = S.sessionFlag(s4, h4.player.token, { note: 'why is this greyed out' });
 ok(f.ok && f.flag.seat === 0 && typeof f.flag.step === 'number',

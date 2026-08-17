@@ -236,6 +236,19 @@ en: {
   "board.rankCap": "highest rank you may buy",
   "board.mv": "mv",
   "board.free": "free",
+  /* Column headings for the tier table. These used to be `title` tooltips
+     only, which meant the numbers were unlabelled on a desktop and completely
+     unreachable on a phone — a player met the feeding cost for the first time
+     when it took a unit off their map. Short enough to sit above a number. */
+  "board.colMeld": "cards",
+  "board.colTier": "tier",
+  "board.colUnits": "population",
+  "board.colFood": "feeds",
+  "board.colMove": "moves",
+  "board.colCap": "buy up to",
+  "board.foodNote": "Each refill costs {n} 🪙 at {tier}. Short of gold, a unit "
+    + "comes off the map.",
+  "board.foodNoteFree": "Refilling is free at {tier}. From {next} on it costs gold.",
   "board.victoryRow": "victory row",
   "board.units": "units",
   "board.pop": "pop {pop} · row {row} · dom {dom}",
@@ -641,6 +654,15 @@ de: {
   "board.rankCap": "höchster Wert, den du kaufen darfst",
   "board.mv": "Bw",
   "board.free": "frei",
+  "board.colMeld": "Karten",
+  "board.colTier": "Stufe",
+  "board.colUnits": "Bevölkerung",
+  "board.colFood": "Nahrung",
+  "board.colMove": "Bewegung",
+  "board.colCap": "Kauf bis",
+  "board.foodNote": "Jede Auffrischung kostet {n} 🪙 als {tier}. Fehlt das Gold, "
+    + "kommt eine Einheit von der Karte.",
+  "board.foodNoteFree": "Auffrischen ist als {tier} kostenlos. Ab {next} kostet es Gold.",
   "board.victoryRow": "Siegreihe",
   "board.units": "Einheiten",
   "board.pop": "Bev. {pop} · Reihe {row} · Vorherrschaft {dom}",

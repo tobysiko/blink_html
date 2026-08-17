@@ -1393,7 +1393,15 @@ function renderPlayer() {
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
-    <div class="tiers">`;
+    <div class="tiers">
+      <div class="tier-row head">
+        <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
+        <span class="tname">${t("board.colTier")}</span>
+        <span class="uslots">${t("board.colUnits")}</span>
+        <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
+        <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
+        <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
+      </div>`;
 
   for (let j = 0; j < BANDS.length; j++) {
     const [name, units, meld, food, moves, , cap] = BANDS[j];
@@ -1403,8 +1411,13 @@ function renderPlayer() {
     for (let u = 0; u < units; u++)
       pips += `<i class="uslot${u < left ? " full" : ""}"
         style="${u < left ? `background:${SEAT_C[ME]}` : ""}"></i>`;
-    let coins = food ? "" : `<span class="free">${t("board.free")}</span>`;
-    for (let f = 0; f < food; f++) coins += `<i class="cslot"></i>`;
+    /* The cost as a NUMBER first, then the coin slots that mirror the printed
+     * board. The slots alone are the thing players were reading straight past:
+     * two small empty circles do not say "this will cost you two gold every
+     * time you refill your hand". */
+    let coins = food
+      ? `<b>${food}</b>` + `<i class="cslot"></i>`.repeat(food)
+      : `<span class="free">${t("board.free")}</span>`;
     s += `<div class="tier-row${here ? " here" : ""}">
       <span class="mlim" title="${t("board.meldLimit")}">${meld}</span>
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em></span>
@@ -1415,6 +1428,18 @@ function renderPlayer() {
     </div>`;
   }
   s += `</div>`;
+
+  /* And say the bill out loud, for the tier you are actually on. A table of
+   * numbers is a reference; this is the warning — the feeding cost is the one
+   * rule in the game that takes something away from you without you choosing
+   * it, and it should never be the first time a player hears about it. */
+  const owe = p.food();
+  const nextFood = BANDS.findIndex((b) => b[3] > 0);
+  s += `<div class="foodnote${owe ? " due" : ""}">${
+    owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
+        : t("board.foodNoteFree", { tier: tierName(p.band()),
+                                    next: tierName(nextFood < 0 ? 1 : nextFood) })
+  }</div>`;
 
   // victory row — five slots, pushed right, centre slot marked
   /* The row is clickable whenever a step wants a card FROM it — including the
