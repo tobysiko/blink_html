@@ -29,14 +29,19 @@ const fs = require('fs');
 const path = require('path');
 
 /* Takes a path so the check can be pointed at an older or deployed build —
- * which is how it was confirmed to actually catch the bug it describes. */
-const HTML = process.argv[2] || path.join(__dirname, '..', 'Blink-play-v0.22.html');
+ * which is how it was confirmed to actually catch the bug it describes.
+ *
+ * With no argument it checks BOTH the readable build and the minified one that
+ * is actually deployed. They are different files: the minifier rewrites the
+ * stylesheet, and the readable build passing says nothing about the artifact
+ * players load. */
+const TARGETS = process.argv[2]
+  ? [process.argv[2]]
+  : [path.join(__dirname, '..', 'Blink-play-v0.22.html'),
+     path.join(__dirname, '..', 'deploy', 'index.html')].filter(fs.existsSync);
 const fail = [];
-const ok = (c, what) => { if (!c) fail.push(what); };
-
-const html = fs.readFileSync(HTML, 'utf8');
-const css = (html.match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
-ok(css.length > 1000, 'no stylesheet found in the built page');
+let WHERE = '';
+const ok = (c, what) => { if (!c) fail.push(`[${WHERE}] ${what}`); };
 
 /* ---- a small cascade, for one element at one viewport width -------------
  *
@@ -66,22 +71,60 @@ function matches(sel, el) {
   return true;
 }
 
-/* Split the sheet into {media, selector, body} rules, one level of @media. */
+/* Split the sheet into {media, selector, body} rules, one level of @media.
+ *
+ * Brace-matched rather than pattern-matched, because the file that actually
+ * ships is MINIFIED — one long line with no indentation. An earlier version of
+ * this found the end of an @media block by looking for a newline and two
+ * spaces, which worked perfectly on the readable build and silently mis-parsed
+ * the deployed one, reporting every media rule as unconditional. A test that
+ * cannot read the artifact it is meant to protect is worse than no test, so
+ * this reads both and is run against both. */
 function rules(text) {
+  const src = text.replace(/\/\*[\s\S]*?\*\//g, '');
   const out = [];
-  const stripped = text.replace(/\/\*[\s\S]*?\*\//g, '');
-  const re = /@media([^{]+)\{([\s\S]*?)\n {2}\}|([^{}@]+)\{([^{}]*)\}/g;
-  let m;
-  while ((m = re.exec(stripped))) {
-    if (m[1] !== undefined) {
-      const cond = m[1].trim();
-      const inner = /([^{}]+)\{([^{}]*)\}/g;
-      let k;
-      while ((k = inner.exec(m[2]))) out.push({ media: cond, sel: k[1], body: k[2] });
-    } else {
-      out.push({ media: null, sel: m[3], body: m[4] });
+
+  /* Walk the block starting at `from` (the index of its `{`), returning the
+   * body and the index just past its matching `}`. */
+  function block(from) {
+    let depth = 0;
+    for (let i = from; i < src.length; i++) {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') {
+        depth--;
+        if (!depth) return { body: src.slice(from + 1, i), end: i + 1 };
+      }
     }
+    return { body: src.slice(from + 1), end: src.length };
   }
+
+  /* Flat rules inside a chunk of CSS that contains no at-rules. */
+  function flat(chunk, media) {
+    const re = /([^{}]+)\{([^{}]*)\}/g;
+    let m;
+    while ((m = re.exec(chunk))) out.push({ media, sel: m[1], body: m[2] });
+  }
+
+  /* Emitted strictly in source order. Two rules of equal specificity are
+   * decided by which comes later, and `body.playing{overflow:hidden}` at the
+   * top of the file versus `body.playing{overflow:auto}` in the media block at
+   * the bottom is exactly that comparison — so collecting all the media rules
+   * first would invert the very answer this test exists to check. */
+  let i = 0;
+  while (i < src.length) {
+    const at = src.indexOf('@', i);
+    if (at < 0) break;
+    const open = src.indexOf('{', at);
+    if (open < 0) break;
+    flat(src.slice(i, at), null);              // the plain rules before it
+    const prelude = src.slice(at, open);
+    const { body, end } = block(open);
+    if (/^@media/i.test(prelude)) flat(body, prelude.replace(/^@media/i, '').trim());
+    /* @supports, @keyframes and friends: not what this test is about, and
+     * their contents must not be mistaken for top-level rules. */
+    i = end;
+  }
+  flat(src.slice(i), null);
   return out;
 }
 
@@ -107,12 +150,27 @@ function winner(all, el, prop, width) {
   return best;
 }
 
-const all = rules(css);
-ok(all.length > 50, `only parsed ${all.length} rules out of the stylesheet`);
-
 const PHONE = 390, DESKTOP = 1400;
 const playing = { tag: 'body', classes: ['playing'], id: null };
 const setup = { tag: 'body', classes: [], id: null };
+let summary = '';
+
+for (const target of TARGETS) {
+  WHERE = path.basename(target);
+  const html = fs.readFileSync(target, 'utf8');
+  const css = (html.match(/<style>([\s\S]*?)<\/style>/) || [, ''])[1];
+  ok(css.length > 1000, 'no stylesheet found in the built page');
+
+  const all = rules(css);
+  ok(all.length > 50, `only parsed ${all.length} rules out of the stylesheet`);
+  summary = check(all) || summary;
+}
+
+console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
+  : `phone layout (${TARGETS.map((f) => path.basename(f)).join(' + ')}): ${summary}`);
+process.exit(fail.length ? 1 : 0);
+
+function check(all) {
 
 /* ---- 1. the bug itself ------------------------------------------------- */
 
@@ -192,8 +250,8 @@ for (const r of all.filter((x) => x.media && /(?:^|;)\s*overflow\s*:/.test(x.bod
     + 'so this override never applies');
 }
 
-console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-  : `phone layout: mid-game the page scrolls at ${PHONE}px `
-    + `(body:${phoneBody.value} from \`${phoneBody.sel}\`) and stays pinned at `
-    + `${DESKTOP}px (body:${deskBody.value}); setup scrolls everywhere`);
-process.exit(fail.length ? 1 : 0);
+  return `mid-game the page scrolls at ${PHONE}px `
+    + `(body:${phoneBody && phoneBody.value} from \`${phoneBody && phoneBody.sel}\`) `
+    + `and stays pinned at ${DESKTOP}px (body:${deskBody && deskBody.value}); `
+    + 'setup scrolls everywhere; nothing a player needs is display:none';
+}
