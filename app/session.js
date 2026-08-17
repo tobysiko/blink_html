@@ -209,7 +209,13 @@ function encodeAnswer(g, req, a) {
     const st = req.state, p = g.P[req.seat], o = { kind: a.kind };
     if (a.kind === "spend") { o.i = st.cards.indexOf(a.card); o.cell = a.cell; o.act = a.act; }
     else if (a.kind === "cash") o.i = st.cards.indexOf(a.card);
-    else if (a.kind === "move") { o.src = a.src; o.dest = a.dest; }
+    /* `terrain` only appears on a landfall — a move onto a cell with no tile —
+     * and it has to be carried, or a replay lays a different tile than the game
+     * did and every board downstream of it disagrees. */
+    else if (a.kind === "move") {
+      o.src = a.src; o.dest = a.dest;
+      if (a.terrain) o.terrain = a.terrain;
+    }
     else if (a.kind === "fortify") o.cell = a.cell;
     else if (["colony", "conquest", "cashRow"].includes(a.kind)) o.i = p.vrow.indexOf(a.card);
     return o;
@@ -227,7 +233,8 @@ function decodeAnswer(g, req, tok) {
     const st = req.state, p = g.P[req.seat], k = tok.kind;
     if (k === "spend") return { kind: k, card: st.cards[tok.i], cell: tok.cell, act: tok.act };
     if (k === "cash") return { kind: k, card: st.cards[tok.i] };
-    if (k === "move") return { kind: k, src: tok.src, dest: tok.dest };
+    if (k === "move")
+      return { kind: k, src: tok.src, dest: tok.dest, terrain: tok.terrain };
     if (k === "fortify") return { kind: k, cell: tok.cell };
     if (["colony", "conquest", "cashRow"].includes(k)) return { kind: k, card: p.vrow[tok.i] };
     return { kind: k };

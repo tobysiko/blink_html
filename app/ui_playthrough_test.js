@@ -126,7 +126,14 @@ function run(seed, n, seat, deck, obj, cb) {
         note('colony-cell');
         const h = hot();
         if (h) click(h); else click(btn(/Stop here/));
-      } else if (/Which terrain/.test(t)) {
+      } else if (/Landfall/.test(t)) {
+        /* A move that ends on ground that does not exist yet: the cell was
+         * already chosen by the move itself, so the only question left is which
+         * tile to lay. Matched before the general terrain case because it is
+         * reached from a different place and is worth counting separately. */
+        note('landfall');
+        click(q('.go.terr'));
+      } else if (/which terrain/i.test(t)) {
         click(q('.go.terr'));
       }
       setTimeout(tick, 0);

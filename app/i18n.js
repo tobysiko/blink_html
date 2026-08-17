@@ -221,6 +221,10 @@ en: {
   "hex.moveHere": "Move here",
   "hex.sailHere": "Sail here",
   "hex.sailFree": "Sail — free tile",
+  /* Landing on ground that does not exist yet: the tile is laid and the unit
+     steps onto it, all in one move. "Land here" says what happens; "new tile"
+     says why the hex is empty. */
+  "hex.landfall": "Land here — new tile",
   "hex.strike": "Strike",
   "hex.fortify": "Fortify",
   "hex.freeTile": "Free tile",
@@ -291,8 +295,11 @@ en: {
   "ask.colony": "<b>Found a colony</b> <span class=\"muted\">— {left} tile(s) to lay{settles} · {terrain}. Click a highlighted space next to your civilization.</span>",
   "ask.colony.settles": ", {n} to settle",
   "ask.colony.any": "any terrain",
-  "ask.water": "<b>Water advantage.</b> Your first sea move grants one free tile of <b>any</b> terrain, <b>anywhere</b> on the map — a voyage is not bound to your own reach. Click a highlighted space.",
+  /* This used to promise a tile "anywhere on the map", which was the rule at the
+     time and is not any more: a voyage finds land on the coast it sailed to. */
+  "ask.water": "<b>Water advantage.</b> Your first sea move grants one free tile of <b>any</b> terrain, on the coast this voyage reached — not your own frontier, but not the far side of the map either. Click a highlighted space.",
   "ask.terrain": "<b>Which terrain?</b>",
+  "ask.landTerrain": "<b>Landfall — which terrain?</b> <span class=\"muted\">The tile is laid here and your unit steps onto it.</span>",
   "ask.move": "<b>Move</b> <span class=\"muted\">— {n} left · {what}</span>",
   "ask.move.pick": "pick a unit",
   "ask.move.dest": "pick where it goes",
@@ -639,6 +646,7 @@ de: {
   "hex.moveHere": "Hierher",
   "hex.sailHere": "Hierher segeln",
   "hex.sailFree": "Segeln — Gratisfeld",
+  "hex.landfall": "Hier landen — neues Feld",
   "hex.strike": "Angriff",
   "hex.fortify": "Befestigen",
   "hex.freeTile": "Gratisfeld",
@@ -705,8 +713,9 @@ de: {
   "ask.colony": "<b>Kolonie gründen</b> <span class=\"muted\">— noch {left} Feld(er) zu legen{settles} · {terrain}. Klicke eine hervorgehobene Lücke neben deiner Zivilisation.</span>",
   "ask.colony.settles": ", {n} zu besiedeln",
   "ask.colony.any": "beliebiges Gelände",
-  "ask.water": "<b>Vorteil zur See.</b> Deine erste Seebewegung bringt ein Gratisfeld <b>beliebigen</b> Geländes, <b>überall</b> auf der Karte — eine Seereise ist nicht an deine Reichweite gebunden. Klicke eine hervorgehobene Lücke.",
+  "ask.water": "<b>Vorteil zur See.</b> Deine erste Seebewegung bringt ein Gratisfeld <b>beliebigen</b> Geländes an der Küste, die diese Reise erreicht hat — nicht nur an deiner eigenen Grenze, aber auch nicht am anderen Ende der Karte. Klicke eine hervorgehobene Lücke.",
   "ask.terrain": "<b>Welches Gelände?</b>",
+  "ask.landTerrain": "<b>Landgang — welches Gelände?</b> <span class=\"muted\">Das Feld wird hier gelegt, und deine Einheit tritt darauf.</span>",
   "ask.move": "<b>Bewegen</b> <span class=\"muted\">— noch {n} · {what}</span>",
   "ask.move.pick": "wähle eine Einheit",
   "ask.move.dest": "wähle das Ziel",

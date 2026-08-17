@@ -839,6 +839,18 @@ function seaDests(src) {
 function seaPays(src, dest) {
   try { return G.waterPays(G.P[ME], src, dest); } catch (e) { return false; }
 }
+/* The empty cells this source may make landfall on. The engine sends them with
+ * the turn options, keyed by source; falling back to asking it directly keeps
+ * an older server's reply from silently removing the option. */
+function landfallFor(src) {
+  const given = REQ && REQ.opts && REQ.opts.landfall;
+  if (given && given[src]) return given[src];
+  if (given) return [];
+  try {
+    return G.landfallCells(G.P[ME], src,
+                           !(REQ && REQ.opts && REQ.opts.waterReady));
+  } catch (e) { return []; }
+}
 
 function activeCells() {
   const out = new Map();
@@ -847,12 +859,18 @@ function activeCells() {
     if (SEL.mode === "move") {
       if (!SEL.moveSrc) {
         for (const k of REQ.opts.moveSources)
-          out.set(k, { act: "source", sea: seaDests(k).size > 0 });
+          out.set(k, { act: "source",
+                       sea: seaDests(k).size > 0 || landfallFor(k).length > 0 });
       } else {
         const sea = seaDests(SEL.moveSrc);
         for (const k of G.moveDests(G.P[ME], SEL.moveSrc))
           out.set(k, { act: "dest", sea: sea.has(k),
                        pays: sea.has(k) && seaPays(SEL.moveSrc, k) });
+        /* And the empty ground this voyage may make landfall on. These are not
+         * tiles yet — the engine lays one and lands the unit on it as the move
+         * resolves — so they come from their own list, not from moveDests. */
+        for (const k of landfallFor(SEL.moveSrc))
+          if (!out.has(k)) out.set(k, { act: "landfall" });
       }
     } else if (SEL.mode === "fortify") {
       for (const k of REQ.opts.fortifyCells) out.set(k, { act: "fortify" });
@@ -1100,6 +1118,7 @@ function cellBadge(a) {
     // only promise the free tile where there is somewhere legal to put it
     return t(REQ.opts && REQ.opts.waterReady && a.pays ? "hex.sailFree" : "hex.sailHere");
   }
+  if (a.act === "landfall") return t("hex.landfall");
   if (a.act === "strike") return t("hex.strike");
   if (a.act === "fortify") return t("hex.fortify");
   if (a.act === "explore") return t("hex.freeTile");
@@ -1120,6 +1139,14 @@ function onCell(k) {
   if (SEL.mode === "fortify") { answer({ kind: "fortify", cell: k }); return; }
   if (SEL.mode === "move") {
     if (a.act === "source") { SEL.moveSrc = k; render(); }
+    /* Landfall needs a terrain before the move can resolve, and the engine
+     * asks for it — but where the supply has only one kind of tile left there
+     * is nothing to ask, so send it and save the player a pointless tap. */
+    else if (a.act === "landfall") {
+      const left = TER.filter((x) => G.m.supply[x] > 0);
+      answer({ kind: "move", src: SEL.moveSrc, dest: k,
+               terrain: left.length === 1 ? left[0] : undefined });
+    }
     else answer({ kind: "move", src: SEL.moveSrc, dest: k });
     return;
   }
@@ -1653,17 +1680,24 @@ function renderPrompt() {
       }
       break;
     }
-    case "waterexplore":
-      if (!SEL.waterCell) {
+    case "waterexplore": {
+      /* A landfall has already had its cell chosen — that WAS the move. Asking
+       * for it a second time is the step that made the whole thing look broken:
+       * the player clicks the empty hex, and the game answers by asking them to
+       * click an empty hex. So go straight to the terrain. */
+      const cell = REQ.landfall ? REQ.options[0] : SEL.waterCell;
+      if (!cell) {
         ask(t("ask.water"));
         btn(t("btn.skip"), () => answer(null), "alt");
       } else {
-        ask(t("ask.terrain"));
+        ask(t(REQ.landfall ? "ask.landTerrain" : "ask.terrain"));
         for (const terr of REQ.terrains)
-          btn(TL[terr], () => answer({ cell: SEL.waterCell, terrain: terr }), "terr " + terr);
-        btn(t("btn.back"), () => { SEL.waterCell = null; render(); }, "alt");
+          btn(TL[terr], () => answer({ cell, terrain: terr }), "terr " + terr);
+        if (!REQ.landfall)
+          btn(t("btn.back"), () => { SEL.waterCell = null; render(); }, "alt");
       }
       break;
+    }
   }
 }
 

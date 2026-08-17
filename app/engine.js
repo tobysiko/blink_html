@@ -1169,6 +1169,16 @@ class Game {
       cards,
       moves: st.moves,
       moveSources: st.moves > 0 ? this.moveSources(p) : [],
+      /* Landfall cells per ocean source, so the client can light them up as
+       * move destinations beside the ordinary ones. Keyed by source because
+       * which cells are eligible depends on which water the ship is in. */
+      landfall: st.moves > 0 && !st.waterUsed
+        ? this.moveSources(p).reduce((acc, k) => {
+            const cells = this.landfallCells(p, k, st.waterUsed);
+            if (cells.length) acc[k] = cells;
+            return acc;
+          }, {})
+        : {},
       canResearch: !st.researched && p.vrow.length < 5 && p.gold >= 1 && p.hand.length > 0,
       researchBlocked: st.researched ? "why.research.done"
         : p.vrow.length >= 5 ? "why.research.rowFull"
@@ -1225,6 +1235,37 @@ class Game {
         }
         case "move": {
           if (st.moves <= 0) break;
+
+          /* Landfall: the destination is a cell with no tile on it yet. A move
+           * that starts on water may end on ground that does not exist —
+           * the tile is laid now and the unit steps onto it, all inside this
+           * one move action (§07).
+           *
+           * Checked against landfallCells rather than trusting the answer: the
+           * client works out the same set, but a client is not the authority on
+           * where a tile may be placed. */
+          if (!this.m.tiles.has(ans.dest)) {
+            const legal = this.landfallCells(p, ans.src, st.waterUsed);
+            if (!legal.includes(ans.dest)) break;
+            const terrains = TER.filter((t) => this.m.supply[t] > 0);
+            if (!terrains.length) break;
+            /* Spent as the offer is made, not before: a voyage with nowhere to
+             * land must not lose the advantage for the rest of the turn. */
+            st.waterUsed = true;
+            const terr = ans.terrain && terrains.includes(ans.terrain)
+              ? ans.terrain
+              : yield { type: "waterexplore", seat: p.i,
+                        options: [ans.dest], terrains, landfall: true };
+            const chosen = terr && terr.terrain ? terr.terrain : terr;
+            if (!chosen || !terrains.includes(chosen)) break;
+            if (!this.m.doExplore(ans.dest, chosen)) break;
+            this._doMove(p, ans.src, ans.dest);
+            st.moves -= 1;
+            this.inc("water_explore"); this.inc("water_landfall");
+            this.say("log.water");
+            break;
+          }
+
           const fromSea = this.m.tiles.get(ans.src).terrain === "ocean";
           const toSea = this.m.tiles.get(ans.dest).terrain === "ocean";
           this._doMove(p, ans.src, ans.dest);
@@ -1945,6 +1986,43 @@ class Game {
       }
     }
     return seen;
+  }
+
+  /* ---- where a voyage may make landfall ----
+   *
+   * The other half of a move that starts on water, and NOT a tile: these are
+   * empty cells. A ship may end its move on ground that does not exist yet —
+   * the tile is laid as the move resolves and the unit steps onto it (§07).
+   *
+   * Kept separate from moveDests() on purpose. That returns tiles, and three
+   * different callers (the bots' mover, moveSources, the legality check) all
+   * assume they can look every key up in `m.tiles`. Mixing empty cells into it
+   * would break them silently. So: two questions, two methods, and the caller
+   * that wants to offer both asks twice.
+   *
+   * Eligible means all of:
+   *   - the ship is on Ocean;
+   *   - the cell touches the body of water the ship is in (its own tile counts:
+   *     a ship moored on a lone Ocean tile can still see the shore);
+   *   - the cell is a legal space, so touch-two still holds — §06's "Blink has
+   *     no bridges" is structural and a voyage does not get to break it;
+   *   - there is a tile left in the supply to lay;
+   *   - and the advantage has not already been taken this turn.
+   */
+  landfallCells(p, srcKey, waterUsed) {
+    if (waterUsed) return [];
+    const t = this.m.tiles.get(srcKey);
+    if (!t || t.terrain !== "ocean") return [];
+    if (!TER.some((x) => this.m.supply[x] > 0)) return [];
+    const spaces = this.m.legalSpaces();
+    if (!spaces.size) return [];
+    const water = this.seaGroup(srcKey);       // includes srcKey
+    const out = [];
+    for (const k of spaces) {
+      const [c, r] = unK(k);
+      if (nbrKeys(c, r).some((nb) => water.has(nb))) out.push(k);
+    }
+    return out.sort();
   }
 
   moveSources(p) {
