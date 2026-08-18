@@ -368,6 +368,42 @@ if (!JSDOM) {
     ok(!!q('#layout'), 'the setup page has no control for the player board layout');
     ok(!!q('#layout-custom'), 'there is no box for a custom layout');
 
+    /* ---- what a new game starts as ------------------------------------- */
+    /* Pinned deliberately. These are the rules a playtester gets without
+     * touching anything, so a stray `selected` moving is a silent change to
+     * what everybody is testing. Four of them run ahead of the printed
+     * rulebook — that is the designer's choice, and it is the reason the note
+     * above the panel no longer claims the defaults are the published game. */
+    const DEFAULTS = {
+      'trick-rule': 'dock',        // as printed
+      'meld-score': 'sum',         // AHEAD: trick goes to the highest total rank
+      'a-ladder': 'rank',          // AHEAD: effect A adds the card's own rank
+      deck: 'abc',                 // as printed
+      'meld-rules': 'off',         // as printed
+      'grow-limits': 'off',        // as printed
+      consolation: 'last',         // as printed
+      'research-rule': 'twice',    // AHEAD: two researches a turn, 1 gold then 2
+      'retire-rule': 'lowest',     // as printed
+      objectives: 'off',           // as printed
+      layout: 'late',              // AHEAD: 2/3/5/5/5 board
+    };
+    for (const [id, want] of Object.entries(DEFAULTS)) {
+      const el = q('#' + id);
+      ok(!!el, `the setup page has no #${id}`);
+      ok(el && el.value === want,
+         `#${id} starts as "${el && el.value}", expected "${want}" — a new game `
+         + 'would be played under different rules than intended');
+    }
+    /* Effect A's ladder only means anything under total-rank scoring, and that
+     * is now the default, so the control must be visible from the start. */
+    ok(q('#a-ladder-row') && !q('#a-ladder-row').hidden,
+       "the trick is won on total rank by default, but effect A's ladder is hidden");
+    /* And the note must not tell the player these are the printed rules. */
+    const note = d.querySelector('[data-i18n="setup.advanced.note"]');
+    ok(note && !/game as it stands|Spiel, wie es steht/i.test(note.textContent),
+       `the advanced note still claims the defaults are the published game: `
+       + `"${note && note.textContent.slice(0, 80)}"`);
+
     /* The custom box is hidden until it is wanted, and appears when it is. */
     ok(q('#layout-custom-row') && q('#layout-custom-row').hidden,
        'the custom layout box is visible even though a preset is selected');
@@ -389,6 +425,11 @@ if (!JSDOM) {
     q('#layout-custom').value = '2-3-5-5-5';
     q('#layout-custom').dispatchEvent(new w.Event('input', { bubbles: true }));
     q('#meld-score').value = 'sum';
+    /* Set the ladder explicitly rather than leaning on whatever the default is:
+       this part is checking that the card FOLLOWS the ladder, so it must name
+       one. (It used to assume the old "band" default and started failing the
+       moment the default moved to "rank" — which is the test doing its job.) */
+    if (q('#a-ladder')) q('#a-ladder').value = 'band';
     ok(!!q('#research-rule'), 'the setup page has no control for research per turn');
     if (q('#research-rule')) q('#research-rule').value = 'escalating';
     ok(!!q('#consolation'), 'the setup page has no control for the losing payout');
@@ -436,6 +477,8 @@ if (!JSDOM) {
        * effectText() and the page's fxText() are two separate copies — one
        * translated, one not — so proving the engine changed proves nothing
        * about what the player reads. */
+      ok(w.eval('G.A_SUM_LADDER') === 'band',
+         `the game is using the ${w.eval('G.A_SUM_LADDER')} ladder, not the one asked for`);
       const faces = w.eval('JSON.stringify({'
         + ' a18: fxText(18).a, a18s: fxText(18).aShort,'
         + ' a3: fxText(3).a,'

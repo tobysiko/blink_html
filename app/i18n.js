@@ -220,7 +220,11 @@ en: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Hard",
   "setup.advanced": "Advanced rules and variants",
-  "setup.advanced.note": "Everything below is a rules experiment. The defaults are the game as it stands.",
+  /* This used to say the defaults WERE the printed game. They are not any
+     more: four of them are ahead of the rulebook while they are playtested,
+     and a setup screen that misdescribes itself is worse than no note. Every
+     published choice is still labelled "as printed". */
+  "setup.advanced.note": "Everything below is a rules experiment. The defaults are the set being playtested right now — four of them run ahead of the printed rulebook. Pick the options marked <b>as printed</b> to play the published game.",
   "pass.ready": "I have it",
   "pass.note": "Hand the device over. The board is hidden until you are holding it.",
 
@@ -689,7 +693,7 @@ de: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Schwer",
   "setup.advanced": "Erweiterte Regeln und Varianten",
-  "setup.advanced.note": "Alles hier unten ist ein Regelexperiment. Die Voreinstellungen sind das Spiel, wie es steht.",
+  "setup.advanced.note": "Alles hier unten ist ein Regelexperiment. Die Voreinstellungen sind der aktuelle Testsatz — vier davon gehen über das gedruckte Regelheft hinaus. Die mit <b>wie gedruckt</b> markierten Optionen ergeben das veröffentlichte Spiel.",
   "pass.ready": "Ich habe es",
   "pass.note": "Gib das Gerät weiter. Der Spielplan bleibt verdeckt, bis du es in der Hand hast.",
 

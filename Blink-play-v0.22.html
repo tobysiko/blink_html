@@ -950,8 +950,8 @@
     <div class="field">
       <label for="meld-score" data-i18n="setup.meldScore">Trick is won by</label>
       <select id="meld-score">
-        <option value="count" selected data-i18n="setup.meldScore.count"></option>
-        <option value="sum" data-i18n="setup.meldScore.sum"></option>
+        <option value="count" data-i18n="setup.meldScore.count"></option>
+        <option value="sum" selected data-i18n="setup.meldScore.sum"></option>
       </select>
     </div>
     <!-- Only meaningful under total-rank scoring, where "+1 card" buys nothing
@@ -961,9 +961,9 @@
       <select id="a-ladder">
         <option value="steps" data-i18n="setup.aLadder.steps"></option>
         <option value="double" data-i18n="setup.aLadder.double"></option>
-        <option value="band" selected data-i18n="setup.aLadder.band"></option>
+        <option value="band" data-i18n="setup.aLadder.band"></option>
         <option value="steep" data-i18n="setup.aLadder.steep"></option>
-        <option value="rank" data-i18n="setup.aLadder.rank"></option>
+        <option value="rank" selected data-i18n="setup.aLadder.rank"></option>
       </select>
     </div>
     <div class="field">
@@ -1000,8 +1000,8 @@
     <div class="field">
       <label for="research-rule" data-i18n="setup.research">Research per turn</label>
       <select id="research-rule">
-        <option value="once" selected data-i18n="setup.research.once"></option>
-        <option value="twice" data-i18n="setup.research.twice"></option>
+        <option value="once" data-i18n="setup.research.once"></option>
+        <option value="twice" selected data-i18n="setup.research.twice"></option>
         <option value="escalating" data-i18n="setup.research.escalating"></option>
       </select>
     </div>
@@ -1024,9 +1024,9 @@
     <div class="field">
       <label for="layout" data-i18n="setup.layout">Player board</label>
       <select id="layout">
-        <option value="rulebook" selected data-i18n="setup.layout.rulebook"></option>
+        <option value="rulebook" data-i18n="setup.layout.rulebook"></option>
         <option value="sim" data-i18n="setup.layout.sim"></option>
-        <option value="late" data-i18n="setup.layout.late"></option>
+        <option value="late" selected data-i18n="setup.layout.late"></option>
         <option value="custom" data-i18n="setup.layout.custom"></option>
       </select>
     </div>
@@ -1152,7 +1152,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"41d5839eb5","branch":"main","dirty":false,"built":"2026-08-18T10:52:25Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"5e9008abec","branch":"main","dirty":true,"built":"2026-08-18T17:11:14Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1375,7 +1375,11 @@ en: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Hard",
   "setup.advanced": "Advanced rules and variants",
-  "setup.advanced.note": "Everything below is a rules experiment. The defaults are the game as it stands.",
+  /* This used to say the defaults WERE the printed game. They are not any
+     more: four of them are ahead of the rulebook while they are playtested,
+     and a setup screen that misdescribes itself is worse than no note. Every
+     published choice is still labelled "as printed". */
+  "setup.advanced.note": "Everything below is a rules experiment. The defaults are the set being playtested right now — four of them run ahead of the printed rulebook. Pick the options marked <b>as printed</b> to play the published game.",
   "pass.ready": "I have it",
   "pass.note": "Hand the device over. The board is hidden until you are holding it.",
 
@@ -1844,7 +1848,7 @@ de: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Schwer",
   "setup.advanced": "Erweiterte Regeln und Varianten",
-  "setup.advanced.note": "Alles hier unten ist ein Regelexperiment. Die Voreinstellungen sind das Spiel, wie es steht.",
+  "setup.advanced.note": "Alles hier unten ist ein Regelexperiment. Die Voreinstellungen sind der aktuelle Testsatz — vier davon gehen über das gedruckte Regelheft hinaus. Die mit <b>wie gedruckt</b> markierten Optionen ergeben das veröffentlichte Spiel.",
   "pass.ready": "Ich habe es",
   "pass.note": "Gib das Gerät weiter. Der Spielplan bleibt verdeckt, bis du es in der Hand hast.",
 

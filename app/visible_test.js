@@ -118,9 +118,15 @@ setTimeout(() => {
   if (!gd.every((a) => a.getAttribute('href') && a.target === '_blank'))
     fail.push('a rule link would navigate away from a game in progress');
   if (!vis('.gamedocs')) fail.push('the rule links are not visible while playing');
-  // the printed effect text must be what the engine says, not a UI copy
+  /* The printed effect text must be what the engine says, not a UI copy — and
+     effect A has two readings, because it depends on how the trick is won:
+     "+1 card" when the most cards wins, "+12 total" when the highest total
+     rank does. Matching only the first quietly asserted a default rather than
+     the rule, and started failing the day the default moved to total-rank
+     scoring. Either wording is correct; neither being there is not. */
   const strip = d.querySelector('#hand .cf.mid .fx').textContent;
-  if (!/[+]\d card/.test(strip)) fail.push('effect strip does not show the A effect');
+  if (!/[+]\d+ (card|total)/.test(strip))
+    fail.push(`effect strip does not show the A effect: "${strip.slice(0, 60)}"`);
 
   /* A famine, staged deterministically — it is rare in play, so the scripted
    * games almost never reach it, and it broke unnoticed: the victory row was

@@ -22,6 +22,8 @@ try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); process.exit(2); }
 
 const E = require('./engine.js');
+/* The one decoder. See rebuild(). */
+const S = require('./session.js');
 const html = fs.readFileSync(__dirname + '/../Blink-play-v0.22.html', 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
@@ -211,28 +213,25 @@ setTimeout(() => {
 
 /* Re-deal the game from the report alone, in a fresh engine, with no help from
  * the page that produced it. This is the whole promise. */
+/* Replay a report the way the real thing does.
+ *
+ * This used to hand-roll two things: the option list, and the answer decoder.
+ * Both drifted, and the second failure is the nastier one — session.js says in
+ * as many words that there must be ONE decoder "or a whole table desynchronises",
+ * and this file quietly kept a second. When a move learned to carry a `terrain`
+ * (landfall lays a tile as it resolves), the copy dropped it: the replay laid no
+ * tile, and a later move onto that cell died reading `.terrain` of undefined.
+ * The option list drifted the same way, so a report of a game played under
+ * total-rank scoring was rebuilt under card-count scoring and diverged.
+ *
+ * So: the real decoder, and the whole of `setup` passed through. Anything added
+ * to a report's setup from now on is carried automatically, and anything the
+ * codec learns is understood here for free.
+ */
 function rebuild(rep) {
-  const g = new E.Game(rep.setup.n, rep.setup.seed, {
-    humans: rep.setup.humans, trickRule: rep.setup.trickRule, deck: rep.setup.deck,
-    objectives: rep.setup.objectives, retireRule: rep.setup.retireRule,
-    botStyle: 'mixed', seatStyles: rep.setup.seatStyles, botLevel: rep.setup.botLevel,
-    comboMelds: rep.setup.comboMelds, friendsOf10: rep.setup.friendsOf10,
-    growLimits: rep.setup.growLimits,
-  });
-  const decode = (req, tok) => {
-    if (tok === null || tok === undefined) return null;
-    if (req.type === 'turn') {
-      const st = req.state, p = g.P[req.seat], k = tok.kind;
-      if (k === 'spend') return { kind: k, card: st.cards[tok.i], cell: tok.cell, act: tok.act };
-      if (k === 'cash') return { kind: k, card: st.cards[tok.i] };
-      if (k === 'move') return { kind: k, src: tok.src, dest: tok.dest };
-      if (k === 'fortify') return { kind: k, cell: tok.cell };
-      if (['colony', 'conquest', 'cashRow'].includes(k)) return { kind: k, card: p.vrow[tok.i] };
-      return { kind: k };
-    }
-    if (tok.pick !== undefined) return req.options[tok.pick];
-    return tok.raw;
-  };
+  const { n, seed, ...rules } = rep.setup;
+  const g = new E.Game(n, seed, Object.assign({ botStyle: 'mixed' }, rules));
+  const decode = (req, tok) => S.decodeAnswer(g, req, tok);
   let it = g.playRound(), r = it.next(), i = 0, guard = 0;
   for (;;) {
     if (guard++ > 100000) break;
