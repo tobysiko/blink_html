@@ -525,6 +525,97 @@ footer{padding:.8rem 0 0;break-before:avoid}
   </div>
 </section>
 
+
+<section>
+  <div class="h2"><span class="num">07</span><h2>Awakenings — one terrain power per terrain, per game<span class="badge b-untested">Proposal · untested</span></h2></div>
+  
+  <p class="lede">Four moments in a game where the ground you hold does something for you.
+  Each terrain grants one power, once per game, and its strength is whatever you have
+  standing on that terrain at the moment you use it. Mountains raise an army, forests
+  think, plains breed, and the sea finds new land.</p>
+
+  <div class="rulebox">
+    <p><b>Once per game, for each terrain, on your map turn, as a free action.</b> No card,
+    no move, no gold. You must hold at least one unit on that terrain. Announce it, work
+    out its strength <b>S</b>, resolve it. That terrain is then spent for the rest of the
+    game — four awakenings in total, and no more.</p>
+
+    <p><b>Strength is counted in tiles&rsquo; worth of people, not in bodies.</b> Divide
+    your units on that terrain by the number below and round down, minimum 1.</p>
+    <table>
+      <thead><tr><th></th><th>Plains</th><th>Forest</th><th>Mountain</th><th>Ocean</th></tr></thead>
+      <tbody>
+        <tr><td>population limit</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">1</td></tr>
+        <tr><td><b>units per point of S</b></td><td class="num-cell"><b>3</b></td><td class="num-cell"><b>2</b></td><td class="num-cell"><b>2</b></td><td class="num-cell"><b>1</b></td></tr>
+      </tbody>
+    </table>
+    <p class="fine">Three of the four are simply the terrain&rsquo;s own population limit:
+    one point per full tile&rsquo;s worth. Mountain is the exception — two tiles to the
+    point — because mountains are held in numbers rather than in depth. See the notes.</p>
+
+    <p><b>Mountain — Muster.</b> Remove <b>S</b> rival units from tiles touching your
+    Mountains. Settle each tile you empty, if you have a unit in reserve.</p>
+    <p><b>Forest — Study.</b> Make <b>S</b> researches this turn, paying no gold and
+    retiring nothing, with your rank cap raised by <b>S</b> for those purchases.</p>
+    <p><b>Plains — Harvest.</b> Place <b>S</b> units from your reserve onto tiles you
+    already occupy that have room.</p>
+    <p><b>Ocean — Expedition.</b> Lay <b>S</b> new tiles of any terrain, each touching
+    water you occupy, and put one unit on one of them. Touch-two still applies: Blink has
+    no bridges, and a voyage does not get to build one.</p>
+  </div>
+
+  <div class="rulebox prop">
+    <p><b>Tighter variant — one awakening a game.</b> Instead of one per terrain, each
+    player gets a single awakening for the whole game and chooses which terrain it comes
+    from. Four one-shots per player over thirteen rounds is a lot of swing at a
+    four-player table; one is a decision you remember.</p>
+  </div>
+
+  <div class="why">
+    <span class="tag">Designer&rsquo;s notes — where the numbers come from</span>
+    <p>The powers themselves are <b>untested</b>. What has been measured is the thing the
+    scale rests on: how much of each terrain a player actually holds. Sixty three-player
+    games, base rules, peak holdings over the whole game.</p>
+    <table>
+      <thead><tr><th></th><th>Plains</th><th>Forest</th><th>Mountain</th><th>Ocean</th></tr></thead>
+      <tbody>
+        <tr><td>units held (peak)</td><td class="num-cell">6.3</td><td class="num-cell">5.0</td><td class="num-cell">4.4</td><td class="num-cell">2.2</td></tr>
+        <tr><td>tiles held</td><td class="num-cell">2.4</td><td class="num-cell">2.6</td><td class="num-cell">4.3</td><td class="num-cell">1.7</td></tr>
+        <tr><td>units per occupied tile</td><td class="num-cell">2.6</td><td class="num-cell">1.9</td><td class="num-cell">1.0</td><td class="num-cell">1.0</td></tr>
+        <tr><td><b>resulting S</b></td><td class="num-cell"><b>2.1</b></td><td class="num-cell"><b>2.5</b></td><td class="num-cell"><b>2.2</b></td><td class="num-cell"><b>2.2</b></td></tr>
+      </tbody>
+    </table>
+    <p><b>Counting bodies would have been wrong.</b> Plains hold three to a tile and are
+    filled nearly to the brim; Ocean holds one and is barely used. A flat per-unit scale
+    makes the Plains power three times the Ocean one. Dividing by the population limit
+    lines three of the four up almost exactly — 2.1, 2.5, 2.2 — which is the whole reason
+    the limits belong in the scale.</p>
+    <p><b>Mountain is the one that does not fall out of the arithmetic.</b> Its limit is 1,
+    so dividing by it leaves S at 4.4 — twice everything else. Not because mountains are
+    generous but because players hold <em>many</em> mountain tiles: 4.3 of them, against
+    2.4 plains, while having fewer units on them. Two tiles to the point brings it back to
+    2.2. It is a calibration, not a derivation, and it is printed rather than hidden.</p>
+    <p><b>This gives Plains a reason to exist that the base game does not.</b> Because a
+    plains tile holds three, you need very few of them — 2.4 on average — and dominance is
+    scored on your biggest connected <em>stretch</em>, counted in tiles. So plains are
+    doubly discouraged as a presence on the map: efficient to stack, worthless to spread.
+    Harvest is the one thing in Blink that pays for depth rather than breadth.</p>
+    <p><b>Twenty units across four terrains is the balance.</b> Nobody gets four powers at
+    full strength. Concentrating gives you one large awakening and a dominance score;
+    spreading gives you four modest ones. That the choice is forced by the unit supply,
+    rather than by a rule, is the part worth keeping.</p>
+    <p><b>What to watch for.</b> It double-dips: dominance already pays for massing on a
+    terrain, and these pay again on the same count, in a game where the leader already
+    finishes 15 to 19 points clear. Expedition is the one to suspect — map size feeds
+    everything downstream. And Study taking cards for nothing may distort the victory row,
+    which is also points.</p>
+    <p><b>Open questions.</b> Should an awakening spend the units — exhaust them, or return
+    one to the reserve? That is the cleanest brake if the double-dip proves real. Should it
+    be once per terrain or once per game? Is Expedition simply the best of the four,
+    whatever the numbers say?</p>
+  </div>
+</section>
+
 </main>
 
 <div class="pad"><footer>Blink · variants and shelved rules · companion to base rules v0.22 ·
