@@ -230,6 +230,7 @@ function startGame(force) {
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
+                             researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
                              aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
                              layout: chosenLayout() } };
@@ -1948,7 +1949,14 @@ function renderTurn(bar, ask, btn, p) {
     acts.appendChild(b);
   };
 
-  abtn(t("btn.research") + (REQ.state.researched ? " ✓" : ""),
+  /* The price is on the button, not in a tooltip. Under the escalating rule it
+   * goes up with every research this turn, and a player must be able to see
+   * what the next one costs before committing to it — a tooltip is no use on a
+   * phone, where the first sight of the price would be the gold leaving. */
+  const rCost = o.researchCost === undefined ? 1 : o.researchCost;
+  const rDone = (o.researchesUsed || 0) > 0;
+  abtn(t(rCost > 1 ? "btn.researchAgain" : "btn.research", { n: rCost })
+         + (rDone && !o.canResearch ? " ✓" : ""),
        () => { RESEARCH = { stage: "preview" }; render(); }, !o.canResearch,
        o.researchBlocked ? t(o.researchBlocked) : t("tip.research"));
   abtn(t("btn.move", { n: o.moves }),
@@ -2528,6 +2536,7 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,
     aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
     layout: chosenLayout(),

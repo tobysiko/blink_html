@@ -60,6 +60,7 @@ function newReport(build, gargs, extra) {
       deck: gargs.opts.deck,
       objectives: gargs.opts.objectives,
       retireRule: gargs.opts.retireRule,
+      researchRule: gargs.opts.researchRule || "once",
       comboMelds: !!gargs.opts.comboMelds,
       friendsOf10: !!gargs.opts.friendsOf10,
       growLimits: !!gargs.opts.growLimits,

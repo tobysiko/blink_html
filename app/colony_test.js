@@ -136,7 +136,7 @@ const strip = () => board([
   const c = card(3, 'ocean');
   g.P[0].vrow.push(c);
   g.m.supply.ocean = 0;                              // no Ocean tiles left
-  const st = { cards: [], moves: 0, researched: false, bUsed: false, waterUsed: false };
+  const st = { cards: [], moves: 0, researches: 0, bUsed: false, waterUsed: false };
   ok(!g.turnOptions(g.P[0], st).colonyCards.includes(c),
      'a colony was offered with no tile of that terrain left in the supply');
 }

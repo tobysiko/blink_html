@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-17T19:20:55Z
+ * Built 2026-08-18T06:54:48Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -922,6 +922,25 @@ class Game {
      * "any"    — rulebook §10 as printed: "retire one card from your hand or
      *            discard", no restriction. Kept so the two can be measured. */
     this.RETIRE_RULE = opts.retireRule || "lowest";
+    /* How many times you may research in one turn, and what each costs.
+     * "once"       — §10 as printed: one research a turn, 1 gold.
+     * "escalating" — as many as you can pay for, at 1 gold, then 2, then 3...
+     *                the count resetting each turn.
+     *
+     * The complaint this answers: research is the only way to fix a hand, once a
+     * turn is slow, and each one takes a card OUT of a hand you are trying to
+     * assemble into a run — so a bad hand can stay bad for several rounds while
+     * you feed it one card at a time. The escalating price is what stops that
+     * from becoming "cycle your whole hand every turn": the second costs twice
+     * the first and the third three times, so the gold runs out fast. */
+    this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
+      ? opts.researchRule : "once";
+    /* How many a turn may hold at most. "twice" exists because unlimited
+     * measured as a 29% wider gap between leader and last: the player who can
+     * afford the second and third research is the one already ahead, which is
+     * the same failure mode the growing-population-limits variant has. */
+    this.RESEARCH_MAX = this.RESEARCH_RULE === "once" ? 1
+      : this.RESEARCH_RULE === "twice" ? 2 : Infinity;
     /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
      * different one to each seat; `botLevel` is easy | normal | hard. Both are
      * policy, never rules: no style may do anything a person could not. */
@@ -1395,11 +1414,14 @@ class Game {
             return acc;
           }, {})
         : {},
-      canResearch: !st.researched && p.vrow.length < 5 && p.gold >= 1 && p.hand.length > 0,
-      researchBlocked: st.researched ? "why.research.done"
-        : p.vrow.length >= 5 ? "why.research.rowFull"
-        : p.gold < 1 ? "why.research.gold"
-        : !p.hand.length ? "why.research.noCard" : null,
+      /* What the NEXT research costs this turn. Under the printed rule that is
+       * always 1 and there is only ever one; under the escalating rule it is
+       * one more each time, and the client shows the price on the button so
+       * nobody commits to a cost they could not see. */
+      researchCost: this.researchCost(st),
+      researchesUsed: st.researches,
+      canResearch: this.canResearch(p, st),
+      researchBlocked: this.researchBlocked(p, st),
       colonyCards, colonyBlocked: colonyBlocked || colonyNoRoom,
       /* Is the water advantage still on the table this turn? The client marks
        * the sea moves that would collect it. */
@@ -1418,7 +1440,7 @@ class Game {
 
   *_humanTurn(p, use) {
     const st = { cards: use.slice(), moves: p.freeMoves(),
-                 researched: false, bUsed: false, waterUsed: false };
+                 researches: 0, bUsed: false, waterUsed: false };
     /* Refill only once the meld is fully resolved. Recycling while cards are
      * still on the table would swap the discard into hand and then take those
      * cards back on top of it — over the ten-card ceiling. The bot cannot hit
@@ -1524,12 +1546,16 @@ class Game {
           break;
         }
         case "research": {
-          /* Research is once per turn (§10) — spent when the action is TAKEN,
-           * not when it succeeds. The draw onto the grid has happened and the
-           * deck is the game's clock; letting a blocked attempt be retried
-           * would let a player thin the deck for free. */
-          st.researched = true;
-          yield* this._researchHuman(p);
+          /* Counted when the action is TAKEN, not when it succeeds. The draw
+           * onto the grid has already happened and the deck is the game's
+           * clock; letting a blocked attempt be retried for free would let a
+           * player thin the deck at no cost. Under the escalating rule this is
+           * also what raises the price of the next one — an attempt that found
+           * nothing still puts the price up, for the same reason. */
+          if (!this.canResearch(p, st)) break;
+          const price = this.researchCost(st);
+          st.researches += 1;
+          yield* this._researchHuman(p, price);
           break;
         }
         case "colony": {
@@ -1797,16 +1823,36 @@ class Game {
          + p.w.BUY_RANK_W * card.r;
   }
 
-  /* Research — ONCE per turn (§10). Draw the top of the upgrade deck onto a
-   * grid position of your choice, retire a card FROM YOUR HAND to the victory
-   * row, pay 1 gold, and take any visible card at or below your RANK CAP. */
+  /* Research (§10). Draw the top of the upgrade deck onto a grid position of
+   * your choice, retire a card FROM YOUR HAND to the victory row, pay, and take
+   * any visible card at or below your RANK CAP.
+   *
+   * Once a turn under the printed rule. Under the escalating rule the bot keeps
+   * going while it can pay the rising price AND the hand is still short enough
+   * to be worth fixing — a bot that only ever took one would make the variant
+   * measure as "no effect" no matter what the rule actually does. */
   *_maybeUpgrade(p) {                                  // bot path
-    if (p.vrow.length >= 5) return;
-    if (p.gold < 1) { this.inc("upgrade_no_gold"); return; }
-    if (!p.hand.length) { this.inc("upgrade_no_card_to_retire"); return; }
+    let taken = 0;
+    for (;;) {
+      if (taken >= this.RESEARCH_MAX) return;
+      const price = this.RESEARCH_RULE === "once" ? 1 : taken + 1;
+      if (taken && p.gold < price + p.w.CASH_THRESHOLD) return;   // keep a cushion
+      const did = yield* this._upgradeOnce(p, price);
+      if (!did) return;
+      taken += 1;
+      if (taken >= 4) return;      // a bot's stop, not a rule: no runaway loops
+    }
+  }
+
+  *_upgradeOnce(p, price) {
+    if (p.vrow.length >= 5) return false;
+    if (p.gold < price) { this.inc("upgrade_no_gold"); return false; }
+    if (!p.hand.length) { this.inc("upgrade_no_card_to_retire"); return false; }
     /* Wait for the hand to run short, so the card retired is a high one. A
      * policy, not a rule — see RESEARCH_MAX_HAND. */
-    if (p.hand.length > p.w.RESEARCH_MAX_HAND) { this.inc("research_held_for_timing"); return; }
+    if (p.hand.length > p.w.RESEARCH_MAX_HAND) {
+      this.inc("research_held_for_timing"); return false;
+    }
     const pool = p.hand.concat(p.discard);
     const cap0 = p.rankCap();
 
@@ -1817,17 +1863,20 @@ class Game {
     if (!visible) {
       const odds = this.deck.length
         ? this.deck.filter((c) => c.r <= cap0).length / this.deck.length : 0;
-      if (odds < p.w.BLIND_RESEARCH_ODDS) { this.inc("research_declined_blind"); return; }
+      if (odds < p.w.BLIND_RESEARCH_ODDS) {
+        this.inc("research_declined_blind"); return false;
+      }
     }
 
     this._drawOntoGrid();                              // 1. draw onto the grid
 
     const avail = this.buyable(p);                     // 2. what may this tier buy?
-    if (!avail.length) { this.inc("upgrade_blocked_by_cap"); return; }
+    if (!avail.length) { this.inc("upgrade_blocked_by_cap"); return false; }
     const k = this._chooseBuy(p, avail, pool);
     const retire = yield* this._pickRetire(p);
-    if (retire === null) return;
-    this._completeResearch(p, k, retire);
+    if (retire === null) return false;
+    this._completeResearch(p, k, retire, price);
+    return true;
   }
 
   /* Where a drawn card lands. NOT the player's choice any more: it goes on the
@@ -1869,14 +1918,16 @@ class Game {
   }
 
   /* 3. retire, pay, take. The card you buy goes STRAIGHT INTO YOUR HAND. */
-  _completeResearch(p, k, retire) {
+  _completeResearch(p, k, retire, cost) {
+    const price = cost === undefined ? 1 : cost;
     const buy = this.gridTop(k);
     p.hand.splice(p.hand.indexOf(retire), 1);
     p.vrow.push(retire);
     this.fx("card", { seat: p.i, card: retire, from: "hand", to: "vrow" });
-    p.gold -= 1;
-    this.inc("gold_out_upgrade"); this.inc("upgrades");
-    this.fx("gold", { seat: p.i, amount: -1, to: "market" });
+    p.gold -= price;
+    this.inc("gold_out_upgrade", price); this.inc("upgrades");
+    if (price > 1) this.inc("research_repeat"); // a second or later one this turn
+    this.fx("gold", { seat: p.i, amount: -price, to: "market" });
     this.grid[k].pop();
     p.hand.push(buy);
     this.fx("card", { seat: p.i, card: buy, from: "market", to: "hand", slot: k });
@@ -1890,8 +1941,32 @@ class Game {
    * the drawn card stays on the grid, because it has been seen. */
   /* Two decisions: which card leaves your hand, and which one you take. The
    * draw is automatic (autoGridSlot), so it is shown, not chosen. */
-  *_researchHuman(p) {
-    if (p.vrow.length >= 5 || p.gold < 1 || !p.hand.length) return false;
+  /* ---- what a research costs, and whether you may take one ----
+   *
+   * One place, asked by the turn options, by the action itself and by the bot,
+   * so a button that says "2 gold" and an engine that charges 3 cannot happen.
+   * `st.researches` is how many have already been taken THIS turn. */
+  researchCost(st) {
+    const used = (st && st.researches) || 0;
+    return this.RESEARCH_RULE === "once" ? 1 : used + 1;
+  }
+  canResearch(p, st) {
+    if (((st && st.researches) || 0) >= this.RESEARCH_MAX) return false;
+    return p.vrow.length < 5 && p.hand.length > 0
+      && p.gold >= this.researchCost(st);
+  }
+  researchBlocked(p, st) {
+    if (((st && st.researches) || 0) >= this.RESEARCH_MAX)
+      return this.RESEARCH_MAX === 1 ? "why.research.done" : "why.research.max";
+    if (p.vrow.length >= 5) return "why.research.rowFull";
+    if (!p.hand.length) return "why.research.noCard";
+    if (p.gold < this.researchCost(st)) return "why.research.gold";
+    return null;
+  }
+
+  *_researchHuman(p, cost) {
+    const price = cost === undefined ? 1 : cost;
+    if (p.vrow.length >= 5 || p.gold < price || !p.hand.length) return false;
     const drew = this._drawOntoGrid();
 
     /* Check the market BEFORE asking for a card, so nobody gives one up only to
@@ -1904,12 +1979,13 @@ class Game {
     }
     const retire = yield {
       type: "retire", seat: p.i, options: this.retirable(p), drew,
-      rule: this.RETIRE_RULE,
+      rule: this.RETIRE_RULE, cost: price,
     };
     if (!retire) return false;
-    const k = yield { type: "buy", seat: p.i, options: avail, retire, drew };
+    const k = yield { type: "buy", seat: p.i, options: avail, retire, drew,
+                      cost: price };
     if (k === null || k === undefined) return false;
-    const buy = this._completeResearch(p, k, retire);
+    const buy = this._completeResearch(p, k, retire, price);
     this.say("log.researched", { out: retire.r + SUIT_LETTER[retire.s],
                                  in: buy.r + SUIT_LETTER[buy.s] });
     return true;
@@ -2793,6 +2869,8 @@ function newSession(opts, rand) {
       deck: o.deck || "abc",
       objectives: o.objectives || "off",
       retireRule: o.retireRule || "lowest",
+      researchRule: ["once", "twice", "escalating"].includes(o.researchRule)
+        ? o.researchRule : "once",
       botStyle: "mixed",
       seatStyles: o.seatStyles || new Array(n).fill(null),
       botLevel: o.botLevel || "normal",

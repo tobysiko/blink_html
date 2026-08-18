@@ -150,7 +150,67 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(g.MELD_SCORE === 'sum', 'the scoring was lost');
 }
 
-// ==================================== 3. effect A when the total is what wins
+// ============================ 3. research more than once, at a rising price
+
+/* The complaint: research is slow, and each one takes a card out of the hand
+ * you are trying to assemble, so a bad hand stays bad for rounds. The rule lets
+ * you go again at a rising price; the price is what stops it becoming "cycle
+ * the whole hand every turn". */
+{
+  const g1 = new E.Game(3, 1, { humans: [] });
+  ok(g1.RESEARCH_RULE === 'once' && g1.RESEARCH_MAX === 1,
+     'the printed once-a-turn rule is not the default');
+  const g2 = new E.Game(3, 1, { humans: [], researchRule: 'twice' });
+  ok(g2.RESEARCH_MAX === 2, `twice gave a cap of ${g2.RESEARCH_MAX}`);
+  const g3 = new E.Game(3, 1, { humans: [], researchRule: 'escalating' });
+  ok(g3.RESEARCH_MAX === Infinity, 'escalating is capped');
+  ok(new E.Game(3, 1, { humans: [], researchRule: 'junk' }).RESEARCH_RULE === 'once',
+     'an unknown research rule was accepted');
+
+  /* The price ladder, and that it is the SAME number the client is shown and
+   * the engine charges — the whole reason researchCost() exists in one place. */
+  const st = (n) => ({ researches: n });
+  ok(g1.researchCost(st(0)) === 1, 'the first research is not 1 gold');
+  ok(g3.researchCost(st(0)) === 1 && g3.researchCost(st(1)) === 2
+     && g3.researchCost(st(2)) === 3,
+     `the escalating ladder is ${[0, 1, 2].map((n) => g3.researchCost(st(n))).join('/')}`);
+  ok(g1.researchCost(st(1)) === 1,
+     'the printed rule should never quote a price above 1 — there is only one');
+
+  /* The cap is enforced, and says which reason it is refusing for. */
+  const rich = { vrow: [], hand: [{ r: 5, s: 'plains' }], gold: 99 };
+  ok(g1.canResearch(rich, st(0)) && !g1.canResearch(rich, st(1)),
+     'the once rule allows a second research');
+  ok(g2.canResearch(rich, st(1)) && !g2.canResearch(rich, st(2)),
+     'the twice rule does not stop at two');
+  ok(g3.canResearch(rich, st(5)), 'the escalating rule stopped early for a rich player');
+  ok(g1.researchBlocked(rich, st(1)) === 'why.research.done',
+     'the once rule does not explain itself');
+  ok(g2.researchBlocked(rich, st(2)) === 'why.research.max',
+     `the twice rule blocked with ${g2.researchBlocked(rich, st(2))}`);
+
+  /* Poverty, not the cap, is what stops the escalating rule — and the reason
+   * given has to be the true one or the button lies. */
+  const poor = { vrow: [], hand: [{ r: 5, s: 'plains' }], gold: 2 };
+  ok(!g3.canResearch(poor, st(2)), 'a player with 2 gold took a 3-gold research');
+  ok(g3.researchBlocked(poor, st(2)) === 'why.research.gold',
+     `a player who cannot afford it was told: ${g3.researchBlocked(poor, st(2))}`);
+
+  /* And it reaches real games: second-and-later researches actually happen,
+   * and they cost more than the first. */
+  const once = E.playOut(3, 4242, { trickRule: 'dock' });
+  const esc = E.playOut(3, 4242, { trickRule: 'dock', researchRule: 'escalating' });
+  ok(!(once.stats.research_repeat > 0),
+     'a second research happened under the printed once-a-turn rule');
+  ok(esc.stats.research_repeat > 0,
+     'no second research ever happened under the escalating rule');
+  ok(esc.stats.gold_out_upgrade / esc.stats.upgrades
+     > once.stats.gold_out_upgrade / once.stats.upgrades,
+     'the escalating rule is not charging more per research');
+  ok(esc.finished() && once.finished(), 'a game under either rule failed to finish');
+}
+
+// ==================================== 4. effect A when the total is what wins
 
 /* "+1 card" is a quarter of a meld under count scoring and almost nothing under
  * sum, where it only moves a tie-break. So A reads differently under the two
@@ -239,7 +299,7 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(/\+16/.test(steep.a), `the card does not follow the ladder: "${steep.a}"`);
 }
 
-// ================================= 4. and the setup page actually sends them
+// ================================= 5. and the setup page actually sends them
 /* The engine having an option means nothing if the page cannot ask for it —
  * which is exactly how the landfall rule came to be "fixed" while the app was
  * unchanged. So the built page is driven: pick the options, start a game, and
@@ -287,6 +347,8 @@ if (!JSDOM) {
     q('#layout-custom').value = '2-3-5-5-5';
     q('#layout-custom').dispatchEvent(new w.Event('input', { bubbles: true }));
     q('#meld-score').value = 'sum';
+    ok(!!q('#research-rule'), 'the setup page has no control for research per turn');
+    if (q('#research-rule')) q('#research-rule').value = 'escalating';
     require('./test_setup.js').start(w, d, { players: 3, seat: 0, seed: 31 });
 
     setTimeout(() => {
@@ -297,11 +359,18 @@ if (!JSDOM) {
         + ' optScore: GARGS.opts.meldScore,'
         + ' repLayout: REP.setup.layout,'
         + ' repScore: REP.setup.meldScore,'
+        + ' research: G.RESEARCH_RULE,'
+        + ' repResearch: REP.setup.researchRule,'
         + ' shown: [...document.querySelectorAll(".pboard .tier-row:not(.head) .tname em")]'
         + '   .map((n) => parseInt(n.textContent, 10)).join("-")'
         + '})');
       const r = JSON.parse(got);
       ok(r.score === 'sum', `the game is scoring tricks by ${r.score}`);
+      ok(r.research === 'escalating',
+         `the game is using the ${r.research} research rule — the setup page's `
+         + 'choice never reached it');
+      ok(r.repResearch === 'escalating',
+         `the report records researchRule=${r.repResearch}`);
       ok(r.bands === '2-3-5-5-5', `the game's board is ${r.bands}`);
       ok(r.optLayout === '2-3-5-5-5', `GARGS carries layout ${r.optLayout}`);
       ok(r.optScore === 'sum', `GARGS carries meldScore ${r.optScore}`);
@@ -338,9 +407,10 @@ if (!JSDOM) {
 
 function finish() {
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-    : 'options: layouts parse in four forms and refuse five bad ones, stay off the '
-      + 'module table, reach players and survive a session; the sum rule is off by '
-      + 'default and changes who wins real tricks; and the setup page sends both '
-      + 'through to the game, the report and the board on screen');
+    : 'options: layouts parse in four forms and refuse five bad ones and stay off '
+      + 'the module table; research may run twice or escalate, at a price the button '
+      + 'and the engine read from one place; the sum rule changes who wins real '
+      + 'tricks and effect A has its own reading under it; and the setup page sends '
+      + 'all of it through to the game, the report and the screen');
   process.exit(fail.length ? 1 : 0);
 }
