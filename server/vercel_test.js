@@ -126,6 +126,51 @@ else {
     ok(stored && stored.stored === false,
        'with no Blob token the service claimed to have stored a report');
 
+    /* A store that REFUSES the write must also come back as stored:false, not
+     * as a 500.
+     *
+     * This is the shape of a real outage. The live Blob store is configured
+     * private; the function asked for `access: "public"`; the SDK threw; the
+     * throw reached the route; the route answered 500. The page treats any
+     * failure as "download it instead", so nothing was lost — but nothing was
+     * ever kept either, and the only symptom was an error at the exact moment
+     * somebody had finished typing their thoughts about the game.
+     *
+     * Simulated by planting a @vercel/blob in the staged directory whose `put`
+     * always throws the message Vercel actually returned. */
+    fs.mkdirSync(path.join(root, 'node_modules', '@vercel', 'blob'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'node_modules', '@vercel', 'blob', 'package.json'),
+      JSON.stringify({ name: '@vercel/blob', version: '0.0.0-test', main: 'index.js' }));
+    fs.writeFileSync(path.join(root, 'node_modules', '@vercel', 'blob', 'index.js'),
+      'module.exports = {\n'
+      + '  put: async () => { throw new Error("Vercel Blob: Cannot use public '
+      + 'access on a private store. The store is configured with private access."); },\n'
+      + '  list: async () => { throw new Error("Vercel Blob: private store"); },\n'
+      + '};\n');
+    process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
+
+    const angry = await post('/api/blink/report',
+                             { schema: 3, id: 'TEST5678', started: '2026-08-15' });
+    ok(angry.status === 200,
+       `a Blob store that refuses the write made the route answer ${angry.status} — `
+       + 'the page shows that to the player as a failure');
+    let told = null;
+    try { told = JSON.parse(angry.body); } catch (e) { /* reported below */ }
+    ok(told && told.ok === true && told.stored === false,
+       `a refused write reported ${angry.body.slice(0, 90)} — it must be ok with `
+       + 'stored:false, so the page saves the file instead');
+
+    /* The listing has the same duty: the one person allowed to read it is the
+     * designer, holding the key, and a stack trace is no use to them. */
+    process.env.ADMIN_KEY = 'letmein';
+    const listed = await get('/api/blink/reports?key=letmein');
+    ok(listed.status === 200,
+       `listing reports from a broken store answered ${listed.status}`);
+    ok(/listing failed/.test(listed.body),
+       `a broken listing said: ${listed.body.slice(0, 90)}`);
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.ADMIN_KEY;
+
     /* And reports are not readable without the key. */
     const peek = await get('/api/blink/reports');
     ok(peek.status === 403, `listing reports without a key answered ${peek.status}, expected 403`);
@@ -135,7 +180,8 @@ else {
 
     server.close();
     report(`health, routing, open a table, read it back, 404s, report flagged `
-      + `as unstored, reports refused without a key`);
+      + `as unstored, a refusing Blob store still answers 200/stored:false, `
+      + `reports refused without a key`);
   });
 }
 

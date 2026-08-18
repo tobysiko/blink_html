@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-18T10:01:27Z
+ * Built 2026-08-18T10:20:08Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -3829,13 +3829,32 @@ async function putReport(store, rep) {
   catch (e) { return false; }
   const key = `blink/reports/${(rep.build && rep.build.commit) || "unknown"}/`
     + `${(rep.started || "").slice(0, 10)}/${rep.id || Date.now()}.json`;
-  await put(key, JSON.stringify(rep), {
-    access: "public",                 // unguessable URL; the listing needs the key
-    contentType: "application/json",
-    token,
-    addRandomSuffix: true,
-  });
-  return true;
+  const body = JSON.stringify(rep);
+  const base = { contentType: "application/json", token, addRandomSuffix: true };
+
+  /* PRIVATE first, and not only because the live store happens to be private.
+   * A report carries a playtester's name and whatever they typed in the box —
+   * written for the designer, not for the internet — so authentication is the
+   * right default and a public URL was the wrong one. The fallback to public is
+   * for a store somebody set up the other way, not a preference.
+   *
+   * This used to pass access:"public" unconditionally. Against a private store
+   * the SDK throws, the throw reached the route, and the route answered 500 —
+   * which the page read as "failed" and fell back to downloading the file. So
+   * no report was ever lost, but none was ever kept either, and the only sign
+   * was an error the player was asked to work around. */
+  let last = null;
+  for (const access of ["private", "public"]) {
+    try {
+      await put(key, body, Object.assign({ access }, base));
+      return true;
+    } catch (e) { last = e; }
+  }
+  /* Never throw from here. The route's contract with the page is a truthful
+   * `stored` flag: false makes it save the file locally, an exception makes it
+   * look like the service is down. */
+  console.error("blink: could not store a report —", last && last.message);
+  return false;
 }
 
 async function getReports(store, p, url) {
@@ -3845,9 +3864,15 @@ async function getReports(store, p, url) {
   try { ({ list } = require("@vercel/blob")); }
   catch (e) { return { ok: false, why: "no report store bound" }; }
   const prefix = "blink/reports/" + (url.searchParams.get("commit") || "");
-  const out = await list({ prefix, limit: 500, token });
-  return { ok: true, reports: out.blobs.map((b) => ({
-    key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
+  try {
+    const out = await list({ prefix, limit: 500, token });
+    return { ok: true, reports: out.blobs.map((b) => ({
+      key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
+  } catch (e) {
+    /* Same reasoning as putReport: say what went wrong rather than 500 at the
+     * one person who is allowed to read this and has the key in hand. */
+    return { ok: false, why: "listing failed", detail: String(e && e.message) };
+  }
 }
 
 /* Vercel runs this by taking whatever the file exports and, if it is an http

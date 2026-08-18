@@ -1132,7 +1132,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"630872118b","branch":"main","dirty":false,"built":"2026-08-18T10:01:26Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"e9124c0f61","branch":"main","dirty":true,"built":"2026-08-18T10:20:08Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -7114,18 +7114,50 @@ function meldSlots(q, n) {
  * gold crown won the trick, dark pulsing frame is acting now, faded is done. */
 const RIVAL_SPOT = { 2: ["top"], 3: ["left", "right"], 4: ["left", "top", "right"] };
 
+/* Which rival sits in which corner of the screen.
+ *
+ * Around a real table your starting tile is the one in front of you, and the
+ * player on your left is the one whose tile is on your left. On screen that
+ * has to hold too, or the map and the play area disagree about where everyone
+ * is — which is what a playtester saw: a red meld box at the bottom and the red
+ * starting unit away on the left.
+ *
+ * It cannot be fixed by moving the units, because every client puts ITSELF at
+ * the bottom and the map is the same for all of them. So the seating is worked
+ * out here, per viewer: take the angle of each starting tile about the centre
+ * of the opening layout, rotate the whole picture until YOUR tile points down,
+ * and read the rivals off going clockwise. Same map, four different — and
+ * correct — views of it.
+ */
+function rivalOrder() {
+  const spots = RIVAL_SPOT[G.n] || RIVAL_SPOT[4];
+  const others = [];
+  for (let k = 1; k < G.n; k++) others.push((ME + k) % G.n);
+  const starts = G.m && G.m.starts;
+  if (!starts || starts.length < G.n) return others.map((i, k) => [i, spots[k] || "top"]);
+
+  const pts = starts.map(([c, r]) => hexCentre(c, r));
+  const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+  const cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  const ang = (i) => Math.atan2(pts[i][1] - cy, pts[i][0] - cx) * 180 / Math.PI;
+  const mine = ang(ME);
+  /* Clockwise from you. Screen y grows downward, so a growing angle already
+   * turns clockwise and no sign flip is needed. */
+  const turn = (i) => (((ang(i) - mine) % 360) + 360) % 360;
+  others.sort((a, b) => turn(a) - turn(b));
+  return others.map((i, k) => [i, spots[k] || "top"]);
+}
+
 function renderCorners() {
   const box = $("#corners");
   const sc = G.score();
-  const spots = RIVAL_SPOT[G.n] || RIVAL_SPOT[4];
   let s = "";
-  for (let k = 1; k < G.n; k++) {
-    const i = (ME + k) % G.n;                     // clockwise from your own seat
+  for (const [i, spot] of rivalOrder()) {
     const q = G.P[i];
     const d = sc.find((x) => x.seat === i);
     const won = uiWinner() === i;
     const cls = [
-      "corner", spots[k - 1] || "top",
+      "corner", spot,
       won ? "won" : "",
       uiActing() === i ? "acting" : "",
       uiDone(i) ? "done" : "",
