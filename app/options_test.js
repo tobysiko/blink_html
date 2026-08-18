@@ -150,7 +150,49 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(g.MELD_SCORE === 'sum', 'the scoring was lost');
 }
 
-// ============================ 3. research more than once, at a rising price
+// ================================ 3. who is paid for losing the trick
+
+/* §04 pays one coin to the last-ranked meld and nothing to anyone else, whatever
+ * the player count — so at four players half the table gets no catch-up at all.
+ * The ladder schemes pay by PLACE instead. */
+{
+  const of = (rule, n) => {
+    const g = new E.Game(n, 1, { humans: [], consolation: rule });
+    return Array.from({ length: n }, (_, i) => g.consolationFor(i, n));
+  };
+  ok(String(of('last', 4)) === '0,0,0,1', `printed 4p pays ${of('last', 4)}`);
+  ok(String(of('last', 3)) === '0,0,1', `printed 3p pays ${of('last', 3)}`);
+  ok(String(of('half', 4)) === '0,1,1,2', `half 4p pays ${of('half', 4)}`);
+  ok(String(of('ladder', 4)) === '0,1,2,3', `ladder 4p pays ${of('ladder', 4)}`);
+  ok(String(of('ladder', 3)) === '0,1,2', `ladder 3p pays ${of('ladder', 3)}`);
+
+  /* The winner is never paid — their reward is acting first. */
+  for (const r of ['last', 'half', 'ladder'])
+    ok(of(r, 4)[0] === 0, `${r} pays the trick winner a coin`);
+
+  /* At two players every scheme is the same rule, which is worth knowing before
+   * anyone tries to measure the difference in a two-player game. */
+  for (const r of ['last', 'half', 'ladder'])
+    ok(String(of(r, 2)) === '0,1', `${r} at 2p pays ${of(r, 2)}, expected 0,1`);
+
+  ok(new E.Game(3, 1, { humans: [] }).CONSOLATION === 'last',
+     'the printed single coin is not the default');
+  ok(new E.Game(3, 1, { humans: [], consolation: 'junk' }).CONSOLATION === 'last',
+     'an unknown consolation rule was accepted');
+
+  /* And it reaches real games: more gold enters the table, and the game is a
+   * different game. */
+  const base = E.playOut(4, 4242, { trickRule: 'dock' });
+  const lad = E.playOut(4, 4242, { trickRule: 'dock', consolation: 'ladder' });
+  ok(lad.stats.gold_in_lost_trick > base.stats.gold_in_lost_trick * 2,
+     `the ladder paid ${lad.stats.gold_in_lost_trick} against the printed rule's `
+     + `${base.stats.gold_in_lost_trick} — it is not reaching the table`);
+  ok(lad.finished(), 'a game under the ladder never finished');
+  ok(base.score().map((x) => x.total).join() !== lad.score().map((x) => x.total).join(),
+     'the same seed scored identically under both — the option is inert');
+}
+
+// ============================ 4. research more than once, at a rising price
 
 /* The complaint: research is slow, and each one takes a card out of the hand
  * you are trying to assemble, so a bad hand stays bad for rounds. The rule lets
@@ -210,7 +252,7 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(esc.finished() && once.finished(), 'a game under either rule failed to finish');
 }
 
-// ==================================== 4. effect A when the total is what wins
+// ==================================== 5. effect A when the total is what wins
 
 /* "+1 card" is a quarter of a meld under count scoring and almost nothing under
  * sum, where it only moves a tie-break. So A reads differently under the two
@@ -299,7 +341,7 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
   ok(/\+16/.test(steep.a), `the card does not follow the ladder: "${steep.a}"`);
 }
 
-// ================================= 5. and the setup page actually sends them
+// ================================= 6. and the setup page actually sends them
 /* The engine having an option means nothing if the page cannot ask for it —
  * which is exactly how the landfall rule came to be "fixed" while the app was
  * unchanged. So the built page is driven: pick the options, start a game, and
@@ -349,6 +391,8 @@ if (!JSDOM) {
     q('#meld-score').value = 'sum';
     ok(!!q('#research-rule'), 'the setup page has no control for research per turn');
     if (q('#research-rule')) q('#research-rule').value = 'escalating';
+    ok(!!q('#consolation'), 'the setup page has no control for the losing payout');
+    if (q('#consolation')) q('#consolation').value = 'ladder';
     require('./test_setup.js').start(w, d, { players: 3, seat: 0, seed: 31 });
 
     setTimeout(() => {
@@ -361,6 +405,8 @@ if (!JSDOM) {
         + ' repScore: REP.setup.meldScore,'
         + ' research: G.RESEARCH_RULE,'
         + ' repResearch: REP.setup.researchRule,'
+        + ' consolation: G.CONSOLATION,'
+        + ' repConsolation: REP.setup.consolation,'
         + ' shown: [...document.querySelectorAll(".pboard .tier-row:not(.head) .tname em")]'
         + '   .map((n) => parseInt(n.textContent, 10)).join("-")'
         + '})');
@@ -371,6 +417,10 @@ if (!JSDOM) {
          + 'choice never reached it');
       ok(r.repResearch === 'escalating',
          `the report records researchRule=${r.repResearch}`);
+      ok(r.consolation === 'ladder',
+         `the game is paying losers by the ${r.consolation} rule`);
+      ok(r.repConsolation === 'ladder',
+         `the report records consolation=${r.repConsolation}`);
       ok(r.bands === '2-3-5-5-5', `the game's board is ${r.bands}`);
       ok(r.optLayout === '2-3-5-5-5', `GARGS carries layout ${r.optLayout}`);
       ok(r.optScore === 'sum', `GARGS carries meldScore ${r.optScore}`);

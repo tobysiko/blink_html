@@ -73,6 +73,8 @@ function newSession(opts, rand) {
       deck: o.deck || "abc",
       objectives: o.objectives || "off",
       retireRule: o.retireRule || "lowest",
+      consolation: ["last", "half", "ladder"].includes(o.consolation)
+        ? o.consolation : "last",
       researchRule: ["once", "twice", "escalating"].includes(o.researchRule)
         ? o.researchRule : "once",
       botStyle: "mixed",

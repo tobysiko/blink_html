@@ -926,6 +926,9 @@ class Game {
      * you feed it one card at a time. The escalating price is what stops that
      * from becoming "cycle your whole hand every turn": the second costs twice
      * the first and the third three times, so the gold runs out fast. */
+    /* Who is paid for losing the trick — see consolationFor(). */
+    this.CONSOLATION = ["last", "half", "ladder"].includes(opts.consolation)
+      ? opts.consolation : "last";
     this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
       ? opts.researchRule : "once";
     /* How many a turn may hold at most. "twice" exists because unlimited
@@ -967,6 +970,25 @@ class Game {
   // ---- rules, at the v0.22 base-game defaults ----------------------
   get MARKET_GRID() { return this.GRID_SIZE; }
   get CONSOLATION_GOLD() { return 1; }
+
+  /* What each place in the trick is paid, by its position in initiative order —
+   * 0 is the winner, n-1 is last.
+   *
+   * "last"   §04 as printed: one coin, to the last-ranked meld only, whatever
+   *          the player count. Everyone between the winner and last gets
+   *          nothing, which at four players is half the table.
+   * "half"   ceil(place/2): 0/1/1/2 at four players.
+   * "ladder" the full proposal — the coin scales inversely with initiative, so
+   *          place 1 takes 1, place 2 takes 2 and so on.
+   *
+   * Note this can only differ at THREE or more players: with two, every scheme
+   * pays the loser exactly one coin. */
+  consolationFor(place, n) {
+    if (place <= 0) return 0;                        // the winner is paid in tempo
+    if (this.CONSOLATION === "ladder") return place;
+    if (this.CONSOLATION === "half") return Math.ceil(place / 2);
+    return place === n - 1 ? this.CONSOLATION_GOLD : 0;
+  }
   /* Bot weights are per SEAT (`p.w`), not per game — see TUNED and BOT_STYLES.
    * These stay only so old callers and tests that ask the game for a weight
    * still get the tuned answer. */
@@ -1235,7 +1257,9 @@ class Game {
     // ---------------- map phase ----------------
     this.trickOrder = ranked.slice();
     this.fx("trick", { seat: winner, order: ranked.slice(), last: loser });
+    let place = -1;
     for (const i of ranked) {
+      place += 1;
       const p = this.P[i];
       this.acting = i;
       this.fx("turnstart", { seat: i });
@@ -1243,10 +1267,14 @@ class Game {
       const spent = cards.slice();
       const use = cards.slice();
 
-      // the catch-up coin, without docking anyone a card
-      if (i === loser && i !== winner) {
-        p.gold += this.CONSOLATION_GOLD;
-        this.inc("gold_in_lost_trick", this.CONSOLATION_GOLD);
+      /* The catch-up coin, without docking anyone a card. Paid by PLACE rather
+       * than by "was this the loser", so the ladder schemes can pay the middle
+       * of the table too. */
+      const coins = this.consolationFor(place, ranked.length);
+      if (coins > 0) {
+        p.gold += coins;
+        this.inc("gold_in_lost_trick", coins);
+        this.fx("gold", { seat: i, amount: coins, from: "board" });
       }
 
       if (this.TRICK_RULE === "bonus") {

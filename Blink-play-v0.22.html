@@ -966,6 +966,14 @@
       </select>
     </div>
     <div class="field">
+      <label for="consolation" data-i18n="setup.consolation">Losing the trick pays</label>
+      <select id="consolation">
+        <option value="last" selected data-i18n="setup.consolation.last"></option>
+        <option value="half" data-i18n="setup.consolation.half"></option>
+        <option value="ladder" data-i18n="setup.consolation.ladder"></option>
+      </select>
+    </div>
+    <div class="field">
       <label for="research-rule" data-i18n="setup.research">Research per turn</label>
       <select id="research-rule">
         <option value="once" selected data-i18n="setup.research.once"></option>
@@ -1117,7 +1125,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"3fa7c675c9","branch":"main","dirty":false,"built":"2026-08-18T06:54:56Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"27211a448d","branch":"main","dirty":true,"built":"2026-08-18T08:13:00Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1198,6 +1206,10 @@ en: {
   "setup.limits": "Population limits",
   "setup.limits.off": "Fixed — Plains 3, Forest 2, Ocean 1, Mountain 1",
   "setup.limits.grow": "Grow with your band — 2/1/1/1 at Tribe up to 3/3/2/2 at Empire",
+  "setup.consolation": "Losing the trick pays",
+  "setup.consolation.last": "1 gold to last place only (as printed)",
+  "setup.consolation.half": "Rises down the order — 0/1/1/2 at four players",
+  "setup.consolation.ladder": "Inverse to initiative — 0/1/2/3 at four players",
   "setup.research": "Research per turn",
   "setup.research.once": "Once a turn, 1 gold (as printed)",
   "setup.research.twice": "Up to twice — 1 gold, then 2",
@@ -1654,6 +1666,10 @@ de: {
   "setup.limits": "Bevölkerungsgrenzen",
   "setup.limits.off": "Fest — Ebene 3, Wald 2, Meer 1, Gebirge 1",
   "setup.limits.grow": "Wachsen mit der Stufe — 2/1/1/1 als Stamm bis 3/3/2/2 als Imperium",
+  "setup.consolation": "Stichverlust zahlt",
+  "setup.consolation.last": "1 Gold nur für den letzten Platz (wie gedruckt)",
+  "setup.consolation.half": "Steigt nach hinten — 0/1/1/2 bei vier Spielern",
+  "setup.consolation.ladder": "Umgekehrt zur Initiative — 0/1/2/3 bei vier Spielern",
   "setup.research": "Forschung je Zug",
   "setup.research.once": "Einmal je Zug, 1 Gold (wie gedruckt)",
   "setup.research.twice": "Bis zu zweimal — 1 Gold, dann 2",
@@ -3004,6 +3020,9 @@ class Game {
      * you feed it one card at a time. The escalating price is what stops that
      * from becoming "cycle your whole hand every turn": the second costs twice
      * the first and the third three times, so the gold runs out fast. */
+    /* Who is paid for losing the trick — see consolationFor(). */
+    this.CONSOLATION = ["last", "half", "ladder"].includes(opts.consolation)
+      ? opts.consolation : "last";
     this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
       ? opts.researchRule : "once";
     /* How many a turn may hold at most. "twice" exists because unlimited
@@ -3045,6 +3064,25 @@ class Game {
   // ---- rules, at the v0.22 base-game defaults ----------------------
   get MARKET_GRID() { return this.GRID_SIZE; }
   get CONSOLATION_GOLD() { return 1; }
+
+  /* What each place in the trick is paid, by its position in initiative order —
+   * 0 is the winner, n-1 is last.
+   *
+   * "last"   §04 as printed: one coin, to the last-ranked meld only, whatever
+   *          the player count. Everyone between the winner and last gets
+   *          nothing, which at four players is half the table.
+   * "half"   ceil(place/2): 0/1/1/2 at four players.
+   * "ladder" the full proposal — the coin scales inversely with initiative, so
+   *          place 1 takes 1, place 2 takes 2 and so on.
+   *
+   * Note this can only differ at THREE or more players: with two, every scheme
+   * pays the loser exactly one coin. */
+  consolationFor(place, n) {
+    if (place <= 0) return 0;                        // the winner is paid in tempo
+    if (this.CONSOLATION === "ladder") return place;
+    if (this.CONSOLATION === "half") return Math.ceil(place / 2);
+    return place === n - 1 ? this.CONSOLATION_GOLD : 0;
+  }
   /* Bot weights are per SEAT (`p.w`), not per game — see TUNED and BOT_STYLES.
    * These stay only so old callers and tests that ask the game for a weight
    * still get the tuned answer. */
@@ -3313,7 +3351,9 @@ class Game {
     // ---------------- map phase ----------------
     this.trickOrder = ranked.slice();
     this.fx("trick", { seat: winner, order: ranked.slice(), last: loser });
+    let place = -1;
     for (const i of ranked) {
+      place += 1;
       const p = this.P[i];
       this.acting = i;
       this.fx("turnstart", { seat: i });
@@ -3321,10 +3361,14 @@ class Game {
       const spent = cards.slice();
       const use = cards.slice();
 
-      // the catch-up coin, without docking anyone a card
-      if (i === loser && i !== winner) {
-        p.gold += this.CONSOLATION_GOLD;
-        this.inc("gold_in_lost_trick", this.CONSOLATION_GOLD);
+      /* The catch-up coin, without docking anyone a card. Paid by PLACE rather
+       * than by "was this the loser", so the ladder schemes can pay the middle
+       * of the table too. */
+      const coins = this.consolationFor(place, ranked.length);
+      if (coins > 0) {
+        p.gold += coins;
+        this.inc("gold_in_lost_trick", coins);
+        this.fx("gold", { seat: i, amount: coins, from: "board" });
       }
 
       if (this.TRICK_RULE === "bonus") {
@@ -4940,6 +4984,8 @@ function newSession(opts, rand) {
       deck: o.deck || "abc",
       objectives: o.objectives || "off",
       retireRule: o.retireRule || "lowest",
+      consolation: ["last", "half", "ladder"].includes(o.consolation)
+        ? o.consolation : "last",
       researchRule: ["once", "twice", "escalating"].includes(o.researchRule)
         ? o.researchRule : "once",
       botStyle: "mixed",
@@ -5407,6 +5453,7 @@ function newReport(build, gargs, extra) {
       deck: gargs.opts.deck,
       objectives: gargs.opts.objectives,
       retireRule: gargs.opts.retireRule,
+      consolation: gargs.opts.consolation || "last",
       researchRule: gargs.opts.researchRule || "once",
       comboMelds: !!gargs.opts.comboMelds,
       friendsOf10: !!gargs.opts.friendsOf10,
@@ -5939,6 +5986,7 @@ function startGame(force) {
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
+                             consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
                              aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
@@ -8245,6 +8293,7 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,
     aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
