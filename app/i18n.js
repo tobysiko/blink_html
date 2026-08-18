@@ -28,6 +28,7 @@ en: {
   "app.round": "round",
   "app.lastRound": "· FINAL ROUND",
   "app.endTriggered": "· one round left",
+  "app.gameOver": "· game over",
   "app.back": "← Blink",
   "nojs.title": "This page needs JavaScript, and it is not running.",
   "nojs.p1": "You are most likely previewing the file in <b>Files</b> on iOS or iPadOS. Quick Look shows the page but never runs its scripts, so the seat list is empty and <b>Start</b> does nothing. The file itself is fine.",
@@ -489,7 +490,7 @@ en: {
   /* The end-of-game warning. Two states: the trigger has fired and one more
      full round follows, or that round is the one being played now. */
   "end.soon": "The end has been triggered — this round finishes, then ONE more full round.",
-  "end.final": "FINAL ROUND — the game ends when this round is over.",
+  "end.final": "FINAL ROUND — this is the extra round the trigger grants. The game ends when it is over.",
   "end.why": "Triggered by: {why}. Everything still scores: units on the map, your victory row, terrain majorities.",
   "end.lastUnit": "last unit placed",
   "end.marketThin": "the market thinned to one layer",
@@ -501,6 +502,7 @@ de: {
   "app.round": "Runde",
   "app.lastRound": "· LETZTE RUNDE",
   "app.endTriggered": "· noch eine Runde",
+  "app.gameOver": "· Spiel beendet",
   "app.back": "← Blink",
   "nojs.title": "Diese Seite braucht JavaScript, und es läuft nicht.",
   "nojs.p1": "Vermutlich siehst du die Datei gerade in <b>Dateien</b> auf iOS oder iPadOS. Die Schnellansicht zeigt die Seite an, führt ihre Skripte aber nie aus — deshalb ist die Platzauswahl leer und <b>Start</b> tut nichts. Mit der Datei selbst ist alles in Ordnung.",
@@ -941,7 +943,7 @@ de: {
 
   // ---- Spielende -------------------------------------------------------
   "end.soon": "Das Spielende ist ausgelöst — diese Runde endet, dann folgt NOCH EINE volle Runde.",
-  "end.final": "LETZTE RUNDE — das Spiel endet nach dieser Runde.",
+  "end.final": "LETZTE RUNDE — dies ist die Zusatzrunde nach dem Auslöser. Danach endet das Spiel.",
   "end.why": "Ausgelöst durch: {why}. Alles zählt weiter: Einheiten auf der Karte, deine Siegreihe, Geländemehrheiten.",
   "end.lastUnit": "letzte Einheit gesetzt",
   "end.marketThin": "der Markt ist auf eine Lage geschrumpft",

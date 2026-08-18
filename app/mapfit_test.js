@@ -117,9 +117,69 @@ setTimeout(() => {
     ok(/FINAL ROUND/i.test(d.querySelector('#endnote').textContent),
        `the round counter reads "${d.querySelector('#endnote').textContent}"`);
 
+    /* ---- the extra round must be PLAYABLE, and then must end -------------
+     *
+     * From a playtest: "the final round was announced, but at the same time the
+     * winner was announced and the game ended."
+     *
+     * The engine was right — it plays a full extra round every time. The UI was
+     * not. The round counter is bumped at the START of a round and finished() is
+     * `round >= finalRounds`, so finished() is already true the moment the extra
+     * round begins. renderPrompt rendered the result table on finished(), which
+     * replaced the player's turn with the score the instant the round they were
+     * granted started. Hence: announced and over at once.
+     *
+     * The two states are told apart by whether the driver still has anything in
+     * flight, so both are set up here explicitly. */
+
+    /* (a) the final round, in progress: a question is outstanding. */
+    w.eval('G.endedOn = "end.lastUnit"; G.finalRounds = G.round;');
+    ok(w.eval('G.finished()'),
+       'the engine does not consider itself finished during the final round — '
+       + 'the premise of this check has changed');
+    ok(!w.eval('gameOver()'),
+       'the UI thinks the game has stopped while a question is still outstanding');
+    w.eval('renderSide(); renderPrompt();');
+    txt = banner ? banner.textContent.replace(/\s+/g, ' ') : '';
+    ok(banner && !banner.hidden && /FINAL ROUND/i.test(txt),
+       `during the final round the banner reads "${txt.slice(0, 80)}"`);
+    ok(!/Game over/i.test(d.querySelector('#prompt').textContent),
+       'the prompt shows the result table during the final round — the round the '
+       + 'rules grant cannot be played');
+
+    /* (b) truly over: the driver has emptied out. */
+    w.eval('IT = null; REQ = null; renderSide(); renderPrompt();');
+    ok(w.eval('gameOver()'), 'the UI does not recognise a finished game');
+    ok(banner && banner.hidden,
+       `the end banner is still up after the game finished, reading `
+       + `"${banner && banner.textContent.replace(/\s+/g, ' ').slice(0, 70)}" — next to `
+       + 'the result table, which reads as both being announced at once');
+    ok(/game over/i.test(d.querySelector('#endnote').textContent),
+       `after the game the round counter reads "${d.querySelector('#endnote').textContent}"`);
+
     /* It goes away again if a game is restarted rather than sticking around. */
     w.eval('G.endedOn = null; G.finalRounds = null; renderSide();');
     ok(banner && banner.hidden, 'the end banner survives the end being cleared');
+
+    /* ---- 3. and the rule itself: one whole extra round, every time ------ */
+    /* The complaint was about the rule, so the rule is checked too, on real
+     * games rather than on a poked-at state. §11: finish the round the trigger
+     * fired in, then play exactly ONE more. */
+    for (const seed of [4242, 77, 31, 1234]) {
+      const g = new E.Game(2, seed, { humans: [], meldScore: 'sum', aSumLadder: 'rank',
+                                      researchRule: 'twice', layout: 'late' });
+      let triggeredAt = null, guard = 0;
+      while (!g.finished() && guard++ < 80) {
+        const it = g.playRound();
+        let r = it.next();
+        while (!r.done) r = it.next(null);
+        if (g.endedOn && triggeredAt === null) triggeredAt = g.round;
+      }
+      ok(triggeredAt !== null, `seed ${seed}: the game ended without a trigger`);
+      ok(g.round === triggeredAt + 1,
+         `seed ${seed}: the trigger fired after round ${triggeredAt} and the game `
+         + `ran to round ${g.round} — §11 asks for exactly one more`);
+    }
 
     ok(!errs.length, 'the page logged errors: ' + errs.slice(0, 2).join(' | '));
     console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')

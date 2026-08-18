@@ -273,6 +273,26 @@ function hidePass() {
   if (gate) gate.hidden = true;
 }
 
+/* Has the game actually STOPPED?
+ *
+ * Not the same question as `G.finished()`, and the difference is a bug that
+ * reached a playtester: "the final round was announced, but at the same time
+ * the winner was announced and the game ended."
+ *
+ * The round counter is bumped at the START of a round, and finished() is
+ * `round >= finalRounds`. The trigger sets finalRounds = round + 1, so the
+ * moment the extra round BEGINS, finished() is already true. The engine is fine
+ * — the driver only consults it between rounds, so exactly one more round is
+ * played, which is what §11 asks. But anything that renders on finished() was
+ * treating the whole final round as over: the prompt showed the result table
+ * instead of the turn, so the round the rules grant you could not be played.
+ *
+ * The game has stopped when the driver has nothing left in flight: no generator
+ * and no outstanding question. */
+function gameOver() {
+  return !!(G && G.finished() && !IT && !REQ);
+}
+
 // --------------------------------------------------------------- driver
 function nextRound() {
   RESEARCH = null;
@@ -1700,7 +1720,9 @@ function meldOk() {
 function renderPrompt() {
   const bar = $("#prompt");
   bar.innerHTML = "";
-  if (G.finished()) return renderFinal(bar);
+  /* gameOver(), not finished(): during the extra round §11 grants, finished()
+   * is already true and this would replace the player's turn with the result. */
+  if (gameOver()) return renderFinal(bar);
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
@@ -2271,6 +2293,19 @@ function renderEndBanner() {
   if (!G || !G.endedOn) {
     box.hidden = true; box.textContent = "";
     if (note) { note.textContent = ""; note.classList.remove("final"); }
+    return;
+  }
+  /* Once the game is actually over, this must go.
+   *
+   * It used to stay up, so the final panel appeared directly beneath a banner
+   * still promising "the game ends when this round is over" — which reads as the
+   * last round and the result being announced in the same breath, and had a
+   * playtester reporting that the extra round was never played. It was: the
+   * engine gives a full one every time, and this was the banner outliving it.
+   * The result table below says everything that needs saying. */
+  if (gameOver()) {
+    box.hidden = true; box.textContent = "";
+    if (note) { note.textContent = t("app.gameOver"); note.classList.add("final"); }
     return;
   }
   const last = G.finalRounds !== null && G.round >= G.finalRounds;
