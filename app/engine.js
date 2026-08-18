@@ -479,6 +479,32 @@ function reachOut(m, pi, n) {
   return out;
 }
 
+/* The cells this card WOULD attack if the player could pay for it.
+ *
+ * Not part of cardOptions: those are the legal moves, and the bots read them.
+ * These are the illegal ones worth showing anyway. An unaffordable attack is
+ * the only refusal in the game that leaves no trace on the board — a rival
+ * Mountain you cannot afford looks exactly like a rival Mountain out of reach,
+ * or one whose suit does not match, and the player is left to guess which.
+ * Everything else explains itself: a full tile prints n/cap, an out-of-reach
+ * tile is visibly far away, a wrong suit is on the card in their hand.
+ *
+ * Returns [[cell, cost], ...]. Cost is what the terrain charges, so the badge
+ * can say how much is missing rather than just "no".
+ */
+function cardBlocked(m, card, p, gold, reachable) {
+  reachable = reachable || reach(m, p);
+  const out = [];
+  for (const k of reachable) {
+    const t = m.tiles.get(k);
+    if (!t || t.terrain !== card.s) continue;
+    if (t.owner === null || t.owner === p) continue;   // not an attack at all
+    const cost = ATTACK_COST[t.terrain];
+    if (cost > gold) out.push([k, cost]);
+  }
+  return out.sort((a, b) => (a[0] < b[0] ? -1 : 1));
+}
+
 /* Every legal (cell, action) for ONE card, judged against the map NOW. */
 function cardOptions(m, card, p, gold, reachable, spaces) {
   spaces = spaces || m.legalSpaces();
@@ -1400,7 +1426,10 @@ class Game {
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                              : reach(this.m, p.i);
     const cards = st.cards.map((card) => ({
-      card, options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      card,
+      options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      /* Shown greyed rather than not shown: see cardBlocked(). */
+      blocked: cardBlocked(this.m, card, p.i, p.gold, reachable),
     }));
     const fortifyCells = [];
     for (const [k, t] of this.m.tiles)
@@ -2818,7 +2847,7 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     TER, HOLDS, BANDS, ATTACK_COST, SUIT_LETTER, K, unK, step, nbrKeys,
     Tile, GameMap, Player, Game, playOut,
-    enumerateMelds, isLegalMeld, handPower, reach, cardOptions, valueCard,
+    enumerateMelds, isLegalMeld, handPower, reach, cardOptions, cardBlocked, valueCard,
     vrowScore, setVrowRule, setTiers, effectA, effectText, effectD, effectDText, OBJECTIVES, effectBv22, effectC, bandOfRank, proBot, makeRng,
     TUNED, BOT_STYLES, BOT_LEVELS, STYLE_KEYS, botWeights,
     setMeldRules, meldRules, meldFault, isRun, isFriends, canCombine, BAND_HOLDS,

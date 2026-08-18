@@ -257,6 +257,9 @@ en: {
   "hex.settle": "Settle",
   "hex.explore": "Explore",
   "hex.attack": "Attack",
+  /* Shown on a rival tile the card could take if the gold were there. Says
+     the price, because the price is the whole answer. */
+  "hex.needGold": "Attack needs {n} 🪙",
 
   // ---- your board ------------------------------------------------------
   "board.meldLimit": "meld limit",
@@ -714,6 +717,7 @@ de: {
   "hex.settle": "Besiedeln",
   "hex.explore": "Erkunden",
   "hex.attack": "Angreifen",
+  "hex.needGold": "Angriff braucht {n} 🪙",
 
   // ---- dein Tableau ----------------------------------------------------
   "board.meldLimit": "Kartenlimit",

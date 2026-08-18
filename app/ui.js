@@ -932,7 +932,16 @@ function activeCells() {
       for (const k of REQ.opts.fortifyCells) out.set(k, { act: "fortify" });
     } else if (SEL.card) {
       const e = REQ.opts.cards.find((m) => m.card === SEL.card);
-      if (e) for (const [k, act] of e.options) out.set(k, { act });
+      if (e) {
+        for (const [k, act] of e.options) out.set(k, { act });
+        /* Rival tiles this card could take if the gold were there. Marked
+         * `blocked` so the map draws them dimmed and refuses the click — the
+         * point is to say WHY nothing happens, not to allow it. Added after the
+         * legal options and only where there is no legal action already, so a
+         * cell that can be settled is never overwritten by a refusal. */
+        for (const [k, cost] of e.blocked || [])
+          if (!out.has(k)) out.set(k, { act: "attack", blocked: "gold", cost });
+      }
     }
   }
   if (REQ.type === "waterexplore" && !SEL.waterCell)
@@ -984,7 +993,10 @@ function renderMap() {
     const t = d.t;
     const a = act.get(d.key);
     const isSrc = SEL.moveSrc === d.key;
-    s += `<polygon class="tile${a ? " hot" : ""}${isSrc ? " src" : ""}" data-key="${d.key}"
+    /* `nope` rather than `hot`: a tile that is only being explained must not
+     * look like one that can be clicked. */
+    const mark = a ? (a.blocked ? " nope" : " hot") : "";
+    s += `<polygon class="tile${mark}${isSrc ? " src" : ""}" data-key="${d.key}"
       points="${hexPoints(d.cx, d.cy, HEXR - 1)}" fill="${TC[t.terrain]}"/>`;
     const n = t.units.length;
     for (let i = 0; i < n; i++) {
@@ -1168,6 +1180,9 @@ function initPan() {
  * says so, and says what it pays: the free tile is the whole reason the sea is
  * worth using, and it was invisible. */
 function cellBadge(a) {
+  /* A refusal says the price, not just "no": "needs 2 🪙" tells a player both
+   * why the tile is dead and exactly what would revive it. */
+  if (a.blocked === "gold") return t("hex.needGold", { n: a.cost });
   if (a.act === "source") return t(a.sea ? "hex.sailFrom" : "hex.moveFrom");
   if (a.act === "dest") {
     if (!a.sea) return t("hex.moveHere");
@@ -1185,6 +1200,7 @@ function cellBadge(a) {
 function onCell(k) {
   const a = activeCells().get(k);
   if (!a) return;
+  if (a.blocked) return;              // shown to explain itself, never to click
   if (REQ.type === "waterexplore") { SEL.waterCell = k; render(); return; }
   if (REQ.type === "colony") {
     if (REQ.terrains.length === 1) return answer({ cell: k, terrain: REQ.terrains[0] });

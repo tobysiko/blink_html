@@ -424,6 +424,13 @@
 
   .tile{stroke:#1C1F1D; stroke-width:1; opacity:.94}
   .tile.hot{stroke:#111; stroke-width:3; cursor:pointer; opacity:1}
+  /* A tile shown only to explain why it is dead: a dashed outline, no pointer,
+     and no click. Before this, a rival tile you could not afford to attack was
+     simply absent from the highlighting — indistinguishable from one out of
+     reach or of the wrong suit, and the commonest "why is nothing happening?"
+     at the table. */
+  .tile.nope{stroke:#8C3A16; stroke-width:2; stroke-dasharray:4 3; opacity:.62;
+    cursor:not-allowed}
   .tile.src{stroke:#fff; stroke-width:3.5}
   .ghost{fill:#fff; fill-opacity:.28; stroke:var(--line); stroke-width:1;
     stroke-dasharray:4 3}

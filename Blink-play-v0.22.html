@@ -424,6 +424,13 @@
 
   .tile{stroke:#1C1F1D; stroke-width:1; opacity:.94}
   .tile.hot{stroke:#111; stroke-width:3; cursor:pointer; opacity:1}
+  /* A tile shown only to explain why it is dead: a dashed outline, no pointer,
+     and no click. Before this, a rival tile you could not afford to attack was
+     simply absent from the highlighting — indistinguishable from one out of
+     reach or of the wrong suit, and the commonest "why is nothing happening?"
+     at the table. */
+  .tile.nope{stroke:#8C3A16; stroke-width:2; stroke-dasharray:4 3; opacity:.62;
+    cursor:not-allowed}
   .tile.src{stroke:#fff; stroke-width:3.5}
   .ghost{fill:#fff; fill-opacity:.28; stroke:var(--line); stroke-width:1;
     stroke-dasharray:4 3}
@@ -1125,7 +1132,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"4d1ca62c37","branch":"main","dirty":false,"built":"2026-08-18T08:13:02Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"d95f209ae2","branch":"main","dirty":true,"built":"2026-08-18T10:01:26Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1385,6 +1392,9 @@ en: {
   "hex.settle": "Settle",
   "hex.explore": "Explore",
   "hex.attack": "Attack",
+  /* Shown on a rival tile the card could take if the gold were there. Says
+     the price, because the price is the whole answer. */
+  "hex.needGold": "Attack needs {n} 🪙",
 
   // ---- your board ------------------------------------------------------
   "board.meldLimit": "meld limit",
@@ -1842,6 +1852,7 @@ de: {
   "hex.settle": "Besiedeln",
   "hex.explore": "Erkunden",
   "hex.attack": "Angreifen",
+  "hex.needGold": "Angriff braucht {n} 🪙",
 
   // ---- dein Tableau ----------------------------------------------------
   "board.meldLimit": "Kartenlimit",
@@ -2571,6 +2582,32 @@ function reachOut(m, pi, n) {
     frontier = next;
   }
   return out;
+}
+
+/* The cells this card WOULD attack if the player could pay for it.
+ *
+ * Not part of cardOptions: those are the legal moves, and the bots read them.
+ * These are the illegal ones worth showing anyway. An unaffordable attack is
+ * the only refusal in the game that leaves no trace on the board — a rival
+ * Mountain you cannot afford looks exactly like a rival Mountain out of reach,
+ * or one whose suit does not match, and the player is left to guess which.
+ * Everything else explains itself: a full tile prints n/cap, an out-of-reach
+ * tile is visibly far away, a wrong suit is on the card in their hand.
+ *
+ * Returns [[cell, cost], ...]. Cost is what the terrain charges, so the badge
+ * can say how much is missing rather than just "no".
+ */
+function cardBlocked(m, card, p, gold, reachable) {
+  reachable = reachable || reach(m, p);
+  const out = [];
+  for (const k of reachable) {
+    const t = m.tiles.get(k);
+    if (!t || t.terrain !== card.s) continue;
+    if (t.owner === null || t.owner === p) continue;   // not an attack at all
+    const cost = ATTACK_COST[t.terrain];
+    if (cost > gold) out.push([k, cost]);
+  }
+  return out.sort((a, b) => (a[0] < b[0] ? -1 : 1));
 }
 
 /* Every legal (cell, action) for ONE card, judged against the map NOW. */
@@ -3494,7 +3531,10 @@ class Game {
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                              : reach(this.m, p.i);
     const cards = st.cards.map((card) => ({
-      card, options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      card,
+      options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      /* Shown greyed rather than not shown: see cardBlocked(). */
+      blocked: cardBlocked(this.m, card, p.i, p.gold, reachable),
     }));
     const fortifyCells = [];
     for (const [k, t] of this.m.tiles)
@@ -6688,7 +6728,16 @@ function activeCells() {
       for (const k of REQ.opts.fortifyCells) out.set(k, { act: "fortify" });
     } else if (SEL.card) {
       const e = REQ.opts.cards.find((m) => m.card === SEL.card);
-      if (e) for (const [k, act] of e.options) out.set(k, { act });
+      if (e) {
+        for (const [k, act] of e.options) out.set(k, { act });
+        /* Rival tiles this card could take if the gold were there. Marked
+         * `blocked` so the map draws them dimmed and refuses the click — the
+         * point is to say WHY nothing happens, not to allow it. Added after the
+         * legal options and only where there is no legal action already, so a
+         * cell that can be settled is never overwritten by a refusal. */
+        for (const [k, cost] of e.blocked || [])
+          if (!out.has(k)) out.set(k, { act: "attack", blocked: "gold", cost });
+      }
     }
   }
   if (REQ.type === "waterexplore" && !SEL.waterCell)
@@ -6740,7 +6789,10 @@ function renderMap() {
     const t = d.t;
     const a = act.get(d.key);
     const isSrc = SEL.moveSrc === d.key;
-    s += `<polygon class="tile${a ? " hot" : ""}${isSrc ? " src" : ""}" data-key="${d.key}"
+    /* `nope` rather than `hot`: a tile that is only being explained must not
+     * look like one that can be clicked. */
+    const mark = a ? (a.blocked ? " nope" : " hot") : "";
+    s += `<polygon class="tile${mark}${isSrc ? " src" : ""}" data-key="${d.key}"
       points="${hexPoints(d.cx, d.cy, HEXR - 1)}" fill="${TC[t.terrain]}"/>`;
     const n = t.units.length;
     for (let i = 0; i < n; i++) {
@@ -6924,6 +6976,9 @@ function initPan() {
  * says so, and says what it pays: the free tile is the whole reason the sea is
  * worth using, and it was invisible. */
 function cellBadge(a) {
+  /* A refusal says the price, not just "no": "needs 2 🪙" tells a player both
+   * why the tile is dead and exactly what would revive it. */
+  if (a.blocked === "gold") return t("hex.needGold", { n: a.cost });
   if (a.act === "source") return t(a.sea ? "hex.sailFrom" : "hex.moveFrom");
   if (a.act === "dest") {
     if (!a.sea) return t("hex.moveHere");
@@ -6941,6 +6996,7 @@ function cellBadge(a) {
 function onCell(k) {
   const a = activeCells().get(k);
   if (!a) return;
+  if (a.blocked) return;              // shown to explain itself, never to click
   if (REQ.type === "waterexplore") { SEL.waterCell = k; render(); return; }
   if (REQ.type === "colony") {
     if (REQ.terrains.length === 1) return answer({ cell: k, terrain: REQ.terrains[0] });

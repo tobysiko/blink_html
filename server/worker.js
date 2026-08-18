@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-18T08:13:04Z
+ * Built 2026-08-18T10:01:26Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -484,6 +484,32 @@ function reachOut(m, pi, n) {
     frontier = next;
   }
   return out;
+}
+
+/* The cells this card WOULD attack if the player could pay for it.
+ *
+ * Not part of cardOptions: those are the legal moves, and the bots read them.
+ * These are the illegal ones worth showing anyway. An unaffordable attack is
+ * the only refusal in the game that leaves no trace on the board — a rival
+ * Mountain you cannot afford looks exactly like a rival Mountain out of reach,
+ * or one whose suit does not match, and the player is left to guess which.
+ * Everything else explains itself: a full tile prints n/cap, an out-of-reach
+ * tile is visibly far away, a wrong suit is on the card in their hand.
+ *
+ * Returns [[cell, cost], ...]. Cost is what the terrain charges, so the badge
+ * can say how much is missing rather than just "no".
+ */
+function cardBlocked(m, card, p, gold, reachable) {
+  reachable = reachable || reach(m, p);
+  const out = [];
+  for (const k of reachable) {
+    const t = m.tiles.get(k);
+    if (!t || t.terrain !== card.s) continue;
+    if (t.owner === null || t.owner === p) continue;   // not an attack at all
+    const cost = ATTACK_COST[t.terrain];
+    if (cost > gold) out.push([k, cost]);
+  }
+  return out.sort((a, b) => (a[0] < b[0] ? -1 : 1));
 }
 
 /* Every legal (cell, action) for ONE card, judged against the map NOW. */
@@ -1407,7 +1433,10 @@ class Game {
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                              : reach(this.m, p.i);
     const cards = st.cards.map((card) => ({
-      card, options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      card,
+      options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      /* Shown greyed rather than not shown: see cardBlocked(). */
+      blocked: cardBlocked(this.m, card, p.i, p.gold, reachable),
     }));
     const fortifyCells = [];
     for (const [k, t] of this.m.tiles)
