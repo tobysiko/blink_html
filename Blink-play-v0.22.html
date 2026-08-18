@@ -516,6 +516,23 @@
   .tier-row.head .cap{text-align:right}
   .tier-row.head .uslots{min-width:96px}
 
+  /* The countdown to the end of the game. §11 gives you a whole extra round
+     after the trigger, which is enough time to do something about it — but only
+     if you know. A line in the log and "· last round" in the corner were not
+     enough: a playtester had the game end on them with no warning. */
+  #endbanner{margin:0 0 6px; padding:7px 10px; border-radius:5px;
+    border:1px solid #D9B384; border-left:4px solid #C98A2E; background:#FBF3E4;
+    color:#6B4A12; font-size:12.5px; line-height:1.4}
+  #endbanner b{color:#4A320B}
+  #endbanner .why{display:block; color:#8A6A2A; font-size:11.5px; margin-top:2px}
+  #endbanner.final{border-color:#C08070; border-left-color:#B33A2E;
+    background:#FBE9E4; color:#7A2A1E}
+  #endbanner.final b{color:#5C1D14}
+  #endbanner.final .why{color:#93503F}
+  /* The corner badge stops being a whisper. */
+  #endnote{font-weight:700; color:#FFD9A0}
+  #endnote.final{color:#FFB4A0}
+
   /* The feeding cost, in a sentence. The table says what every tier costs;
      this says what YOURS costs, which is the part that ambushes people. */
   .foodnote{margin-top:4px; font-size:10.5px; color:var(--hint); line-height:1.35}
@@ -1109,6 +1126,9 @@
       <div id="mymeld"></div>
     </div>
     <div class="lower">
+      <!-- The end of the game must not arrive as a surprise. Shown from the
+           moment a trigger fires until the last round is over. -->
+      <div id="endbanner" hidden></div>
       <div id="prompt"></div>
       <div id="hand"></div>
       <div id="player"></div>
@@ -1132,7 +1152,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"372de46ca8","branch":"main","dirty":false,"built":"2026-08-18T10:22:01Z"};
+const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"57e90440c3","branch":"main","dirty":true,"built":"2026-08-18T10:52:03Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1161,7 +1181,8 @@ en: {
   // ---- shell / header --------------------------------------------------
   "app.sub": "Climbing the Ladder of Civilization · rules v0.22",
   "app.round": "round",
-  "app.lastRound": "· last round",
+  "app.lastRound": "· FINAL ROUND",
+  "app.endTriggered": "· one round left",
   "app.back": "← Blink",
   "nojs.title": "This page needs JavaScript, and it is not running.",
   "nojs.p1": "You are most likely previewing the file in <b>Files</b> on iOS or iPadOS. Quick Look shows the page but never runs its scripts, so the seat list is empty and <b>Start</b> does nothing. The file itself is fine.",
@@ -1616,6 +1637,11 @@ en: {
   "obj.11.name": "Sheltered Water", "obj.11.flavour": "Wooded on both sides, calm between",
 
   // ---- end triggers ----------------------------------------------------
+  /* The end-of-game warning. Two states: the trigger has fired and one more
+     full round follows, or that round is the one being played now. */
+  "end.soon": "The end has been triggered — this round finishes, then ONE more full round.",
+  "end.final": "FINAL ROUND — the game ends when this round is over.",
+  "end.why": "Triggered by: {why}. Everything still scores: units on the map, your victory row, terrain majorities.",
   "end.lastUnit": "last unit placed",
   "end.marketThin": "the market thinned to one layer",
 },
@@ -1624,7 +1650,8 @@ de: {
   // ---- Rahmen / Kopfzeile ---------------------------------------------
   "app.sub": "Aufstieg der Zivilisation · Regeln v0.22",
   "app.round": "Runde",
-  "app.lastRound": "· letzte Runde",
+  "app.lastRound": "· LETZTE RUNDE",
+  "app.endTriggered": "· noch eine Runde",
   "app.back": "← Blink",
   "nojs.title": "Diese Seite braucht JavaScript, und es läuft nicht.",
   "nojs.p1": "Vermutlich siehst du die Datei gerade in <b>Dateien</b> auf iOS oder iPadOS. Die Schnellansicht zeigt die Seite an, führt ihre Skripte aber nie aus — deshalb ist die Platzauswahl leer und <b>Start</b> tut nichts. Mit der Datei selbst ist alles in Ordnung.",
@@ -2064,6 +2091,9 @@ de: {
   "obj.11.name": "Geschützte Bucht", "obj.11.flavour": "Bewaldet auf beiden Seiten, still dazwischen",
 
   // ---- Spielende -------------------------------------------------------
+  "end.soon": "Das Spielende ist ausgelöst — diese Runde endet, dann folgt NOCH EINE volle Runde.",
+  "end.final": "LETZTE RUNDE — das Spiel endet nach dieser Runde.",
+  "end.why": "Ausgelöst durch: {why}. Alles zählt weiter: Einheiten auf der Karte, deine Siegreihe, Geländemehrheiten.",
   "end.lastUnit": "letzte Einheit gesetzt",
   "end.marketThin": "der Markt ist auf eine Lage geschrumpft",
 },
@@ -6860,6 +6890,20 @@ function viewBoxOf(geo, zoom, pan) {
 function applyViewBox() {
   const svg = $("#map");
   if (!svg || !MAPGEO) return null;
+  /* Re-measure the element every time.
+   *
+   * The viewBox is built as W/scale by H/scale, which only produces `scale` if
+   * W and H are the element's CURRENT size — SVG letterboxes a viewBox whose
+   * aspect ratio does not match its box, and the real scale becomes the smaller
+   * of the two axes. MAPGEO was measured once per render, and the map's own
+   * height changes AFTER that as the prompt, hand and player board lay out
+   * beneath it. So the first fit of a new game was computed against a box that
+   * no longer existed: a viewBox of ratio 1.96 inside an element of ratio 2.98,
+   * letterboxed down to 0.60 — under the 0.72 floor this file promises, tiles
+   * at 30x35 px instead of 37x43, and the board adrift in a wide empty margin.
+   * Three lines here are cheaper than a stale-geometry bug nobody can see. */
+  const box = svg.getBoundingClientRect();
+  if (box.width > 0 && box.height > 0) { MAPGEO.W = box.width; MAPGEO.H = box.height; }
   const v = viewBoxOf(MAPGEO, ZOOM, PAN);
   PAN = v.pan;
   svg.setAttribute("viewBox", `${v.x} ${v.y} ${v.vw} ${v.vh}`);
@@ -6896,6 +6940,22 @@ const PTRS = new Map();                 // live pointers, for the two-finger pin
 function initPan() {
   const svg = $("#map");
   if (!svg || !svg.addEventListener) return;
+
+  /* The map box changes size for reasons that are not a window resize: the
+   * prompt grows a line, the hand wraps, the player board opens. `resize` on
+   * window never fires for any of those, so without this the board keeps a fit
+   * computed for a box it no longer occupies. */
+  if (typeof ResizeObserver === "function") {
+    let last = "";
+    const ro = new ResizeObserver(() => {
+      const b = svg.getBoundingClientRect();
+      const now = Math.round(b.width) + "x" + Math.round(b.height);
+      if (now === last || !b.width || !b.height) return;   // no loop, no churn
+      last = now;
+      if (G) applyViewBox();
+    });
+    try { ro.observe(svg); } catch (e) { /* older engines: the resize handler still runs */ }
+  }
   const at = (e) => ({ x: e.clientX, y: e.clientY });
   const spread = () => {
     const [a, b] = [...PTRS.values()];
@@ -8016,7 +8076,38 @@ function renderSide() {
       logLine(key, vars)}</div>`).join("");
   $("#log").scrollTop = $("#log").scrollHeight;
   $("#roundno").textContent = G.round;
-  $("#endnote").textContent = G.endedOn ? t("app.lastRound") : "";
+  renderEndBanner();
+}
+
+/* How the game ends, said out loud while there is still time to act on it.
+ *
+ * §11 gives a whole extra round after a trigger fires, which is the difference
+ * between a scramble and an ambush — but only if the player knows the clock has
+ * started. The log line scrolls away and "· last round" in the corner is four
+ * small words next to a number nobody is watching. So: a banner, in the panel
+ * they are already reading, naming what tripped the trigger and how much game
+ * is left.
+ *
+ * Two states, because they call for different play. `round < finalRounds` means
+ * this round finishes and then one more; `round === finalRounds` means this is
+ * the last one and nothing after it counts. */
+function renderEndBanner() {
+  const box = $("#endbanner"), note = $("#endnote");
+  if (!box) return;
+  if (!G || !G.endedOn) {
+    box.hidden = true; box.textContent = "";
+    if (note) { note.textContent = ""; note.classList.remove("final"); }
+    return;
+  }
+  const last = G.finalRounds !== null && G.round >= G.finalRounds;
+  box.hidden = false;
+  box.classList.toggle("final", last);
+  box.innerHTML = `<b>${t(last ? "end.final" : "end.soon")}</b>`
+    + `<span class="why">${t("end.why", { why: t(G.endedOn) })}</span>`;
+  if (note) {
+    note.textContent = t(last ? "app.lastRound" : "app.endTriggered");
+    note.classList.toggle("final", last);
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {

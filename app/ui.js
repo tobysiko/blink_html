@@ -1064,6 +1064,20 @@ function viewBoxOf(geo, zoom, pan) {
 function applyViewBox() {
   const svg = $("#map");
   if (!svg || !MAPGEO) return null;
+  /* Re-measure the element every time.
+   *
+   * The viewBox is built as W/scale by H/scale, which only produces `scale` if
+   * W and H are the element's CURRENT size — SVG letterboxes a viewBox whose
+   * aspect ratio does not match its box, and the real scale becomes the smaller
+   * of the two axes. MAPGEO was measured once per render, and the map's own
+   * height changes AFTER that as the prompt, hand and player board lay out
+   * beneath it. So the first fit of a new game was computed against a box that
+   * no longer existed: a viewBox of ratio 1.96 inside an element of ratio 2.98,
+   * letterboxed down to 0.60 — under the 0.72 floor this file promises, tiles
+   * at 30x35 px instead of 37x43, and the board adrift in a wide empty margin.
+   * Three lines here are cheaper than a stale-geometry bug nobody can see. */
+  const box = svg.getBoundingClientRect();
+  if (box.width > 0 && box.height > 0) { MAPGEO.W = box.width; MAPGEO.H = box.height; }
   const v = viewBoxOf(MAPGEO, ZOOM, PAN);
   PAN = v.pan;
   svg.setAttribute("viewBox", `${v.x} ${v.y} ${v.vw} ${v.vh}`);
@@ -1100,6 +1114,22 @@ const PTRS = new Map();                 // live pointers, for the two-finger pin
 function initPan() {
   const svg = $("#map");
   if (!svg || !svg.addEventListener) return;
+
+  /* The map box changes size for reasons that are not a window resize: the
+   * prompt grows a line, the hand wraps, the player board opens. `resize` on
+   * window never fires for any of those, so without this the board keeps a fit
+   * computed for a box it no longer occupies. */
+  if (typeof ResizeObserver === "function") {
+    let last = "";
+    const ro = new ResizeObserver(() => {
+      const b = svg.getBoundingClientRect();
+      const now = Math.round(b.width) + "x" + Math.round(b.height);
+      if (now === last || !b.width || !b.height) return;   // no loop, no churn
+      last = now;
+      if (G) applyViewBox();
+    });
+    try { ro.observe(svg); } catch (e) { /* older engines: the resize handler still runs */ }
+  }
   const at = (e) => ({ x: e.clientX, y: e.clientY });
   const spread = () => {
     const [a, b] = [...PTRS.values()];
@@ -2220,7 +2250,38 @@ function renderSide() {
       logLine(key, vars)}</div>`).join("");
   $("#log").scrollTop = $("#log").scrollHeight;
   $("#roundno").textContent = G.round;
-  $("#endnote").textContent = G.endedOn ? t("app.lastRound") : "";
+  renderEndBanner();
+}
+
+/* How the game ends, said out loud while there is still time to act on it.
+ *
+ * §11 gives a whole extra round after a trigger fires, which is the difference
+ * between a scramble and an ambush — but only if the player knows the clock has
+ * started. The log line scrolls away and "· last round" in the corner is four
+ * small words next to a number nobody is watching. So: a banner, in the panel
+ * they are already reading, naming what tripped the trigger and how much game
+ * is left.
+ *
+ * Two states, because they call for different play. `round < finalRounds` means
+ * this round finishes and then one more; `round === finalRounds` means this is
+ * the last one and nothing after it counts. */
+function renderEndBanner() {
+  const box = $("#endbanner"), note = $("#endnote");
+  if (!box) return;
+  if (!G || !G.endedOn) {
+    box.hidden = true; box.textContent = "";
+    if (note) { note.textContent = ""; note.classList.remove("final"); }
+    return;
+  }
+  const last = G.finalRounds !== null && G.round >= G.finalRounds;
+  box.hidden = false;
+  box.classList.toggle("final", last);
+  box.innerHTML = `<b>${t(last ? "end.final" : "end.soon")}</b>`
+    + `<span class="why">${t("end.why", { why: t(G.endedOn) })}</span>`;
+  if (note) {
+    note.textContent = t(last ? "app.lastRound" : "app.endTriggered");
+    note.classList.toggle("final", last);
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
