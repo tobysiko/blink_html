@@ -188,6 +188,39 @@ async function putReport(store, rep) {
   return false;
 }
 
+/* Read one stored report back. A private blob's URL is not fetchable on its
+ * own, so this goes through the SDK with the token; a public store still works
+ * because `get` handles both and a plain fetch is the fallback. */
+async function readReport(blob, token) {
+  let get = null;
+  try { ({ get } = require("@vercel/blob")); } catch (e) { /* older SDK */ }
+  if (get) {
+    for (const access of ["private", "public"]) {
+      try {
+        const r = await get(blob.pathname, { access, token });
+        if (r && r.stream) {
+          const chunks = [];
+          for await (const c of r.stream) chunks.push(Buffer.from(c));
+          return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        }
+      } catch (e) { /* try the other access mode, then the URL */ }
+    }
+  }
+  try {
+    const r = await fetch(blob.url);
+    if (r.ok) return await r.json();
+  } catch (e) { /* reported by the caller as a null entry */ }
+  return null;
+}
+
+/* List what has been kept, and — with `?full=1` — what people actually wrote.
+ *
+ * A list of blob keys answers "did anything arrive"; it does not answer "what
+ * did they say", which is the only reason any of this exists. So `full` pulls
+ * each report and returns the human parts: the feedback form, the flags raised
+ * mid-game, who was playing and under which rules. The whole replay stays out
+ * of it — it is most of the bytes and none of the reading.
+ */
 async function getReports(store, p, url) {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (!token) return { ok: false, why: "no report store bound" };
@@ -197,8 +230,33 @@ async function getReports(store, p, url) {
   const prefix = "blink/reports/" + (url.searchParams.get("commit") || "");
   try {
     const out = await list({ prefix, limit: 500, token });
-    return { ok: true, reports: out.blobs.map((b) => ({
-      key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
+    const blobs = out.blobs.slice().sort((a, b) =>
+      String(b.uploadedAt).localeCompare(String(a.uploadedAt)));   // newest first
+    if (!url.searchParams.get("full"))
+      return { ok: true, count: blobs.length, reports: blobs.map((b) => ({
+        key: b.pathname, size: b.size, at: b.uploadedAt, url: b.url })) };
+
+    const want = Math.min(Number(url.searchParams.get("limit")) || 50, 200);
+    const reports = [];
+    for (const b of blobs.slice(0, want)) {
+      const rep = await readReport(b, token);
+      if (!rep) { reports.push({ key: b.pathname, at: b.uploadedAt, unreadable: true }); continue; }
+      reports.push({
+        key: b.pathname, at: b.uploadedAt,
+        id: rep.id, lang: rep.lang, seconds: rep.seconds,
+        build: rep.build && rep.build.commit,
+        setup: rep.setup,
+        players: rep.players,
+        rounds: rep.outcome && rep.outcome.rounds,
+        scores: rep.outcome && rep.outcome.scores
+          && rep.outcome.scores.map((s) => `${s.seat}:${s.total}`).join(" "),
+        /* The point of the whole file. */
+        feedback: rep.feedback || null,
+        flags: (rep.flags || []).map((f) => ({ r: f.r, t: f.t, note: f.note })),
+        undos: rep.undos || 0,
+      });
+    }
+    return { ok: true, count: blobs.length, shown: reports.length, reports };
   } catch (e) {
     /* Same reasoning as putReport: say what went wrong rather than 500 at the
      * one person who is allowed to read this and has the key in hand. */

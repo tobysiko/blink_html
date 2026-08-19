@@ -171,6 +171,62 @@ else {
     delete process.env.BLOB_READ_WRITE_TOKEN;
     delete process.env.ADMIN_KEY;
 
+    /* ---- reading the feedback back --------------------------------------
+     *
+     * A list of blob keys answers "did anything arrive". It does not answer
+     * "what did they say", which is the only reason the file exists. `?full=1`
+     * has to return the words. Simulated with a store that holds one report. */
+    const kept = { schema: 3, id: 'KEPT0001', started: '2026-08-18',
+      build: { commit: 'abc1234' }, lang: 'de',
+      outcome: { rounds: 11, scores: [{ seat: 0, total: 44 }, { seat: 1, total: 25 }] },
+      setup: { n: 2, seed: 9, meldScore: 'sum' },
+      players: [{ seat: 0, kind: 'human', name: 'Toby' }],
+      flags: [{ r: 4, t: 'turn', note: 'why is this greyed out' }],
+      feedback: { confusing: 'the final round ended early', best: 'the map', name: 'Toby' },
+      replay: new Array(80).fill({ kind: 'end' }),      // bulk that must NOT come back
+    };
+    fs.writeFileSync(path.join(root, 'node_modules', '@vercel', 'blob', 'index.js'),
+      'const REPORT = ' + JSON.stringify(kept) + ';\n'
+      + 'module.exports = {\n'
+      + '  put: async () => ({ url: "https://blob/x" }),\n'
+      + '  list: async () => ({ blobs: [{ pathname: "blink/reports/abc1234/2026-08-18/KEPT0001.json",'
+      + '    size: 900, uploadedAt: "2026-08-18T10:00:00Z", url: "https://blob/x" }] }),\n'
+      + '  get: async (p, o) => (o && o.access === "private"\n'
+      + '    ? { stream: [Buffer.from(JSON.stringify(REPORT))] }\n'
+      + '    : (() => { throw new Error("public access on a private store"); })()),\n'
+      + '};\n');
+    process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
+    process.env.ADMIN_KEY = 'letmein';
+    /* node caches the module it already loaded, so drop it. */
+    delete require.cache[require.resolve(path.join(root, 'node_modules', '@vercel', 'blob', 'index.js'))];
+
+    const full = await get('/api/blink/reports?key=letmein&full=1');
+    ok(full.status === 200, `reading the reports answered ${full.status}`);
+    let read = null;
+    try { read = JSON.parse(full.body); } catch (e) { /* below */ }
+    const one = read && read.reports && read.reports[0];
+    ok(one && !one.unreadable,
+       `the stored report came back unreadable: ${full.body.slice(0, 140)}`);
+    ok(one && one.feedback && /final round ended early/.test(one.feedback.confusing),
+       'the feedback text is not in the reply — a listing of keys is not an answer '
+       + 'to "what did they say"');
+    ok(one && one.flags && one.flags.length === 1
+       && /greyed out/.test(one.flags[0].note),
+       'the flags raised mid-game did not come back');
+    ok(one && one.scores === '0:44 1:25', `the scores read "${one && one.scores}"`);
+    ok(one && !('replay' in one),
+       'the whole replay log is being returned — that is most of the bytes and '
+       + 'none of the reading');
+
+    /* And the plain listing still works, without dragging every file down. */
+    const brief = await get('/api/blink/reports?key=letmein');
+    ok(brief.status === 200 && /KEPT0001/.test(brief.body),
+       `the plain listing answered ${brief.status}: ${brief.body.slice(0, 90)}`);
+    ok(!/final round ended early/.test(brief.body),
+       'the plain listing is pulling the report contents down as well');
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+    delete process.env.ADMIN_KEY;
+
     /* And reports are not readable without the key. */
     const peek = await get('/api/blink/reports');
     ok(peek.status === 403, `listing reports without a key answered ${peek.status}, expected 403`);
@@ -181,6 +237,7 @@ else {
     server.close();
     report(`health, routing, open a table, read it back, 404s, report flagged `
       + `as unstored, a refusing Blob store still answers 200/stored:false, `
+      + `?full=1 returns the words people wrote and not the replay, `
       + `reports refused without a key`);
   });
 }
