@@ -92,7 +92,10 @@ const server = http.createServer(async (req, res) => {
       const rep = await readBody(req);
       if (!rep || !rep.schema) return reply(res, 400, { ok: false, why: "not a report" });
       const stored = await putReport(hub.store, rep);
-      return reply(res, 200, { ok: true, id: rep.id, stored });
+      /* Awaited, not fired and forgotten: this process may be frozen the
+       * instant it answers. */
+      const notified = await notifyReport(rep, stored);
+      return reply(res, 200, { ok: true, id: rep.id, stored, notified });
     }
     if (p === "/reports" || p.startsWith("/report/")) {
       if (!process.env.ADMIN_KEY || url.searchParams.get("key") !== process.env.ADMIN_KEY)
@@ -186,6 +189,69 @@ async function putReport(store, rep) {
    * look like the service is down. */
   console.error("blink: could not store a report —", last && last.message);
   return false;
+}
+
+/* ---- telling the designer a report has arrived ----
+ *
+ * Polling a listing means remembering to poll. This pushes instead, the moment
+ * something lands, to whatever webhook `BLINK_NOTIFY_URL` names.
+ *
+ * The payload carries BOTH `text` and `content` because that one line makes it
+ * work with Slack and Discord unchanged — Slack reads `text` and ignores
+ * `content`, Discord reads `content` and ignores `text`. Anything else that
+ * accepts a JSON POST gets the structured fields alongside.
+ *
+ * Three rules, all learned the hard way elsewhere in this file:
+ *   - it is best effort. A webhook that is down, slow or misconfigured must
+ *     never turn into a failed report — the person has already typed their
+ *     three sentences and pressed send.
+ *   - it goes out whether or not the store kept the report. If storing failed
+ *     the page hands the player a file instead, and that is exactly when you
+ *     want to know, so you can ask them for it.
+ *   - it is awaited before replying. A serverless function may be frozen the
+ *     instant it responds, and a fire-and-forget fetch would be a coin toss.
+ */
+function notifyLines(rep, stored) {
+  const fb = rep.feedback || {};
+  const s = rep.setup || {};
+  const who = (rep.players || [])
+    .filter((p) => p && p.kind === "human").map((p) => p.name)
+    .filter(Boolean).join(", ");
+  const rules = [
+    s.meldScore === "sum" ? "sum" : null,
+    s.researchRule && s.researchRule !== "once" ? "research:" + s.researchRule : null,
+    s.layout ? "board:" + s.layout : null,
+    s.consolation && s.consolation !== "last" ? "payout:" + s.consolation : null,
+  ].filter(Boolean).join(" ");
+  return [
+    `Blink playtest report ${rep.id || "?"}${stored ? "" : "  (NOT STORED — ask them for the file)"}`,
+    [s.n ? s.n + "p" : null, rep.outcome && rep.outcome.rounds
+      ? rep.outcome.rounds + " rounds" : null,
+     rep.build && rep.build.commit ? "build " + rep.build.commit : null,
+     rules || null, fb.name || who ? "from " + (fb.name || who) : null,
+    ].filter(Boolean).join(" · "),
+    fb.rating ? `rating ${fb.rating}/5` + (fb.again ? `, play again: ${fb.again}` : "") : null,
+    fb.confusing ? `confusing: ${fb.confusing}` : null,
+    fb.best ? `best: ${fb.best}` : null,
+    (rep.flags || []).length ? `${rep.flags.length} flag(s) raised mid-game` : null,
+  ].filter(Boolean);
+}
+
+async function notifyReport(rep, stored) {
+  const url = process.env.BLINK_NOTIFY_URL;
+  if (!url) return false;
+  const text = notifyLines(rep, stored).join("\n");
+  try {
+    const r = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, content: text, stored, id: rep.id }),
+    });
+    return !!(r && r.ok);
+  } catch (e) {
+    console.error("blink: could not send the report notification —", e && e.message);
+    return false;
+  }
 }
 
 /* Read one stored report back. A private blob's URL is not fetchable on its

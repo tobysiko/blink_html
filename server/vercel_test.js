@@ -227,6 +227,71 @@ else {
     delete process.env.BLOB_READ_WRITE_TOKEN;
     delete process.env.ADMIN_KEY;
 
+    /* ---- being told a report arrived ------------------------------------
+     *
+     * Polling a listing means remembering to poll, so a report can push to a
+     * webhook as it lands. Checked here against a real listener rather than a
+     * stub, because the thing that matters is what a Slack or Discord hook
+     * would actually receive. */
+    const heard = [];
+    const hook = http.createServer((rq, rs) => {
+      let b = '';
+      rq.on('data', (c) => { b += c; });
+      rq.on('end', () => { heard.push(b); rs.writeHead(200); rs.end('ok'); });
+    });
+    await new Promise((go) => hook.listen(0, go));
+    process.env.BLINK_NOTIFY_URL = `http://127.0.0.1:${hook.address().port}/hook`;
+    process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
+
+    const sent = await post('/api/blink/report', {
+      schema: 3, id: 'NOTIFY01', started: '2026-08-19',
+      build: { commit: 'abc1234' },
+      setup: { n: 3, meldScore: 'sum', layout: 'late', researchRule: 'twice' },
+      outcome: { rounds: 12 },
+      flags: [{ r: 3, t: 'turn', note: 'x' }],
+      feedback: { rating: 4, again: 'yes', name: 'Toby',
+                  confusing: 'the final round ended early', best: 'the map' },
+    });
+    ok(sent.status === 200, `a report with a webhook configured answered ${sent.status}`);
+    let ack = null;
+    try { ack = JSON.parse(sent.body); } catch (e) { /* below */ }
+    ok(ack && ack.notified === true,
+       `the reply says notified=${ack && ack.notified} — the caller cannot tell `
+       + 'whether the designer was told');
+    ok(heard.length === 1, `the webhook was called ${heard.length} times, expected once`);
+    const body = heard[0] || '';
+    let hookMsg = null;
+    try { hookMsg = JSON.parse(body); } catch (e) { fail.push('the webhook body is not JSON'); }
+    /* One payload has to satisfy both services, or this needs configuring per
+     * chat tool and nobody will. */
+    ok(hookMsg && typeof hookMsg.text === 'string' && hookMsg.text === hookMsg.content,
+       'the payload does not carry both `text` (Slack) and `content` (Discord)');
+    const msg = (hookMsg && hookMsg.text) || '';
+    ok(/NOTIFY01/.test(msg), `the message does not name the report: "${msg.slice(0, 80)}"`);
+    ok(/the final round ended early/.test(msg),
+       'the message does not carry what they actually wrote — the only reason to '
+       + `send it at all: "${msg.slice(0, 120)}"`);
+    ok(/from Toby/.test(msg), 'the message does not say who it came from');
+    ok(/1 flag/.test(msg), 'the message does not mention the flags raised');
+    ok(/sum/.test(msg) && /board:late/.test(msg),
+       `the message does not say which rules were in play: "${msg.slice(0, 160)}"`);
+    ok(!/"replay"/.test(body), 'the whole replay log is being posted to the webhook');
+
+    /* A webhook that is down must not cost the report. This is the case that
+     * matters: somebody has just typed three sentences and pressed send. */
+    heard.length = 0;
+    await new Promise((go) => hook.close(go));
+    const orphan = await post('/api/blink/report',
+                              { schema: 3, id: 'NOTIFY02', started: '2026-08-19' });
+    ok(orphan.status === 200,
+       `with the webhook refusing connections the report answered ${orphan.status}`);
+    let o = null;
+    try { o = JSON.parse(orphan.body); } catch (e) { /* below */ }
+    ok(o && o.ok === true && o.notified === false,
+       `a dead webhook gave ${orphan.body.slice(0, 90)} — it must not fail the report`);
+    delete process.env.BLINK_NOTIFY_URL;
+    delete process.env.BLOB_READ_WRITE_TOKEN;
+
     /* And reports are not readable without the key. */
     const peek = await get('/api/blink/reports');
     ok(peek.status === 403, `listing reports without a key answered ${peek.status}, expected 403`);
@@ -238,6 +303,8 @@ else {
     report(`health, routing, open a table, read it back, 404s, report flagged `
       + `as unstored, a refusing Blob store still answers 200/stored:false, `
       + `?full=1 returns the words people wrote and not the replay, `
+      + `a new report pushes to a webhook in a shape Slack and Discord both read `
+      + `and a dead webhook does not cost the report, `
       + `reports refused without a key`);
   });
 }

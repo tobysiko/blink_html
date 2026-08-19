@@ -107,16 +107,41 @@ tunnel, and the path `net_test.js` exercises on every run.
    downloads the file for the player to send on. That is honest, but it relies
    on them actually sending it.
 
-   A note on `--access public`: it means the URL is unguessable, not secret.
-   Nobody can list the store without `ADMIN_KEY`, but a leaked report URL
-   would open for anyone who had it. Reports carry names and free text people
-   wrote for you, so if that is not good enough, create the store with
-   `--access private` and change the one `access:` line in
-   `server/vercel.src.js` to match.
+   A **private** store is the better choice and is what the code now asks for
+   first: reports carry names and free text people wrote for you, not for the
+   internet. `putReport` tries private, then public, so either kind of store
+   works — a store configured private while the code asked for public was a
+   real outage, and its only symptom was a 500 at the moment somebody pressed
+   send.
 
 7. Optional: `ADMIN_KEY` as an environment variable, to read reports back.
    Writing one needs no key — that is a playtester finishing a game. Reading
    them does, because they carry names and free text people wrote for you.
+
+       GET /api/blink/reports?key=…            what has arrived: keys and dates
+       GET /api/blink/reports?key=…&full=1     what they actually WROTE — the
+                                               feedback form, the flags raised
+                                               mid-game, the rules in play
+
+   `full` leaves the replay log out: it is most of the bytes and none of the
+   reading. Newest first, 50 by default, `&limit=` to change it.
+
+8. Optional: `BLINK_NOTIFY_URL`, to be **told** rather than having to look.
+
+   Set it to a Slack or Discord incoming webhook and every finished report
+   posts a short summary as it lands — who played, under which rules, how it
+   went, and what they typed. One payload serves both: it carries `text`
+   (which Slack reads and Discord ignores) and `content` (the reverse).
+
+   Three things it deliberately does:
+   - it never costs a report. A webhook that is down, slow or wrong leaves
+     `stored` untouched and answers `notified: false`. The person has already
+     written their three sentences; losing them to a chat integration would be
+     absurd.
+   - it fires even when storing FAILED. That is exactly when you want to know,
+     because the page has handed the player a file and you need to ask for it.
+   - it is awaited before the response. A serverless function can be frozen
+     the instant it answers, so fire-and-forget would be a coin toss.
 
 ## When it answers FUNCTION_INVOCATION_FAILED
 
