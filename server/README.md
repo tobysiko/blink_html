@@ -48,7 +48,7 @@ writes — are what `store.js` exists for.
 uses. Worth doing occasionally: the interesting bugs are the ones only a second
 instance can cause.
 
-Then open `../Blink-play-v0.22.html` through a web server (not `file://` — the
+Then open `../Blink-play-v0.23.html` through a web server (not `file://` — the
 page needs an origin for the socket). Sessions live in memory and reports land
 in `server/reports/`; losing both on Ctrl-C is the point of a dev server.
 

@@ -28,7 +28,7 @@ try { ({ JSDOM } = require('jsdom')); WebSocket = require('ws'); }
 catch (e) { console.error('this test needs jsdom and ws — run: npm install jsdom ws'); process.exit(2); }
 
 const PORT = 8799 + (process.pid % 60);
-const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.22.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));

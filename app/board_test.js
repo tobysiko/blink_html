@@ -21,7 +21,7 @@ const path = require('path');
 const { JSDOM } = require('jsdom');
 const E = require('./engine.js');
 
-const HTML = path.join(__dirname, '..', 'Blink-play-v0.22.html');
+const HTML = path.join(__dirname, '..', 'Blink-play-v0.23.html');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 

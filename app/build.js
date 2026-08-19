@@ -21,7 +21,7 @@ function gitStamp() {
     /* "Dirty" must mean the SOURCE is uncommitted. The files this script
      * writes are outputs of this very run, so counting them would make every
      * build dirty forever — commit, rebuild, dirty again. */
-    const outs = ['Blink-play-v0.22.html', 'deploy', 'rulebook.html',
+    const outs = ['Blink-play-v0.23.html', 'deploy', 'rulebook.html',
                   'card-effects.html', 'map-objectives.html']
       .map((f) => `':(exclude)${f}'`).join(' ');
     return { commit: run('git rev-parse --short=10 HEAD'),
@@ -38,7 +38,7 @@ function gitStamp() {
  * the standalone file falls back to downloading the report — it must work with
  * no network at all. Set BLINK_API to point a build at the session service. */
 const API = process.env.BLINK_API || null;
-const BUILD = Object.assign({ version: 'v0.22', api: API,
+const BUILD = Object.assign({ version: 'v0.23', api: API,
                               reportUrl: API ? API.replace(/\/$/, '') + '/report' : null },
                             gitStamp());
 console.log(`build ${BUILD.version} ${BUILD.commit}${BUILD.dirty ? '+dirty' : ''} (${BUILD.branch})`);
@@ -56,21 +56,21 @@ const out = fs.readFileSync(here('shell.html'), 'utf8')
     + 'const BUILD = ' + JSON.stringify(BUILD) + ';\n'
     + lang + '\n' + eng + '\n' + sess + '\n' + rep)
   .replace('/*__UI__*/', net + '\n' + ui);
-fs.writeFileSync(here('../Blink-play-v0.22.html'), out);
-console.log('built Blink-play-v0.22.html', (out.length/1024).toFixed(1)+' KB');
+fs.writeFileSync(here('../Blink-play-v0.23.html'), out);
+console.log('built Blink-play-v0.23.html', (out.length/1024).toFixed(1)+' KB');
 
 /* Also emit ../deploy/index.html — the same page with the tags a SERVED copy
  * wants (description, theme colour, noindex while it is a prototype) and, if
  * terser is installed, minified. Deploy that folder, not the whole project. */
-const meta = `<title>Blink — play the prototype (v0.22)</title>
-<meta name="description" content="Blink — a civilization card game by Toby Siko. Play the v0.22 prototype against tuned bots in your browser.">
+const meta = `<title>Blink — play the prototype (v0.23)</title>
+<meta name="description" content="Blink — a civilization card game by Toby Siko. Play the v0.23 prototype against tuned bots in your browser.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#1E4229">
 <meta property="og:title" content="Blink — play the prototype">
-<meta property="og:description" content="Climbing the Ladder of Civilization. Trick-taking melds, a growing hex map, and a victory row. Prototype v0.22.">
+<meta property="og:description" content="Climbing the Ladder of Civilization. Trick-taking melds, a growing hex map, and a victory row. Prototype v0.23.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`;
-let page = out.replace('<title>Blink — play v0.22</title>', meta);
+let page = out.replace('<title>Blink — play v0.23</title>', meta);
 /* Served from the site, there is somewhere to go back to. The standalone file
  * has no such page, so this link only exists in the deploy build. */
 page = page.replace('<span class="right">',
@@ -95,7 +95,7 @@ function writeDeploy(text, how) {
 /* The three documents the setup page links to, put where those links point:
  * beside the page, both in the project root and in the deploy folder. A link
  * that 404s is worse than no link. */
-const DOCS = { 'rulebook.html': '../source/Blink-rules-v0.22.html',
+const DOCS = { 'rulebook.html': '../source/Blink-rules-v0.23.html',
                'card-effects.html': '../source/Blink-card-effects.html',
                'map-objectives.html': '../source/Blink-map-objectives.html' };
 for (const [name, src] of Object.entries(DOCS)) {

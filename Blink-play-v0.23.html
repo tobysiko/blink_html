@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blink — play v0.22</title>
+<title>Blink — play v0.23</title>
 <style>
   :root{
     --bg:#F4F1EA; --ink:#2B2620; --mut:#8A8378; --line:#C9C2B4;
@@ -846,7 +846,7 @@
 </div>
 <header>
   <h1>Blink</h1>
-  <span class="sub" data-i18n="app.sub">Climbing the Ladder of Civilization · rules v0.22</span>
+  <span class="sub" data-i18n="app.sub">Climbing the Ladder of Civilization · rules v0.23</span>
   <span class="right"><span data-i18n="app.round">round</span> <b id="roundno">0</b> <span id="endnote"></span></span>
   <nav class="hnav" id="hnav" aria-label="Game">
     <button id="undo" class="hbtn" disabled></button>
@@ -1152,7 +1152,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.22","api":"/api/blink","reportUrl":"/api/blink/report","commit":"417f6934e8","branch":"main","dirty":false,"built":"2026-08-18T17:39:59Z"};
+const BUILD = {"version":"v0.23","api":"/api/blink","reportUrl":"/api/blink/report","commit":"7e5d382c97","branch":"main","dirty":true,"built":"2026-08-19T14:12:18Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1179,7 +1179,7 @@ const LANGS = { en: "English", de: "Deutsch" };
 const STRINGS = {
 en: {
   // ---- shell / header --------------------------------------------------
-  "app.sub": "Climbing the Ladder of Civilization · rules v0.22",
+  "app.sub": "Climbing the Ladder of Civilization · rules v0.23",
   "app.round": "round",
   "app.lastRound": "· FINAL ROUND",
   "app.endTriggered": "· one round left",
@@ -1207,18 +1207,18 @@ en: {
   "setup.trick.dock": "Classic — winner uses every card; matching the winner's count sets one aside for 1 gold",
   "setup.trick.bonus": "v0.22 as printed — winner spends one extra card; matchers discard one from hand",
   "setup.meldScore": "Trick is won by",
-  "setup.meldScore.count": "Most cards — ranks only break a tie (as printed)",
-  "setup.meldScore.sum": "Highest total rank — one 20 beats three 6s, card count breaks a tie",
+  "setup.meldScore.count": "Most cards — ranks only break a tie (v0.22)",
+  "setup.meldScore.sum": "Highest total rank — one 20 beats three 6s, card count breaks a tie (as printed)",
   "setup.aLadder": "Effect A adds",
   "setup.aLadder.steps": "+1 / +2 / +3 / +4 by band — quietest",
   "setup.aLadder.double": "+2 / +4 / +6 / +8 by band",
   "setup.aLadder.band": "+3 / +6 / +9 / +12 by band — about one more card",
   "setup.aLadder.steep": "+4 / +8 / +12 / +16 by band — loudest",
-  "setup.aLadder.rank": "The card's own rank — no table to look up",
+  "setup.aLadder.rank": "The card's own rank (as printed)",
   "setup.layout": "Player board",
-  "setup.layout.rulebook": "Printed board — 2/4/6/4/4 units",
+  "setup.layout.rulebook": "v0.22 board — 2/4/6/4/4 units",
   "setup.layout.sim": "Sim — 2/4/5/5/4 units",
-  "setup.layout.late": "Late bloom — 2/3/5/5/5 units",
+  "setup.layout.late": "Printed board — 2/3/5/5/5 units",
   "setup.layout.custom": "Custom (testing)…",
   "setup.layout.units": "Units per tier",
   "setup.layout.ok": "{total} units across {n} tiers.",
@@ -1240,8 +1240,8 @@ en: {
   "setup.consolation.half": "Rises down the order — 0/1/1/2 at four players",
   "setup.consolation.ladder": "Inverse to initiative — 0/1/2/3 at four players",
   "setup.research": "Research per turn",
-  "setup.research.once": "Once a turn, 1 gold (as printed)",
-  "setup.research.twice": "Up to twice — 1 gold, then 2",
+  "setup.research.once": "Once a turn, 1 gold (v0.22)",
+  "setup.research.twice": "Up to twice — 1 gold, then 2 (as printed)",
   "setup.research.escalating": "As often as you can pay — 1 gold, then 2, then 3…",
   "setup.retire": "Research retires",
   "setup.retire.lowest": "Your lowest card — research is an upgrade",
@@ -1380,7 +1380,7 @@ en: {
      more: four of them are ahead of the rulebook while they are playtested,
      and a setup screen that misdescribes itself is worse than no note. Every
      published choice is still labelled "as printed". */
-  "setup.advanced.note": "Everything below is a rules experiment. The defaults are the set being playtested right now — four of them run ahead of the printed rulebook. Pick the options marked <b>as printed</b> to play the published game.",
+  "setup.advanced.note": "The defaults are the game as printed in the v0.23 rulebook. Everything below is a rules experiment — including the four v0.22 rules, kept so the two versions can be compared.",
   "pass.ready": "I have it",
   "pass.note": "Hand the device over. The board is hidden until you are holding it.",
 
@@ -1653,7 +1653,7 @@ en: {
 
 de: {
   // ---- Rahmen / Kopfzeile ---------------------------------------------
-  "app.sub": "Aufstieg der Zivilisation · Regeln v0.22",
+  "app.sub": "Aufstieg der Zivilisation · Regeln v0.23",
   "app.round": "Runde",
   "app.lastRound": "· LETZTE RUNDE",
   "app.endTriggered": "· noch eine Runde",
@@ -1681,18 +1681,18 @@ de: {
   "setup.trick.dock": "Klassisch — der Gewinner nutzt jede Karte; wer gleich viele Karten spielt und verliert, legt eine für 1 Gold beiseite",
   "setup.trick.bonus": "v0.22 wie gedruckt — der Gewinner spielt eine Extrakarte; Gleichauf-Spieler werfen eine Handkarte ab",
   "setup.meldScore": "Stich gewinnt",
-  "setup.meldScore.count": "Meiste Karten — Werte entscheiden nur bei Gleichstand (wie gedruckt)",
-  "setup.meldScore.sum": "Höchste Wertsumme — eine 20 schlägt drei 6er, Kartenzahl bei Gleichstand",
+  "setup.meldScore.count": "Meiste Karten — Werte entscheiden nur bei Gleichstand (v0.22)",
+  "setup.meldScore.sum": "Höchste Wertsumme — eine 20 schlägt drei 6er, Kartenzahl bei Gleichstand (wie gedruckt)",
   "setup.aLadder": "Effekt A gibt",
   "setup.aLadder.steps": "+1 / +2 / +3 / +4 je Stufe — am leisesten",
   "setup.aLadder.double": "+2 / +4 / +6 / +8 je Stufe",
   "setup.aLadder.band": "+3 / +6 / +9 / +12 je Stufe — etwa eine Karte mehr",
   "setup.aLadder.steep": "+4 / +8 / +12 / +16 je Stufe — am lautesten",
-  "setup.aLadder.rank": "Der Wert der Karte selbst — keine Tabelle nötig",
+  "setup.aLadder.rank": "Der Wert der Karte selbst (wie gedruckt)",
   "setup.layout": "Spielertableau",
-  "setup.layout.rulebook": "Gedrucktes Tableau — 2/4/6/4/4 Einheiten",
+  "setup.layout.rulebook": "Tableau v0.22 — 2/4/6/4/4 Einheiten",
   "setup.layout.sim": "Simulation — 2/4/5/5/4 Einheiten",
-  "setup.layout.late": "Späte Blüte — 2/3/5/5/5 Einheiten",
+  "setup.layout.late": "Gedrucktes Tableau — 2/3/5/5/5 Einheiten",
   "setup.layout.custom": "Eigenes (Test)…",
   "setup.layout.units": "Einheiten je Stufe",
   "setup.layout.ok": "{total} Einheiten auf {n} Stufen.",
@@ -1714,8 +1714,8 @@ de: {
   "setup.consolation.half": "Steigt nach hinten — 0/1/1/2 bei vier Spielern",
   "setup.consolation.ladder": "Umgekehrt zur Initiative — 0/1/2/3 bei vier Spielern",
   "setup.research": "Forschung je Zug",
-  "setup.research.once": "Einmal je Zug, 1 Gold (wie gedruckt)",
-  "setup.research.twice": "Bis zu zweimal — 1 Gold, dann 2",
+  "setup.research.once": "Einmal je Zug, 1 Gold (v0.22)",
+  "setup.research.twice": "Bis zu zweimal — 1 Gold, dann 2 (wie gedruckt)",
   "setup.research.escalating": "So oft du zahlen kannst — 1 Gold, dann 2, dann 3…",
   "setup.retire": "Forschung legt ab",
   "setup.retire.lowest": "Deine niedrigste Karte — Forschung ist ein Fortschritt",
@@ -1850,7 +1850,7 @@ de: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Schwer",
   "setup.advanced": "Erweiterte Regeln und Varianten",
-  "setup.advanced.note": "Alles hier unten ist ein Regelexperiment. Die Voreinstellungen sind der aktuelle Testsatz — vier davon gehen über das gedruckte Regelheft hinaus. Die mit <b>wie gedruckt</b> markierten Optionen ergeben das veröffentlichte Spiel.",
+  "setup.advanced.note": "Die Voreinstellungen sind das Spiel wie im Regelheft v0.23 gedruckt. Alles hier unten ist ein Regelexperiment — auch die vier Regeln aus v0.22, die zum Vergleich erhalten bleiben.",
   "pass.ready": "Ich habe es",
   "pass.note": "Gib das Gerät weiter. Der Spielplan bleibt verdeckt, bis du es in der Hand hast.",
 
@@ -2139,9 +2139,10 @@ function tn(key, n, vars) {
 }
 
 
-/* Blink v0.22 — rules engine, JavaScript port of sim/engine.py.
+/* Blink v0.23 — rules engine, JavaScript port of sim/engine.py.
  *
- * Faithful to the Python engine at the v0.22 defaults. The structure, the
+ * Faithful to the Python engine at the v0.22 defaults, which are still all
+ * selectable as options; v0.23 moved four of them. The structure, the
  * method names and the comments-that-are-rules are kept so the two can be
  * diffed by eye.
  *
@@ -2191,7 +2192,7 @@ const HOLDS = { plains: 3, forest: 2, ocean: 1, mountain: 1 };
  * stack the same terrain differently.
  *
  * The booklet prints four bands — Founding / Growth / Expansion / Empire — from
- * a version of the game that had four. v0.22 has five tiers, so Civilization
+ * a version of the game that had four. v0.23 has five tiers, so Civilization
  * repeats Empire's row: the variant's own line is that "Mountain and Ocean stay
  * low throughout — hostile ground never becomes comfortable", and a fifth,
  * higher row would be the one thing it says not to do. */
@@ -2216,12 +2217,17 @@ const BAG_EACH = 15;
  * 13/15/17/20. That gap is NOT cosmetic: the printed caps cut blocked buys from
  * 5.1 to 1.8 per game and let research run 21% more freely. The board and §04
  * need their cap column reprinted, not the engine. */
+/* UNITS are 2/3/5/5/5 as of v0.23 — a cheap Tribe, a lean Settlement and three
+ * broad late tiers. Still twenty units, so it is a redistribution rather than
+ * more material, and the runs stay comparable with everything measured before.
+ * The printed board of v0.22 was 2/4/6/4/4; it is kept as the "rulebook" layout
+ * option and in the variants book. */
 const BANDS = [
   ["Tribe", 2, 2, 0, 1, 0, 11],
-  ["Settlement", 4, 3, 1, 2, 1, 13],
-  ["Kingdom", 6, 4, 2, 3, 2, 15],
-  ["Empire", 4, 5, 3, 4, 3, 17],
-  ["Civilization", 4, 6, 4, 5, 4, 20],
+  ["Settlement", 3, 3, 1, 2, 1, 13],
+  ["Kingdom", 5, 4, 2, 3, 2, 15],
+  ["Empire", 5, 5, 3, 4, 3, 17],
+  ["Civilization", 5, 6, 4, 5, 4, 20],
 ];
 
 /* The variants, kept so any can still be measured. Defaults above are board
@@ -2743,7 +2749,9 @@ const A_SUM_LADDERS = {
    * look up. Written as null and handled below. */
   rank: null,
 };
-let A_SUM_LADDER = "band";
+/* v0.23 prints "add this card's rank", which needs no table on the card and
+ * no table to look up. The band ladders stay for measuring against. */
+let A_SUM_LADDER = "rank";
 function setASumLadder(which) {
   if (which in A_SUM_LADDERS) A_SUM_LADDER = which;
 }
@@ -3055,7 +3063,9 @@ class Game {
      *           equal value still loses to a bigger one.
      * This changes what a hand is FOR, so it is a whole-game option rather than
      * a variant toggle: under "sum" holding one high card is a plan. */
-    this.MELD_SCORE = opts.meldScore === "sum" ? "sum" : "count";
+    /* v0.23: the trick goes to the highest TOTAL RANK. "count" — most cards,
+     * ranks only breaking a tie — is v0.22 as printed and stays available. */
+    this.MELD_SCORE = opts.meldScore === "count" ? "count" : "sum";
     /* Which rung effect A adds to a total under sum scoring. Only consulted
      * when MELD_SCORE is "sum"; under "count" A still prints and does "+1/+2
      * cards" exactly as before. */
@@ -3096,8 +3106,9 @@ class Game {
     /* Who is paid for losing the trick — see consolationFor(). */
     this.CONSOLATION = ["last", "half", "ladder"].includes(opts.consolation)
       ? opts.consolation : "last";
+    /* v0.23: up to twice a turn, 1 gold then 2. "once" is v0.22 as printed. */
     this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
-      ? opts.researchRule : "once";
+      ? opts.researchRule : "twice";
     /* How many a turn may hold at most. "twice" exists because unlimited
      * measured as a 29% wider gap between leader and last: the player who can
      * afford the second and third research is the one already ahead, which is
@@ -3134,7 +3145,7 @@ class Game {
     this._deal();
   }
 
-  // ---- rules, at the v0.22 base-game defaults ----------------------
+  // ---- rules, at the v0.23 base-game defaults ----------------------
   get MARKET_GRID() { return this.GRID_SIZE; }
   get CONSOLATION_GOLD() { return 1; }
 
@@ -6004,14 +6015,18 @@ function seatRoster(styles, humans) {
  * normal game's options look exactly as they always did — which keeps old
  * reports and session logs comparable. */
 function chosenLayout() {
-  const pick = $("#layout") ? $("#layout").value : "rulebook";
+  const pick = $("#layout") ? $("#layout").value : "late";
   if (pick === "custom") {
     const raw = ($("#layout-custom") ? $("#layout-custom").value : "").trim();
     /* An unreadable column falls back rather than starting a game whose board
      * nobody can describe. The hint under the box has already said so. */
     return parseLayout(raw) ? raw : null;
   }
-  return pick === "rulebook" ? null : pick;
+  /* Always named, never null. This used to send null for "rulebook", meaning
+     "whatever the engine defaults to" — which was the same board right up until
+     v0.23 moved the default to 2/3/5/5/5, at which point asking for the v0.22
+     board would silently have handed you the new one. A preset says its name. */
+  return pick;
 }
 
 /* Effect A's ladder only means anything when the trick is won on total rank,

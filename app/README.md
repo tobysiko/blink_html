@@ -1,6 +1,6 @@
 # Blink — playable app (v0.22)
 
-`../Blink-play-v0.22.html` is the deliverable: one self-contained file, no server,
+`../Blink-play-v0.23.html` is the deliverable: one self-contained file, no server,
 no network. Double-click it. You play one seat; the rest are run by the tuned
 v0.22 bot.
 
@@ -12,7 +12,7 @@ v0.22 bot.
 | `i18n.js` | every string a player reads, English and German side by side |
 | `ui.js` | rendering and input only — it contains no rules |
 | `shell.html` | markup and CSS, with `/*__ENGINE__*/` and `/*__UI__*/` placeholders |
-| `build.js` | inlines the three scripts into `../Blink-play-v0.22.html` |
+| `build.js` | inlines the three scripts into `../Blink-play-v0.23.html` |
 
 Rebuild after any edit:
 

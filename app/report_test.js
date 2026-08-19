@@ -24,7 +24,7 @@ catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); p
 const E = require('./engine.js');
 /* The one decoder. See rebuild(). */
 const S = require('./session.js');
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.22.html', 'utf8');
+const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 

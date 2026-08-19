@@ -10,7 +10,7 @@ Bumping: change VERSION, run source/build_pdfs.sh, done. The rules HTML and PDF
 rename themselves.
 """
 
-VERSION = "0.22"
+VERSION = "0.23"
 VTAG = f"v{VERSION}"
 
 # Output names that carry the version. Everything else is version-stable, so a

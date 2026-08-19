@@ -1,13 +1,14 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-19T13:35:38Z
+ * Built 2026-08-19T14:12:19Z
  */
 
 /* ---------------- app/engine.js ---------------- */
-/* Blink v0.22 — rules engine, JavaScript port of sim/engine.py.
+/* Blink v0.23 — rules engine, JavaScript port of sim/engine.py.
  *
- * Faithful to the Python engine at the v0.22 defaults. The structure, the
+ * Faithful to the Python engine at the v0.22 defaults, which are still all
+ * selectable as options; v0.23 moved four of them. The structure, the
  * method names and the comments-that-are-rules are kept so the two can be
  * diffed by eye.
  *
@@ -57,7 +58,7 @@ const HOLDS = { plains: 3, forest: 2, ocean: 1, mountain: 1 };
  * stack the same terrain differently.
  *
  * The booklet prints four bands — Founding / Growth / Expansion / Empire — from
- * a version of the game that had four. v0.22 has five tiers, so Civilization
+ * a version of the game that had four. v0.23 has five tiers, so Civilization
  * repeats Empire's row: the variant's own line is that "Mountain and Ocean stay
  * low throughout — hostile ground never becomes comfortable", and a fifth,
  * higher row would be the one thing it says not to do. */
@@ -82,12 +83,17 @@ const BAG_EACH = 15;
  * 13/15/17/20. That gap is NOT cosmetic: the printed caps cut blocked buys from
  * 5.1 to 1.8 per game and let research run 21% more freely. The board and §04
  * need their cap column reprinted, not the engine. */
+/* UNITS are 2/3/5/5/5 as of v0.23 — a cheap Tribe, a lean Settlement and three
+ * broad late tiers. Still twenty units, so it is a redistribution rather than
+ * more material, and the runs stay comparable with everything measured before.
+ * The printed board of v0.22 was 2/4/6/4/4; it is kept as the "rulebook" layout
+ * option and in the variants book. */
 const BANDS = [
   ["Tribe", 2, 2, 0, 1, 0, 11],
-  ["Settlement", 4, 3, 1, 2, 1, 13],
-  ["Kingdom", 6, 4, 2, 3, 2, 15],
-  ["Empire", 4, 5, 3, 4, 3, 17],
-  ["Civilization", 4, 6, 4, 5, 4, 20],
+  ["Settlement", 3, 3, 1, 2, 1, 13],
+  ["Kingdom", 5, 4, 2, 3, 2, 15],
+  ["Empire", 5, 5, 3, 4, 3, 17],
+  ["Civilization", 5, 6, 4, 5, 4, 20],
 ];
 
 /* The variants, kept so any can still be measured. Defaults above are board
@@ -609,7 +615,9 @@ const A_SUM_LADDERS = {
    * look up. Written as null and handled below. */
   rank: null,
 };
-let A_SUM_LADDER = "band";
+/* v0.23 prints "add this card's rank", which needs no table on the card and
+ * no table to look up. The band ladders stay for measuring against. */
+let A_SUM_LADDER = "rank";
 function setASumLadder(which) {
   if (which in A_SUM_LADDERS) A_SUM_LADDER = which;
 }
@@ -921,7 +929,9 @@ class Game {
      *           equal value still loses to a bigger one.
      * This changes what a hand is FOR, so it is a whole-game option rather than
      * a variant toggle: under "sum" holding one high card is a plan. */
-    this.MELD_SCORE = opts.meldScore === "sum" ? "sum" : "count";
+    /* v0.23: the trick goes to the highest TOTAL RANK. "count" — most cards,
+     * ranks only breaking a tie — is v0.22 as printed and stays available. */
+    this.MELD_SCORE = opts.meldScore === "count" ? "count" : "sum";
     /* Which rung effect A adds to a total under sum scoring. Only consulted
      * when MELD_SCORE is "sum"; under "count" A still prints and does "+1/+2
      * cards" exactly as before. */
@@ -962,8 +972,9 @@ class Game {
     /* Who is paid for losing the trick — see consolationFor(). */
     this.CONSOLATION = ["last", "half", "ladder"].includes(opts.consolation)
       ? opts.consolation : "last";
+    /* v0.23: up to twice a turn, 1 gold then 2. "once" is v0.22 as printed. */
     this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
-      ? opts.researchRule : "once";
+      ? opts.researchRule : "twice";
     /* How many a turn may hold at most. "twice" exists because unlimited
      * measured as a 29% wider gap between leader and last: the player who can
      * afford the second and third research is the one already ahead, which is
@@ -1000,7 +1011,7 @@ class Game {
     this._deal();
   }
 
-  // ---- rules, at the v0.22 base-game defaults ----------------------
+  // ---- rules, at the v0.23 base-game defaults ----------------------
   get MARKET_GRID() { return this.GRID_SIZE; }
   get CONSOLATION_GOLD() { return 1; }
 

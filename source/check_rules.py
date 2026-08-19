@@ -17,6 +17,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from version import RULES_HTML
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -63,7 +64,9 @@ if pyb:
           f"sim rank caps {[r[5] for r in pyn]} != app {CAPS}")
 
 # ------------------------------------------------------------- the rulebook
-rules = text_of(HERE / "Blink-rules-v0.22.html")
+# version.py exists so a bump cannot leave a file behind; this line used to
+# hardcode v0.22 and would have quietly checked the wrong rulebook after one.
+rules = text_of(HERE / RULES_HTML)
 
 # 1. the tier table, in order, as "Tribe 2 2 1 free 11"
 row = re.search(r"Tribe (\d+) (\d+) (\d+) free (\d+)", rules)
@@ -100,6 +103,37 @@ check(" / ".join(str(a) for a in ASC[1:]) in rules,
 
 # 4. the trick, as the engine resolves it under the default rule
 check('trickRule || "dock"' in js, "the app's default trick rule is no longer 'dock'")
+
+# 4b. v0.23: the trick goes to the highest TOTAL RANK, not the most cards.
+#     Four rules moved at once in v0.23, and the whole point of this file is
+#     that a rulebook and an engine cannot drift apart quietly — so each of the
+#     four is pinned on both sides.
+check('opts.meldScore === "count" ? "count" : "sum"' in js,
+      "the engine's default trick scoring is no longer the highest total")
+check("highest total wins" in rules,
+      "the rulebook does not say the highest total wins the trick")
+check("Most cards wins the trick" not in rules,
+      "the rulebook still says most cards wins")
+# the worked example has to be worked the new way, or it teaches the old rule
+check(re.search(r"8 \+ 8 for.{0,40}16", rules),
+      "the worked example does not add the winning meld up")
+
+# 4c. research runs up to twice a turn, at a rising price
+check('? opts.researchRule : "twice"' in js,
+      "the engine's default is no longer two researches a turn")
+check("up to twice per turn" in rules.lower(),
+      "the rulebook still prints research as once a turn")
+check(re.search(r"first research of your turn costs 1 gold, the second costs 2", rules),
+      "the rulebook does not print the rising research price")
+
+# 4d. effect A adds the card's own rank
+check('let A_SUM_LADDER = "rank"' in js,
+      "the engine's effect A no longer adds the card's own rank")
+check("+1 card" not in rules and "+2 cards" not in rules,
+      "the rulebook still prints effect A as +1/+2 cards")
+eff = text_of(HERE / "Blink-card-effects.html")
+check("rank" in eff and "+1 card" not in eff,
+      "the effects document still prints effect A as +1 card")
 check("set aside" in rules, "the rulebook never mentions setting a card aside")
 check("winner spends one extra card" not in rules.lower(),
       "the rulebook still promises the winner an extra card")
@@ -168,5 +202,5 @@ print("\n".join("FAIL: " + f for f in fails) if fails else
       + "/".join(str(u) for u in UNITS)
       + ", caps " + "/".join(str(c) for c in CAPS)
       + ", meld limits " + "/".join(str(m) for m in MELD)
-      + ", the classic trick, the lowest-card retire, and B in reach")
+      + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, and B in reach")
 sys.exit(1 if fails else 0)

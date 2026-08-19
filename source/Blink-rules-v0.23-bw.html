@@ -1,14 +1,17 @@
-# -*- coding: utf-8 -*-
-import json, pathlib, re
-from version import VTAG, RULES_HTML
-
-F = json.loads(pathlib.Path("figs.json").read_text())
-
-CSS = """
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Blink — Rules v0.23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
 :root{
-  --paper:#EDEAE1; --page:#FBFAF6; --ink:#1C1F1D; --ink-soft:#5A5F59;
-  --plains:#C9992B; --forest:#37704A; --ocean:#256A8C; --stone:#8A837A;
-  --red:#C0392B; --rule:#CDC7B8;
+  --paper:#FFFFFF; --page:#FFFFFF; --ink:#000000; --ink-soft:#3F3F3F;
+  --plains:#B4B4B4; --forest:#5C5C5C; --ocean:#2B2B2B; --stone:#8A8A8A;
+  --red:#000000; --rule:#B0B0B0;
   --measure:38rem;
 }
 *{box-sizing:border-box}
@@ -78,16 +81,16 @@ em{font-style:italic}
 figure{margin:1.6rem 0 1.8rem;max-width:none}
 /* one scale for every diagram: the svg carries its own px size, we never stretch it */
 figure svg{display:block;max-width:100%;height:auto}
-.figbox{background:#F6F4ED;border:1px solid var(--rule);border-radius:4px;
+.figbox{background:#F4F4F4;border:1px solid var(--rule);border-radius:4px;
   padding:1.1rem .9rem;display:flex;justify-content:center;align-items:center}
 .figbox.plain{background:none;border:none;padding:.35rem 0}
 figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.5;
   color:var(--ink-soft);margin-top:.6rem;letter-spacing:.02em;max-width:var(--measure)}
-.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5A5F59}
-.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1C1F1D;font-weight:600}
-.fig-step{font-family:"IBM Plex Mono",monospace;fill:#8A837A;letter-spacing:.06em}
-.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1C1F1D;font-weight:600}
-.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#C0392B;font-weight:600}
+.fig-label{font-family:"IBM Plex Sans",sans-serif;fill:#5E5E5E}
+.fig-strong{font-family:"IBM Plex Sans",sans-serif;fill:#1E1E1E;font-weight:600}
+.fig-step{font-family:"IBM Plex Mono",monospace;fill:#848484;letter-spacing:.06em}
+.fig-rank{font-family:Fraunces,Georgia,serif;fill:#1E1E1E;font-weight:600}
+.fig-attack{font-family:"IBM Plex Sans",sans-serif;fill:#555555;font-weight:600}
 
 /* ---------- meld grid ---------- */
 .tiergroup{break-inside:avoid;margin-top:2rem}
@@ -139,7 +142,7 @@ td:last-child,th:last-child{padding-right:0}
   margin-top:2.5rem;padding-bottom:3rem}
 .ref section{border-top-color:var(--rule)}
 .ref .h2 h2,.ref h3{color:var(--ink)}
-.ref .h2 .num{color:#9A948A}
+.ref .h2 .num{color:#959595}
 .ref p,.ref li{color:var(--ink-soft)}
 .ref td{border-bottom-color:var(--rule)}
 .ref th{color:var(--stone);border-bottom-color:var(--ink)}
@@ -147,7 +150,7 @@ td:last-child,th:last-child{padding-right:0}
 .ref .cols>div{max-width:none}
 .ref .cols p,.ref .cols ul{max-width:none}
 .ref .note{border-left-color:var(--plains)}
-.ref .note .tag{color:#9A948A}
+.ref .note .tag{color:#959595}
 
 footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72rem;
   color:var(--ink-soft);letter-spacing:.06em}
@@ -157,10 +160,10 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   margin:18mm 16mm 16mm 16mm;
 }
 @media print{
-  html,body{background:#fff}
-  .example{background:#F3F1EA;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
+  html,body{background:#FFFFFF}
+  .example{background:#F1F1F1;padding:.5rem 6mm;margin:0 -6mm;border-radius:4px}
   body{font-size:10.3pt;line-height:1.5}
-  .sheet{box-shadow:none;max-width:none;margin:0;background:#fff}
+  .sheet{box-shadow:none;max-width:none;margin:0;background:#FFFFFF}
   /* padding is provided by the @page margin, so drop the fluid inner pad */
   .pad{padding:0}
   .mast{padding:0 0 1rem}
@@ -176,12 +179,12 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   /* figures keep their intrinsic size so the scale stays constant across the book */
   figure svg{max-width:100%;height:auto;display:block;margin:0 auto}
   .melds figure svg{max-width:100%;height:auto;margin:0 auto}
-  .figbox{background:#F7F5EF;border-color:#DDD8CB}
-  .ref{background:#fff;color:#000;border-top:2px solid #000}
-  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000}
-  .ref th{color:#555;border-bottom-color:#000}
-  .ref td{border-bottom-color:#ccc}
-  .ref .h2 .num{color:#777}
+  .figbox{background:#F5F5F5;border-color:#D8D8D8}
+  .ref{background:#FFFFFF;color:#000000;border-top:2px solid #000000}
+  .ref .h2 h2,.ref h3,.ref p,.ref li{color:#000000}
+  .ref th{color:#555555;border-bottom-color:#000000}
+  .ref td{border-bottom-color:#CCCCCC}
+  .ref .h2 .num{color:#777777}
 }
 @media (max-width:640px){
   body{font-size:15px}
@@ -193,10 +196,7 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   .sheet{animation:rise .5s ease-out}
   @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 }
-"""
 
-
-CSS += """
 .opener .lede{font-size:1.06rem}
 .contents{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
   padding:.7rem 0;margin:1.4rem 0 0}
@@ -207,69 +207,16 @@ CSS += """
 p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 .gloss dt{font-weight:600;margin:.7rem 0 0;break-after:avoid}
 .gloss dd{margin:.1rem 0 0;color:var(--stone);break-before:avoid}
-"""
 
-
-# ---------------------------------------------------------------- figure scale
-# Figures are sized in CSS px per SVG user unit, NOT stretched to the column.
-# The rule: anything a reader might compare shares a scale; a close-up may
-# deliberately break it. Three tiers, assigned by hand:
-#
-#   COMPARE (1.07) - every figure containing map hexes or hand cards that is
-#       meant to be read against another: the meld panels, the starting maps,
-#       explore, the terrain key. A hex is the
-#       same size in all of them. 1.07 is the largest value at which the widest
-#       of these still fits the print column and the widest meld panel still
-#       fits its grid cell.
-#   DETAIL (1.60) - single-mechanism close-ups with only a few objects, where
-#       the point is to look closely: attacking, fortifying, the card market.
-#       Larger on purpose, and never sitting beside a COMPARE figure.
-#   COMPONENT (1.22) - schematics of physical components rather than of the
-#       map: the player board and the victory row. Sized to fill the column.
-COMPARE, DETAIL, COMPONENT = 1.07, 1.60, 1.22
-# The market figure grew when the grid went from 2x3 to 3x3 and has overflowed
-# the print column ever since — check_figs.py has been failing on it. It gets
-# its own scale so nine positions fit the page instead of being clipped.
-MARKET = 1.45
-SCALE = {
-    "combat": DETAIL, "fortify": DETAIL, "market": MARKET,
-    "board": COMPONENT, "vprow": COMPONENT,
-}
-_VB = re.compile(r'viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"')
-
-
-def sized(markup, key):
-    """Give an SVG an intrinsic px size from its viewBox at its tier's scale."""
-    m = _VB.search(markup)
-    if not m:
-        return markup
-    sc = SCALE.get(key, COMPARE)
-    w = float(m.group(3)) * sc
-    h = float(m.group(4)) * sc
-    return markup.replace('<svg class="fig"',
-                          f'<svg class="fig" width="{w:.1f}" height="{h:.1f}"', 1)
-
-
-def fig(key, caption, wide=False):
-    return (f'<figure><div class="figbox">{sized(F[key], key)}</div>'
-            f'<figcaption>{caption}</figcaption></figure>')
-
-
-def meld_tiers():
-    """Removed in v0.22 — the meld taxonomy it listed no longer exists."""
-    raise NotImplementedError("v0.21 API; v0.22 has one meld rule, see fig 'meld_rule'")
-
-
-HTML = f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blink — Rules {VTAG}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>{CSS}</style>
+/* ---- black-and-white overrides ---- */
+.sheet{box-shadow:none;border:none}
+/* light chips need an outline or they vanish on white */
+.chip::before{outline:.5px solid #000;outline-offset:-.5px}
+/* the stepped rule is four tones; give it edges so they stay countable */
+.steprule i{box-shadow:inset 0 0 0 .5px #000}
+img,svg{filter:none}
+@media print{ body{background:#fff} .sheet{background:#fff} }
+</style>
 </head>
 <body>
 <div class="sheet">
@@ -279,7 +226,22 @@ HTML = f"""<!doctype html>
   <h1>Blink</h1>
   <p class="sub">Climbing the ladder of civilization</p>
   <p class="meta"><span>2–4 players</span><span>60–120 minutes</span><span>Toby Siko</span></p>
-  <div class="herowrap">{F['hero']}</div>
+  <div class="herowrap"><svg class="fig" viewBox="-82 -40 321 202" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,26.00 90.07,39.00 112.58,26.00 112.58,0.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,34.00 135.10,47.00 157.62,34.00 157.62,8.00" fill="#D9D9D9"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,57.00 -22.52,70.00 0.00,57.00 0.00,31.00" fill="#D9D9D9"/><polygon points="-22.52,13.00 0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,26.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,57.00 22.52,70.00 45.03,57.00 45.03,31.00" fill="#D9D9D9"/><polygon points="22.52,13.00 45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="22.52" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="22.52" cy="38.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="35.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#D9D9D9"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,65.00 112.58,78.00 135.10,65.00 135.10,39.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="38.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="35.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,73.00 157.62,86.00 180.13,73.00 180.13,47.00" fill="#D9D9D9"/><polygon points="157.62,13.00 180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,26.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><ellipse cx="157.62" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="157.62" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="-22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,96.00 -45.03,109.00 -22.52,96.00 -22.52,70.00" fill="#D9D9D9"/><polygon points="-45.03,52.00 -22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,65.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#D9D9D9"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,96.00 45.03,109.00 67.55,96.00 67.55,70.00" fill="#D9D9D9"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="77.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="74.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="70.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="67.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,96.00 90.07,109.00 112.58,96.00 112.58,70.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="90.07" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,104.00 135.10,117.00 157.62,104.00 157.62,78.00" fill="#D9D9D9"/><polygon points="135.10,52.00 157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,65.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#D9D9D9"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,135.00 67.55,148.00 90.07,135.00 90.07,109.00" fill="#D9D9D9"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><ellipse cx="67.55" cy="123.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="67.55" cy="120.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,135.00 112.58,148.00 135.10,135.00 135.10,109.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="202.65,13.00 225.17,26.00 225.17,52.00 202.65,65.00 180.13,52.00 180.13,26.00" fill="none" stroke="#666666" stroke-width="1.6" stroke-dasharray="5 4"/></svg></div>
 </header>
 <div class="steprule"><i></i><i></i><i></i><i></i></div>
 
@@ -342,7 +304,22 @@ HTML = f"""<!doctype html>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
     <li><strong>4 initiative dice</strong> — use one per player</li>
   </ul>
-  {fig('terrain', 'The four terrains at a glance. Defended ground is shown taller — a visual reminder of its attack cost, nothing more. The numbers on the table are the rules.')}
+  <figure><div class="figbox"><svg class="fig" width="448.3" height="211.9" viewBox="20 5 419 198" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,114.00 60.00,127.00 82.52,114.00 82.52,88.00" fill="#D9D9D9"/><polygon points="60.00,70.00 82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,83.00" fill="url(#h-ocean)" stroke="#000000" stroke-width="1.2"/><text x="60.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Ocean</text><text x="60.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="60.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,114.00 168.00,127.00 190.52,114.00 190.52,88.00" fill="#D9D9D9"/><polygon points="168.00,70.00 190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,83.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><text x="168.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Plains</text><text x="168.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 3</text><text x="168.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,122.00 276.00,135.00 298.52,122.00 298.52,96.00" fill="#D9D9D9"/><polygon points="276.00,70.00 298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,83.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><text x="276.00" y="143.00" text-anchor="middle" class="fig-strong" font-size="14">Forest</text><text x="276.00" y="161.00" text-anchor="middle" class="fig-label" font-size="12">holds 2</text><text x="276.00" y="177.00" text-anchor="middle" class="fig-step" font-size="11">costs 1 gold</text><polygon points="406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,130.00 384.00,143.00 406.52,130.00 406.52,104.00" fill="#D9D9D9"/><polygon points="384.00,70.00 406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,83.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><text x="384.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="14">Mountain</text><text x="384.00" y="169.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="384.00" y="185.00" text-anchor="middle" class="fig-step" font-size="11">costs 2 gold</text><text x="60.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="168.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="276.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">2 layers</text><text x="384.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">3 layers</text></svg></div><figcaption>The four terrains at a glance. Defended ground is shown taller — a visual reminder of its attack cost, nothing more. The numbers on the table are the rules.</figcaption></figure>
 </section>
 
 <section>
@@ -397,7 +374,22 @@ HTML = f"""<!doctype html>
 
     <li><b>First player.</b> Choose a start player. They take initiative die “1”.</li>
   </ol>
-  {fig('setup_maps', 'The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.')}
+  <figure><div class="figbox"><svg class="fig" width="673.0" height="286.8" viewBox="-6 -52 629 268" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g transform="translate(22.52,-0.00)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,34.00 90.07,47.00 112.58,34.00 112.58,8.00" fill="#D9D9D9"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,18.00 135.10,31.00 157.62,18.00 157.62,-8.00" fill="#D9D9D9"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="135.10" cy="6.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="135.10" cy="3.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/></g><text x="90.07" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">2 players</text><g transform="translate(196.13,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#D9D9D9"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="22.52" cy="123.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="22.52" cy="120.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,151.00 67.55,164.00 90.07,151.00 90.07,125.00" fill="#D9D9D9"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,174.00 135.10,187.00 157.62,174.00 157.62,148.00" fill="#D9D9D9"/><polygon points="135.10,130.00 157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,143.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="135.10" cy="162.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="135.10" cy="159.00" rx="11" ry="5.5" fill="#8C8C8C" stroke="#000000" stroke-width="1.2"/></g><text x="274.94" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">3 players</text><g transform="translate(392.27,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#D9D9D9"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#D9D9D9"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,112.00 45.03,125.00 67.55,112.00 67.55,86.00" fill="#D9D9D9"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#D9D9D9"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#D9D9D9"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,151.00 157.62,164.00 180.13,151.00 180.13,125.00" fill="#D9D9D9"/><polygon points="157.62,91.00 180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,104.00" fill="url(#h-mountain)" stroke="#000000" stroke-width="1.2"/><polygon points="225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,135.00 202.65,148.00 225.17,135.00 225.17,109.00" fill="#D9D9D9"/><polygon points="202.65,91.00 225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,104.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="202.65" cy="123.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="202.65" cy="120.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><polygon points="112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,174.00 90.07,187.00 112.58,174.00 112.58,148.00" fill="#D9D9D9"/><polygon points="90.07,130.00 112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,143.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="90.07" cy="162.00" rx="11" ry="5.5" fill="#3A3A3A"/><ellipse cx="90.07" cy="159.00" rx="11" ry="5.5" fill="#8C8C8C" stroke="#000000" stroke-width="1.2"/></g><text x="493.59" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">4 players</text></svg></div><figcaption>The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.</figcaption></figure>
 </section>
 
 <section>
@@ -437,7 +429,22 @@ HTML = f"""<!doctype html>
   </table>
   <p class="fine">First time only. Ground you later lose does not put the coins back, and
   falling to a lower tier does not let you claim them twice.</p>
-  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — and your free moves — 1, 2, 3, 4, 5 — pays a one-off ascension coin, and moves you onto a costlier row. You always pay only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, one food owed each recycle.')}
+  <figure><div class="figbox"><svg class="fig" width="649.0" height="462.4" viewBox="-6 -8 532 379" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><rect x="8" y="6" width="504" height="351" rx="12" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/><text x="20.00" y="24.00" text-anchor="start" class="fig-step" font-size="12">RESERVE</text><text x="384.00" y="24.00" text-anchor="start" class="fig-step" font-size="11">FOOD</text><text x="448.00" y="24.00" text-anchor="start" class="fig-step" font-size="11">MOVES</text><text x="134.00" y="24.00" text-anchor="start" class="fig-label" font-size="9.5">empty from the top band down</text><rect x="20" y="38" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="43.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="59.00" text-anchor="middle" class="fig-strong" font-size="15">2</text><text x="39.00" y="69.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="54.00" text-anchor="start" class="fig-step" font-size="11">Tribe</text><text x="60.00" y="66.00" text-anchor="start" class="fig-label" font-size="8">2 units</text><ellipse cx="143" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="167" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><text x="392.00" y="60.00" text-anchor="start" class="fig-label" font-size="9">free</text><rect x="452" y="46.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="60.00" text-anchor="middle" class="fig-strong" font-size="12">1</text><rect x="20" y="84" width="480" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="89.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="105.00" text-anchor="middle" class="fig-strong" font-size="15">3</text><text x="39.00" y="115.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="100.00" text-anchor="start" class="fig-step" font-size="11">Settlement</text><text x="60.00" y="112.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="215" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><circle cx="392.00" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="92.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="106.00" text-anchor="middle" class="fig-strong" font-size="12">2</text><rect x="20" y="130" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="135.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="15">4</text><text x="39.00" y="161.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="146.00" text-anchor="start" class="fig-step" font-size="11">Kingdom</text><text x="60.00" y="158.00" text-anchor="start" class="fig-label" font-size="8">6 units</text><ellipse cx="143" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="263" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="263" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="149.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="149.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="149.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="149.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="138.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="152.00" text-anchor="middle" class="fig-strong" font-size="12">3</text><rect x="20" y="176" width="480" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="181.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="197.00" text-anchor="middle" class="fig-strong" font-size="15">5</text><text x="39.00" y="207.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="192.00" text-anchor="start" class="fig-step" font-size="11">Empire</text><text x="60.00" y="204.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="426.00" cy="195.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="426.00" cy="195.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="184.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="198.00" text-anchor="middle" class="fig-strong" font-size="12">4</text><rect x="20" y="222" width="480" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="227.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="243.00" text-anchor="middle" class="fig-strong" font-size="15">6</text><text x="39.00" y="253.00" text-anchor="middle" class="fig-label" font-size="6.5">cards</text><text x="60.00" y="238.00" text-anchor="start" class="fig-step" font-size="11">Civilization</text><text x="60.00" y="250.00" text-anchor="start" class="fig-label" font-size="8">4 units</text><ellipse cx="143" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><circle cx="392.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="392.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="409.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="409.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="426.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="426.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="443.00" cy="241.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="443.00" cy="241.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><rect x="452" y="230.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="462.00" y="244.00" text-anchor="middle" class="fig-strong" font-size="12">5</text><text x="20.00" y="274.00" text-anchor="start" class="fig-label" font-size="8.5">Each recycle your people eat your current tier's coins only — food is not cumulative.</text><text x="20.00" y="287.00" text-anchor="start" class="fig-label" font-size="8.5">Free moves refresh every turn.</text><text x="20.00" y="311.00" text-anchor="start" class="fig-step" font-size="11">GOLD</text><circle cx="78.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="78.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="96.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="96.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="114.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="114.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="132.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="132.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="150.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="150.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="168.00" cy="307.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="168.00" cy="307.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="20.00" y="341.00" text-anchor="start" class="fig-step" font-size="10">VICTORY ROW</text><rect x="112" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="146" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="180" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="214" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="248" y="326" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/></svg></div><figcaption>The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — and your free moves — 1, 2, 3, 4, 5 — pays a one-off ascension coin, and moves you onto a costlier row. You always pay only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, one food owed each recycle.</figcaption></figure>
 
   <h3>Declare</h3>
   <p>Before a single card is played, each player may spend one card from their victory row on
@@ -519,7 +526,22 @@ HTML = f"""<!doctype html>
     </tbody>
   </table>
 
-  {fig('meld_rule', 'The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant at this stage. Only the last row is illegal, and only because nothing sits at rank 3.')}
+  <figure><div class="figbox"><svg class="fig" width="565.0" height="413.0" viewBox="-6 -6 528 386" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g><rect x="0" y="0" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="0" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="5" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="38.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="41.0" r="5" fill="url(#h-plains)"/></g><text x="246" y="26" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="26" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">one card is always a run</text><g><rect x="0" y="80" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="80" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="0" y="85" width="40" height="4" fill="url(#h-forest)"/><text x="20.0" y="118.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="121.0" r="5" fill="url(#h-forest)"/></g><g><rect x="46" y="80" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="80" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="46" y="85" width="40" height="4" fill="url(#h-ocean)"/><text x="66.0" y="118.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="66.0" cy="121.0" r="5" fill="url(#h-ocean)"/></g><text x="246" y="106" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="106" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">one rank, doubled</text><g><rect x="0" y="160" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="160" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="165" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="198.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="201.0" r="5" fill="url(#h-plains)"/></g><g><rect x="46" y="160" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="160" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="46" y="165" width="40" height="4" fill="url(#h-mountain)"/><text x="66.0" y="198.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="66.0" cy="201.0" r="5" fill="url(#h-mountain)"/></g><text x="246" y="186" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="186" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">2 then 3</text><g><rect x="0" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="240" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="0" y="245" width="40" height="4" fill="url(#h-ocean)"/><text x="20.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="281.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="46" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="240" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="46" y="245" width="40" height="4" fill="url(#h-plains)"/><text x="66.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="66.0" cy="281.0" r="5" fill="url(#h-plains)"/></g><g><rect x="92" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="92" y="240" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="92" y="245" width="40" height="4" fill="url(#h-forest)"/><text x="112.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="112.0" cy="281.0" r="5" fill="url(#h-forest)"/></g><g><rect x="138" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="138" y="240" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="138" y="245" width="40" height="4" fill="url(#h-mountain)"/><text x="158.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="158.0" cy="281.0" r="5" fill="url(#h-mountain)"/></g><g><rect x="184" y="240" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="184" y="240" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="184" y="245" width="40" height="4" fill="url(#h-plains)"/><text x="204.0" y="278.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="204.0" cy="281.0" r="5" fill="url(#h-plains)"/></g><text x="246" y="266" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="url(#h-forest)">✓</text><text x="270" y="266" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">2, 3, 4 all present — doubles are free</text><g><rect x="0" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="0" y="320" width="40" height="9" rx="4" fill="url(#h-plains)"/><rect x="0" y="325" width="40" height="4" fill="url(#h-plains)"/><text x="20.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="20.0" cy="361.0" r="5" fill="url(#h-plains)"/></g><g><rect x="46" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="46" y="320" width="40" height="9" rx="4" fill="url(#h-forest)"/><rect x="46" y="325" width="40" height="4" fill="url(#h-forest)"/><text x="66.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">2</text><circle cx="66.0" cy="361.0" r="5" fill="url(#h-forest)"/></g><g><rect x="92" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="92" y="320" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="92" y="325" width="40" height="4" fill="url(#h-ocean)"/><text x="112.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="112.0" cy="361.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="138" y="320" width="40" height="54" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="138" y="320" width="40" height="9" rx="4" fill="url(#h-mountain)"/><rect x="138" y="325" width="40" height="4" fill="url(#h-mountain)"/><text x="158.0" y="358.0" text-anchor="middle" class="fig-rank" font-size="26">4</text><circle cx="158.0" cy="361.0" r="5" fill="url(#h-mountain)"/></g><text x="246" y="346" font-family="IBM Plex Sans" font-size="19" font-weight="600" fill="#1A1A1A">✗</text><text x="270" y="346" font-family="IBM Plex Sans" font-size="12" fill="#5E5E5E">nothing at rank 3 — the run is broken</text></svg></div><figcaption>The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant at this stage. Only the last row is illegal, and only because nothing sits at rank 3.</figcaption></figure>
 
   <p>So the old vocabulary is gone. There is no straight, no set, no full house — only
   runs with any number of duplicates. A pair is a run of one rank; a straight is a run
@@ -586,7 +608,22 @@ HTML = f"""<!doctype html>
   <p>The supply is open, so there is never any searching: take the tile you need. If that
   terrain has <strong>run out</strong> — all fifteen are already on the map — the card takes
   gold instead.</p>
-  {fig('explore', "Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two existing tiles — and the very next card may settle it.")}
+  <figure><div class="figbox"><svg class="fig" width="321.0" height="131.6" viewBox="-37 -46 300 123" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,26.00 45.03,39.00 67.55,26.00 67.55,0.00" fill="#D9D9D9"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><ellipse cx="45.03" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="45.03" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="none" stroke="#666666" stroke-width="1.6" stroke-dasharray="5 4"/><text x="90.07" y="4.00" text-anchor="middle" class="fig-strong" font-size="22">?</text><text x="90.07" y="48.00" text-anchor="middle" class="fig-label" font-size="11">no tile here yet</text><path d="M73 0 l26 0 M99 0 l-8 -6 M99 0 l-8 6" fill="none" stroke="#555555" stroke-width="2" stroke-linecap="round"/><g><rect x="178" y="-32" width="40" height="56" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="178" y="-32" width="40" height="9" rx="4" fill="url(#h-ocean)"/><rect x="178" y="-27" width="40" height="4" fill="url(#h-ocean)"/><text x="198.0" y="7.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="198.0" cy="11.0" r="5" fill="url(#h-ocean)"/></g><text x="198.00" y="44.00" text-anchor="middle" class="fig-label" font-size="11">play 6 of Ocean</text><text x="198.00" y="59.00" text-anchor="middle" class="fig-label" font-size="11">→ place a tile</text></svg></div><figcaption>Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two existing tiles — and the very next card may settle it.</figcaption></figure>
 
   <h3>Attack</h3>
   <p>When the cell is a tile a rival occupies, you cannot settle there. Instead, spending
@@ -596,7 +633,22 @@ HTML = f"""<!doctype html>
   <p>So taking a contested tile is patient work: one card clears one defender, and only
   once the tile is empty can a later card settle it. A stack of rivals must be worn
   down over more than one turn.</p>
-  {fig('combat', 'Attacking is not moving a unit across the map. A card spent on a rival tile removes one defender — your own unit never leaves your reserve. Clearing a stack takes as many cards as there are defenders.')}
+  <figure><div class="figbox"><svg class="fig" width="590.4" height="385.6" viewBox="-162 -14 369 241" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="url(#h-forest)"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="url(#h-forest)"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="url(#h-forest)"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#D9D9D9"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#D9D9D9"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile removes one defender — your own unit never leaves your reserve. Clearing a stack takes as many cards as there are defenders.</figcaption></figure>
   <p>High ground is not safer, only dearer. <strong>Each card you spend attacking</strong>
   pays the terrain's price first — so clearing a two-unit Forest with two cards costs 2 gold,
   not 1. If you cannot pay, you cannot attack that cell; the card does something else, or
@@ -694,7 +746,22 @@ HTML = f"""<!doctype html>
   <p>You cannot fortify in response to an attack — attacks happen on someone else's turn,
   and by then it is too late. A fortification is a read on your neighbours, paid for in
   advance.</p>
-  {fig('fortify', 'Gold on a unit buys it exactly one escape. Move that unit, stack onto it, or disturb it in any way, and the gold is lost to the supply.')}
+  <figure><div class="figbox"><svg class="fig" width="344.0" height="196.8" viewBox="-45 -59 215 123" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><circle cx="0.00" cy="-9.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="0.00" cy="-9.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="46.00" text-anchor="middle" class="fig-strong" font-size="11">fortified</text><path d="M40 0 l30 0 M64 -6 l6 6 l-6 6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><text x="55.00" y="-24.00" text-anchor="middle" class="fig-step" font-size="11">attacked</text><g transform="translate(112,0)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#D9D9D9"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><text x="0.00" y="46.00" text-anchor="middle" class="fig-strong" font-size="11">unit survives</text><text x="0.00" y="-34.00" text-anchor="middle" class="fig-label" font-size="11">gold spent</text></g></svg></div><figcaption>Gold on a unit buys it exactly one escape. Move that unit, stack onto it, or disturb it in any way, and the gold is lost to the supply.</figcaption></figure>
 
   <h3>One victory card</h3>
   <p>Once per map phase you may spend a card from your victory row on its
@@ -970,7 +1037,22 @@ HTML = f"""<!doctype html>
       <tr><td><strong>Dominance</strong></td><td>3 points for each terrain type where you hold the <strong>largest connected stretch</strong> of it. Count only tiles of that terrain that <strong>you have units on</strong>, and that touch each other; your biggest such group is your stretch. Scattered holdings do not add up — a stack of five units on one tile is a stretch of <b>one</b>. If two players are level, the one with <strong>more units on that terrain</strong> takes it. A terrain nobody occupies scores for nobody.</td></tr>
     </tbody>
   </table>
-  {fig('vprow', 'The empty slots sit on the left, so the centre slot only reaches your true middle card once all five are filled. A half-full row scores a lower card — and slipping a low card in can push your centre down. Every card is also worth a point in its own right, so spending one is never free.')}
+  <figure><div class="figbox"><svg class="fig" width="673.4" height="172.0" viewBox="-16 -7 552 141" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
+<pattern id="h-mountain" width="6" height="6" patternUnits="userSpaceOnUse">
+  <rect width="6" height="6" fill="#fff"/>
+  <path d="M0 6 L6 0 M-1 1 L1 -1 M5 7 L7 5 M0 0 L6 6 M-1 5 L1 7 M5 -1 L7 1"
+        stroke="#000" stroke-width=".55"/></pattern>
+<pattern id="h-forest" width="5" height="5" patternUnits="userSpaceOnUse">
+  <rect width="5" height="5" fill="#fff"/>
+  <path d="M0 5 L5 0 M-1 1 L1 -1 M4 6 L6 4" stroke="#000" stroke-width=".6"/></pattern>
+<pattern id="h-plains" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fff"/>
+  <circle cx="1.6" cy="1.6" r=".65" fill="#000"/>
+  <circle cx="5.1" cy="5.1" r=".65" fill="#000"/></pattern>
+<pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
+  <rect width="8" height="6" fill="#fff"/>
+  <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
+</defs><rect x="0" y="30" width="42" height="60" rx="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="4 4"/><rect x="48" y="30" width="42" height="60" rx="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="4 4"/><rect x="93" y="27" width="48" height="66" rx="6" fill="url(#h-plains)" opacity="0.30"/><g><rect x="96" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="96" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="96" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="117.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="117.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><circle cx="117" cy="103" r="11" fill="#1A1A1A"/><text x="117" y="107" text-anchor="middle" fill="#FAFAFA" font-size="13" font-weight="700">3</text><g><rect x="144" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="144" y="30" width="42" height="9" rx="4" fill="url(#h-forest)"/><rect x="144" y="35" width="42" height="4" fill="url(#h-forest)"/><text x="165.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">9</text><circle cx="165.0" cy="77.0" r="5" fill="url(#h-forest)"/></g><g><rect x="192" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="192" y="30" width="42" height="9" rx="4" fill="url(#h-plains)"/><rect x="192" y="35" width="42" height="4" fill="url(#h-plains)"/><text x="213.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">15</text><circle cx="213.0" cy="77.0" r="5" fill="url(#h-plains)"/></g><text x="117.00" y="18.00" text-anchor="middle" class="fig-step" font-size="11">Three cards — 3 + centre slot 3 = 6</text><line x1="258" y1="18" x2="258" y2="120" stroke="#C7C7C7" stroke-width="1.2"/><g><rect x="282" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="282" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="282" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="303.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">3</text><circle cx="303.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><g><rect x="330" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="330" y="30" width="42" height="9" rx="4" fill="url(#h-mountain)"/><rect x="330" y="35" width="42" height="4" fill="url(#h-mountain)"/><text x="351.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">7</text><circle cx="351.0" cy="77.0" r="5" fill="url(#h-mountain)"/></g><rect x="375" y="27" width="48" height="66" rx="6" fill="url(#h-plains)" opacity="0.30"/><g><rect x="378" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="378" y="30" width="42" height="9" rx="4" fill="url(#h-forest)"/><rect x="378" y="35" width="42" height="4" fill="url(#h-forest)"/><text x="399.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">11</text><circle cx="399.0" cy="77.0" r="5" fill="url(#h-forest)"/></g><circle cx="399" cy="103" r="11" fill="#1A1A1A"/><text x="399" y="107" text-anchor="middle" fill="#FAFAFA" font-size="13" font-weight="700">11</text><g><rect x="426" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="426" y="30" width="42" height="9" rx="4" fill="url(#h-plains)"/><rect x="426" y="35" width="42" height="4" fill="url(#h-plains)"/><text x="447.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">14</text><circle cx="447.0" cy="77.0" r="5" fill="url(#h-plains)"/></g><g><rect x="474" y="30" width="42" height="60" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="474" y="30" width="42" height="9" rx="4" fill="url(#h-ocean)"/><rect x="474" y="35" width="42" height="4" fill="url(#h-ocean)"/><text x="495.0" y="71.0" text-anchor="middle" class="fig-rank" font-size="26">18</text><circle cx="495.0" cy="77.0" r="5" fill="url(#h-ocean)"/></g><text x="399.00" y="18.00" text-anchor="middle" class="fig-step" font-size="11">Five cards — 5 + centre slot 11 = 16</text></svg></div><figcaption>The empty slots sit on the left, so the centre slot only reaches your true middle card once all five are filled. A half-full row scores a lower card — and slipping a low card in can push your centre down. Every card is also worth a point in its own right, so spending one is never free.</figcaption></figure>
   <table>
     <thead><tr><th>Your victory row</th><th>Laid out in five slots</th><th>Scores</th></tr></thead>
     <tbody>
@@ -1115,16 +1197,10 @@ HTML = f"""<!doctype html>
 </div>
 </div>
 
-<div class="pad"><footer>Blink · base game · draft rules {VTAG} · Toby Siko ·
+<div class="pad"><footer>Blink · base game · draft rules v0.23 · Toby Siko ·
 deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
 separately</footer></div>
 
 </div>
 </body>
 </html>
-"""
-
-out = pathlib.Path("./" + RULES_HTML)
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(HTML, encoding="utf-8")
-print("wrote", out, len(HTML), "bytes")

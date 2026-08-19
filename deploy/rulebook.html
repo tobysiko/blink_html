@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blink — Rules v0.22</title>
+<title>Blink — Rules v0.23</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -230,7 +230,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   tile, an attack — or a coin. Win the trick and you spend one card more than you played;
   come last and you pocket a coin.</p>
   <ol class="seq">
-    <li><b>Card phase.</b> Everyone plays a meld. Most cards wins the trick.</li>
+    <li><b>Card phase.</b> Everyone plays a meld. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
     explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
     your free actions: your band's free moves, and gold shuffled between food, fortresses
@@ -305,7 +305,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end with a fixed hand
     of <strong>ten cards</strong>.</li>
 
-    <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 4, 6, 4, 4 from
+    <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 3, 5, 5, 5 from
     the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
     Settlement, 2 on Kingdom, 3 on Empire, 4 on Civilization. Your meld limit starts at
     <strong>2</strong>.</li>
@@ -351,10 +351,10 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th></tr></thead>
     <tbody>
       <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">11</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">13</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">6</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">15</td></tr>
-      <tr><td>Empire</td><td class="num-cell">4</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">17</td></tr>
-      <tr><td>Civilization</td><td class="num-cell">4</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">13</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">15</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">17</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td></tr>
     </tbody>
   </table>
   <p>Read all four off the topmost tier that still holds units — one rule, no counting,
@@ -395,10 +395,12 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     game able to play two cards at a time.</li>
     <li>Clockwise, every other player plays a meld of their own, from one card up to
     their own limit. You may not pass, and you never have to follow what was led.</li>
-    <li>The <strong>most cards wins</strong> the trick. If two melds are the same size,
-    compare their <strong>highest card</strong>; if those match, their second-highest, then
-    third, and so on until one is higher. If two melds are still identical, the one played
-    <strong>earlier</strong> wins. There are never ties after this.</li>
+    <li>The <strong>highest total wins</strong> the trick: add up the ranks of the cards
+    in each meld. A single 20 is worth more than three 6s. If two totals are equal, the meld
+    with <strong>more cards</strong> wins; if they are still level, compare their
+    <strong>highest card</strong>, then second-highest, and so on. If two melds are still
+    identical, the one played <strong>earlier</strong> wins. There are never ties after
+    this.</li>
     <li>Set the initiative dice: winner to 1, then the rest in that same order.</li>
   </ol>
 
@@ -780,10 +782,10 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   <table>
     <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
     <tbody>
-      <tr><td>1–5</td><td>Meld counts as <b>+1 card</b> this trick</td><td><b>Found a colony</b> — 1 new tile of this suit, 1 unit, fortified</td><td><b>2</b> gold</td></tr>
-      <tr><td>6–10</td><td><b>+1 card</b> and <b>win ties</b></td><td><b>Found a distant colony</b> — as above, up to 2 tiles out</td><td><b>3</b> gold</td></tr>
-      <tr><td>11–15</td><td>Meld counts as <b>+2 cards</b></td><td><b>Open a frontier</b> — 2 new tiles, 1 unit on one of them, fortified</td><td><b>4</b> gold</td></tr>
-      <tr><td>16–20</td><td><b>+2 cards</b> and <b>win ties</b></td><td><b>Two colonies</b> — 2 new tiles of any terrain, 1 unit on each, both fortified</td><td><b>5</b> gold</td></tr>
+      <tr><td>1–5</td><td>Add this card's <b>rank</b> to your total</td><td><b>Found a colony</b> — 1 new tile of this suit, 1 unit, fortified</td><td><b>2</b> gold</td></tr>
+      <tr><td>6–10</td><td>Add its <b>rank</b>, and <b>win ties</b></td><td><b>Found a distant colony</b> — as above, up to 2 tiles out</td><td><b>3</b> gold</td></tr>
+      <tr><td>11–15</td><td>Add this card's <b>rank</b> to your total</td><td><b>Open a frontier</b> — 2 new tiles, 1 unit on one of them, fortified</td><td><b>4</b> gold</td></tr>
+      <tr><td>16–20</td><td>Add its <b>rank</b>, and <b>win ties</b></td><td><b>Two colonies</b> — 2 new tiles of any terrain, 1 unit on each, both fortified</td><td><b>5</b> gold</td></tr>
     </tbody>
   </table>
   <p><strong>A</strong> is declared in the <em>declare step</em> at the top of the round, before
@@ -839,10 +841,12 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     doubled. Suits are irrelevant to the meld.</li>
     <li><strong>Cy</strong> plays a single <strong>4 of Mountain</strong>.</li>
   </ul>
-  <p>Now the trick resolves: <strong>most cards wins</strong>. Ada and Bex both played
-  two, so they tie on count; the tie breaks on the <strong>highest card</strong>, and
-  Bex’s 8 beats Ada’s 6. <strong>Bex wins the trick</strong> and takes initiative die 1
-  — she will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
+  <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
+  <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
+  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes initiative die 1 — she
+  will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
+  <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
+  on its own. Under a total, one big card is a play, not a waste.</p>
   <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
   played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
   instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
@@ -968,15 +972,15 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   <div class="cols">
     <div>
       <h3>Reserve bands</h3>
-      <p>Units sit in tiers of 2 / 4 / 6 / 4 / 4, emptied top-down. <b>Tribe</b> melds 2,
+      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. <b>Tribe</b> melds 2,
       1 move, food free, cap 11. <b>Settlement</b> 3, 2, food 1, cap 13. <b>Kingdom</b> 4,
       3, food 2, cap 15. <b>Empire</b> 5, 4, food 3, cap 17. <b>Civilization</b> 6, 5,
       food 4, cap 20. Read them off your current tier only — food is <b>not</b> cumulative,
       eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
       1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
       <h3>Round</h3>
-      <p>Declare A effects blind → leader plays a meld → everyone plays a meld → most cards
-      wins, then highest card, then next-highest, then earliest played (never a tie) →
+      <p>Declare A effects blind → leader plays a meld → everyone plays a meld → highest total
+      wins, then most cards, then highest card, then earliest played (never a tie) →
       spend melds in initiative order. The winner spends every card. Anyone who
       <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
       goes to the shared pile. Last place takes 1 gold.</p>
@@ -1023,17 +1027,18 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
       pay 1 to research · pay 1 to fortify · pay 1–2 <em>per card</em> to attack Forest or
       Mountain · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
       recycles — short slots starve units off the map.</p>
-      <h3>Research — once per turn</h3>
+      <h3>Research — up to twice per turn</h3>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
       covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
-      card in your hand</b> to your victory row → pay 1 gold → take any visible card
+      card in your hand</b> to your victory row → pay → take any visible card
       <b>at or below your tier's rank cap</b> (11/13/15/17/20) → refill empty positions.
-      No cards in hand, no research this turn.</p>
+      The <b>first research of your turn costs 1 gold, the second costs 2</b>. No cards in
+      hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — feed, take back your discard, then draw from
       the <b>shared pile</b> up to ten. Carry on with the turn.</p>
       <h3>Victory-card effects</h3>
-      <p>Spend a victory card for ONE of: <b>A</b> meld +1/+2 cards this trick (higher bands
+      <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the
       GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>blind,
       before any meld is played</b>; B in your own map phase; C at any moment. The card
@@ -1048,7 +1053,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 </div>
 </div>
 
-<div class="pad"><footer>Blink · base game · draft rules v0.22 · Toby Siko ·
+<div class="pad"><footer>Blink · base game · draft rules v0.23 · Toby Siko ·
 deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
 separately</footer></div>
 

@@ -63,7 +63,11 @@ ok(E.parseLayout(null) === null && E.parseLayout(undefined) === null,
 /* The layout has to actually matter. A cheaper Settlement means the second tier
  * is reached sooner, so the same seed should not play out identically. */
 {
-  const a = E.playOut(3, 4242, { trickRule: 'dock' });
+  /* Two NAMED boards against each other. This used to compare "no layout" with
+   * "2-3-5-5-5", which stopped meaning anything the moment 2-3-5-5-5 became the
+   * default — the test would have passed forever by comparing a thing with
+   * itself. Name both sides and it keeps working across a default change. */
+  const a = E.playOut(3, 4242, { trickRule: 'dock', layout: 'rulebook' });
   const b = E.playOut(3, 4242, { trickRule: 'dock', layout: '2-3-5-5-5' });
   const sig = (g) => g.score().map((x) => `${x.seat}:${x.total}`).join(',')
     + '|' + g.P.map((p) => p.reserve.join('')).join('/');
@@ -71,7 +75,7 @@ ok(E.parseLayout(null) === null && E.parseLayout(undefined) === null,
      'the same seed played identically with and without the 2-3-5-5-5 layout — '
      + 'the option is not reaching anything that matters');
   /* Both still finish and still score, i.e. the option is not just breaking it. */
-  for (const [name, g] of [['printed', a], ['late', b]]) {
+  for (const [name, g] of [['v0.22 board', a], ['late', b]]) {
     ok(g.finished(), `the ${name} layout game never finished`);
     ok(g.score().every((x) => Number.isFinite(x.total)),
        `the ${name} layout game produced a non-numeric score`);
@@ -95,11 +99,13 @@ ok(E.parseLayout(null) === null && E.parseLayout(undefined) === null,
 
 // ========================================== 2. the trick won by total rank
 
-ok(new E.Game(2, 1, { humans: [] }).MELD_SCORE === 'count',
-   'the printed count rule is not the default');
-ok(new E.Game(2, 1, { humans: [], meldScore: 'sum' }).MELD_SCORE === 'sum',
-   'the sum rule cannot be switched on');
-ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count',
+/* v0.23 prints the total-rank trick, so that is the default and the v0.22
+ * count rule is the option. */
+ok(new E.Game(2, 1, { humans: [] }).MELD_SCORE === 'sum',
+   'the printed total-rank rule is not the default');
+ok(new E.Game(2, 1, { humans: [], meldScore: 'count' }).MELD_SCORE === 'count',
+   "the v0.22 count rule can no longer be switched on");
+ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'sum',
    'an unknown scoring value was accepted instead of falling back');
 
 {
@@ -126,7 +132,7 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
 /* And whole games under the sum rule still finish, score, and are different
  * games — the point of the option. */
 {
-  const a = E.playOut(3, 90210, { trickRule: 'dock' });
+  const a = E.playOut(3, 90210, { trickRule: 'dock', meldScore: 'count' });
   const b = E.playOut(3, 90210, { trickRule: 'dock', meldScore: 'sum' });
   const sig = (g) => g.score().map((x) => x.total).join(',');
   ok(b.finished(), 'a game under the sum rule never finished');
@@ -199,14 +205,18 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
  * you go again at a rising price; the price is what stops it becoming "cycle
  * the whole hand every turn". */
 {
-  const g1 = new E.Game(3, 1, { humans: [] });
+  /* v0.23 prints two researches a turn; "once" is the v0.22 option. `g1` is
+   * therefore built explicitly rather than leaning on the default. */
+  const g1 = new E.Game(3, 1, { humans: [], researchRule: 'once' });
   ok(g1.RESEARCH_RULE === 'once' && g1.RESEARCH_MAX === 1,
-     'the printed once-a-turn rule is not the default');
+     'the v0.22 once-a-turn rule can no longer be selected');
+  ok(new E.Game(3, 1, { humans: [] }).RESEARCH_RULE === 'twice',
+     'the printed twice-a-turn rule is not the default');
   const g2 = new E.Game(3, 1, { humans: [], researchRule: 'twice' });
   ok(g2.RESEARCH_MAX === 2, `twice gave a cap of ${g2.RESEARCH_MAX}`);
   const g3 = new E.Game(3, 1, { humans: [], researchRule: 'escalating' });
   ok(g3.RESEARCH_MAX === Infinity, 'escalating is capped');
-  ok(new E.Game(3, 1, { humans: [], researchRule: 'junk' }).RESEARCH_RULE === 'once',
+  ok(new E.Game(3, 1, { humans: [], researchRule: 'junk' }).RESEARCH_RULE === 'twice',
      'an unknown research rule was accepted');
 
   /* The price ladder, and that it is the SAME number the client is shown and
@@ -240,7 +250,7 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
 
   /* And it reaches real games: second-and-later researches actually happen,
    * and they cost more than the first. */
-  const once = E.playOut(3, 4242, { trickRule: 'dock' });
+  const once = E.playOut(3, 4242, { trickRule: 'dock', researchRule: 'once' });
   const esc = E.playOut(3, 4242, { trickRule: 'dock', researchRule: 'escalating' });
   ok(!(once.stats.research_repeat > 0),
      'a second research happened under the printed once-a-turn rule');
@@ -285,17 +295,17 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'count
      `the "rank" rung fell back to ${ladderOf('rank')} — it is stored as null `
      + 'and a truthiness check will drop it');
   ok(ladderOf('steep') === 'steep', 'the steep rung is not accepted');
-  ok(ladderOf('junk') === 'band', `an unknown rung gave ${ladderOf('junk')}`);
-  ok(ladderOf(undefined) === 'band', 'no rung named did not give the default');
+  ok(ladderOf('junk') === 'rank', `an unknown rung gave ${ladderOf('junk')}`);
+  ok(ladderOf(undefined) === 'rank', 'no rung named did not give the default');
 }
 
 /* Under count scoring A must still do exactly what the card prints — the new
  * reading is for the new rule only, and must not leak into the printed game. */
 {
-  const g = E.playOut(3, 4242, { trickRule: 'dock' });
+  const g = E.playOut(3, 4242, { trickRule: 'dock', meldScore: 'count' });
   ok(!g.stats.effect_a_sum_gain,
-     'A added points to a total in a game played under the printed count rule');
-  const s = E.playOut(3, 4242, { trickRule: 'dock', meldScore: 'sum' });
+     'A added points to a total in a game played under the v0.22 count rule');
+  const s = E.playOut(3, 4242, { trickRule: 'dock' });     // sum is the default now
   ok(s.stats.effect_a_sum_gain > 0,
      'A never added anything to a total under sum scoring — the new reading is '
      + 'not reaching the game');
@@ -355,7 +365,7 @@ if (!JSDOM) {
 } else {
   const fs = require('fs');
   const path = require('path');
-  const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.22.html'), 'utf8');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
   const w = dom.window, d = w.document;
   const errs = [];

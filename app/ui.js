@@ -172,14 +172,18 @@ function seatRoster(styles, humans) {
  * normal game's options look exactly as they always did — which keeps old
  * reports and session logs comparable. */
 function chosenLayout() {
-  const pick = $("#layout") ? $("#layout").value : "rulebook";
+  const pick = $("#layout") ? $("#layout").value : "late";
   if (pick === "custom") {
     const raw = ($("#layout-custom") ? $("#layout-custom").value : "").trim();
     /* An unreadable column falls back rather than starting a game whose board
      * nobody can describe. The hint under the box has already said so. */
     return parseLayout(raw) ? raw : null;
   }
-  return pick === "rulebook" ? null : pick;
+  /* Always named, never null. This used to send null for "rulebook", meaning
+     "whatever the engine defaults to" — which was the same board right up until
+     v0.23 moved the default to 2/3/5/5/5, at which point asking for the v0.22
+     board would silently have handed you the new one. A preset says its name. */
+  return pick;
 }
 
 /* Effect A's ladder only means anything when the trick is won on total rank,

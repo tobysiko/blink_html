@@ -6,7 +6,7 @@
 <path d="M279.0 196.0 h8 M283.0 192.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
 <text x="14.00" y="21.00" font-family="IBM Plex Sans" font-size="9" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">BLINK</text>
 <text x="48.00" y="21.00" font-family="IBM Plex Sans" font-size="5" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
-<text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.22 · units 13 mm</text>
+<text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.23 · units 13 mm</text>
 <line x1="14.0" y1="25.0" x2="283.0" y2="25.0" stroke="#2A2E2B" stroke-width="0.5"/>
 <text x="158.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">FOOD</text>
 <text x="208.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">MV</text>
@@ -30,11 +30,10 @@
 <rect x="16.0" y="52.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
 <text x="22.00" y="61.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
 <text x="32.00" y="57.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Settlement</text>
-<text x="32.00" y="62.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<text x="32.00" y="62.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">3 units</text>
 <circle cx="58.50" cy="59.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="75.50" cy="59.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="92.50" cy="59.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="109.50" cy="59.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="162.50" cy="59.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="162.50" cy="59.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <rect x="208.0" y="54.0" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
 <text x="213.00" y="61.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
@@ -44,13 +43,12 @@
 <rect x="16.0" y="69.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
 <text x="22.00" y="78.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
 <text x="32.00" y="74.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Kingdom</text>
-<text x="32.00" y="79.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">6 units</text>
+<text x="32.00" y="79.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
 <circle cx="58.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="75.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="92.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="109.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="126.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="143.50" cy="76.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="162.50" cy="76.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="162.50" cy="76.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <circle cx="174.50" cy="76.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="174.50" cy="76.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <rect x="208.0" y="71.0" width="10" height="10.0" rx="2" fill="#FBFAF6" stroke="#6B6F68" stroke-width="0.5"/>
@@ -62,11 +60,12 @@
 <rect x="16.0" y="86.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
 <text x="22.00" y="95.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
 <text x="32.00" y="91.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Empire</text>
-<text x="32.00" y="96.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<text x="32.00" y="96.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
 <circle cx="58.50" cy="93.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="75.50" cy="93.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="92.50" cy="93.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="109.50" cy="93.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="126.50" cy="93.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="162.50" cy="93.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="162.50" cy="93.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <circle cx="174.50" cy="93.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="174.50" cy="93.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <circle cx="186.50" cy="93.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="186.50" cy="93.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
@@ -80,11 +79,12 @@
 <rect x="16.0" y="103.5" width="12" height="13.0" rx="2" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="0.6"/>
 <text x="22.00" y="112.40" font-family="IBM Plex Sans" font-size="8" fill="#2A2E2B" text-anchor="middle" font-weight="600" letter-spacing="0" style="">6</text>
 <text x="32.00" y="108.70" font-family="IBM Plex Sans" font-size="4.2" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">Civilization</text>
-<text x="32.00" y="113.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">4 units</text>
+<text x="32.00" y="113.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
 <circle cx="58.50" cy="110.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="75.50" cy="110.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="92.50" cy="110.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="109.50" cy="110.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="126.50" cy="110.00" r="6.50" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
 <circle cx="162.50" cy="110.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="162.50" cy="110.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <circle cx="174.50" cy="110.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="174.50" cy="110.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
 <circle cx="186.50" cy="110.00" r="4.50" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.7"/><circle cx="186.50" cy="110.00" r="2.50" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>

@@ -52,11 +52,13 @@ COMBO_MELDS = False
 # food is NOT cumulative; free moves refresh every map phase
 # units are 2/4/6/4/4 as printed on the player board (RULEBOOK-CORRECTIONS item 3);
 # the old 2/4/5/5/4 also summed to 20, which is why the mismatch went unnoticed
+# Units are 2/3/5/5/5 as of v0.23 — still twenty, redistributed toward the late
+# tiers. The v0.22 board was 2/4/6/4/4.
 BANDS = [("Tribe",        2, 2, 0, 1, 0, 11),
-         ("Settlement",   4, 3, 1, 2, 1, 13),
-         ("Kingdom",      6, 4, 2, 3, 2, 15),
-         ("Empire",       4, 5, 3, 4, 3, 17),
-         ("Civilization", 4, 6, 4, 5, 4, 20)]
+         ("Settlement",   3, 3, 1, 2, 1, 13),
+         ("Kingdom",      5, 4, 2, 3, 2, 15),
+         ("Empire",       5, 5, 3, 4, 3, 17),
+         ("Civilization", 5, 6, 4, 5, 4, 20)]
 
 STARTS = {
     2: ([(1, 0), (2, 0)], [(0, 0), (3, 0)]),

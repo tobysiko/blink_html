@@ -24,20 +24,25 @@ EXTRA = """
 """
 
 # the four bands: (ranks, A, B, C)
+# A changed in v0.23. The trick is won on the highest TOTAL RANK, so "+1 card"
+# bought almost nothing — it moved a tie-break that only runs when two totals
+# are exactly equal. A now adds the card's own rank to your total, which has the
+# happy property of needing no table at all: the same sentence prints on all
+# twenty cards, and the number a player needs is the one already on the card.
 BANDS = [
-    ("1–5",   "Meld counts as <b>+1 card</b> for winning this trick",
+    ("1–5",   "Add this card's <b>rank</b> to your meld's total for this trick",
               "<b>Found a colony</b>: 1 new tile of this suit, 1 unit on it, fortified", "2 gold"),
-    ("6–10",  "<b>+1 card</b>, and wins ties",
+    ("6–10",  "Add this card's <b>rank</b> to your total, <b>and win ties</b>",
               "<b>Distant colony</b>: as above, and the tile may sit up to 2 out", "3 gold"),
-    ("11–15", "Meld counts as <b>+2 cards</b>",
+    ("11–15", "Add this card's <b>rank</b> to your meld's total",
               "<b>Open a frontier</b>: 2 new tiles of this suit, 1 unit on one, fortified", "4 gold"),
-    ("16–20", "<b>+2 cards</b>, and wins ties",
+    ("16–20", "Add this card's <b>rank</b> to your total, <b>and win ties</b>",
               "<b>Two colonies</b>: 2 new tiles of ANY terrain, 1 unit on each, both fortified", "5 gold"),
 ]
-SHORT = [("+1 card", "colony, this suit", "2 gold"),
-         ("+1 card, wins ties", "colony, up to 2 out", "3 gold"),
-         ("+2 cards", "2 tiles, 1 unit", "4 gold"),
-         ("+2 cards, wins ties", "2 colonies, any terrain", "5 gold")]
+SHORT = [("+rank to your total", "colony, this suit", "2 gold"),
+         ("+rank, wins ties", "colony, up to 2 out", "3 gold"),
+         ("+rank to your total", "2 tiles, 1 unit", "4 gold"),
+         ("+rank, wins ties", "2 colonies, any terrain", "5 gold")]
 
 
 def band_rows():
@@ -120,22 +125,25 @@ HTML = f"""<!doctype html>
     food bill.</p>
   </div>
 
-  <h3>What “+1 / +2 cards” means — effect A</h3>
-  <p>This changes only the trick-resolution count. It never adds units to the map, and it never
-  lets you exceed your meld-size limit. Your meld is still exactly the
-  cards you physically played — a straight of four is four cards to spend whether or not you added +2.</p>
-  <p>The bonus is virtual: when <em>most cards wins</em> is compared, your meld counts as larger,
-  so it can take a trick it would otherwise lose. The reward is tempo — you win the trick, spend
-  your full meld, and act first — not size.</p>
-  <p>So applying +2 cards to a meld of four or five does not create a six- or seven-card meld: no
-  such meld exists, and the effect adds no physical cards. A four-card meld is still one of
-  <em>straight of four, quadruple, two pair</em>; a five-card meld is still <em>straight of five</em>
-  or <em>full house</em>. Only its trick-weight changes.</p>
+  <h3>What “add this card’s rank” means — effect A</h3>
+  <p>This changes only the total the trick is judged on. It never adds cards to your meld, never
+  puts a unit on the map, and never lets you exceed your meld-size limit. Your meld is still
+  exactly the cards you physically played — a straight of four is four cards to spend, whatever
+  you declared.</p>
+  <p>The bonus is virtual: when the highest total wins, your meld is worth more, so it can take a
+  trick it would otherwise lose. The reward is tempo — you win the trick, spend your full meld,
+  and act first — not size.</p>
+  <p>A spent victory card is <b>gone</b>: it leaves the game, not your hand, and it is no longer
+  worth points in your victory row at the end. That is the whole cost. So declaring a 19 buys
+  nineteen points of trick and gives up a card that was scoring for you.</p>
+  <p class="fine">In v0.22 this effect read “+1 / +2 cards”, because the trick went to the most
+  cards. Under a total, one extra card was worth an average card and the wording had to change
+  with the rule. The v0.22 version is in the variants book.</p>
 
   <h3>Several A effects in one trick</h3>
   <p>Nothing stops two or more players spending A in the same round. Each applies, and the trick
-  resolves on the modified counts — highest virtual count wins, then highest single rank, then
-  earliest played, exactly as normal. Because every declaration is made before any meld is
+  resolves on the modified totals — highest total wins, then most cards, then highest single
+  rank, then earliest played, exactly as normal. Because every declaration is made before any meld is
   played, nobody can answer anybody: you are all guessing at once, and finding out together.</p>
   <div class="ruling">
     <span class="tag">A is a bet, B is a decision</span>

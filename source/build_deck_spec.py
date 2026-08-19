@@ -37,26 +37,26 @@ EXTRA = """
 # (ranks, A, B, D) — C is dropped; D takes its place on the face
 BANDS = [
     ("1–5",
-     "Meld counts as <b>+1 card</b> for winning this trick",
+     "Add this card's <b>rank</b> to your meld's total for this trick",
      "<b>Found a colony</b>: 1 new tile of this suit, 1 unit on it, fortified",
      "<b>Raid</b>: remove 1 rival unit from a tile touching your civilization"),
     ("6–10",
-     "<b>+1 card</b>, and wins ties",
+     "Add this card's <b>rank</b> to your total, <b>and win ties</b>",
      "<b>Distant colony</b>: as above, and the tile may sit up to 2 out",
      "<b>Seize</b>: remove 1 rival unit — and settle the tile if you empty it"),
     ("11–15",
-     "Meld counts as <b>+2 cards</b>",
+     "Add this card's <b>rank</b> to your meld's total",
      "<b>Open a frontier</b>: 2 new tiles of this suit, 1 unit on one, fortified",
      "<b>Conquer</b>: remove 2 rival units, settling each tile you empty"),
     ("16–20",
-     "<b>+2 cards</b>, and wins ties",
+     "Add this card's <b>rank</b> to your total, <b>and win ties</b>",
      "<b>Two colonies</b>: 2 new tiles of ANY terrain, 1 unit on each, both fortified",
      "<b>Overrun</b>: remove 2 rival units from ANY tiles you can reach, settling each"),
 ]
-SHORT = [("+1 card", "colony, this suit", "raid 1"),
-         ("+1 card, wins ties", "colony, up to 2 out", "seize 1, settle"),
-         ("+2 cards", "2 tiles, 1 unit", "conquer 2, settle"),
-         ("+2 cards, wins ties", "2 colonies, any terrain", "overrun 2, settle")]
+SHORT = [("+rank to your total", "colony, this suit", "raid 1"),
+         ("+rank, wins ties", "colony, up to 2 out", "seize 1, settle"),
+         ("+rank to your total", "2 tiles, 1 unit", "conquer 2, settle"),
+         ("+rank, wins ties", "2 colonies, any terrain", "overrun 2, settle")]
 
 SUITS = [("plains", "Plains"), ("forest", "Forest"),
          ("ocean", "Ocean"), ("mountain", "Mountain")]

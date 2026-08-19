@@ -107,8 +107,17 @@ function setTier(p, tier) {
   const g = board([[1, 0, 'plains', 0, 3], [0, 0, 'forest', 0, 3],
                    [3, 0, 'plains', 1, 1]], { growLimits: true });
   const p = g.P[0];
-  p.reserve = [0, 0, 6, 4, 4];         // Kingdom, tier full: 14 + 6 placed = 20
+  /* Kingdom, with its own reserve tier and everything below it FULL — derived
+   * from the board rather than typed, so the fixture follows a layout change
+   * instead of quietly describing a board the game no longer has. (It was
+   * [0, 0, 6, 4, 4], which stopped being reachable when v0.23 moved the units
+   * to 2/3/5/5/5.) */
+  p.reserve = E.BANDS.map((b, j) => (j < 2 ? 0 : b[1]));
   ok(p.band() === 2, 'the two-pass board is not at Kingdom');
+  const countUnits = () => [...g.m.tiles.values()]
+    .reduce((a, t) => a + t.units.filter((u) => u === 0).length, 0)
+    + p.reserve.reduce((a, b) => a + b, 0);
+  const before = countUnits();
   g._shedOverLimit(p);
   ok(p.band() === 1, `shedding left the seat at band ${p.band()}, expected Settlement`);
   for (const [k, t] of g.m.tiles) {
@@ -116,10 +125,13 @@ function setTier(p, tier) {
     ok(t.units.length <= t.capacityFor(0),
        `${k} holds ${t.units.length} of ${t.capacityFor(0)} — the cascade stopped early`);
   }
-  const total = [...g.m.tiles.values()]
-    .reduce((a, t) => a + t.units.filter((u) => u === 0).length, 0)
-    + p.reserve.reduce((a, b) => a + b, 0);
-  ok(total === 20, `the two-pass cascade lost units: ${total}`);
+  /* Conservation, not a literal twenty. The cascade must not create or destroy
+   * a unit; how many the fixture happens to start with depends on the board it
+   * is built from, and pinning the number meant the test broke on a layout
+   * change for a reason that had nothing to do with the cascade. */
+  const total = countUnits();
+  ok(total === before,
+     `the two-pass cascade changed the unit count: ${before} before, ${total} after`);
 }
 {
   // combat losses must NOT shed: only starvation culls

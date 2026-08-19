@@ -19,7 +19,7 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); process.exit(2); }
 
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.22.html', 'utf8');
+const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 

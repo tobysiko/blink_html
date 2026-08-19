@@ -73,7 +73,7 @@ const keysOf = (list) => list.map((x) => x[0]).sort().join(' ');
 }
 
 // ------------------------------------------------------------ 2. the page
-const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.22.html'), 'utf8');
+const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
 const w = dom.window, d = w.document;
 const errs = [];
