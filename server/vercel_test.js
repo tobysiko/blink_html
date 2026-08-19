@@ -277,10 +277,30 @@ else {
        `the message does not say which rules were in play: "${msg.slice(0, 160)}"`);
     ok(!/"replay"/.test(body), 'the whole replay log is being posted to the webhook');
 
+    /* Discord answers 204 No Content on success, Slack 200. Both must count as
+     * sent, or every Discord user sees notified:false and goes looking for a
+     * fault that is not there. */
+    heard.length = 0;
+    await new Promise((go) => hook.close(go));
+    const quiet = http.createServer((rq, rs) => {
+      let b = '';
+      rq.on('data', (c) => { b += c; });
+      rq.on('end', () => { heard.push(b); rs.writeHead(204); rs.end(); });
+    });
+    await new Promise((go) => quiet.listen(0, go));
+    process.env.BLINK_NOTIFY_URL = `http://127.0.0.1:${quiet.address().port}/hook`;
+    const discordish = await post('/api/blink/report',
+                                  { schema: 3, id: 'NOTIFY03', started: '2026-08-19' });
+    let dj = null;
+    try { dj = JSON.parse(discordish.body); } catch (e) { /* below */ }
+    ok(dj && dj.notified === true,
+       'a webhook answering 204 (which is what Discord does) was read as a failure');
+    ok(heard.length === 1, 'the 204 webhook was not actually called');
+    await new Promise((go) => quiet.close(go));
+
     /* A webhook that is down must not cost the report. This is the case that
      * matters: somebody has just typed three sentences and pressed send. */
     heard.length = 0;
-    await new Promise((go) => hook.close(go));
     const orphan = await post('/api/blink/report',
                               { schema: 3, id: 'NOTIFY02', started: '2026-08-19' });
     ok(orphan.status === 200,

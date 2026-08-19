@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-19T13:28:06Z
+ * Built 2026-08-19T13:35:38Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -3916,7 +3916,15 @@ async function notifyReport(rep, stored) {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ text, content: text, stored, id: rep.id }),
     });
-    return !!(r && r.ok);
+    if (r && r.ok) return true;               // Discord answers 204, Slack 200
+    /* Say WHY. Setting one of these up is a copy-paste job with several ways to
+     * get it wrong — a stale URL, a deleted channel, the wrong service — and a
+     * silent false gives whoever is configuring it nothing to work with. The
+     * body is where Discord puts its complaint. */
+    let why = "";
+    try { why = (await r.text()).slice(0, 200); } catch (e) { /* no body */ }
+    console.error(`blink: the report webhook answered ${r && r.status} ${why}`);
+    return false;
   } catch (e) {
     console.error("blink: could not send the report notification —", e && e.message);
     return false;

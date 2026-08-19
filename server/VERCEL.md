@@ -143,6 +143,20 @@ tunnel, and the path `net_test.js` exercises on every run.
    - it is awaited before the response. A serverless function can be frozen
      the instant it answers, so fire-and-forget would be a coin toss.
 
+   Discord, step by step. Open the channel you want the reports in, Edit
+   Channel, Integrations, Webhooks, New Webhook. Name it (the name and avatar
+   appear on every message), Copy Webhook URL, then add it in Vercel under
+   Settings, Environment Variables, as BLINK_NOTIFY_URL — and redeploy, because
+   a new variable does not reach a build that already happened.
+
+   The URL is the whole credential: anybody holding it can post to that channel
+   under that name. It belongs in the Vercel environment, not in this repo.
+
+   Discord answers 204 No Content when it accepts a message and Slack answers
+   200; both count as sent. If notified comes back false, the Vercel function
+   log now prints the status and the service's own complaint, which is usually
+   a deleted webhook or a URL copied short.
+
 ## When it answers FUNCTION_INVOCATION_FAILED
 
 That error has no stack and no log line, so it is worth knowing the two things
