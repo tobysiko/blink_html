@@ -11,7 +11,7 @@ delete them afterwards, so they ended up in the commit. Nothing is pushed yet,
 so amend rather than adding a second commit:
 
 ```
-cd ~/Documents/Claude/Projects/Blink/Blink_July2026/v0.22
+cd ~/Documents/Claude/Projects/Blink/Blink_July2026/v0.23
 git rm --cached -q sim/_cmp_tmp.py sim/_verify_tmp.py
 rm sim/_cmp_tmp.py sim/_verify_tmp.py
 git commit --amend --no-edit

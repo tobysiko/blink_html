@@ -1,8 +1,8 @@
-# Blink — playable app (v0.22)
+# Blink — playable app (v0.23)
 
 `../Blink-play-v0.23.html` is the deliverable: one self-contained file, no server,
 no network. Double-click it. You play one seat; the rest are run by the tuned
-v0.22 bot.
+v0.23 bot.
 
 ## Source layout
 

@@ -1,7 +1,10 @@
 /* The page must (a) hide the notice and work when scripts run, and
    (b) show the notice and hide the game when they do not. */
 const fs = require('fs'); const { JSDOM } = require('jsdom');
-const html = fs.readFileSync('/sessions/beautiful-loving-turing/mnt/v0.22/Blink-play-v0.23.html','utf8');
+const path = require('path');
+/* Relative to this file, not an absolute path: the repo folder gets renamed
+   with the version, and every other test here already reads it this way. */
+const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
 const check = (runScripts, label, cb) => {
   const dom = new JSDOM(html, runScripts ? { runScripts:'dangerously', pretendToBeVisual:true } : {});
   const w = dom.window, d = w.document;

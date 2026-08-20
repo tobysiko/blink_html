@@ -3,7 +3,7 @@
 **Status: applied to the documents on 14 Aug 2026.** Every item below is now in
 the printed rulebook, the tutorial, the playtest sheet and the player board.
 
-The rulebook is **generated** — do not edit `source/Blink-rules-v0.22.html`. The
+The rulebook is **generated** — do not edit `source/Blink-rules-v0.23.html`. The
 sources are `source/build_html.py` (rules), `build_tutorial.py` (first game),
 `build_playtest.py`, `build_figs.py` (figures) and `board_a4.py` (the board);
 `source/build_pdfs.sh` runs the lot and renders the PDFs with wkhtmltopdf.
