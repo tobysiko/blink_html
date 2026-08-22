@@ -289,8 +289,9 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">—</span><h2>Start here</h2></div>
   <p class="lede">Each round you play a <b>meld</b> — a small combination of cards. The meld
   competes for the trick, and then every card in it becomes something: a settler, a new
-  tile, an attack — or a coin. Win the trick and you spend one card more than you played;
-  come last and you pocket a coin.</p>
+  tile, an attack — or a coin. Win the trick and you act first, with every card you
+  played still yours to spend; match the winner's count and lose, and one of yours is
+  set aside. Come last and you pocket a coin.</p>
   <ol class="seq">
     <li><b>Card phase.</b> Everyone plays a meld. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
@@ -319,8 +320,8 @@ HTML = f"""<!doctype html>
   the trick, and they are the budget your civilization spends. A pair is two things done;
   a run of four is four. You never choose a move separately from the cards — the meld is
   the budget.</p>
-  <p>Winning the trick lets you act first and spend one card more than you played. The
-  player who came last takes a coin. So a strong meld buys tempo, but growth has a cost:
+  <p>Winning the trick lets you act first, and every card you played still reaches the
+  map. The player who came last takes a coin. So a strong meld buys tempo, but growth has a cost:
   the more ground you hold, the more it takes to feed, and feeding comes due whether or
   not you won.</p>
   <p>Behind every card sits one plain question: <strong>is it people, or is it gold?</strong>
@@ -534,7 +535,7 @@ HTML = f"""<!doctype html>
     <span class="tag">Losing the trick costs you almost nothing</span>
     <p>Play <em>fewer</em> cards than the winner and every one of them still reaches the
     map; if your meld came last, it also pays you a coin. The only players who give
-    anything up are those who <strong>matched</strong> the winner and lost on rank, and
+    anything up are those who <strong>matched the winner's card count</strong> and lost, and
     even they are paid a gold for the card (§04). Playing a single on purpose is a real
     line, not a failure — matching the winner and losing is the one thing that costs.</p>
   </div>
@@ -948,8 +949,8 @@ HTML = f"""<!doctype html>
   <div class="note">
     <span class="tag">What just happened</span>
     <p>One meld did two jobs for each player: it fought for the trick, then became the
-    budget they spent on the map. Bex’s two extra rank on a single card won her both
-    initiative and a full turn; Cy’s cautious single let him hoard gold instead. That
+    budget they spent on the map. Bex’s 16 against Ada’s 11 won her both initiative and
+    a full turn; Cy’s cautious single let him hoard gold instead. That
     trade — tempo now against resources later — is the whole game in miniature.</p>
   </div>
 </section>

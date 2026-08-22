@@ -170,8 +170,37 @@ eff = text_of(HERE / "Blink-card-effects.html")
 check("rank" in eff and "+1 card" not in eff,
       "the effects document still prints effect A as +1 card")
 check("set aside" in rules, "the rulebook never mentions setting a card aside")
-check("winner spends one extra card" not in rules.lower(),
-      "the rulebook still promises the winner an extra card")
+# The trick payout was the single hardest thing to keep straight while the rule
+# changed, because the old "bonus" rule (the winner spends one card MORE than
+# they played) can be written a dozen ways and the first version of this check
+# looked for exactly one of them — "winner spends one extra card" — a sentence
+# the rulebook never actually contained. It passed for months while the lede
+# and section 01 both still promised the bonus card.
+#
+# So match the SHAPE of the claim rather than one wording, and let a negation
+# through, because section 04 says out loud that there is no bonus card and
+# that sentence is the correct one.
+BONUS_CLAIMS = [
+    r"one card more than (?:you|they|the winner) (?:played|play)",
+    r"spends? (?:one )?(?:an )?(?:extra|additional|bonus) card",
+    r"(?:extra|additional|bonus) card from (?:your|their|the winner's) hand",
+    r"winner'?s bonus card",
+]
+NEGATED = re.compile(r"\b(?:no|not|never|nothing|neither|rather than|instead of)\b[^.]{0,60}$")
+
+
+def no_bonus_rule(doc, where):
+    """The printed trick payout must be `dock`, which is what the engine plays."""
+    for pat in BONUS_CLAIMS:
+        for m in re.finditer(pat, doc, re.I):
+            before = doc[max(0, m.start() - 90):m.start()]
+            if NEGATED.search(before):
+                continue          # "there is no winner's bonus card" — correct
+            quote = doc[max(0, m.start() - 40):m.end() + 20].strip()
+            fails.append(f"{where} still describes the winner's bonus card: ...{quote}...")
+
+
+no_bonus_rule(rules, "the rulebook")
 check("discards one card" not in rules.lower(),
       "the rulebook still discards a card from hand for matching the winner")
 
@@ -227,8 +256,7 @@ check(drawn == UNITS, f"the board draws {drawn} unit slots per tier, engine has 
 tut = text_of(HERE / "Blink-first-game.html")
 check(", ".join(str(u) for u in UNITS) + " from the top" in tut,
       "the tutorial still prints the old tier unit counts")
-check("winner spends one extra card" not in tut.lower(),
-      "the tutorial still promises the winner an extra card")
+no_bonus_rule(tut, "the tutorial")
 check("lowest-ranked card in your hand" in tut,
       "the tutorial does not teach the lowest-card retire")
 

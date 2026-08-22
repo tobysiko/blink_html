@@ -2623,6 +2623,14 @@ function netSay(text, bad) {
 
 /* ---- wiring the setup page ---- */
 
+/* netSetup() early-returns when the build has no table service, so it binds
+ * nothing on that first pass and has to be safe to run again once an api is
+ * known. It was not: every call added another listener to the same six
+ * controls, so on the second pass ONE click on "open a table" ran netCreate
+ * twice — two sessions on the server, the player left in whichever one
+ * happened to answer last, and the link they copied pointing at the other. */
+let NET_WIRED = false;
+
 function netSetup() {
   const box = $("#remote");
   if (!box) return;
@@ -2630,6 +2638,9 @@ function netSetup() {
   box.hidden = false;
   const nameBox = $("#net-name");
   if (!nameBox.value) nameBox.value = defaultName();
+
+  if (NET_WIRED) { netFromUrl(); return; }
+  NET_WIRED = true;
 
   $("#net-host").addEventListener("click", () => {
     netSay(t("net.opening"));
@@ -2657,12 +2668,18 @@ function netSetup() {
   });
 
   /* Arriving on somebody's link: no setup page, just a name and a seat. */
+  netFromUrl();
+}
+
+/* Joining whatever table the address bar names — unless we are already sitting
+ * at it, because a second netConnect to the same code opens a second socket
+ * and the seat you get back may not be the seat you were in. */
+function netFromUrl() {
   const code = netCodeInUrl();
-  if (code) {
-    $("#net-code").value = code;
-    netSay(t("net.joining", { code }));
-    joinCode(code);
-  }
+  if (!code || (NET && NET.code === code)) return;
+  $("#net-code").value = code;
+  netSay(t("net.joining", { code }));
+  joinCode(code);
 }
 
 function joinCode(raw) {

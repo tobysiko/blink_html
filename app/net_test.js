@@ -31,6 +31,16 @@ const PORT = 8799 + (process.pid % 60);
 const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
+/* Stop here, but say why. The setup path used to run on into `NET.seat` after
+ * NET had stayed null, so a table that never opened was reported as
+ * "Cannot read properties of null" at a line that is not the problem. */
+function bail(what, pages) {
+  fail.push(what);
+  for (const [n, p] of pages || [])
+    if (p.errs.length) fail.push(`  ${n} page errors: ` + [...new Set(p.errs)].slice(0, 3).join(' | '));
+  console.log('FAIL:\n  ' + fail.join('\n  '));
+  process.exit(1);
+}
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 /* Poll rather than sleep: a round trip over a loopback socket takes about a
  * millisecond, and a test that sleeps for a fixed 35 takes six minutes. */
@@ -68,7 +78,15 @@ async function main() {
   await new Promise((r) => srv.server.listen(PORT, r));
 
   const A = page(), B = page();
-  await wait(300);
+  /* The built page is one file with the whole engine in it, and jsdom parses
+   * and runs it from cold. How long that takes is a property of the machine,
+   * not of the game — 300ms was enough here and not on a laptop that had just
+   * done an npm install. Wait for the page to have finished booting: a
+   * function declaration hoists as soon as the script starts, so waiting for
+   * netSetup alone would return before the page had called it itself. */
+  const loaded = await until(() => A.w.netSetup && B.w.netSetup
+    && A.d.readyState === 'complete' && B.d.readyState === 'complete', 20000, 10);
+  if (!loaded) bail('the built page never finished loading in jsdom', [['host', A], ['guest', B]]);
   for (const p of [A, B]) p.w.eval(`BUILD.api = ${JSON.stringify(API)}`);
 
   // ---------------------------------------------------- host opens a table
@@ -77,10 +95,13 @@ async function main() {
      'a build that knows a table service does not offer to open one');
   A.d.querySelector('#net-name').value = 'Toby';
   A.d.querySelector('#net-host').dispatchEvent(new A.w.MouseEvent('click', { bubbles: true }));
-  await wait(500);
 
-  const code = A.w.eval('NET && NET.code');
-  ok(!!code, 'opening a table produced no code');
+  /* Opening a table is a POST and then a socket and then a hello coming back.
+   * Three round trips, so wait for the answer rather than for a duration. */
+  const code = await until(() => A.w.eval('NET && NET.code'), 20000, 5);
+  if (!code) bail(`opening a table produced no code (NET is `
+    + `${A.w.eval('NET ? NET.status : "null"')}, server on ${API})`, [['host', A]]);
+  await until(() => A.w.eval('NET.seat !== null'), 20000, 5);
   ok(A.d.body.classList.contains('lobby'), 'the host was not shown the lobby');
   ok(A.w.eval('NET.seat') === 0, `the host got seat ${A.w.eval('NET.seat')}`);
   const link = A.d.querySelector('#lobby-link').value;
@@ -93,7 +114,9 @@ async function main() {
   B.w.eval(`history.replaceState(null, '', ${JSON.stringify('/play.html?s=' + code)})`);
   B.w.eval('$("#net-name").value = "Anna"');
   B.w.eval('netSetup()');
-  await wait(500);
+  const seated = await until(() => B.w.eval('NET && NET.seat !== null'), 20000, 5);
+  if (!seated) bail(`the guest never got a seat at ${code} (NET is `
+    + `${B.w.eval('NET ? NET.status : "null"')})`, [['guest', B]]);
   ok(B.w.eval('NET && NET.code') === code, 'the guest did not join from the link');
   ok(B.d.body.classList.contains('lobby'), 'the guest was not shown the lobby');
   const bSeat = B.w.eval('NET.seat');
@@ -109,7 +132,8 @@ async function main() {
 
   // ------------------------------------------------------------ play
   A.d.querySelector('#lobby-start').dispatchEvent(new A.w.MouseEvent('click', { bubbles: true }));
-  await wait(400);
+  const begun = await until(() => A.w.eval('G !== null') && B.w.eval('G !== null'), 20000, 5);
+  if (!begun) bail('the game never started on both clients', [['host', A], ['guest', B]]);
   for (const [n, p] of [['host', A], ['guest', B]]) {
     ok(p.w.eval('G !== null'), `the ${n} has no game after start`);
     ok(!p.d.body.classList.contains('lobby'), `the ${n} is still in the lobby`);
@@ -157,6 +181,17 @@ async function main() {
   window.__at = () => (REQ ? REQ.seat : -1);
   window.__len = () => LOG.length;`);
   const snap = (p) => p.w.__snap();
+  /* The host applies an answer when it sends it; the guest applies it when the
+   * server echoes it back, which is a round trip later. So the two boards are
+   * legitimately different for a millisecond or so after every move, and
+   * comparing them at an arbitrary instant measures the network rather than
+   * the game — it passed on a fast machine and failed on a laptop.
+   *
+   * What must be true is that they CONVERGE. Two clients that settle on the
+   * same board after every answer are in step; two that never do are the
+   * failure this whole test exists to find, and keeping them apart matters
+   * because only one of them is a bug. */
+  const level = (ms) => until(() => A.w.__len() === B.w.__len(), ms || 4000, 2);
   if (process.env.NET_TRACE)
     fs.appendFileSync('/tmp/nettrace.log', `pre-loop reached at ${Date.now()}, snap ok: `
       + (snap(A) ? 'yes' : 'no') + '\n');
@@ -185,13 +220,23 @@ async function main() {
       break;
     }
 
-    // the two boards must be the same board, always
-    const a = snap(A), b = snap(B);
-    if (a !== b && !dropped) {
-      drifted += 1;
-      if (drifted === 1)
-        fail.push('the two clients are looking at DIFFERENT boards:\n      host:  '
-          + String(a).slice(0, 150) + '\n      guest: ' + String(b).slice(0, 150));
+    // the two boards must be the same board, once both have caught up
+    if (!dropped) {
+      const caught = await level();
+      const a = snap(A), b = snap(B);
+      if (!caught) {
+        drifted += 1;
+        if (drifted === 1)
+          fail.push(`the guest never caught up at step ${steps}: host has `
+            + `${A.w.__len()} answers, guest ${B.w.__len()}, guest net `
+            + `${B.w.eval('NET.status')} — a message went missing`);
+      } else if (a !== b) {
+        drifted += 1;
+        if (drifted === 1)
+          fail.push('the two clients applied the same answers and got DIFFERENT boards:'
+            + '\n      host:  ' + String(a).slice(0, 150)
+            + '\n      guest: ' + String(b).slice(0, 150));
+      }
     }
 
     /* Bots resolve between our turns, so wait for the next question rather
@@ -225,7 +270,9 @@ async function main() {
       ok(backUp, 'the guest never reconnected');
       await until(() => B.w.eval('NET.status') === 'playing', 3000, 10);
       ok(B.w.eval('NET.seat') === bSeat, 'the guest came back in a different seat');
-      await wait(300);
+      /* Coming back means replaying everything missed, so give it the same
+       * convergence test rather than a guess at how long that takes. */
+      ok(await level(8000), 'the guest never caught up on what it missed while away');
       const a2 = snap(A), b2 = snap(B);
       ok(a2 === b2, 'after reconnecting the guest is on a different board:\n      host:  '
         + String(a2).slice(0, 150) + '\n      guest: ' + String(b2).slice(0, 150));
@@ -275,6 +322,7 @@ async function main() {
   ok(rounds >= 2, `only reached round ${rounds} in ${steps} moves`);
   ok(drifted === 0, `the clients drifted apart on ${drifted} of ${steps} moves`);
   ok(undid > 0, 'the run never managed a remote undo');
+  ok(await level(8000), 'the two clients ended with different numbers of answers applied');
   ok(snap(A) === snap(B), 'the two clients ended on different boards');
   /* Same log, same engine, same arithmetic — if the scores differ, the two
    * people at this table would be told different things about who is winning. */
