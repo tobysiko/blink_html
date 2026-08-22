@@ -248,12 +248,17 @@ def board():
     b += label(slots_x0, y, "empty from the top band down",
                9.5, anchor="start", cls="fig-label")
 
+    # (label, meld limit, units, food coins, free moves) — units are 2/3/5/5/5
+    # as of v0.23. This figure had its own copy of the column and kept the v0.22
+    # numbers when the table beside it changed, so the caption contradicted the
+    # rulebook it illustrates. check_rules now reads the figure too.
     bands = [("Tribe", 2, 2, 0, 1),
-             ("Settlement", 3, 4, 1, 2),
-             ("Kingdom", 4, 6, 2, 3),
-             ("Empire", 5, 4, 3, 4),
-             ("Civilization", 6, 4, 4, 5)]
-    filled_state = {0: 0, 1: 2, 2: 6, 3: 4, 4: 4}
+             ("Settlement", 3, 3, 1, 2),
+             ("Kingdom", 4, 5, 2, 3),
+             ("Empire", 5, 5, 3, 4),
+             ("Civilization", 6, 5, 4, 5)]
+    # Tribe spent, Settlement half-emptied — the state the caption describes.
+    filled_state = {0: 0, 1: 2, 2: 5, 3: 5, 4: 5}
 
     band_h = 46
     y = PAD + 18

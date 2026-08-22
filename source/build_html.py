@@ -404,8 +404,8 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">04</span><h2>The round</h2></div>
   <p>Every round has two halves. First everyone plays cards. Then everyone spends
   those same cards, in the order the cards decided.</p>
-  <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 4, then 6,
-  then 4, then a final 4 — and you always take units from the <b>topmost tier that still
+  <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 3, then 5,
+  then 5, then a final 5 — and you always take units from the <b>topmost tier that still
   holds any</b>. That tier is your current tier, and it prints the four numbers that govern
   your game: the size of meld you may play, the free moves you get each turn, the gold your
   people cost to feed, and the highest card rank you may buy from the market.</p>

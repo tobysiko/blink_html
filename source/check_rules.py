@@ -97,6 +97,30 @@ check(", ".join(str(u) for u in UNITS) + " from the top" in rules,
 caps_ref = "/".join(str(c) for c in CAPS)
 check(caps_ref in rules, f"the quick reference does not print the caps as {caps_ref}")
 
+# 2b. §04's PROSE, and the board FIGURE, hold their own copies of that column —
+#     and both kept the v0.22 numbers through the v0.23 change while the table
+#     beside them was correct, so §04 contradicted itself and the figure caption
+#     described a board nobody has. Every place the column appears is checked
+#     now, not only the one that was easy to parse.
+
+# Read the numbers out of the sentence rather than matching a fixed phrase, so
+# the prose stays free to say "2, then 3, then 5, then 5, then a final 5".
+m = re.search(r"20 units in five tiers\s*[—-]\s*((?:\d+[^0-9]{1,20}){4}\d+)", rules)
+check(bool(m), "cannot find §04's sentence naming the five tiers")
+if m:
+    prose_units = [int(x) for x in re.findall(r"\d+", m.group(1))]
+    check(prose_units == UNITS,
+          f"§04's opening sentence says the tiers are {prose_units}, the engine "
+          f"has {UNITS} — the sentence has its own copy of the column and can "
+          "disagree with the table printed directly below it")
+fig = (HERE / "build_figs.py").read_text(encoding="utf8")
+m = re.search(r"bands = \[(.*?)\]\n", fig, re.S)
+check(bool(m), "cannot find the board figure's own tier table")
+if m:
+    fig_units = [int(x) for x in re.findall(r'"\w+", \d+, (\d+),', m.group(1))]
+    check(fig_units == UNITS,
+          f"the board figure draws {fig_units} units per tier, engine has {UNITS}")
+
 # 3. ascension coins
 check(" / ".join(str(a) for a in ASC[1:]) in rules,
       f"ascension coins {ASC[1:]} are not printed as a run")
