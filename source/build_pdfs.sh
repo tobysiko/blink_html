@@ -116,10 +116,19 @@ topdf "Blink-deck-bw.html"               "Blink-deck-bw.pdf"
 topdf "Blink-objectives-colour.html"     "Blink-objectives-colour.pdf"
 topdf "Blink-objectives-bw.html"         "Blink-objectives-bw.pdf"
 
-# the player boards are SVG, so they go through a vector converter
-python3 -c "import cairosvg; cairosvg.svg2pdf(url='board_a4.svg',    write_to='../Blink-player-board-A4.pdf')"
-python3 -c "import cairosvg; cairosvg.svg2pdf(url='board_a4-bw.svg', write_to='../Blink-player-board-A4-bw.pdf')"
-python3 -c "import cairosvg; cairosvg.svg2pdf(url='board_blank.svg',  write_to='../Blink-player-board-blank.pdf')"
+# The player boards are SVG. They used to go through cairosvg, which needs the
+# native Cairo library under it — fiddly on macOS, and in practice not installed,
+# so the boards were the one thing this script could not produce. A browser
+# renders SVG to vector PDF perfectly well, so they go through the same renderer
+# as everything else; wrap_svg.py only supplies the page geometry.
+board() {
+  python3 wrap_svg.py "$1" "_board_tmp.html"
+  topdf "_board_tmp.html" "$2"
+  rm -f "_board_tmp.html"
+}
+board board_a4.svg        Blink-player-board-A4.pdf
+board board_a4-bw.svg     Blink-player-board-A4-bw.pdf
+board board_blank.svg     Blink-player-board-blank.pdf
 
 # A PDF that is a single blank page is what a renderer produces when it failed
 # quietly — worth catching here rather than at the printer.
@@ -128,8 +137,11 @@ import pathlib, sys
 bad = []
 for p in sorted(pathlib.Path(sys.argv[1]).glob("Blink-*.pdf")):
     n = p.stat().st_size
-    if n < 20000:
-        bad.append(f"{p.name} is only {n//1024} kB")
+    # A renderer that fails quietly still writes a valid one-page PDF, and that
+    # comes out at a couple of kB. Anything this small never contains a booklet
+    # or a board.
+    if n < 8000:
+        bad.append(f"{p.name} is only {n // 1024} kB — probably a blank page")
 print("\n".join("  suspicious: " + b for b in bad) if bad
       else "every PDF looks a plausible size")
 PY
