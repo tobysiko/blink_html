@@ -147,6 +147,17 @@ check('? opts.researchRule : "twice"' in js,
       "the engine's default is no longer two researches a turn")
 check("up to twice per turn" in rules.lower(),
       "the rulebook still prints research as once a turn")
+# ...and §10's OWN body, not just the quick reference. A phrase-anywhere check
+# passed while §10 still opened "Once per turn, during your map phase" and its
+# step 3 still said "Pay 1 gold" — the section contradicted the summary of
+# itself two pages later, which is exactly the drift this file exists to catch.
+sec10 = rules.split("Research and the market")[-1].split("A worked example")[0]
+check("Once per turn, during your map phase" not in sec10,
+      "§10 still opens by saying research is once per turn")
+check("up to twice per turn" in sec10.lower(),
+      "§10's own body never says research may be taken twice")
+check(re.search(r"1 gold the first time this turn, 2 the second", sec10),
+      "§10's steps do not state the rising price where a player follows them")
 check(re.search(r"first research of your turn costs 1 gold, the second costs 2", rules),
       "the rulebook does not print the rising research price")
 
