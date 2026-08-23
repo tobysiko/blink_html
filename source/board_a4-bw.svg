@@ -130,9 +130,11 @@
 <text x="42.00" y="159.70" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0" style="">keep your coins here</text>
 <text x="42.00" y="164.50" font-family="IBM Plex Mono" font-size="3.1" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">no limit — pile them up</text>
 <text x="120.00" y="142.00" font-family="IBM Plex Sans" font-size="4.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">SCORING</text>
-<text x="120.00" y="148.00" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">units on map  +  centre rank of your victory row  +  3 per terrain majority</text>
-<text x="120.00" y="153.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">gold breaks ties · fewer than 3 cards in the row score 1 each</text>
-<text x="120.00" y="162.00" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">The row scores the card in the CENTRE slot, so fill it — and mind what lands in the middle.</text>
+<text x="120.00" y="148.20" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">1  per unit you have on the map</text>
+<text x="120.00" y="152.80" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">1  per card in your victory row — however many you hold</text>
+<text x="120.00" y="157.40" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">+  the RANK of the card in the centre slot (3 cards or more)</text>
+<text x="120.00" y="162.00" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">3  per terrain majority</text>
+<text x="120.00" y="168.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">gold breaks ties · a row of 1 or 2 cards scores those cards only</text>
 <text x="14.00" y="179.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">VICTORY ROW</text>
 <text x="72.00" y="179.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">— slide cards in from below; the centre slot scores</text>
 <line x1="164.0" y1="178.2" x2="279.6" y2="178.2" stroke="#6E6E6E" stroke-width="0.5"/>

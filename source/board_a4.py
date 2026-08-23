@@ -242,15 +242,22 @@ def build():
 
     # --- scoring reminder, to the right of the gold box ---
     sx = gx + gvw + 14
+    # The victory row scores TWICE: a point for every card in it, and then the
+    # rank of its centre card on top (engine: vrowScore = length + centre).
+    # The board printed only the second half, so a full row of five looked
+    # worth its centre rank when it is worth that plus five. One line per
+    # source, because three addends in a sentence is where it got lost.
     s.append(T(sx, low, "SCORING", 4.6, anchor="start", weight="600"))
-    s.append(T(sx, low+6, "units on map  +  centre rank of your victory row  +  "
-               "3 per terrain majority", 3.4, anchor="start", col=INK, mono=True,
-               spacing="0.15"))
-    s.append(T(sx, low+11.5, "gold breaks ties \u00b7 fewer than 3 cards in the row "
-               "score 1 each", 3.2, anchor="start", col=SOFT, mono=True))
-    s.append(T(sx, low+20, "The row scores the card in the CENTRE slot, so fill it "
-               "\u2014 and mind what lands in the middle.", 3.2, anchor="start",
-               col=SOFT, mono=True, style="font-style:italic"))
+    for j, line in enumerate([
+            "1  per unit you have on the map",
+            "1  per card in your victory row \u2014 however many you hold",
+            "+  the RANK of the card in the centre slot (3 cards or more)",
+            "3  per terrain majority"]):
+        s.append(T(sx, low+6.2+j*4.6, line, 3.4, anchor="start", col=INK,
+                   mono=True, spacing="0.15"))
+    score_last = low + 26.5
+    s.append(T(sx, score_last, "gold breaks ties \u00b7 a row of 1 or 2 cards scores "
+               "those cards only", 3.2, anchor="start", col=SOFT, mono=True))
 
     # --- VICTORY ROW: real cards, tucked under the bottom edge ---
     # Five standard 63.5 mm cards side by side need 317 mm; the printable width
@@ -327,6 +334,13 @@ def build():
     if overflow > 0:
         raise SystemExit(f"board_a4: gold box collides with the victory row "
                          f"by {overflow:.1f} mm")
+
+    # ...and the scoring column, which sits beside the gold box and grew past
+    # it once already: its last line landed exactly on the divider rule.
+    if score_last > by - 2:
+        raise SystemExit(f"board_a4: the scoring block's last line at "
+                         f"{score_last:.1f} mm runs into the victory row "
+                         f"divider at {by:.1f} mm")
 
     s.append('</svg>')
     return "\n".join(s)

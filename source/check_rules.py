@@ -244,6 +244,21 @@ check('plains: 3, forest: 2, ocean: 1, mountain: 1' in js.replace('"', '')
 board = (HERE / "board_a4.svg").read_text(encoding="utf8")
 for cap in CAPS:
     check(f">{cap}<" in board, f"the player board does not print rank cap {cap}")
+
+# The victory row scores TWICE under the default rule — a point per card AND
+# the centre rank on top. The board printed only the rank half for a while,
+# which makes a full row of five look worth five points less than it is. That
+# was caught by a person reading the sheet, not by this file, so:
+vrow_rule = re.search(r'let VROW_RULE = "([a-z+]+)"', js)
+check(bool(vrow_rule), "cannot find VROW_RULE in app/engine.js")
+if vrow_rule and vrow_rule.group(1) == "card+centre":
+    board_txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", board))
+    check(re.search(r"1\s+per card in your victory row", board_txt),
+          "the player board does not print the victory row's point PER CARD")
+    check(re.search(r"RANK of the card in the centre slot", board_txt),
+          "the player board does not print the victory row's centre rank")
+    check(re.search(r"1 point per card in the row", rules),
+          "the rulebook does not print the victory row's point per card")
 # the unit slots, counted per row: this is the component players actually load
 import collections
 rows = collections.Counter()
