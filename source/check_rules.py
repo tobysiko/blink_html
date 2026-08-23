@@ -255,10 +255,32 @@ if vrow_rule and vrow_rule.group(1) == "card+centre":
     board_txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", board))
     check(re.search(r"1\s+per card in your victory row", board_txt),
           "the player board does not print the victory row's point PER CARD")
-    check(re.search(r"RANK of the card in the centre slot", board_txt),
+    check(re.search(r"rank of its CENTRE card", board_txt, re.I),
           "the player board does not print the victory row's centre rank")
     check(re.search(r"1 point per card in the row", rules),
           "the rulebook does not print the victory row's point per card")
+
+# The board now carries the order of play, so it can contradict the engine
+# about how a trick is won just as easily as the rulebook could.
+board_txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", board))
+check("ROUND" in board_txt, "the player board has no order of play")
+for step in ["Declare A effects", "Leader plays a meld", "Spend melds in initiative order",
+             "leads the next round"]:
+    check(step in board_txt, f"the board's round order is missing: {step}")
+check(re.search(r"Highest TOTAL wins", board_txt),
+      "the board's round order does not say the highest TOTAL wins the trick")
+
+# The map phase is the half a player forgets, and every item in it is a rule
+# the engine enforces — so the board's turn menu is checked against the
+# engine's own numbers rather than trusted.
+check("YOUR TURN" in board_txt, "the player board does not say what a turn may contain")
+check(re.search(r"Research: twice", board_txt),
+      f"the board does not print research twice a turn (engine default "
+      f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
+check(re.search(r"Research: twice \u2014 1 gold, then 2|Research: twice — 1 gold, then 2", board_txt),
+      "the board does not print the 1-then-2 research price")
+for item in ["Fortify: 1 gold", "Move: up to MV", "refill to 10"]:
+    check(item in board_txt, f"the board's turn menu is missing: {item}")
 # the unit slots, counted per row: this is the component players actually load
 import collections
 rows = collections.Counter()

@@ -91,6 +91,25 @@ function writeDeploy(text, how) {
   } else {
     console.log(`site repo not found at ${SITE}; set BLINK_SITE to copy play.html`);
   }
+  buildServer();
+}
+
+/* server/build.js generates worker.js and api/blink.js from these same
+ * sources, and it used to be a separate command nobody remembered to run. The
+ * rank caps moved to 12/14/16/18/20 in engine.js, the page rebuilt, and the
+ * deployed API kept playing 11/13/15/17/20 — every client showing one set of
+ * caps while the thing replaying their answers used another. That is the
+ * worst kind of stale: silent, and only visible mid-game.
+ *
+ * They are one build now. It runs last so a failure here cannot cost you the
+ * page you were actually building. */
+function buildServer() {
+  try {
+    delete require.cache[require.resolve(here('../server/build.js'))];
+    require(here('../server/build.js'));
+  } catch (e) {
+    console.log(`server build FAILED — run it yourself: ${e.message}`);
+  }
 }
 /* The three documents the setup page links to, put where those links point:
  * beside the page, both in the project root and in the deploy folder. A link

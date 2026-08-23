@@ -210,54 +210,89 @@ def build():
                "ASCEND taken once, on arrival \u00b7 RESERVE empties top down", 3.3,
                anchor="start", col=SOFT, mono=True, spacing="0.15"))
 
-    # ================= lower zone: GOLD, then the victory row ============
-    low = y + 15
+    # ============ lower zone: the round, then gold / scoring / your turn ====
+    #
+    # The round order went on the board as five steps, and five steps turned
+    # out to describe only the card phase: it said "spend melds in initiative
+    # order" and stopped, with nothing about when you may move, research,
+    # fortify, recycle a hand or spend a victory card — which is all of the
+    # map phase, and the part people actually forget.
+    #
+    # So it is two blocks now. The ROUND ribbon runs full width because it is
+    # a sequence and reads as one; YOUR TURN is a column because it is a menu,
+    # not an order — section 07: "you may weave them between your card plays
+    # in any order".
+    ribbon = y + 13.5
+    s.append(T(band_x-2, ribbon, "ROUND", 3.6, anchor="start", col=INK,
+               mono=True, weight="600", spacing="0.4"))
+    s.append(T(band_x + 20, ribbon,
+               "1  Declare A effects, blind   \u2192   2  Leader plays a meld, then "
+               "clockwise   \u2192   3  Highest TOTAL wins the trick", 3.0,
+               anchor="start", col=INK, mono=True, spacing="0.1"))
+    s.append(T(band_x + 20, ribbon + 4.3,
+               "4  Spend melds in initiative order \u2014 on your turn, see right   "
+               "\u2192   5  Trick winner leads the next round", 3.0,
+               anchor="start", col=INK, mono=True, spacing="0.1"))
+
+    low = ribbon + 14
     s.append(f'<line x1="{M}" y1="{low-6}" x2="{PW-M}" y2="{low-6}" '
              f'stroke="{LINE}" stroke-width="0.4"/>')
 
-    # --- GOLD STORAGE (left) ---
+    # --- three columns: gold, scoring, and what a turn may contain --------
     gx = M
+    gvw, gvh = 82, 17
+    sx = 106.0
+    rx = 196.0
+
     s.append(T(gx, low, "GOLD", 4.6, anchor="start", weight="600"))
-    s.append(T(gx, low+5, "1 per cashed card \u00b7 research, fortify, attacks, food", 3.2, anchor="start", col=SOFT, mono=True))
+    s.append(T(gx, low+5, "1 per cashed card \u00b7 research, fortify, attacks, food",
+               3.0, anchor="start", col=SOFT, mono=True))
     gv_y = low + 9
-    gvw, gvh = 92, 19
     s.append(f'<rect x="{gx}" y="{gv_y}" width="{gvw}" height="{gvh}" rx="3" '
              f'fill="{PAPER}" stroke="{GOLD}" stroke-width="0.8"/>')
     # Twelve printed circles read as twelve slots, and a player who filled
     # them would reasonably think that was the ceiling. It is not — gold is
     # unbounded. So: one coin with a couple behind it, which reads as a pile.
-    ccx, ccy = gx + 15, gv_y + gvh/2
-    s.append(f'<circle cx="{ccx-3.5:.2f}" cy="{ccy-2:.2f}" r="6" fill="{PAPER}" '
+    ccx, ccy = gx + 14, gv_y + gvh/2
+    s.append(f'<circle cx="{ccx-3.5:.2f}" cy="{ccy-2:.2f}" r="5.5" fill="{PAPER}" '
              f'stroke="{GOLDl}" stroke-width="0.6"/>')
-    s.append(f'<circle cx="{ccx+3.5:.2f}" cy="{ccy+2:.2f}" r="6" fill="{PAPER}" '
+    s.append(f'<circle cx="{ccx+3.5:.2f}" cy="{ccy+2:.2f}" r="5.5" fill="{PAPER}" '
              f'stroke="{GOLDl}" stroke-width="0.6"/>')
-    s.append(f'<circle cx="{ccx:.2f}" cy="{ccy:.2f}" r="6" fill="{PAPER}" '
+    s.append(f'<circle cx="{ccx:.2f}" cy="{ccy:.2f}" r="5.5" fill="{PAPER}" '
              f'stroke="{GOLD}" stroke-width="0.9"/>')
-    s.append(f'<circle cx="{ccx:.2f}" cy="{ccy:.2f}" r="4" fill="none" '
+    s.append(f'<circle cx="{ccx:.2f}" cy="{ccy:.2f}" r="3.6" fill="none" '
              f'stroke="{GOLDl}" stroke-width="0.6"/>')
-    s.append(T(gx + 28, ccy - 0.8, "keep your coins here", 3.4, anchor="start",
+    s.append(T(gx + 25, ccy - 0.8, "keep your coins here", 3.0, anchor="start",
                col=INK, mono=True))
-    s.append(T(gx + 28, ccy + 4.0, "no limit \u2014 pile them up", 3.1,
+    s.append(T(gx + 25, ccy + 3.6, "no limit \u2014 pile them up", 2.9,
                anchor="start", col=SOFT, mono=True))
 
-    # --- scoring reminder, to the right of the gold box ---
-    sx = gx + gvw + 14
-    # The victory row scores TWICE: a point for every card in it, and then the
-    # rank of its centre card on top (engine: vrowScore = length + centre).
-    # The board printed only the second half, so a full row of five looked
-    # worth its centre rank when it is worth that plus five. One line per
-    # source, because three addends in a sentence is where it got lost.
+    # The victory row scores TWICE: a point per card, and the rank of its
+    # centre card on top (engine: vrowScore = length + centre). One line per
+    # source — a running sentence is where the per-card half got lost.
     s.append(T(sx, low, "SCORING", 4.6, anchor="start", weight="600"))
     for j, line in enumerate([
-            "1  per unit you have on the map",
-            "1  per card in your victory row \u2014 however many you hold",
-            "+  the RANK of the card in the centre slot (3 cards or more)",
-            "3  per terrain majority"]):
-        s.append(T(sx, low+6.2+j*4.6, line, 3.4, anchor="start", col=INK,
-                   mono=True, spacing="0.15"))
-    score_last = low + 26.5
-    s.append(T(sx, score_last, "gold breaks ties \u00b7 a row of 1 or 2 cards scores "
-               "those cards only", 3.2, anchor="start", col=SOFT, mono=True))
+            "1  per unit on the map",
+            "1  per card in your victory row",
+            "+  the rank of its CENTRE card (3+ cards)",
+            "3  per terrain majority",
+            "gold breaks ties"]):
+        s.append(T(sx, low+6.4+j*4.1, line, 3.0, anchor="start",
+                   col=SOFT if j == 4 else INK, mono=True, spacing="0.1"))
+
+    s.append(T(rx, low, "YOUR TURN", 4.6, anchor="start", weight="600"))
+    s.append(T(rx + 34, low, "\u2014 in any order", 3.0, anchor="start",
+               col=SOFT, mono=True))
+    for j, line in enumerate([
+            "Each card: settle \u00b7 explore \u00b7 attack \u00b7 take 1 gold",
+            "Move: up to MV, by land or by sea",
+            "Research: twice \u2014 1 gold, then 2",
+            "Fortify: 1 gold on one of your units",
+            "Colony (B): one victory card \u00b7 C: any time",
+            "Hand empty \u2192 feed, refill to 10, carry on"]):
+        s.append(T(rx, low+6.4+j*4.1, line, 3.0, anchor="start", col=INK,
+                   mono=True, spacing="0.1"))
+    score_last = low + 6.4 + 5*4.1
 
     # --- VICTORY ROW: real cards, tucked under the bottom edge ---
     # Five standard 63.5 mm cards side by side need 317 mm; the printable width
@@ -273,7 +308,7 @@ def build():
     # centre at 148.5 mm, and costs slots 1 and 5 exactly 10.25 mm each.
     CARD_W, CARD_H = 63.5, 88.9        # poker: 2.5 x 3.5 in
     vrow_x0 = (PW - 5*CARD_W) / 2      # negative: the row is wider than the sheet
-    vy = PH - 26                       # only the top 26 mm sits on the board
+    vy = PH - 16                       # only the top 16 mm sits on the board
     vlabel_y = vy - 4.5
     s.append(T(M, vlabel_y, "VICTORY ROW", 4.6, anchor="start", weight="600"))
     s.append(T(M + 58, vlabel_y, "\u2014 slide cards in from below; the centre "
