@@ -89,7 +89,7 @@ HTML = f"""<!doctype html>
     <h3>Load all twenty units, top tier first</h3>
     <p>Take a player board and fill all five tiers — <b>2, 3, 5, 5, 5</b> from the top. Every unit
     you'll ever place is here. Put the <b>ascension coins</b> on their printed spots: 1, 2, 3, 4.</p>
-    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints four numbers: the meld you may play, your free moves, the gold your people cost to feed, and the highest rank you may buy. Right now that is Tribe — melds of two, one free move, food free, cap 11.')}
+    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints four numbers: the meld you may play, your free moves, the gold your people cost to feed, and the highest rank you may buy. Right now that is Tribe — melds of two, one free move, food free, cap 12.')}
     <div class="say"><b>Say this out loud:</b> this board is the engine. Emptying a tier makes you stronger and
     more expensive at the same moment — and pays you a one-off ascension coin for doing it.</div>
   </div>

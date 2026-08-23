@@ -54,10 +54,10 @@ COMBO_MELDS = False
 # the old 2/4/5/5/4 also summed to 20, which is why the mismatch went unnoticed
 # Units are 2/3/5/5/5 as of v0.23 — still twenty, redistributed toward the late
 # tiers. The v0.22 board was 2/4/6/4/4.
-BANDS = [("Tribe",        2, 2, 0, 1, 0, 11),
-         ("Settlement",   3, 3, 1, 2, 1, 13),
-         ("Kingdom",      5, 4, 2, 3, 2, 15),
-         ("Empire",       5, 5, 3, 4, 3, 17),
+BANDS = [("Tribe",        2, 2, 0, 1, 0, 12),
+         ("Settlement",   3, 3, 1, 2, 1, 14),
+         ("Kingdom",      5, 4, 2, 3, 2, 16),
+         ("Empire",       5, 5, 3, 4, 3, 18),
          ("Civilization", 5, 6, 4, 5, 4, 20)]
 
 STARTS = {
@@ -524,7 +524,7 @@ class Game:
         else:
             sr, ar = range(1, 11), range(11, 21)
         if self.FULL_ADV_DECK:
-            # The rank caps (11/13/15/17/20) only mean anything if the market
+            # The rank caps (12/14/16/18/20) only mean anything if the market
             # actually reaches above them. A 2p deck of 11-15 is entirely under
             # Kingdom's cap, so three of the five caps were decorative.
             ar = range(11, 21)
@@ -1012,7 +1012,7 @@ class Game:
         if not self.smart and random.random() > 0.35:
             return
 
-        # 0. would this be a blind fish? With the tight caps (11/13/15/17/20) a
+        # 0. would this be a blind fish? With the caps (12/14/16/18/20) a
         # low tier facing a grid of tall cards can only buy if the card it draws
         # happens to fall under the cap. A real player looks first: if nothing
         # visible is buyable and the deck is unlikely to oblige, they keep the

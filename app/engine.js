@@ -72,20 +72,23 @@ const BAG_EACH = 15;
  * (engine.py) has 2/4/5/5/4; measured, the difference is not detectable, so the
  * component wins.
  *
- * RANK CAPS follow the sim — 11/13/15/17/20, one tier tighter than the board's
- * 13/15/17/20. That gap is NOT cosmetic: the printed caps cut blocked buys from
- * 5.1 to 1.8 per game and let research run 21% more freely. The board and §04
- * need their cap column reprinted, not the engine. */
+ * RANK CAPS are 12/14/16/18/20 as of v0.23 — an even step of two per tier.
+ * The sim's 11/13/15/17/20 and the v0.22 board's 13/15/17/20/20 are both kept
+ * in TIER_CAPS so either can still be measured. The even ladder sits between
+ * them: one rank looser than the sim at every tier below the last, which is
+ * the direction the measurements pointed (the sim's tight caps cost 5.1
+ * blocked buys a game against the loose board's 1.8), without giving the top
+ * of the market away in the first tier the way 13 did. */
 /* UNITS are 2/3/5/5/5 as of v0.23 — a cheap Tribe, a lean Settlement and three
  * broad late tiers. Still twenty units, so it is a redistribution rather than
  * more material, and the runs stay comparable with everything measured before.
  * The printed board of v0.22 was 2/4/6/4/4; it is kept as the "rulebook" layout
  * option and in the variants book. */
 const BANDS = [
-  ["Tribe", 2, 2, 0, 1, 0, 11],
-  ["Settlement", 3, 3, 1, 2, 1, 13],
-  ["Kingdom", 5, 4, 2, 3, 2, 15],
-  ["Empire", 5, 5, 3, 4, 3, 17],
+  ["Tribe", 2, 2, 0, 1, 0, 12],
+  ["Settlement", 3, 3, 1, 2, 1, 14],
+  ["Kingdom", 5, 4, 2, 3, 2, 16],
+  ["Empire", 5, 5, 3, 4, 3, 18],
   ["Civilization", 5, 6, 4, 5, 4, 20],
 ];
 
@@ -102,9 +105,16 @@ const TIER_UNITS = {
    * comparable. */
   late: [2, 3, 5, 5, 5],
 };
-const TIER_CAPS = { sim: [11, 13, 15, 17, 20], rulebook: [13, 15, 17, 20, 20] };
+/* `even` is the v0.23 default: +2 a tier, so the cap is one number a player can
+ * hold in their head instead of a table they have to look up. The other two are
+ * the ladders that were actually measured, kept so a run can be compared. */
+const TIER_CAPS = {
+  even: [12, 14, 16, 18, 20],
+  sim: [11, 13, 15, 17, 20],
+  rulebook: [13, 15, 17, 20, 20],
+};
 function setTiers(which) {
-  const u = TIER_UNITS[which.units || "sim"], c = TIER_CAPS[which.caps || "sim"];
+  const u = TIER_UNITS[which.units || "sim"], c = TIER_CAPS[which.caps || "even"];
   for (let j = 0; j < BANDS.length; j++) { BANDS[j][1] = u[j]; BANDS[j][6] = c[j]; }
 }
 

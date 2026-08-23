@@ -179,7 +179,7 @@ def market():
     b = ""
     cw, ch = 40, 56
     gx, gy = 16, 18
-    CAP = 15                      # a Kingdom player is reading this figure
+    CAP = 16                      # a Kingdom player is reading this figure
     # (rank, suit, how deep the stack is) — a fair spread of ranks 11-20
     grid = [(11, "plains", 1), (16, "forest", 2), (12, "ocean", 1),
             (18, "mountain", 3), (13, "plains", 1), (17, "ocean", 2),

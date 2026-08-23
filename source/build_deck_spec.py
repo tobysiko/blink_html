@@ -81,8 +81,8 @@ def rank_rows():
     out = ""
     for rank in range(1, 21):
         a, b, d = SHORT[(rank - 1) // 5]
-        cap = ("Tribe" if rank <= 11 else "Settlement" if rank <= 13 else
-               "Kingdom" if rank <= 15 else "Empire" if rank <= 17 else
+        cap = ("Tribe" if rank <= 12 else "Settlement" if rank <= 14 else
+               "Kingdom" if rank <= 16 else "Empire" if rank <= 18 else
                "Civilization")
         out += (f"<tr><td>{rank}</td><td>{a}</td><td>{b}</td>"
                 f"<td class='new'>{d}</td><td class='count'>{cap}</td></tr>")

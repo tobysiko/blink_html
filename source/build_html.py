@@ -413,10 +413,10 @@ HTML = f"""<!doctype html>
   <table>
     <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th></tr></thead>
     <tbody>
-      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">11</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">13</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">15</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">17</td></tr>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">12</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">14</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">16</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">18</td></tr>
       <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td></tr>
     </tbody>
   </table>
@@ -804,7 +804,7 @@ HTML = f"""<!doctype html>
     already played to the table are spent: they cannot be retired.</li>
     <li><b>Pay the price</b> — 1 gold the first time this turn, 2 the second — and take
     <b>any visible market card whose rank is at or below
-    your tier's rank cap</b> — Tribe 11, Settlement 13, Kingdom 15, Empire 17,
+    your tier's rank cap</b> — Tribe 12, Settlement 14, Kingdom 16, Empire 18,
     Civilization 20. It goes <strong>straight into your hand</strong> — ready to play next
     round, not waiting on your next recycle.</li>
     <li><b>Refill</b> any of the nine grid positions left empty from the top of the deck. Once the deck
@@ -1039,8 +1039,8 @@ HTML = f"""<!doctype html>
     <div>
       <h3>Reserve bands</h3>
       <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. <b>Tribe</b> melds 2,
-      1 move, food free, cap 11. <b>Settlement</b> 3, 2, food 1, cap 13. <b>Kingdom</b> 4,
-      3, food 2, cap 15. <b>Empire</b> 5, 4, food 3, cap 17. <b>Civilization</b> 6, 5,
+      1 move, food free, cap 12. <b>Settlement</b> 3, 2, food 1, cap 14. <b>Kingdom</b> 4,
+      3, food 2, cap 16. <b>Empire</b> 5, 4, food 3, cap 18. <b>Civilization</b> 6, 5,
       food 4, cap 20. Read them off your current tier only — food is <b>not</b> cumulative,
       eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
       1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
@@ -1097,7 +1097,7 @@ HTML = f"""<!doctype html>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
       covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
       card in your hand</b> to your victory row → pay → take any visible card
-      <b>at or below your tier's rank cap</b> (11/13/15/17/20) → refill empty positions.
+      <b>at or below your tier's rank cap</b> (12/14/16/18/20, +2 a tier) → refill empty positions.
       The <b>first research of your turn costs 1 gold, the second costs 2</b>. No cards in
       hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
