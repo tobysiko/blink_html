@@ -275,7 +275,7 @@ def build():
             "1  per unit on the map",
             "1  per card in your victory row",
             "+  the rank of its CENTRE card (3+ cards)",
-            "3  per terrain majority",
+            "3  per terrain: biggest connected stretch",
             "gold breaks ties"]):
         s.append(T(sx, low+6.4+j*4.1, line, 3.0, anchor="start",
                    col=SOFT if j == 4 else INK, mono=True, spacing="0.1"))

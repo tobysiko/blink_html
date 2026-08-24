@@ -117,7 +117,7 @@
 <circle cx="77.00" cy="207.50" r="4.2" fill="none" stroke="#D9D9D9" stroke-width="0.5"/>
 <circle cx="90.00" cy="207.50" r="4.2" fill="none" stroke="#D9D9D9" stroke-width="0.5"/>
 <text x="126.00" y="177.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">SCORING</text>
-<text x="126.00" y="183.50" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">units on map  +  centre rank of your victory row  +  3 per terrain majority</text>
+<text x="126.00" y="183.50" font-family="IBM Plex Mono" font-size="3.4" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">units on map  +  centre rank of your victory row  +  3 per terrain: biggest connected stretch</text>
 <text x="126.00" y="189.00" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">gold breaks ties · fewer than 3 cards in the row score 1 each</text>
 <text x="14.00" y="179.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">VICTORY ROW</text>
 <text x="72.00" y="179.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">— slide cards in from below, ranks ascending left to right; the centre slot scores</text>

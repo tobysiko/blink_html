@@ -121,7 +121,7 @@
 <text x="106.00" y="160.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per unit on the map</text>
 <text x="106.00" y="165.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per card in your victory row</text>
 <text x="106.00" y="169.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">+  the rank of its CENTRE card (3+ cards)</text>
-<text x="106.00" y="173.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">3  per terrain majority</text>
+<text x="106.00" y="173.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">3  per terrain: biggest connected stretch</text>
 <text x="106.00" y="177.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">gold breaks ties</text>
 <text x="196.00" y="154.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">YOUR TURN</text>
 <text x="230.00" y="154.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">— in any order</text>

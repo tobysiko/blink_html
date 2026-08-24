@@ -273,6 +273,29 @@ check(re.search(r"Highest TOTAL wins", board_txt),
 # The map phase is the half a player forgets, and every item in it is a rule
 # the engine enforces — so the board's turn menu is checked against the
 # engine's own numbers rather than trusted.
+# "majority" reads as most units, which is the engine's OTHER option. The
+# default scores the largest connected stretch, and the rulebook calls that
+# dominance and never says majority — but the board did, in the one place a
+# player would read it while adding up their score.
+maj = re.search(r'opts\.majority \|\| "([a-z]+)"', js)
+check(bool(maj), "cannot find the engine's MAJORITY default")
+if maj and maj.group(1) == "area":
+    check("majority" not in board_txt.lower(),
+          "the board says terrain MAJORITY, but the engine scores the largest "
+          "connected stretch — majority is the other rule")
+    check(re.search(r"biggest connected stretch", board_txt),
+          "the board does not say the terrain point is the biggest connected stretch")
+    check("majorit" not in rules.lower(),
+          "the rulebook says terrain majority, but the engine scores area")
+
+# The market is ONE face-down deck with nine face up. The worked example set
+# it up the v0.22 way — four suit decks, a four-card market — nine lines after
+# the same section said "upgrade deck ... shuffled together".
+check("four suit decks" not in rules and "four-card market" not in rules,
+      "the rulebook still sets up the v0.22 four-suit market somewhere")
+check(rules.count("3 \u00d7 3 grid") >= 2 or rules.count("3 × 3 grid") >= 2,
+      "the rulebook does not consistently describe the 3x3 market grid")
+
 check("YOUR TURN" in board_txt, "the player board does not say what a turn may contain")
 check(re.search(r"Research: twice", board_txt),
       f"the board does not print research twice a turn (engine default "

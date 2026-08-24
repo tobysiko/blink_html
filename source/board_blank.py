@@ -139,7 +139,7 @@ def build():
     sx = gx + gvw + 14
     s.append(T(sx, low, "SCORING", 4.6, "start", weight="600"))
     s.append(T(sx, low+6, "units on map  +  centre rank of your victory row  +  "
-              "3 per terrain majority", 3.4, "start", INK, mono=True, spacing="0.15"))
+              "3 per terrain: biggest connected stretch", 3.4, "start", INK, mono=True, spacing="0.15"))
     s.append(T(sx, low+11.5, "gold breaks ties \u00b7 fewer than 3 cards in the row "
               "score 1 each", 3.2, "start", SOFT, mono=True))
 
