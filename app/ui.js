@@ -1639,7 +1639,8 @@ function renderPlayer() {
   const feeding = mine() && REQ.type === "feed";
   const sorted = p.vrow.slice().sort(cardSortUI);
   const pad = 5 - sorted.length;
-  s += `<div class="vrowbox"><span class="vlab">${t("board.victoryRow")}</span><div class="vslots">`;
+  s += `<div class="vrowbox"><span class="vlab">${t("board.victoryRow")}</span>`
+     + `<div class="vstack"><div class="vslots">`;
   for (let k = 0; k < 5; k++) {
     const centre = k === 2;
     if (k < pad) {
@@ -1671,11 +1672,18 @@ function renderPlayer() {
       const cls = !liveNow ? "locked" : spent ? "spent" : "ready";
       const state = liveNow ? (spent ? t("perk.spent") : t("perk.ready"))
                             : t("perk.needs", { n: needs });
-      s += `<span class="pk ${cls} d${slot}" title="${t("perk." + id)}">`
+      /* The chip is one line; the sentence lives in the tooltip, because a
+       * three-line label stretches its grid cell and drags the row out of
+       * line with the slots above it. */
+      const tip = t("perk." + id) + " \u00b7 "
+        + (liveNow ? (spent ? t("perk.spentLong") : t("perk.ready"))
+                   : t("perk.needs", { n: needs }));
+      s += `<span class="pk ${cls} d${slot}" title="${tip}">`
         + `<b>${t("perk." + id + ".name")}</b><em>${state}</em></span>`;
     }
     s += `</div>`;
   }
+  s += `</div>`;                       // close .vstack
 
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
   s += `<span class="vsum">${tn("board.cards", sorted.length)}${

@@ -87,22 +87,21 @@
   .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
     font-weight:600; color:var(--deep)}
 
-  /* Victory row perks (proposal). Five columns matching .vslots above, so a
-     perk sits under the slot that switches it on. */
-  .perkrow{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;
-           margin:.3rem 0 .1rem}
-  .pk{display:flex;flex-direction:column;align-items:center;justify-content:center;
-      border-radius:.3rem;padding:.16rem .1rem;line-height:1.15;
-      border:1px solid transparent;min-height:1.9rem}
-  .pk.none{border:none;background:none}
-  .pk b{font-size:.62rem;font-weight:600;letter-spacing:.01em}
-  .pk em{font-size:.52rem;font-style:normal;opacity:.75}
-  .pk.locked{color:var(--muted);background:var(--panel);border-color:var(--line);
-             opacity:.6}
-  .pk.ready{color:#fff}
+  /* Victory row perks (proposal). One chip per slot, in the grid above, so a
+     perk is directly under the slot that switches it on. */
+  .pk{display:flex; flex-direction:column; align-items:center;
+      justify-content:center; border-radius:5px; padding:3px 2px;
+      line-height:1.15; border:1px solid transparent; min-height:28px;
+      text-align:center; overflow:hidden}
+  .pk.none{border:none; background:none}
+  .pk b{font-size:10px; font-weight:600; white-space:nowrap;
+    max-width:100%; overflow:hidden; text-overflow:ellipsis}
+  .pk em{font-size:9px; font-style:normal; opacity:.8; white-space:nowrap}
+  .pk.locked{color:var(--mut); background:#F4F1EA; border-color:#DDD8CC}
+  .pk.ready{color:#fff; border-color:transparent}
   .pk.ready.d1{background:#7B2018}.pk.ready.d2{background:#4A6670}
   .pk.ready.d3{background:#5E5233}.pk.ready.d4{background:#4F5E4A}
-  .pk.spent{background:var(--panel);border-color:var(--line);color:var(--muted)}
+  .pk.spent{background:#F4F1EA; border-color:#DDD8CC; color:var(--mut)}
   .pk.spent b{text-decoration:line-through}
 
   /* play with friends */
@@ -557,8 +556,15 @@
   .foodnote.due{color:var(--ink)}
   .foodnote.due::before{content:"⚠ "; color:#B4802A}
 
-  .vrowbox{margin-top:5px; display:flex; align-items:center; gap:7px; flex-wrap:wrap}
-  .vslots{display:flex; gap:4px}
+  .vrowbox{margin-top:5px; display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    --vslot-w:66px}
+  /* The slots and the perk row have to share ONE column geometry, or a perk
+     drifts out from under the slot that switches it on. A five-column grid
+     with the same track sizes and gap on both is the only way to guarantee
+     it — flex would size each cell to its own contents. */
+  .vstack{display:flex; flex-direction:column; gap:4px}
+  .vslots,.perkrow{display:grid; gap:4px;
+    grid-template-columns:repeat(5,minmax(var(--vslot-w),1fr))}
   .vslot{min-width:66px; min-height:56px; border:1px dashed #B9B4A8; border-radius:6px;
     display:flex; align-items:center; justify-content:center; background:#fff; padding:1px}
   .vslot.empty{background:#F4F1EA}
@@ -839,6 +845,7 @@
     .tier-row{gap:5px}
     .tier-row.head{font-size:8px; letter-spacing:0}
     .cf.mid{width:56px}
+    .vrowbox{--vslot-w:56px}
     .vslot{min-width:56px}
     .slot{min-width:58px}
     .go{padding:6px 10px}
@@ -1178,7 +1185,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"463a640cb0","branch":"main","dirty":true,"built":"2026-08-25T15:25:26Z"};
+const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"183d9a964d","branch":"main","dirty":true,"built":"2026-08-25T15:40:37Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1262,7 +1269,8 @@ en: {
   "setup.perks.off": "Off",
   "setup.perks.on": "On — one perk per row slot, drawn from the seed",
   "setup.perks.note": "(proposal \u00b7 four decks, one per slot; a perk is live while its slot holds a card)",
-  "perk.ready": "ready", "perk.spent": "spent \u2014 back on your next recycle",
+  "perk.ready": "ready", "perk.spent": "spent",
+  "perk.spentLong": "spent \u2014 back on your next recycle",
   "perk.needs": "needs {n}",
   "perk.roads": "Roads \u2014 one extra free move",
   "perk.roads.name": "Roads",
@@ -1752,7 +1760,8 @@ de: {
   "setup.perks.off": "Aus",
   "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
   "setup.perks.note": "(Vorschlag \u00b7 vier Stapel, einer je Platz; ein Bonus wirkt, solange sein Platz eine Karte hält)",
-  "perk.ready": "bereit", "perk.spent": "verbraucht \u2014 zurück beim nächsten Nachziehen",
+  "perk.ready": "bereit", "perk.spent": "verbraucht",
+  "perk.spentLong": "verbraucht \u2014 zurück beim nächsten Nachziehen",
   "perk.needs": "braucht {n}",
   "perk.roads": "Wege \u2014 ein zusätzlicher freier Zug",
   "perk.roads.name": "Wege",
@@ -7683,7 +7692,8 @@ function renderPlayer() {
   const feeding = mine() && REQ.type === "feed";
   const sorted = p.vrow.slice().sort(cardSortUI);
   const pad = 5 - sorted.length;
-  s += `<div class="vrowbox"><span class="vlab">${t("board.victoryRow")}</span><div class="vslots">`;
+  s += `<div class="vrowbox"><span class="vlab">${t("board.victoryRow")}</span>`
+     + `<div class="vstack"><div class="vslots">`;
   for (let k = 0; k < 5; k++) {
     const centre = k === 2;
     if (k < pad) {
@@ -7715,11 +7725,18 @@ function renderPlayer() {
       const cls = !liveNow ? "locked" : spent ? "spent" : "ready";
       const state = liveNow ? (spent ? t("perk.spent") : t("perk.ready"))
                             : t("perk.needs", { n: needs });
-      s += `<span class="pk ${cls} d${slot}" title="${t("perk." + id)}">`
+      /* The chip is one line; the sentence lives in the tooltip, because a
+       * three-line label stretches its grid cell and drags the row out of
+       * line with the slots above it. */
+      const tip = t("perk." + id) + " \u00b7 "
+        + (liveNow ? (spent ? t("perk.spentLong") : t("perk.ready"))
+                   : t("perk.needs", { n: needs }));
+      s += `<span class="pk ${cls} d${slot}" title="${tip}">`
         + `<b>${t("perk." + id + ".name")}</b><em>${state}</em></span>`;
     }
     s += `</div>`;
   }
+  s += `</div>`;                       // close .vstack
 
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
   s += `<span class="vsum">${tn("board.cards", sorted.length)}${
