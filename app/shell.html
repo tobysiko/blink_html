@@ -87,6 +87,24 @@
   .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
     font-weight:600; color:var(--deep)}
 
+  /* Victory row perks (proposal). Five columns matching .vslots above, so a
+     perk sits under the slot that switches it on. */
+  .perkrow{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;
+           margin:.3rem 0 .1rem}
+  .pk{display:flex;flex-direction:column;align-items:center;justify-content:center;
+      border-radius:.3rem;padding:.16rem .1rem;line-height:1.15;
+      border:1px solid transparent;min-height:1.9rem}
+  .pk.none{border:none;background:none}
+  .pk b{font-size:.62rem;font-weight:600;letter-spacing:.01em}
+  .pk em{font-size:.52rem;font-style:normal;opacity:.75}
+  .pk.locked{color:var(--muted);background:var(--panel);border-color:var(--line);
+             opacity:.6}
+  .pk.ready{color:#fff}
+  .pk.ready.d1{background:#7B2018}.pk.ready.d2{background:#4A6670}
+  .pk.ready.d3{background:#5E5233}.pk.ready.d4{background:#4F5E4A}
+  .pk.spent{background:var(--panel);border-color:var(--line);color:var(--muted)}
+  .pk.spent b{text-decoration:line-through}
+
   /* play with friends */
   .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
     margin-top:22px; background:#FDFCF7}
@@ -981,6 +999,14 @@
         <option value="friends" data-i18n="setup.meldRules.friends"></option>
         <option value="both" data-i18n="setup.meldRules.both"></option>
       </select>
+    </div>
+    <div class="field">
+      <label for="perks" data-i18n="setup.perks">Victory row perks</label>
+      <select id="perks">
+        <option value="off" selected data-i18n="setup.perks.off"></option>
+        <option value="on" data-i18n="setup.perks.on"></option>
+      </select>
+      <p class="hint" id="perks-hint" data-i18n="setup.perks.note"></p>
     </div>
     <div class="field">
       <label for="grow-limits" data-i18n="setup.limits">Population limits</label>

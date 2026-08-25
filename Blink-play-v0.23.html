@@ -87,6 +87,24 @@
   .fbdone{margin:12px 0; padding:10px 12px; background:#EAF2E6; border-radius:8px;
     font-weight:600; color:var(--deep)}
 
+  /* Victory row perks (proposal). Five columns matching .vslots above, so a
+     perk sits under the slot that switches it on. */
+  .perkrow{display:grid;grid-template-columns:repeat(5,1fr);gap:.25rem;
+           margin:.3rem 0 .1rem}
+  .pk{display:flex;flex-direction:column;align-items:center;justify-content:center;
+      border-radius:.3rem;padding:.16rem .1rem;line-height:1.15;
+      border:1px solid transparent;min-height:1.9rem}
+  .pk.none{border:none;background:none}
+  .pk b{font-size:.62rem;font-weight:600;letter-spacing:.01em}
+  .pk em{font-size:.52rem;font-style:normal;opacity:.75}
+  .pk.locked{color:var(--muted);background:var(--panel);border-color:var(--line);
+             opacity:.6}
+  .pk.ready{color:#fff}
+  .pk.ready.d1{background:#7B2018}.pk.ready.d2{background:#4A6670}
+  .pk.ready.d3{background:#5E5233}.pk.ready.d4{background:#4F5E4A}
+  .pk.spent{background:var(--panel);border-color:var(--line);color:var(--muted)}
+  .pk.spent b{text-decoration:line-through}
+
   /* play with friends */
   .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
     margin-top:22px; background:#FDFCF7}
@@ -983,6 +1001,14 @@
       </select>
     </div>
     <div class="field">
+      <label for="perks" data-i18n="setup.perks">Victory row perks</label>
+      <select id="perks">
+        <option value="off" selected data-i18n="setup.perks.off"></option>
+        <option value="on" data-i18n="setup.perks.on"></option>
+      </select>
+      <p class="hint" id="perks-hint" data-i18n="setup.perks.note"></p>
+    </div>
+    <div class="field">
       <label for="grow-limits" data-i18n="setup.limits">Population limits</label>
       <select id="grow-limits">
         <option value="off" selected data-i18n="setup.limits.off"></option>
@@ -1152,7 +1178,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"8a8afd06b3","branch":"main","dirty":true,"built":"2026-08-24T17:43:31Z"};
+const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"463a640cb0","branch":"main","dirty":true,"built":"2026-08-25T15:25:26Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1232,6 +1258,22 @@ en: {
   "setup.meldRules.combo": "Combination melds — play two or more melds of 2+ cards as one",
   "setup.meldRules.friends": "Friends of 10s — any two cards summing to 10, 20 or 30",
   "setup.meldRules.both": "Both",
+  "setup.perks": "Victory row perks",
+  "setup.perks.off": "Off",
+  "setup.perks.on": "On — one perk per row slot, drawn from the seed",
+  "setup.perks.note": "(proposal \u00b7 four decks, one per slot; a perk is live while its slot holds a card)",
+  "perk.ready": "ready", "perk.spent": "spent \u2014 back on your next recycle",
+  "perk.needs": "needs {n}",
+  "perk.roads": "Roads \u2014 one extra free move",
+  "perk.roads.name": "Roads",
+  "perk.scholarship": "Scholarship \u2014 one research may buy one rank above your cap",
+  "perk.scholarship.name": "Scholarship",
+  "perk.granary": "Granary \u2014 pay one less food each recycle",
+  "perk.granary.name": "Granary",
+  "perk.coinage": "Coinage \u2014 one cashed card pays 2 gold",
+  "perk.coinage.name": "Coinage",
+  "perk.tribute": "Tribute \u2014 1 extra gold when your meld ranks last",
+  "perk.tribute.name": "Tribute",
   "setup.limits": "Population limits",
   "setup.limits.off": "Fixed — Plains 3, Forest 2, Ocean 1, Mountain 1",
   "setup.limits.grow": "Grow with your band — 2/1/1/1 at Tribe up to 3/3/2/2 at Empire",
@@ -1706,6 +1748,22 @@ de: {
   "setup.meldRules.combo": "Mehrfach-Kombinationen — zwei oder mehr Kombinationen aus je 2+ Karten zusammen ausspielen",
   "setup.meldRules.friends": "Zehnerfreunde — zwei Karten, deren Werte 10, 20 oder 30 ergeben",
   "setup.meldRules.both": "Beide",
+  "setup.perks": "Boni der Siegesreihe",
+  "setup.perks.off": "Aus",
+  "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
+  "setup.perks.note": "(Vorschlag \u00b7 vier Stapel, einer je Platz; ein Bonus wirkt, solange sein Platz eine Karte hält)",
+  "perk.ready": "bereit", "perk.spent": "verbraucht \u2014 zurück beim nächsten Nachziehen",
+  "perk.needs": "braucht {n}",
+  "perk.roads": "Wege \u2014 ein zusätzlicher freier Zug",
+  "perk.roads.name": "Wege",
+  "perk.scholarship": "Gelehrsamkeit \u2014 ein Kauf darf einen Wert über deiner Obergrenze liegen",
+  "perk.scholarship.name": "Gelehrsamkeit",
+  "perk.granary": "Kornspeicher \u2014 ein Gold weniger Nahrung je Nachziehen",
+  "perk.granary.name": "Kornspeicher",
+  "perk.coinage": "Münzprägung \u2014 eine zu Gold gemachte Karte bringt 2",
+  "perk.coinage.name": "Münzprägung",
+  "perk.tribute": "Tribut \u2014 1 Gold extra, wenn dein Satz Letzter wird",
+  "perk.tribute.name": "Tribut",
   "setup.limits": "Bevölkerungsgrenzen",
   "setup.limits.off": "Fest — Ebene 3, Wald 2, Meer 1, Gebirge 1",
   "setup.limits.grow": "Wachsen mit der Stufe — 2/1/1/1 als Stamm bis 3/3/2/2 als Imperium",
@@ -2259,6 +2317,73 @@ function setTiers(which) {
   for (let j = 0; j < BANDS.length; j++) { BANDS[j][1] = u[j]; BANDS[j][6] = c[j]; }
 }
 
+/* ---- victory row perks (PROPOSAL — see VROW-PERKS.md) ------------------
+ *
+ * A perk is live while its slot in the victory row holds a card. The row is
+ * rank-sorted and pushed RIGHT, so slot 4 needs two cards, slot 3 three, slot
+ * 2 four, and slot 1 all five — needs = 6 - slot. Slot 5 carries no perk: it
+ * fills on your first research, so anything there is a baseline everyone has
+ * rather than something earned.
+ *
+ * One deck per slot, named so they cannot be mistaken for the A/B/C effects
+ * printed on every victory card. `once` marks the perks you SPEND, which are
+ * the ones whose token turns over; the rest are rates that the recycle already
+ * governs, and their tokens stay face up all game.
+ */
+function perkSlotNeeds(slot) { return 6 - slot; }
+
+const PERKS = {
+  /* --- WONDERS, slot 1. Not yet implemented: each needs a new prompt, and a
+   * half-built prompt is worse than none. Listed so the draw is complete and
+   * the printed tokens match. */
+  coercion:     { slot: 1, deck: "wonders", name: "Coercion", once: true, todo: true },
+  displacement: { slot: 1, deck: "wonders", name: "Displacement", once: true, todo: true },
+  terracing:    { slot: 1, deck: "wonders", name: "Terracing", once: true, todo: true },
+  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true, todo: true },
+  salvage:      { slot: 1, deck: "wonders", name: "Salvage", once: true, todo: true },
+  /* --- WORKS, slot 2 */
+  roads:        { slot: 2, deck: "works", name: "Roads", once: true },
+  navigation:   { slot: 2, deck: "works", name: "Navigation", once: true, todo: true },
+  ramparts:     { slot: 2, deck: "works", name: "Ramparts", once: true, todo: true },
+  siegecraft:   { slot: 2, deck: "works", name: "Siegecraft", once: true, todo: true },
+  outposts:     { slot: 2, deck: "works", name: "Outposts", once: true, todo: true },
+  /* --- CRAFTS, slot 3 */
+  arithmetic:   { slot: 3, deck: "crafts", name: "Arithmetic", once: false, todo: true },
+  composition:  { slot: 3, deck: "crafts", name: "Composition", once: false, todo: true },
+  archaeology:  { slot: 3, deck: "crafts", name: "Archaeology", once: true, todo: true },
+  diplomacy:    { slot: 3, deck: "crafts", name: "Diplomacy", once: true, todo: true },
+  scholarship:  { slot: 3, deck: "crafts", name: "Scholarship", once: true },
+  foresight:    { slot: 3, deck: "crafts", name: "Foresight", once: true, todo: true },
+  /* --- CUSTOMS, slot 4 */
+  granary:      { slot: 4, deck: "customs", name: "Granary", once: false },
+  coinage:      { slot: 4, deck: "customs", name: "Coinage", once: true },
+  tribute:      { slot: 4, deck: "customs", name: "Tribute", once: true },
+  markets:      { slot: 4, deck: "customs", name: "Markets", once: true, todo: true },
+};
+
+const PERK_IDS = Object.keys(PERKS);
+function perksInSlot(slot, playableOnly) {
+  return PERK_IDS.filter((id) => PERKS[id].slot === slot
+    && (!playableOnly || !PERKS[id].todo));
+}
+
+/* The draw is made from the GAME's rng, so it is a pure function of the seed
+ * and replays identically on every client — the same reason the deal is. */
+function drawPerks(rng, spec) {
+  if (!spec) return null;
+  if (typeof spec === "object") {                 // an explicit set, for tests
+    const out = {};
+    for (const s of [1, 2, 3, 4]) if (spec[s] && PERKS[spec[s]]) out[s] = spec[s];
+    return Object.keys(out).length ? out : null;
+  }
+  const out = {};
+  for (const s of [1, 2, 3, 4]) {
+    const pool = perksInSlot(s, true);
+    if (pool.length) out[s] = rng.choice(pool);
+  }
+  return out;
+}
+
 /* ---- per-game tier layout ----
  *
  * A layout is just the units column: how many of your twenty (or however many)
@@ -2678,9 +2803,13 @@ class Player {
    * to the module table so every existing caller and test keeps working, and a
    * game with a custom layout hands its own in — which is what keeps one game's
    * layout out of another's. */
-  constructor(i, bands) {
+  constructor(i, bands, perks) {
     this.i = i;
     this.bands = bands || BANDS;
+    /* Like `bands`: handed in per game so one table's perks cannot leak into
+     * another's. null when the variant is off, which is the default. */
+    this.perks = perks || null;
+    this.perkSpent = {};
     this.hand = [];
     this.discard = [];
     this.gold = 0;
@@ -2699,15 +2828,47 @@ class Player {
     return this.bands.length - 1;
   }
   meldLimit() { return this.bands[this.band()][2]; }
-  rankCap() { return this.bands[this.band()][6]; }
+  rankCap() {
+    /* Scholarship buys ONE card a rank above the tier's cap, then is spent. */
+    return this.bands[this.band()][6] + (this.perkReady("scholarship") ? 1 : 0);
+  }
+
+  /* ---- perks ---------------------------------------------------------- */
+  /* Which perk, if any, this player's row is deep enough to be running. */
+  perkAt(slot) {
+    if (!this.perks) return null;
+    const id = this.perks[slot];
+    if (!id) return null;
+    return this.vrow.length >= perkSlotNeeds(slot) ? id : null;
+  }
+  hasPerk(id) {
+    const d = PERKS[id];
+    return !!(d && this.perkAt(d.slot) === id);
+  }
+  /* Live AND not yet turned over since the last recycle. */
+  perkReady(id) { return this.hasPerk(id) && !this.perkSpent[id]; }
+  spendPerk(id) {
+    if (!this.perkReady(id)) return false;
+    if (PERKS[id].once) this.perkSpent[id] = true;
+    return true;
+  }
+  /* Every token turns back face up when the hand recycles. */
+  refreshPerks() { this.perkSpent = {}; }
   ascensionDue() {
     let owed = 0;
     const j = this.band();
     while (this.reached < j) { this.reached += 1; owed += this.bands[this.reached][5]; }
     return owed;
   }
-  food() { return this.bands[this.band()][3]; }
-  freeMoves() { return this.bands[this.band()][4]; }
+  food() {
+    const f = this.bands[this.band()][3];
+    /* Granary is a rate, not a use — the recycle already governs it, so its
+     * token never turns over. */
+    return this.hasPerk("granary") ? Math.max(0, f - 1) : f;
+  }
+  freeMoves() {
+    return this.bands[this.band()][4] + (this.perkReady("roads") ? 1 : 0);
+  }
   takeUnit() {
     const j = this.band();
     if (this.reserve[j] > 0) { this.reserve[j] -= 1; return true; }
@@ -3056,7 +3217,11 @@ class Game {
      * player, so two games in one process cannot tread on each other. */
     this.BANDS = bandsFor(opts.layout);
     this.LAYOUT = opts.layout || null;
-    this.P = []; for (let i = 0; i < n; i++) this.P.push(new Player(i, this.BANDS));
+    /* Drawn from this.rng, so the perks are a function of the seed like the
+     * deal is — every client draws the same four without being told. */
+    this.PERKS = drawPerks(this.rng, opts.perks);
+    this.P = [];
+    for (let i = 0; i < n; i++) this.P.push(new Player(i, this.BANDS, this.PERKS));
     this.humans = new Set(opts.humans || []);        // seats a person plays
     /* "dock"  — classic: winner uses every card; a player who matched the
      *           winner's count sets one played card aside for 1 gold.
@@ -3458,7 +3623,13 @@ class Game {
       /* The catch-up coin, without docking anyone a card. Paid by PLACE rather
        * than by "was this the loser", so the ladder schemes can pay the middle
        * of the table too. */
-      const coins = this.consolationFor(place, ranked.length);
+      let coins = this.consolationFor(place, ranked.length);
+      /* Tribute pays on top of the usual consolation, and only to the meld
+       * that actually ranked last. */
+      if (coins > 0 && place === ranked.length - 1 && p.spendPerk("tribute")) {
+        coins += 1;
+        this.inc("perk_tribute");
+      }
       if (coins > 0) {
         p.gold += coins;
         this.inc("gold_in_lost_trick", coins);
@@ -3651,7 +3822,11 @@ class Game {
   }
 
   *_humanTurn(p, use) {
+    /* moveBase is the tier's own allowance. Roads lifts `moves` above it, and
+     * the token is spent at the moment a move is taken that the tier alone
+     * could not have paid for — not merely for holding the perk. */
     const st = { cards: use.slice(), moves: p.freeMoves(),
+                 moveBase: p.bands[p.band()][4],
                  researches: 0, bUsed: false, waterUsed: false };
     /* Refill only once the meld is fully resolved. Recycling while cards are
      * still on the table would swap the discard into hand and then take those
@@ -3677,9 +3852,11 @@ class Game {
         case "cash": {
           st.cards.splice(st.cards.indexOf(ans.card), 1);
           p.discard.push(ans.card);
-          p.gold += 1;
-          this.inc("cards_to_gold"); this.inc("gold_in_cashed");
-          this.fx("gold", { seat: p.i, amount: 1, from: "hand" });
+          const paid = p.spendPerk("coinage") ? 2 : 1;
+          p.gold += paid;
+          this.inc("cards_to_gold"); this.inc("gold_in_cashed", paid);
+          if (paid > 1) this.inc("perk_coinage");
+          this.fx("gold", { seat: p.i, amount: paid, from: "hand" });
           this.say("log.cashed", { card: ans.card.r + SUIT_LETTER[ans.card.s] });
           break;
         }
@@ -3711,6 +3888,7 @@ class Game {
             if (!this.m.doExplore(ans.dest, chosen)) break;
             this._doMove(p, ans.src, ans.dest);
             st.moves -= 1;
+            if (st.moves < st.moveBase) p.spendPerk("roads");
             this.inc("water_explore"); this.inc("water_landfall");
             this.say("log.water");
             break;
@@ -3720,6 +3898,7 @@ class Game {
           const toSea = this.m.tiles.get(ans.dest).terrain === "ocean";
           this._doMove(p, ans.src, ans.dest);
           st.moves -= 1;
+          if (st.moves < st.moveBase) p.spendPerk("roads");
           /* The water advantage (§07): your FIRST sea move each turn grants one
            * free explore of ANY terrain. It is a real choice, so it is asked. */
           if (fromSea && toSea && !st.waterUsed) {
@@ -3930,9 +4109,14 @@ class Game {
       if (p.gold < p.food() + 1) thr = 2.2;
       else if (p.gold >= 3) thr = 0.4;
       if (v < thr || p.gold < p.food()) {
-        this.inc("cash_events"); this.inc("cards_to_gold"); this.inc("gold_in_cashed");
+        /* The bot cashes here rather than through the human path, so Coinage
+         * has to be paid in both places or it only ever works for people. */
+        const paid = p.spendPerk("coinage") ? 2 : 1;
+        this.inc("cash_events"); this.inc("cards_to_gold");
+        this.inc("gold_in_cashed", paid);
+        if (paid > 1) this.inc("perk_coinage");
         if (act === "settle") this.inc("cash_gave_up_a_settle");
-        p.gold += 1;
+        p.gold += paid;
         continue;
       }
       this._resolve(p, card, cell, act);
@@ -4856,6 +5040,9 @@ class Game {
     this.inc("gold_out_food", Math.min(owed, p.gold));
     p.gold = Math.max(0, p.gold - owed);
     this.inc("recycles"); this.inc("food_paid", owed);
+    /* Every perk token turns back face up here — the one beat the board
+     * already stops play for. */
+    p.refreshPerks();
 
     /* §09: take back everything you played, then draw from the SHARED pile up
      * to ten. The pile is shuffled first, so what comes back is whatever the
@@ -5094,6 +5281,10 @@ function newSession(opts, rand) {
       /* Both of these change the board everyone is looking at, so they belong
        * to the TABLE and travel with the session — a guest whose client decided
        * these for itself would be replaying a different game. */
+      /* The perk draw is made from the seed, so every client lands on the
+       * same four — but only if they agree the variant is ON. */
+      perks: o.perks === true || (o.perks && typeof o.perks === "object")
+        ? o.perks : false,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
@@ -6087,6 +6278,7 @@ function startGame(force) {
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
+                             perks: $("#perks") && $("#perks").value === "on",
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -7506,8 +7698,31 @@ function renderPlayer() {
       s += `<span class="vslot${centre ? " centre" : ""}">${inner}</span>`;
     }
   }
+  s += `</div>`;
+
+  /* Perks sit UNDER the slot they belong to, in the same five columns, because
+   * "which slot" and "how deep is my row" are the same question and the row
+   * above is already showing the answer. Slot 5 never carries one. */
+  if (G && G.PERKS) {
+    s += `<div class="perkrow">`;
+    for (let k = 0; k < 5; k++) {
+      const slot = k + 1;
+      const id = G.PERKS[slot];
+      if (!id) { s += `<span class="pk none"></span>`; continue; }
+      const needs = perkSlotNeeds(slot);
+      const liveNow = p.vrow.length >= needs;
+      const spent = liveNow && !p.perkReady(id);
+      const cls = !liveNow ? "locked" : spent ? "spent" : "ready";
+      const state = liveNow ? (spent ? t("perk.spent") : t("perk.ready"))
+                            : t("perk.needs", { n: needs });
+      s += `<span class="pk ${cls} d${slot}" title="${t("perk." + id)}">`
+        + `<b>${t("perk." + id + ".name")}</b><em>${state}</em></span>`;
+    }
+    s += `</div>`;
+  }
+
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
-  s += `</div><span class="vsum">${tn("board.cards", sorted.length)}${
+  s += `<span class="vsum">${tn("board.cards", sorted.length)}${
     scoring !== null ? " " + t("board.centre", { r: scoring }) : ""} = <b>${
     t("board.vp", { n: sc.vrow })}</b>${
     sorted.length && sorted.length < 3
@@ -8555,6 +8770,7 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    perks: $("#perks") && $("#perks").value === "on",
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

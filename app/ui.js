@@ -234,6 +234,7 @@ function startGame(force) {
                              comboMelds: mv === "combo" || mv === "both",
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
+                             perks: $("#perks") && $("#perks").value === "on",
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -1653,8 +1654,31 @@ function renderPlayer() {
       s += `<span class="vslot${centre ? " centre" : ""}">${inner}</span>`;
     }
   }
+  s += `</div>`;
+
+  /* Perks sit UNDER the slot they belong to, in the same five columns, because
+   * "which slot" and "how deep is my row" are the same question and the row
+   * above is already showing the answer. Slot 5 never carries one. */
+  if (G && G.PERKS) {
+    s += `<div class="perkrow">`;
+    for (let k = 0; k < 5; k++) {
+      const slot = k + 1;
+      const id = G.PERKS[slot];
+      if (!id) { s += `<span class="pk none"></span>`; continue; }
+      const needs = perkSlotNeeds(slot);
+      const liveNow = p.vrow.length >= needs;
+      const spent = liveNow && !p.perkReady(id);
+      const cls = !liveNow ? "locked" : spent ? "spent" : "ready";
+      const state = liveNow ? (spent ? t("perk.spent") : t("perk.ready"))
+                            : t("perk.needs", { n: needs });
+      s += `<span class="pk ${cls} d${slot}" title="${t("perk." + id)}">`
+        + `<b>${t("perk." + id + ".name")}</b><em>${state}</em></span>`;
+    }
+    s += `</div>`;
+  }
+
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
-  s += `</div><span class="vsum">${tn("board.cards", sorted.length)}${
+  s += `<span class="vsum">${tn("board.cards", sorted.length)}${
     scoring !== null ? " " + t("board.centre", { r: scoring }) : ""} = <b>${
     t("board.vp", { n: sc.vrow })}</b>${
     sorted.length && sorted.length < 3
@@ -2702,6 +2726,7 @@ function netRules() {
     comboMelds: mv === "combo" || mv === "both",
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
+    perks: $("#perks") && $("#perks").value === "on",
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

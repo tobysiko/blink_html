@@ -86,6 +86,10 @@ function newSession(opts, rand) {
       /* Both of these change the board everyone is looking at, so they belong
        * to the TABLE and travel with the session — a guest whose client decided
        * these for itself would be replaying a different game. */
+      /* The perk draw is made from the seed, so every client lands on the
+       * same four — but only if they agree the variant is ON. */
+      perks: o.perks === true || (o.perks && typeof o.perks === "object")
+        ? o.perks : false,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
