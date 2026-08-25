@@ -108,6 +108,32 @@ for (const [slot, id, needs] of [[1, 'coercion', 5], [2, 'roads', 4],
       ok(!E.PERKS[drawn[s]].todo, `seed ${seed} drew unimplemented ${drawn[s]}`);
   }
 }
+// Pioneering relaxes the touch-two rule, and ONLY while it is live and unspent.
+// legalSpaces() is the single place that rule lives, so if this drifts, tiles
+// start landing in mid-air.
+{
+  const g = E.playOut(3, 7, { perks: { 1: 'pioneering' } });
+  const q = g.P[0];
+  q.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
+  q.refreshPerks();
+  const strict = g.m.legalSpaces(2).size;
+  const loose = g.spacesFor(q).size;
+  ok(loose > strict, `Pioneering opened ${loose - strict} new cells — expected some`);
+  q.spendPerk('pioneering');
+  ok(g.spacesFor(q).size === strict,
+     'Pioneering still relaxing the touch rule after it was spent');
+  q.refreshPerks();
+  ok(g.spacesFor(q).size === loose, 'the recycle did not restore Pioneering');
+  // and a player without it is never affected
+  const other = g.P[1];
+  other.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
+  ok(g.spacesFor(other).size === loose || !other.perks,
+     'a second holder of the same perk saw a different map');
+  const none = new E.Player(2, E.BANDS);
+  ok(g.m.legalSpaces(2).size === strict, 'the strict rule moved under us');
+  ok(!none.hasPerk('pioneering'), 'a player with no perk table has Pioneering');
+}
+
 // Every perk sits in the slot its printed token claims.
 {
   const sheetSlots = { wonders: 1, works: 2, crafts: 3, customs: 4 };

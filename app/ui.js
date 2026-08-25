@@ -1685,6 +1685,29 @@ function renderPlayer() {
   }
   s += `</div>`;                       // close .vstack
 
+  /* A chip can carry a name and a state and nothing more, and a tooltip is
+   * invisible on a touch screen — so the rules go on the page. All four are
+   * listed whether or not you have reached them, because the point of a
+   * ladder is knowing what is further up it. */
+  if (G && G.PERKS) {
+    const rows = [1, 2, 3, 4].filter((slot) => G.PERKS[slot]).map((slot) => {
+      const id = G.PERKS[slot];
+      const needs = perkSlotNeeds(slot);
+      const have = p.vrow.length;
+      const liveNow = have >= needs;
+      const spent = liveNow && !p.perkReady(id);
+      const state = !liveNow
+        ? tn("perk.away", needs - have)
+        : (spent ? t("perk.spentLong") : t("perk.ready"));
+      return `<li class="${liveNow ? (spent ? "spent" : "live") : "far"}">`
+        + `<i class="d${slot}"></i>`
+        + `<b>${t("perk." + id + ".name")}</b> `
+        + `<span>${t("perk." + id + ".rule")}</span>`
+        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state}</em></li>`;
+    }).join("");
+    s += `<ul class="perkkey">${rows}</ul>`;
+  }
+
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
   s += `<span class="vsum">${tn("board.cards", sorted.length)}${
     scoring !== null ? " " + t("board.centre", { r: scoring }) : ""} = <b>${

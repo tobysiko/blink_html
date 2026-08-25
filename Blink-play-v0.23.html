@@ -104,6 +104,25 @@
   .pk.spent{background:#F4F1EA; border-color:#DDD8CC; color:var(--mut)}
   .pk.spent b{text-decoration:line-through}
 
+  /* The perk key: every drawn perk written out, reached or not. */
+  .perkkey{list-style:none; margin:6px 0 0; padding:0; font-size:11px;
+    display:flex; flex-direction:column; gap:2px}
+  .perkkey li{display:flex; align-items:baseline; gap:5px; flex-wrap:wrap;
+    padding:2px 4px; border-radius:4px}
+  .perkkey li.far{opacity:.55}
+  .perkkey li.live{background:#F2F7EF}
+  /* Strike the NAME only. Striking the whole row makes the rule text
+     unreadable at the moment a player most wants to check it. */
+  .perkkey li.spent{opacity:.7}
+  .perkkey li.spent b{text-decoration:line-through}
+  .perkkey i{width:8px; height:8px; border-radius:2px; flex:none;
+    align-self:center}
+  .perkkey i.d1{background:#7B2018}.perkkey i.d2{background:#4A6670}
+  .perkkey i.d3{background:#5E5233}.perkkey i.d4{background:#4F5E4A}
+  .perkkey b{color:var(--deep)}
+  .perkkey span{color:var(--ink)}
+  .perkkey em{font-style:normal; color:var(--mut); font-size:10px}
+
   /* play with friends */
   .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
     margin-top:22px; background:#FDFCF7}
@@ -1185,7 +1204,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"183d9a964d","branch":"main","dirty":true,"built":"2026-08-25T15:40:37Z"};
+const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"2a7848b736","branch":"main","dirty":true,"built":"2026-08-25T20:44:31Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1272,6 +1291,16 @@ en: {
   "perk.ready": "ready", "perk.spent": "spent",
   "perk.spentLong": "spent \u2014 back on your next recycle",
   "perk.needs": "needs {n}",
+  "perk.away": "{n} more card(s)",
+  "perk.slotNeeds": "slot {slot} \u00b7 needs {n} cards",
+  "perk.roads.rule": "one extra free move",
+  "perk.scholarship.rule": "one research may buy a rank above your cap",
+  "perk.granary.rule": "pay one less food each recycle",
+  "perk.coinage.rule": "one cashed card pays 2 gold",
+  "perk.tribute.rule": "1 extra gold when your meld ranks last",
+  "perk.pioneering": "Pioneering \u2014 lay a tile touching only ONE tile, not two",
+  "perk.pioneering.name": "Pioneering",
+  "perk.pioneering.rule": "lay one tile touching only ONE tile, not two",
   "perk.roads": "Roads \u2014 one extra free move",
   "perk.roads.name": "Roads",
   "perk.scholarship": "Scholarship \u2014 one research may buy one rank above your cap",
@@ -1763,6 +1792,16 @@ de: {
   "perk.ready": "bereit", "perk.spent": "verbraucht",
   "perk.spentLong": "verbraucht \u2014 zurück beim nächsten Nachziehen",
   "perk.needs": "braucht {n}",
+  "perk.away": "noch {n} Karte(n)",
+  "perk.slotNeeds": "Platz {slot} \u00b7 braucht {n} Karten",
+  "perk.roads.rule": "ein zusätzlicher freier Zug",
+  "perk.scholarship.rule": "ein Kauf darf einen Wert über der Obergrenze liegen",
+  "perk.granary.rule": "ein Gold weniger Nahrung je Nachziehen",
+  "perk.coinage.rule": "eine zu Gold gemachte Karte bringt 2",
+  "perk.tribute.rule": "1 Gold extra, wenn dein Satz Letzter wird",
+  "perk.pioneering": "Pionierarbeit \u2014 ein Feld an nur EINEM Feld anlegen, nicht an zweien",
+  "perk.pioneering.name": "Pionierarbeit",
+  "perk.pioneering.rule": "ein Feld an nur EINEM Feld anlegen, nicht an zweien",
   "perk.roads": "Wege \u2014 ein zusätzlicher freier Zug",
   "perk.roads.name": "Wege",
   "perk.scholarship": "Gelehrsamkeit \u2014 ein Kauf darf einen Wert über deiner Obergrenze liegen",
@@ -2348,7 +2387,7 @@ const PERKS = {
   coercion:     { slot: 1, deck: "wonders", name: "Coercion", once: true, todo: true },
   displacement: { slot: 1, deck: "wonders", name: "Displacement", once: true, todo: true },
   terracing:    { slot: 1, deck: "wonders", name: "Terracing", once: true, todo: true },
-  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true, todo: true },
+  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true },
   salvage:      { slot: 1, deck: "wonders", name: "Salvage", once: true, todo: true },
   /* --- WORKS, slot 2 */
   roads:        { slot: 2, deck: "works", name: "Roads", once: true },
@@ -2671,7 +2710,12 @@ class GameMap {
     return t;
   }
 
-  legalSpaces() {                       // empty slots touching >= 2 tiles (§06)
+  /* Empty slots touching >= minTouch tiles. Two is the printed rule (§06);
+   * the Pioneering perk lowers it to one for the player who holds it, which
+   * is why this is a parameter and not a constant. Everything goes through
+   * here, so there is one place the rule can be relaxed. */
+  legalSpaces(minTouch) {
+    const need = minTouch || 2;
     const cand = new Set();
     for (const t of this.tiles.values())
       for (const s of t.emptySlots()) cand.add(K(s[0], s[1]));
@@ -2680,9 +2724,16 @@ class GameMap {
       const [c, r] = unK(k);
       let n = 0;
       for (const nk of nbrKeys(c, r)) if (this.tiles.has(nk)) n++;
-      if (n >= 2) out.add(k);
+      if (n >= need) out.add(k);
     }
     return out;
+  }
+  /* How many placed tiles a cell touches — the number Pioneering is about. */
+  touchCount(k) {
+    const [c, r] = unK(k);
+    let n = 0;
+    for (const nk of nbrKeys(c, r)) if (this.tiles.has(nk)) n++;
+    return n;
   }
 
   tileAvailable(suit) { return this.supply[suit] > 0; }
@@ -3762,8 +3813,19 @@ class Game {
     return false;
   }
 
+  /* The spaces THIS player may lay a tile on. Pioneering drops the touch
+   * requirement to one; everyone else gets the printed two. */
+  spacesFor(p) {
+    return this.m.legalSpaces(p && p.perkReady("pioneering") ? 1 : 2);
+  }
+  /* Laying on a one-touch cell is the whole perk, so that is when the token
+   * turns over — not merely for holding it. */
+  _payPioneering(p) {
+    if (p && p.spendPerk("pioneering")) this.inc("perk_pioneering");
+  }
+
   turnOptions(p, st) {
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     const exempt = this.m.civ(p.i).size === 0;            // re-entry rule (§06)
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                              : reach(this.m, p.i);
@@ -4088,7 +4150,7 @@ class Game {
     const todo = cards.slice();
     while (todo.length) {
       const exempt = this.m.civ(p.i).size === 0;      // re-entry rule (§06)
-      const spaces = this.m.legalSpaces();
+      const spaces = this.spacesFor(p);
       const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                                : reach(this.m, p.i);
 
@@ -4136,8 +4198,11 @@ class Game {
     this.inc("cards_resolved");
     if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
     if (act === "explore") {
+      /* Read the touch count BEFORE the tile lands, or it counts itself. */
+      const lone = this.m.touchCount(cell) < 2;
       if (this.m.doExplore(cell, card.s)) {
         this.inc("explore");
+        if (lone) this._payPioneering(p);
         this.fx("tile", { seat: p.i, to: cell });
       }
       else { p.gold += 1; this.inc("cards_to_gold"); }
@@ -4737,7 +4802,7 @@ class Game {
     const t = this.m.tiles.get(srcKey);
     if (!t || t.terrain !== "ocean") return [];
     if (!TER.some((x) => this.m.supply[x] > 0)) return [];
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     const water = this.seaGroup(srcKey);       // includes srcKey
     const out = [];
@@ -4819,7 +4884,7 @@ class Game {
    * move will pay requires, since the destination only becomes yours once the
    * unit has moved. */
   exploreCells(p, civ) {
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     if (!civ) {
       const rr = reach(this.m, p.i);
@@ -7737,6 +7802,29 @@ function renderPlayer() {
     s += `</div>`;
   }
   s += `</div>`;                       // close .vstack
+
+  /* A chip can carry a name and a state and nothing more, and a tooltip is
+   * invisible on a touch screen — so the rules go on the page. All four are
+   * listed whether or not you have reached them, because the point of a
+   * ladder is knowing what is further up it. */
+  if (G && G.PERKS) {
+    const rows = [1, 2, 3, 4].filter((slot) => G.PERKS[slot]).map((slot) => {
+      const id = G.PERKS[slot];
+      const needs = perkSlotNeeds(slot);
+      const have = p.vrow.length;
+      const liveNow = have >= needs;
+      const spent = liveNow && !p.perkReady(id);
+      const state = !liveNow
+        ? tn("perk.away", needs - have)
+        : (spent ? t("perk.spentLong") : t("perk.ready"));
+      return `<li class="${liveNow ? (spent ? "spent" : "live") : "far"}">`
+        + `<i class="d${slot}"></i>`
+        + `<b>${t("perk." + id + ".name")}</b> `
+        + `<span>${t("perk." + id + ".rule")}</span>`
+        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state}</em></li>`;
+    }).join("");
+    s += `<ul class="perkkey">${rows}</ul>`;
+  }
 
   const scoring = sorted.length >= 3 ? sorted[sorted.length - 3].r : null;
   s += `<span class="vsum">${tn("board.cards", sorted.length)}${

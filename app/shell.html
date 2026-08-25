@@ -104,6 +104,25 @@
   .pk.spent{background:#F4F1EA; border-color:#DDD8CC; color:var(--mut)}
   .pk.spent b{text-decoration:line-through}
 
+  /* The perk key: every drawn perk written out, reached or not. */
+  .perkkey{list-style:none; margin:6px 0 0; padding:0; font-size:11px;
+    display:flex; flex-direction:column; gap:2px}
+  .perkkey li{display:flex; align-items:baseline; gap:5px; flex-wrap:wrap;
+    padding:2px 4px; border-radius:4px}
+  .perkkey li.far{opacity:.55}
+  .perkkey li.live{background:#F2F7EF}
+  /* Strike the NAME only. Striking the whole row makes the rule text
+     unreadable at the moment a player most wants to check it. */
+  .perkkey li.spent{opacity:.7}
+  .perkkey li.spent b{text-decoration:line-through}
+  .perkkey i{width:8px; height:8px; border-radius:2px; flex:none;
+    align-self:center}
+  .perkkey i.d1{background:#7B2018}.perkkey i.d2{background:#4A6670}
+  .perkkey i.d3{background:#5E5233}.perkkey i.d4{background:#4F5E4A}
+  .perkkey b{color:var(--deep)}
+  .perkkey span{color:var(--ink)}
+  .perkkey em{font-style:normal; color:var(--mut); font-size:10px}
+
   /* play with friends */
   .remote{border:1px solid var(--line); border-radius:10px; padding:14px;
     margin-top:22px; background:#FDFCF7}

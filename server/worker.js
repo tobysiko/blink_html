@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-25T15:40:38Z
+ * Built 2026-08-25T20:44:32Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -147,7 +147,7 @@ const PERKS = {
   coercion:     { slot: 1, deck: "wonders", name: "Coercion", once: true, todo: true },
   displacement: { slot: 1, deck: "wonders", name: "Displacement", once: true, todo: true },
   terracing:    { slot: 1, deck: "wonders", name: "Terracing", once: true, todo: true },
-  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true, todo: true },
+  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true },
   salvage:      { slot: 1, deck: "wonders", name: "Salvage", once: true, todo: true },
   /* --- WORKS, slot 2 */
   roads:        { slot: 2, deck: "works", name: "Roads", once: true },
@@ -470,7 +470,12 @@ class GameMap {
     return t;
   }
 
-  legalSpaces() {                       // empty slots touching >= 2 tiles (§06)
+  /* Empty slots touching >= minTouch tiles. Two is the printed rule (§06);
+   * the Pioneering perk lowers it to one for the player who holds it, which
+   * is why this is a parameter and not a constant. Everything goes through
+   * here, so there is one place the rule can be relaxed. */
+  legalSpaces(minTouch) {
+    const need = minTouch || 2;
     const cand = new Set();
     for (const t of this.tiles.values())
       for (const s of t.emptySlots()) cand.add(K(s[0], s[1]));
@@ -479,9 +484,16 @@ class GameMap {
       const [c, r] = unK(k);
       let n = 0;
       for (const nk of nbrKeys(c, r)) if (this.tiles.has(nk)) n++;
-      if (n >= 2) out.add(k);
+      if (n >= need) out.add(k);
     }
     return out;
+  }
+  /* How many placed tiles a cell touches — the number Pioneering is about. */
+  touchCount(k) {
+    const [c, r] = unK(k);
+    let n = 0;
+    for (const nk of nbrKeys(c, r)) if (this.tiles.has(nk)) n++;
+    return n;
   }
 
   tileAvailable(suit) { return this.supply[suit] > 0; }
@@ -1561,8 +1573,19 @@ class Game {
     return false;
   }
 
+  /* The spaces THIS player may lay a tile on. Pioneering drops the touch
+   * requirement to one; everyone else gets the printed two. */
+  spacesFor(p) {
+    return this.m.legalSpaces(p && p.perkReady("pioneering") ? 1 : 2);
+  }
+  /* Laying on a one-touch cell is the whole perk, so that is when the token
+   * turns over — not merely for holding it. */
+  _payPioneering(p) {
+    if (p && p.spendPerk("pioneering")) this.inc("perk_pioneering");
+  }
+
   turnOptions(p, st) {
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     const exempt = this.m.civ(p.i).size === 0;            // re-entry rule (§06)
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                              : reach(this.m, p.i);
@@ -1887,7 +1910,7 @@ class Game {
     const todo = cards.slice();
     while (todo.length) {
       const exempt = this.m.civ(p.i).size === 0;      // re-entry rule (§06)
-      const spaces = this.m.legalSpaces();
+      const spaces = this.spacesFor(p);
       const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
                                : reach(this.m, p.i);
 
@@ -1935,8 +1958,11 @@ class Game {
     this.inc("cards_resolved");
     if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
     if (act === "explore") {
+      /* Read the touch count BEFORE the tile lands, or it counts itself. */
+      const lone = this.m.touchCount(cell) < 2;
       if (this.m.doExplore(cell, card.s)) {
         this.inc("explore");
+        if (lone) this._payPioneering(p);
         this.fx("tile", { seat: p.i, to: cell });
       }
       else { p.gold += 1; this.inc("cards_to_gold"); }
@@ -2536,7 +2562,7 @@ class Game {
     const t = this.m.tiles.get(srcKey);
     if (!t || t.terrain !== "ocean") return [];
     if (!TER.some((x) => this.m.supply[x] > 0)) return [];
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     const water = this.seaGroup(srcKey);       // includes srcKey
     const out = [];
@@ -2618,7 +2644,7 @@ class Game {
    * move will pay requires, since the destination only becomes yours once the
    * unit has moved. */
   exploreCells(p, civ) {
-    const spaces = this.m.legalSpaces();
+    const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     if (!civ) {
       const rr = reach(this.m, p.i);
