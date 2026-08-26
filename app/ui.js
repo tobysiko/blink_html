@@ -79,7 +79,7 @@ let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
-           waterCell: null, colonyCell: null };
+           waterCell: null, colonyCell: null, perk: null };
 }
 
 const $ = (s) => document.querySelector(s);
@@ -1660,28 +1660,39 @@ function renderPlayer() {
   /* Perks sit UNDER the slot they belong to, in the same five columns, because
    * "which slot" and "how deep is my row" are the same question and the row
    * above is already showing the answer. Slot 5 never carries one. */
-  if (G && G.PERKS) {
+  if (p.perks) {
+    const open = !p.perksLocked();
     s += `<div class="perkrow">`;
     for (let k = 0; k < 5; k++) {
       const slot = k + 1;
-      const id = G.PERKS[slot];
-      if (!id) { s += `<span class="pk none"></span>`; continue; }
+      const id = p.perks[slot];
       const needs = perkSlotNeeds(slot);
+      if (!id) {
+        /* An empty slot is a drop target while the arrangement is open. */
+        s += open
+          ? `<button class="pk empty" data-slot="${slot}" title="${
+              t("perk.putHere", { n: needs })}">${t("perk.needs", { n: needs })}</button>`
+          : `<span class="pk none"></span>`;
+        continue;
+      }
       const liveNow = p.vrow.length >= needs;
       const spent = liveNow && !p.perkReady(id);
       const cls = !liveNow ? "locked" : spent ? "spent" : "ready";
       const state = liveNow ? (spent ? t("perk.spent") : t("perk.ready"))
                             : t("perk.needs", { n: needs });
-      /* The chip is one line; the sentence lives in the tooltip, because a
-       * three-line label stretches its grid cell and drags the row out of
-       * line with the slots above it. */
       const tip = t("perk." + id) + " \u00b7 "
         + (liveNow ? (spent ? t("perk.spentLong") : t("perk.ready"))
                    : t("perk.needs", { n: needs }));
-      s += `<span class="pk ${cls} d${slot}" title="${tip}">`
-        + `<b>${t("perk." + id + ".name")}</b><em>${state}</em></span>`;
+      const picked = SEL.perk === id ? " pick" : "";
+      const body = `<b>${t("perk." + id + ".name")}</b><em>${state}</em>`;
+      s += open
+        ? `<button class="pk ${cls}${picked} dk-${PERKS[id].deck}" `
+          + `data-perk="${id}" data-slot="${slot}" title="${tip}">${body}</button>`
+        : `<span class="pk ${cls} dk-${PERKS[id].deck}" title="${tip}">${body}</span>`;
     }
     s += `</div>`;
+    if (open) s += `<div class="perkhint">${
+      SEL.perk ? t("perk.nowPick") : t("perk.arrange")}</div>`;
   }
   s += `</div>`;                       // close .vstack
 
@@ -1689,9 +1700,9 @@ function renderPlayer() {
    * invisible on a touch screen — so the rules go on the page. All four are
    * listed whether or not you have reached them, because the point of a
    * ladder is knowing what is further up it. */
-  if (G && G.PERKS) {
-    const rows = [1, 2, 3, 4].filter((slot) => G.PERKS[slot]).map((slot) => {
-      const id = G.PERKS[slot];
+  if (p.perks) {
+    const rows = [1, 2, 3, 4, 5].filter((slot) => p.perks[slot]).map((slot) => {
+      const id = p.perks[slot];
       const needs = perkSlotNeeds(slot);
       const have = p.vrow.length;
       const liveNow = have >= needs;
@@ -1700,7 +1711,7 @@ function renderPlayer() {
         ? tn("perk.away", needs - have)
         : (spent ? t("perk.spentLong") : t("perk.ready"));
       return `<li class="${liveNow ? (spent ? "spent" : "live") : "far"}">`
-        + `<i class="d${slot}"></i>`
+        + `<i class="dk-${PERKS[id].deck}"></i>`
         + `<b>${t("perk." + id + ".name")}</b> `
         + `<span>${t("perk." + id + ".rule")}</span>`
         + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state}</em></li>`;
@@ -1742,6 +1753,23 @@ function renderPlayer() {
   }).join("") || `<span class="muted small">${t("board.handEmpty")}</span>`;
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
+  /* Arranging the perks: pick one up, then pick the slot it goes in. Two taps
+   * rather than a drag, because this has to work on a phone. The arrangement
+   * locks itself the moment the row holds a card, so this only ever fires
+   * before the first research. */
+  $("#player").querySelectorAll(".perkrow [data-slot]").forEach((n) =>
+    n.addEventListener("click", () => {
+      const me = G.P[ME];
+      if (me.perksLocked()) return;
+      const slot = Number(n.dataset.slot);
+      const here = n.dataset.perk || null;
+      if (!SEL.perk) { SEL.perk = here; render(); return; }   // pick up
+      if (SEL.perk === here) { SEL.perk = null; render(); return; }  // put back
+      me.assignPerk(SEL.perk, slot);
+      SEL.perk = null;
+      render();
+    }));
+
   $("#player").querySelectorAll("[data-row]").forEach((n) =>
     n.addEventListener("click", () => {
       const c = G.P[ME].vrow[Number(n.dataset.row)];

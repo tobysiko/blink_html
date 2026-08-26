@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-25T20:44:32Z
+ * Built 2026-08-26T19:49:46Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -127,68 +127,94 @@ function setTiers(which) {
 
 /* ---- victory row perks (PROPOSAL — see VROW-PERKS.md) ------------------
  *
- * A perk is live while its slot in the victory row holds a card. The row is
- * rank-sorted and pushed RIGHT, so slot 4 needs two cards, slot 3 three, slot
- * 2 four, and slot 1 all five — needs = 6 - slot. Slot 5 carries no perk: it
- * fills on your first research, so anything there is a baseline everyone has
- * rather than something earned.
+ * A perk is live while the slot it is ASSIGNED to holds a card. The row is
+ * rank-sorted and pushed right, so slot 5 needs one card, slot 4 two, slot 3
+ * three, slot 2 four and slot 1 all five — needs = 6 - slot.
  *
- * One deck per slot, named so they cannot be mistaken for the A/B/C effects
- * printed on every victory card. `once` marks the perks you SPEND, which are
- * the ones whose token turns over; the rest are rates that the recycle already
- * governs, and their tokens stay face up all game.
+ * Every perk is equal in standing. Players are dealt a few and choose which
+ * slot each goes in, permanently, before their row has anything in it. The
+ * slot IS the bet: an easy slot works almost at once, a deep slot means
+ * holding a row you must not spend down.
+ *
+ * There is no power tiering by slot, and there was: it put the weakest perks
+ * in the only reachable slot, so the perks a player could actually get were
+ * the dull ones. It is unnecessary as well as harmful, because the row already
+ * prices its perks — spending a victory card on A/B/C removes it from the row,
+ * so anyone who values their perks spends fewer effects to keep them running.
+ * Measured at 4 players, about three effect spends a game would each switch a
+ * perk off (app/perkcost.js). Strong perks pay for themselves.
+ *
+ * `deck` survives as flavour only — a name and a colour, not a slot.
  */
 function perkSlotNeeds(slot) { return 6 - slot; }
+const PERK_SLOTS = [1, 2, 3, 4, 5];
 
 const PERKS = {
-  /* --- WONDERS, slot 1. Not yet implemented: each needs a new prompt, and a
-   * half-built prompt is worse than none. Listed so the draw is complete and
-   * the printed tokens match. */
-  coercion:     { slot: 1, deck: "wonders", name: "Coercion", once: true, todo: true },
-  displacement: { slot: 1, deck: "wonders", name: "Displacement", once: true, todo: true },
-  terracing:    { slot: 1, deck: "wonders", name: "Terracing", once: true, todo: true },
-  pioneering:   { slot: 1, deck: "wonders", name: "Pioneering", once: true },
-  salvage:      { slot: 1, deck: "wonders", name: "Salvage", once: true, todo: true },
-  /* --- WORKS, slot 2 */
-  roads:        { slot: 2, deck: "works", name: "Roads", once: true },
-  navigation:   { slot: 2, deck: "works", name: "Navigation", once: true, todo: true },
-  ramparts:     { slot: 2, deck: "works", name: "Ramparts", once: true, todo: true },
-  siegecraft:   { slot: 2, deck: "works", name: "Siegecraft", once: true, todo: true },
-  outposts:     { slot: 2, deck: "works", name: "Outposts", once: true, todo: true },
-  /* --- CRAFTS, slot 3 */
-  arithmetic:   { slot: 3, deck: "crafts", name: "Arithmetic", once: false, todo: true },
-  composition:  { slot: 3, deck: "crafts", name: "Composition", once: false, todo: true },
-  archaeology:  { slot: 3, deck: "crafts", name: "Archaeology", once: true, todo: true },
-  diplomacy:    { slot: 3, deck: "crafts", name: "Diplomacy", once: true, todo: true },
-  scholarship:  { slot: 3, deck: "crafts", name: "Scholarship", once: true },
-  foresight:    { slot: 3, deck: "crafts", name: "Foresight", once: true, todo: true },
-  /* --- CUSTOMS, slot 4 */
-  granary:      { slot: 4, deck: "customs", name: "Granary", once: false },
-  coinage:      { slot: 4, deck: "customs", name: "Coinage", once: true },
-  tribute:      { slot: 4, deck: "customs", name: "Tribute", once: true },
-  markets:      { slot: 4, deck: "customs", name: "Markets", once: true, todo: true },
+  /* Not yet implemented: each needs a new prompt, and a half-built prompt is
+   * worse than none. Listed so the printed tokens and the code agree. */
+  coercion:     { deck: "wonders", name: "Coercion", once: true, todo: true },
+  displacement: { deck: "wonders", name: "Displacement", once: true, todo: true },
+  terracing:    { deck: "wonders", name: "Terracing", once: true, todo: true },
+  pioneering:   { deck: "wonders", name: "Pioneering", once: true },
+  salvage:      { deck: "wonders", name: "Salvage", once: true, todo: true },
+  roads:        { deck: "works", name: "Roads", once: true },
+  navigation:   { deck: "works", name: "Navigation", once: true, todo: true },
+  ramparts:     { deck: "works", name: "Ramparts", once: true, todo: true },
+  siegecraft:   { deck: "works", name: "Siegecraft", once: true, todo: true },
+  outposts:     { deck: "works", name: "Outposts", once: true, todo: true },
+  arithmetic:   { deck: "crafts", name: "Arithmetic", once: false, todo: true },
+  composition:  { deck: "crafts", name: "Composition", once: false, todo: true },
+  archaeology:  { deck: "crafts", name: "Archaeology", once: true, todo: true },
+  diplomacy:    { deck: "crafts", name: "Diplomacy", once: true, todo: true },
+  scholarship:  { deck: "crafts", name: "Scholarship", once: true },
+  foresight:    { deck: "crafts", name: "Foresight", once: true, todo: true },
+  granary:      { deck: "customs", name: "Granary", once: false },
+  coinage:      { deck: "customs", name: "Coinage", once: true },
+  tribute:      { deck: "customs", name: "Tribute", once: true },
+  markets:      { deck: "customs", name: "Markets", once: true, todo: true },
 };
 
 const PERK_IDS = Object.keys(PERKS);
-function perksInSlot(slot, playableOnly) {
-  return PERK_IDS.filter((id) => PERKS[id].slot === slot
-    && (!playableOnly || !PERKS[id].todo));
+/* One flat pool. Only what is actually wired goes in the bag. */
+function playablePerks() { return PERK_IDS.filter((id) => !PERKS[id].todo); }
+
+/* How many each player gets. Three against five slots is a choice of which
+ * slots to use as well as which perk goes where. */
+const PERK_DEAL = 3;
+
+/* Dealt from the GAME's rng, so the whole table is a pure function of the seed
+ * and replays identically on every client — the same reason the cards are.
+ * Every player is dealt from the same shuffled pool, so no two hold the same
+ * perk unless the pool is smaller than the table needs. */
+function dealPerks(rng, n, spec) {
+  if (!spec) return null;
+  if (typeof spec === "object" && !Array.isArray(spec)) {
+    /* An explicit table: { 0: {slot: id, ...}, 1: {...} } — for tests and for
+     * pinning a playtest to a known set. */
+    const out = [];
+    for (let i = 0; i < n; i++) out.push(spec[i] || {});
+    return out;
+  }
+  const pool = playablePerks();
+  rng.shuffle(pool);
+  /* EVERY player gets the same number. One token of each exists, so with a
+   * small pool the deal shrinks rather than leaving the last seat empty —
+   * which is what happened the first time this was written, and it is the kind
+   * of unfairness nobody would notice until the game after next. */
+  const per = Math.min(PERK_DEAL, Math.floor(pool.length / n));
+  const out = [];
+  for (let i = 0; i < n; i++) out.push(pool.slice(i * per, (i + 1) * per));
+  return out;
 }
 
-/* The draw is made from the GAME's rng, so it is a pure function of the seed
- * and replays identically on every client — the same reason the deal is. */
-function drawPerks(rng, spec) {
-  if (!spec) return null;
-  if (typeof spec === "object") {                 // an explicit set, for tests
-    const out = {};
-    for (const s of [1, 2, 3, 4]) if (spec[s] && PERKS[spec[s]]) out[s] = spec[s];
-    return Object.keys(out).length ? out : null;
-  }
+/* The opening assignment, used for bots and as the starting arrangement a
+ * person may rearrange. Easiest slots first — 5, 4, 3 — because that is what
+ * the measurements say is reachable, and a bot that buried a perk in slot 1
+ * would simply never use it. */
+function defaultAssign(ids) {
   const out = {};
-  for (const s of [1, 2, 3, 4]) {
-    const pool = perksInSlot(s, true);
-    if (pool.length) out[s] = rng.choice(pool);
-  }
+  const order = [5, 4, 3, 2, 1];
+  ids.forEach((id, k) => { if (order[k]) out[order[k]] = id; });
   return out;
 }
 
@@ -623,12 +649,23 @@ class Player {
    * to the module table so every existing caller and test keeps working, and a
    * game with a custom layout hands its own in — which is what keeps one game's
    * layout out of another's. */
-  constructor(i, bands, perks) {
+  constructor(i, bands, dealt) {
     this.i = i;
     this.bands = bands || BANDS;
     /* Like `bands`: handed in per game so one table's perks cannot leak into
-     * another's. null when the variant is off, which is the default. */
-    this.perks = perks || null;
+     * another's. null when the variant is off, which is the default.
+     *
+     * `dealt` may be a list of perk ids (deal them and take the opening
+     * arrangement) or an explicit {slot: id} map (a pinned playtest).
+     */
+    if (!dealt) { this.dealt = null; this.perks = null; }
+    else if (Array.isArray(dealt)) {
+      this.dealt = dealt.slice();
+      this.perks = defaultAssign(this.dealt);
+    } else {
+      this.perks = Object.assign({}, dealt);
+      this.dealt = PERK_SLOTS.map((s) => this.perks[s]).filter(Boolean);
+    }
     this.perkSpent = {};
     this.hand = [];
     this.discard = [];
@@ -661,9 +698,30 @@ class Player {
     if (!id) return null;
     return this.vrow.length >= perkSlotNeeds(slot) ? id : null;
   }
+  slotOf(id) {
+    if (!this.perks) return null;
+    for (const s of PERK_SLOTS) if (this.perks[s] === id) return s;
+    return null;
+  }
   hasPerk(id) {
-    const d = PERKS[id];
-    return !!(d && this.perkAt(d.slot) === id);
+    const s = this.slotOf(id);
+    return s !== null && this.perkAt(s) === id;
+  }
+  /* Assignment is PERMANENT, and "permanent" has to start somewhere: the row
+   * is where a perk lives, so the arrangement locks the moment the row has
+   * anything in it. Before that a player may rearrange freely, which is the
+   * whole point — they are betting on which perks they want early. */
+  perksLocked() { return !!(this.perks && this.vrow.length > 0); }
+  assignPerk(id, slot) {
+    if (!this.perks || this.perksLocked()) return false;
+    if (!this.dealt.includes(id) || !PERK_SLOTS.includes(slot)) return false;
+    const was = this.slotOf(id);
+    const other = this.perks[slot];
+    if (was !== null) delete this.perks[was];
+    if (other && was !== null) this.perks[was] = other;   // swap, never lose one
+    else if (other) delete this.perks[slot];
+    this.perks[slot] = id;
+    return true;
   }
   /* Live AND not yet turned over since the last recycle. */
   perkReady(id) { return this.hasPerk(id) && !this.perkSpent[id]; }
@@ -1037,11 +1095,14 @@ class Game {
      * player, so two games in one process cannot tread on each other. */
     this.BANDS = bandsFor(opts.layout);
     this.LAYOUT = opts.layout || null;
-    /* Drawn from this.rng, so the perks are a function of the seed like the
-     * deal is — every client draws the same four without being told. */
-    this.PERKS = drawPerks(this.rng, opts.perks);
+    /* Dealt from this.rng, so the whole table is a function of the seed like
+     * the cards are — every client deals the same hands without being told. */
+    this.PERK_DEAL = dealPerks(this.rng, n, opts.perks);
     this.P = [];
-    for (let i = 0; i < n; i++) this.P.push(new Player(i, this.BANDS, this.PERKS));
+    for (let i = 0; i < n; i++) {
+      const dealt = this.PERK_DEAL ? this.PERK_DEAL[i] : null;
+      this.P.push(new Player(i, this.BANDS, dealt));
+    }
     this.humans = new Set(opts.humans || []);        // seats a person plays
     /* "dock"  — classic: winner uses every card; a player who matched the
      *           winner's count sets one played card aside for 1 gold.

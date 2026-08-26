@@ -26,12 +26,15 @@ from version import VTAG
 INK, SOFT, FAINT = "#2A2E2B", "#6B6F68", "#B9B4A8"
 PAPER, PANEL, LINE = "#FBFAF6", "#EFECE3", "#CDC7B8"
 
-# One accent per deck, so a spread of tokens sorts itself by eye.
+# One accent per deck, so a spread of tokens sorts itself by eye. The deck is
+# FLAVOUR ONLY now — it used to name a slot, and that was wrong twice over: it
+# put the weakest perks in the only reachable slot, and it took the choice of
+# where to put a perk away from the player who owns it.
 DECKS = {
-    "WONDERS": ("#7B2018", "slot 1", "five cards in the row"),
-    "WORKS":   ("#4A6670", "slot 2", "four cards in the row"),
-    "CRAFTS":  ("#5E5233", "slot 3", "three cards in the row"),
-    "CUSTOMS": ("#4F5E4A", "slot 4", "two cards in the row"),
+    "WONDERS": "#7B2018",
+    "WORKS":   "#4A6670",
+    "CRAFTS":  "#5E5233",
+    "CUSTOMS": "#4F5E4A",
 }
 
 # (deck, name, rule). Kept short on purpose: the token carries one line and the
@@ -53,7 +56,7 @@ PERKS = [
      "Take the card set aside against you into your hand, and discard one of "
      "yours to the shared pile instead."),
     # --- WORKS: map-facing, solid
-    ("WORKS", "Roads", "One extra free move each turn."),
+    ("WORKS", "Roads", "One extra free move."),
     ("WORKS", "Navigation",
      "Your water advantage triggers on EVERY sea move, not only the first."),
     ("WORKS", "Ramparts",
@@ -149,14 +152,14 @@ body {{ margin: 0; background: {PAPER}; color: {INK};
 
 
 def token(deck, name, rule):
-    accent, slot, needs = DECKS[deck]
+    accent = DECKS[deck]
     return f"""<div class="tok">
   <div class="face up">
     <div class="bar" style="background:{accent}"></div>
-    <div class="deck" style="color:{accent}">{deck}<span class="slot">{slot}</span></div>
+    <div class="deck" style="color:{accent}">{deck}</div>
     <div class="name">{name}</div>
     <div class="rule">{rule}</div>
-    <div class="foot">READY &middot; needs {needs}</div>
+    <div class="foot">READY &middot; put me on any slot</div>
   </div>
   <div class="fold"></div>
   <div class="face dn">
@@ -185,13 +188,14 @@ def build():
     head = f"""<div class="head">
   <div class="warn">PROPOSAL &middot; UNTESTED &middot; NOT PART OF THE GAME</div>
   <h1>Victory row perks</h1>
-  <p>One deck per victory row slot. A perk is live while its slot holds a card:
-  <b>CUSTOMS</b> needs two cards in your row, <b>CRAFTS</b> three,
-  <b>WORKS</b> four, <b>WONDERS</b> all five. Deal one token per slot face up at
-  setup, shared by everyone. Spend a perk by turning its token over; turn every
-  token back when your hand recycles.
-  <b>WONDERS</b> may be spent twice between recycles if the card in slot 1 is
-  rank 11 or higher.<br>
+  <p>Shuffle the tokens and <b>deal three to each player</b>. Put each of yours
+  on any one slot of your victory row, face up &mdash; your choice, and it is
+  <b>permanent</b> once a card reaches the row. A perk is live while the slot
+  you put it on holds a card, so the leftmost slot needs all five cards and the
+  rightmost needs one: <b>the slot is the bet</b>. Spend a perk by turning its
+  token over; turn every token back when your hand recycles.<br>
+  The decks are flavour: every perk is equal, and any perk may go on any
+  slot.<br>
   <b>Cutting:</b> the dashed rectangles are cuts. The dotted line down the
   middle of each token, marked with a triangle at each end, is a
   <b>fold</b> &mdash; fold it backwards so both printed faces end up outside,

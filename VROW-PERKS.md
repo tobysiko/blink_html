@@ -94,7 +94,68 @@ card would feed itself. None below do.
 
 ---
 
-## 4. The four decks
+## 3b. The row prices its own perks — which is why tiering is unnecessary
+
+Spending a victory card on A/B/C removes it from the row. So a player who likes
+their perks will spend fewer effects, to keep the row deep enough to run them.
+That is a brake nobody has to design, and `node app/perkcost.js` shows it is a
+large one:
+
+| | effects spent / player | spends that would switch a perk OFF: needs 2 / 3 / 4 / 5 |
+|---|---|---|
+| 2p | 11.63 | 0.06 / 3.95 / 5.59 / 2.02 |
+| 3p | 9.56 | 0.21 / 3.55 / 4.46 / 1.33 |
+| 4p | 7.38 | 0.46 / 3.03 / 3.13 / 0.73 |
+
+Effects are spent **seven to twelve times a game**, and around **three of those
+spends** would each cost the player a perk needing three or four cards. So a
+player holding perks they value faces that decision three times a game, and the
+better the perks, the more effects they forgo. **Strong perks pay for
+themselves.** Tiering power by slot is solving a problem the game already
+solves, twice over — and it does active harm, because putting the weakest perks
+in the only reachable slot means the perks a player can actually get are the
+boring ones, which defeats the entire premise of making the row worth filling.
+
+### Correction: the case against free assignment was measured wrong
+
+An earlier draft of this note argued that free assignment collapses, because a
+perk in slot 4 fires ~2.3 times a game and the same perk in slot 1 fires once in
+a hundred. Those numbers are real but they are **a lower bound taken under the
+wrong incentives**. They come from bots that dump effects freely, because in
+their world the row does nothing but score at the end. That is precisely the
+behaviour perks exist to change.
+
+Sampling depth at every turn rather than every recycle does not rescue the deep
+slots either — 8.4 / 3.5 / 0.4 / 0.03 turns for slots 4 / 3 / 2 / 1 — but that
+is the same bots making the same free spends. **The post-perk equilibrium cannot
+be measured with players who have no reason to hold cards.** It has to be
+played.
+
+That is twice in this note that bot behaviour has produced a confident wrong
+conclusion. Worth remembering before the next one.
+
+## 4. Equal perks, dealt to players, assigned by them
+
+**The model:** every perk is equal in standing. Each player is dealt a few and
+assigns each to a slot on their own victory row, permanently, at setup.
+
+- **The slot is the bet.** An easy slot means the perk works almost at once; a
+  deep slot means holding a row you must not spend down. The measurements above
+  say the deep end is expensive — that is the point. It is a commitment, not a
+  worse option.
+- **Agency beats curation.** A player who arranges their own perks is invested
+  in them. A player handed a fixed ladder of someone else's ordering is not, and
+  if the reachable rungs are dull they will ignore the whole system.
+- **Variance wants a draft.** Blink already opens with one — keep 4, pass 6;
+  keep 6, pass 4 — so dealing perks and passing would sit inside a ritual the
+  table already performs, and turn a random hand into a decision.
+
+**What this costs.** The four decks below stop being structure and become
+flavour at most, since their whole job was tiering power by slot depth. The
+printed tokens carry "slot 1", "slot 2" and so on; under free assignment those
+labels are wrong and the sheet needs a reprint without them.
+
+## 4b. The four decks (superseded — kept for the perk list)
 
 One deck per slot, named so they cannot be confused with the **A / B / C** effects
 printed on every victory card:

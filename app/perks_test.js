@@ -1,49 +1,109 @@
-/* Victory row perks — the framework and the perks that are actually wired.
+/* Victory row perks — dealt to players, assigned by them.
  *
  * PROPOSAL, off by default. See VROW-PERKS.md.
  *
- * What matters here is the two things a slot perk can get wrong: firing at the
- * wrong row depth, and refreshing at the wrong moment. The row is rank-sorted
- * and pushed right, so slot 4 needs two cards, slot 3 three, slot 2 four and
- * slot 1 all five — get that backwards and every perk is available from the
- * first research.
+ * Every perk is equal. Players are dealt a few and choose which slot each goes
+ * in, permanently, before anything reaches the row. Three things can go wrong:
+ * an unfair deal, an assignment that keeps changing after it should have
+ * locked, and a perk firing at the wrong row depth.
  */
 const E = require('./engine.js');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 
-const withRow = (n, perks, band) => {
-  const p = new E.Player(0, E.BANDS, perks);
+const withRow = (n, dealt, band) => {
+  const p = new E.Player(0, E.BANDS, dealt);
   for (let i = 0; i < n; i++) p.vrow.push({ r: 5 + i, s: 'plains' });
-  if (band) for (let j = 0; j < band; j++) p.reserve[j] = 0;   // walk up the tiers
+  if (band) for (let j = 0; j < band; j++) p.reserve[j] = 0;
   return p;
 };
 
 // ---------------------------------------------------------- off by default
-ok(E.playOut(3, 7, {}).PERKS === null, 'perks are on without being asked for');
-const plain = new E.Player(0, E.BANDS);
-plain.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
-ok(!plain.hasPerk('roads') && plain.freeMoves() === E.BANDS[0][4],
-   'a player with no perk table still gained one');
+ok(E.playOut(3, 7, {}).P[0].perks === null, 'perks are on without being asked for');
+{
+  const plain = new E.Player(0, E.BANDS);
+  plain.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
+  ok(!plain.hasPerk('roads') && plain.freeMoves() === E.BANDS[0][4],
+     'a player with no perks still gained one');
+}
 
-// ------------------------------------------------- the depth thresholds
-for (const [slot, id, needs] of [[1, 'coercion', 5], [2, 'roads', 4],
-                                 [3, 'scholarship', 3], [4, 'granary', 2]]) {
+// --------------------------------------------------- needs = 6 - slot
+for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
   ok(E.perkSlotNeeds(slot) === needs,
      `slot ${slot} claims to need ${E.perkSlotNeeds(slot)} cards, not ${needs}`);
   for (let n = 0; n <= 5; n++) {
-    const p = withRow(n, { [slot]: id });
-    const live = p.hasPerk(id);
-    ok(live === (n >= needs),
-       `${id} is ${live ? 'live' : 'dead'} at ${n} cards; it needs ${needs}`);
+    const p = withRow(n, { [slot]: 'roads' });
+    ok(p.hasPerk('roads') === (n >= needs),
+       `a perk on slot ${slot} is ${p.hasPerk('roads') ? 'live' : 'dead'} at ${n} cards`);
   }
 }
 
-// ------------------------------------------------------ the wired perks
-// Roads: one extra free move, then spent until the recycle.
+// ------------------------------------------------------ the deal is FAIR
+// Everyone gets the same number. The first version of dealPerks handed the
+// last seat nothing when the pool was small, which nobody would notice until
+// the game after next.
 {
-  const p = withRow(4, { 2: 'roads' });
+  for (const n of [2, 3, 4]) {
+    const g = E.playOut(n, 7, { perks: true });
+    const counts = g.P.map((p) => p.dealt.length);
+    ok(new Set(counts).size === 1,
+       `${n}p was dealt unequal perks: ${counts.join('/')}`);
+    ok(counts[0] > 0, `${n}p was dealt no perks at all`);
+    const all = [].concat(...g.P.map((p) => p.dealt));
+    ok(new Set(all).size === all.length,
+       `${n}p dealt the same perk twice — there is one token of each`);
+    ok(counts[0] <= E.PERK_DEAL, `${n}p was dealt more than PERK_DEAL`);
+  }
+}
+// Only wired perks are ever dealt: a half-built prompt is worse than none.
+{
+  for (const id of E.playablePerks()) ok(!E.PERKS[id].todo, `${id} is todo but dealable`);
+  for (let s = 1; s <= 60; s++)
+    for (const p of E.playOut(3, s * 131, { perks: true }).P)
+      for (const id of p.dealt) ok(!E.PERKS[id].todo, `seed ${s} dealt unwired ${id}`);
+}
+// Dealt from the game's rng, so a table replays identically on every client.
+{
+  const one = (seed) => JSON.stringify(E.playOut(3, seed, { perks: true }).P.map((p) => p.dealt));
+  ok(one(12345) === one(12345), 'the same seed dealt different perks');
+  const seen = new Set();
+  for (let s = 1; s <= 40; s++) seen.add(one(s * 7919));
+  ok(seen.size > 1, 'every seed dealt the same perks — the deal is not random');
+}
+
+// ------------------------------------------- assignment, and the lock
+{
+  const p = new E.Player(0, E.BANDS, ['roads', 'coinage', 'granary']);
+  ok(Object.keys(p.perks).length === 3, 'the opening arrangement lost a perk');
+  ok(!p.perksLocked(), 'the arrangement locked before the row had a card');
+
+  ok(p.assignPerk('roads', 1), 'could not move a perk to an empty slot');
+  ok(p.slotOf('roads') === 1, 'the perk did not move');
+
+  /* Moving onto an OCCUPIED slot swaps, so no perk is ever lost. */
+  const displaced = p.perks[1];
+  ok(p.assignPerk('coinage', 1), 'could not swap onto an occupied slot');
+  ok(p.slotOf('coinage') === 1, 'the swap did not land');
+  ok(p.slotOf(displaced) !== null, `the swap lost ${displaced}`);
+  ok(Object.keys(p.perks).length === 3, 'a perk vanished during a swap');
+  ok(new Set(Object.values(p.perks)).size === 3, 'a perk was duplicated by a swap');
+
+  ok(!p.assignPerk('pioneering', 2), 'assigned a perk that was never dealt');
+  ok(!p.assignPerk('roads', 9), 'assigned a perk to a slot that does not exist');
+
+  /* The row is where a perk lives, so the arrangement locks the moment the row
+   * holds anything. */
+  p.vrow.push({ r: 7, s: 'plains' });
+  ok(p.perksLocked(), 'the arrangement did not lock once the row had a card');
+  const before = JSON.stringify(p.perks);
+  ok(!p.assignPerk('roads', 5), 'a locked arrangement was still rearranged');
+  ok(JSON.stringify(p.perks) === before, 'a locked arrangement changed anyway');
+}
+
+// -------------------------------------------------------- the wired perks
+{
   const base = E.BANDS[0][4];
+  const p = withRow(1, { 5: 'roads' });            // slot 5 needs one card
   ok(p.freeMoves() === base + 1, `Roads gave ${p.freeMoves() - base} extra moves`);
   ok(p.spendPerk('roads'), 'Roads could not be spent while live');
   ok(p.freeMoves() === base, 'Roads still paying out after it was spent');
@@ -51,121 +111,61 @@ for (const [slot, id, needs] of [[1, 'coercion', 5], [2, 'roads', 4],
   p.refreshPerks();
   ok(p.freeMoves() === base + 1, 'the recycle did not turn Roads back over');
 }
-// Scholarship: one rank above the tier cap.
 {
-  const p = withRow(3, { 3: 'scholarship' });
+  const p = withRow(1, { 5: 'scholarship' });
   ok(p.rankCap() === E.BANDS[0][6] + 1, `Scholarship gave cap ${p.rankCap()}`);
   p.spendPerk('scholarship');
   ok(p.rankCap() === E.BANDS[0][6], 'Scholarship still lifting the cap once spent');
 }
-// Granary: a RATE, not a use — its token never turns over, so it must keep
-// paying out without ever being spent. Tribe eats nothing, so walk up a tier.
 {
-  const p = withRow(2, { 4: 'granary' }, 1);
+  // Granary is a RATE, not a use: its token never turns over. Tribe eats
+  // nothing, so walk up a tier to see it.
+  const p = withRow(1, { 5: 'granary' }, 1);
   const band = p.band();
   ok(band > 0, 'the fixture did not reach a tier that pays food');
-  ok(p.food() === Math.max(0, E.BANDS[band][3] - 1),
-     `Granary left food at ${p.food()}, tier pays ${E.BANDS[band][3]}`);
+  ok(p.food() === Math.max(0, E.BANDS[band][3] - 1), `Granary left food at ${p.food()}`);
   p.spendPerk('granary');
-  ok(p.food() === Math.max(0, E.BANDS[band][3] - 1),
-     'Granary stopped paying after something tried to spend it');
+  ok(p.food() === Math.max(0, E.BANDS[band][3] - 1), 'Granary stopped after a spend');
+  ok(withRow(1, { 5: 'granary' }).food() >= 0, 'Granary drove food negative');
 }
-// Food can never go negative.
+// Pioneering relaxes the touch-two rule, and only while live and unspent.
 {
-  const p = withRow(2, { 4: 'granary' });
-  ok(p.food() >= 0, `Granary drove food to ${p.food()}`);
-}
-
-// ------------------------------------------------- the draw is seed-pure
-// A table replays from (seed, options, answers). If the perks were drawn from
-// anywhere but the game's own rng, two clients would run different games.
-{
-  const a = E.playOut(3, 12345, { perks: true }).PERKS;
-  const b = E.playOut(3, 12345, { perks: true }).PERKS;
-  ok(JSON.stringify(a) === JSON.stringify(b),
-     `the same seed drew different perks: ${JSON.stringify(a)} vs ${JSON.stringify(b)}`);
-  const seeds = new Set();
-  for (let s = 1; s <= 40; s++)
-    seeds.add(JSON.stringify(E.playOut(3, s * 7919, { perks: true }).PERKS));
-  ok(seeds.size > 1, 'every seed drew the same perks — the draw is not random');
-}
-// An explicit set, for tests and for pinning a playtest.
-{
-  const g = E.playOut(3, 5, { perks: { 2: 'roads', 4: 'coinage' } });
-  ok(g.PERKS[2] === 'roads' && g.PERKS[4] === 'coinage',
-     `an explicit perk set was not honoured: ${JSON.stringify(g.PERKS)}`);
-  ok(!g.PERKS[1] && !g.PERKS[3], 'slots nobody asked for were filled anyway');
-}
-// Only implemented perks are ever drawn — a half-built prompt is worse than
-// none, so anything marked todo stays out of the bag.
-{
-  for (let s = 1; s <= 4; s++)
-    for (const id of E.perksInSlot(s, true))
-      ok(!E.PERKS[id].todo, `${id} is unimplemented but still in the draw`);
-  for (let seed = 1; seed <= 60; seed++) {
-    const drawn = E.playOut(3, seed * 131, { perks: true }).PERKS || {};
-    for (const s of Object.keys(drawn))
-      ok(!E.PERKS[drawn[s]].todo, `seed ${seed} drew unimplemented ${drawn[s]}`);
-  }
-}
-// Pioneering relaxes the touch-two rule, and ONLY while it is live and unspent.
-// legalSpaces() is the single place that rule lives, so if this drifts, tiles
-// start landing in mid-air.
-{
-  const g = E.playOut(3, 7, { perks: { 1: 'pioneering' } });
+  const g = E.playOut(3, 7, { perks: { 0: { 5: 'pioneering' } } });
   const q = g.P[0];
-  q.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
+  q.vrow = [{ r: 5, s: 'plains' }];
   q.refreshPerks();
   const strict = g.m.legalSpaces(2).size;
   const loose = g.spacesFor(q).size;
-  ok(loose > strict, `Pioneering opened ${loose - strict} new cells — expected some`);
+  ok(loose > strict, `Pioneering opened ${loose - strict} cells — expected some`);
   q.spendPerk('pioneering');
-  ok(g.spacesFor(q).size === strict,
-     'Pioneering still relaxing the touch rule after it was spent');
+  ok(g.spacesFor(q).size === strict, 'Pioneering still loose after it was spent');
   q.refreshPerks();
   ok(g.spacesFor(q).size === loose, 'the recycle did not restore Pioneering');
-  // and a player without it is never affected
-  const other = g.P[1];
-  other.vrow = [1, 2, 3, 4, 5].map((r) => ({ r, s: 'plains' }));
-  ok(g.spacesFor(other).size === loose || !other.perks,
-     'a second holder of the same perk saw a different map');
-  const none = new E.Player(2, E.BANDS);
-  ok(g.m.legalSpaces(2).size === strict, 'the strict rule moved under us');
-  ok(!none.hasPerk('pioneering'), 'a player with no perk table has Pioneering');
-}
-
-// Every perk sits in the slot its printed token claims.
-{
-  const sheetSlots = { wonders: 1, works: 2, crafts: 3, customs: 4 };
-  for (const id of E.PERK_IDS)
-    ok(E.PERKS[id].slot === sheetSlots[E.PERKS[id].deck],
-       `${id} is in deck ${E.PERKS[id].deck} but slot ${E.PERKS[id].slot}`);
+  ok(g.spacesFor(g.P[1]).size === strict, 'a player without it saw the loose map');
 }
 
 // ------------------------------------------------ a whole game, perks on
-// The real question: does turning them on break anything?
 {
-  let played = 0;
   for (let s = 1; s <= 40; s++) {
     const g = E.playOut(3, s * 2654435761 % 2147483647, { perks: true });
-    played += 1;
     const total = g.score().reduce((a, x) => a + x.total, 0);
     ok(Number.isFinite(total) && total > 0, `seed ${s} scored ${total}`);
     ok(g.round > 0 && g.round < 60, `seed ${s} ran ${g.round} rounds`);
-    for (const p of g.P) ok(p.vrow.length <= 5, 'a victory row grew past five');
+    for (const p of g.P) {
+      ok(p.vrow.length <= 5, 'a victory row grew past five');
+      ok(new Set(Object.values(p.perks)).size === Object.keys(p.perks).length,
+         'a perk ended up on two slots');
+    }
   }
-  ok(played === 40, 'not every game finished');
 }
-// And that the perks actually fired at some point across a run of games.
+// And that they fire at all. Every player holds Coinage here, so it is the
+// deal that is pinned, not the odds.
 {
   let coinage = 0, tribute = 0;
+  const each = (id) => { const o = {}; for (let i = 0; i < 4; i++) o[i] = { 5: id }; return o; };
   for (let s = 1; s <= 120; s++) {
-    const g = E.playOut(4, s * 40503, { perks: { 4: 'coinage' } });
-    coinage += (g.stats && g.stats.perk_coinage) || 0;
-  }
-  for (let s = 1; s <= 120; s++) {
-    const g = E.playOut(4, s * 40503, { perks: { 4: 'tribute' } });
-    tribute += (g.stats && g.stats.perk_tribute) || 0;
+    coinage += (E.playOut(4, s * 40503, { perks: each('coinage') }).stats || {}).perk_coinage || 0;
+    tribute += (E.playOut(4, s * 40503, { perks: each('tribute') }).stats || {}).perk_tribute || 0;
   }
   ok(coinage > 0, 'Coinage never paid out in 120 games — is it wired?');
   ok(tribute > 0, 'Tribute never paid out in 120 games — is it wired?');
@@ -173,8 +173,8 @@ for (const [slot, id, needs] of [[1, 'coercion', 5], [2, 'roads', 4],
 }
 
 console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-  : `perks: ${E.PERK_IDS.length} defined, `
-    + `${[1, 2, 3, 4].reduce((a, s) => a + E.perksInSlot(s, true).length, 0)} wired and drawable — `
-    + 'thresholds 5/4/3/2 by slot, spent once until the recycle, drawn from the '
-    + 'seed so every client draws the same four, and off unless asked for');
+  : `perks: ${E.PERK_IDS.length} defined, ${E.playablePerks().length} wired, `
+    + `dealt ${E.PERK_DEAL} a player from one flat pool — equal hands, no `
+    + `duplicates, any perk on any slot, locked once the row has a card, and `
+    + `off unless asked for`);
 process.exit(fail.length ? 1 : 0);

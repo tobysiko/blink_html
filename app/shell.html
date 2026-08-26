@@ -99,8 +99,14 @@
   .pk em{font-size:9px; font-style:normal; opacity:.8; white-space:nowrap}
   .pk.locked{color:var(--mut); background:#F4F1EA; border-color:#DDD8CC}
   .pk.ready{color:#fff; border-color:transparent}
-  .pk.ready.d1{background:#7B2018}.pk.ready.d2{background:#4A6670}
-  .pk.ready.d3{background:#5E5233}.pk.ready.d4{background:#4F5E4A}
+  /* Colour by DECK now, not by slot — a perk can sit anywhere. */
+  .pk.ready.dk-wonders{background:#7B2018}.pk.ready.dk-works{background:#4A6670}
+  .pk.ready.dk-crafts{background:#5E5233}.pk.ready.dk-customs{background:#4F5E4A}
+  .pk.empty{background:none; border:1px dashed #C9C3B4; color:var(--mut);
+    font-size:9px; cursor:pointer}
+  .pk.pick{outline:2px solid var(--green); outline-offset:1px}
+  button.pk{font:inherit; cursor:pointer}
+  .perkhint{font-size:10px; color:var(--mut); margin:3px 0 0}
   .pk.spent{background:#F4F1EA; border-color:#DDD8CC; color:var(--mut)}
   .pk.spent b{text-decoration:line-through}
 
@@ -117,8 +123,8 @@
   .perkkey li.spent b{text-decoration:line-through}
   .perkkey i{width:8px; height:8px; border-radius:2px; flex:none;
     align-self:center}
-  .perkkey i.d1{background:#7B2018}.perkkey i.d2{background:#4A6670}
-  .perkkey i.d3{background:#5E5233}.perkkey i.d4{background:#4F5E4A}
+  .perkkey i.dk-wonders{background:#7B2018}.perkkey i.dk-works{background:#4A6670}
+  .perkkey i.dk-crafts{background:#5E5233}.perkkey i.dk-customs{background:#4F5E4A}
   .perkkey b{color:var(--deep)}
   .perkkey span{color:var(--ink)}
   .perkkey em{font-style:normal; color:var(--mut); font-size:10px}
