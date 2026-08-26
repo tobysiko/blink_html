@@ -26,69 +26,68 @@ from version import VTAG
 INK, SOFT, FAINT = "#2A2E2B", "#6B6F68", "#B9B4A8"
 PAPER, PANEL, LINE = "#FBFAF6", "#EFECE3", "#CDC7B8"
 
-# One accent per deck, so a spread of tokens sorts itself by eye. The deck is
-# FLAVOUR ONLY now — it used to name a slot, and that was wrong twice over: it
-# put the weakest perks in the only reachable slot, and it took the choice of
-# where to put a perk away from the player who owns it.
-DECKS = {
-    "WONDERS": "#7B2018",
-    "WORKS":   "#4A6670",
-    "CRAFTS":  "#5E5233",
-    "CUSTOMS": "#4F5E4A",
+# The tokens used to carry a deck name — WONDERS, WORKS, CRAFTS, CUSTOMS. Those
+# named a slot, and once the slot became the player's choice they survived as
+# flavour. They are gone now, because "WONDERS" beside "CUSTOMS" implies a power
+# order this design deliberately removed: a label that teaches something untrue
+# is worse than no label.
+#
+# What replaces it is the one distinction that changes what you DO with the
+# token. SPEND perks are used once and turned face down until your hand
+# recycles. STANDING perks are rates — they simply run while their slot holds a
+# card, and never turn over at all.
+KINDS = {
+    "spend":    ("#4A6670", "SPEND \u00b7 turn me over"),
+    "standing": ("#4F5E4A", "STANDING \u00b7 always on"),
 }
 
 # (deck, name, rule). Kept short on purpose: the token carries one line and the
 # appendix carries the edge cases.
 PERKS = [
-    # --- WONDERS: powerful, interactive. Once per recycle; twice if the card
-    #     in slot 1 is rank 11+, which can only have come from the market.
-    ("WONDERS", "Coercion",
+    ("spend", "Coercion",
      "Force a rival to spend a victory card on B or C and discard it. "
      "At rank 11+, you choose which card."),
-    ("WONDERS", "Displacement",
+    ("spend", "Displacement",
      "Move one enemy unit to a legal adjacent tile, instead of one of your "
      "own free moves."),
-    ("WONDERS", "Terracing",
+    ("spend", "Terracing",
      "One of your tiles may hold one unit above its terrain limit."),
-    ("WONDERS", "Pioneering",
+    ("spend", "Pioneering",
      "A tile you lay need touch only ONE tile already on the map, not two."),
-    ("WONDERS", "Salvage",
+    ("spend", "Salvage",
      "Take the card set aside against you into your hand, and discard one of "
      "yours to the shared pile instead."),
-    # --- WORKS: map-facing, solid
-    ("WORKS", "Roads", "One extra free move."),
-    ("WORKS", "Navigation",
+    ("spend", "Roads", "One extra free move."),
+    ("standing", "Navigation",
      "Your water advantage triggers on EVERY sea move, not only the first."),
-    ("WORKS", "Ramparts",
+    ("spend", "Ramparts",
      "A fortification survives the first time its unit is disturbed. The coin "
      "stays; the next disturbance takes it."),
-    ("WORKS", "Siegecraft",
+    ("spend", "Siegecraft",
      "Your attacks on Forest and Mountain cost 1 gold less, to a minimum of 0."),
-    ("WORKS", "Outposts",
+    ("spend", "Outposts",
      "Your reach extends one tile further than the tiles you occupy."),
-    # --- CRAFTS: the row, the hand, the market
-    ("CRAFTS", "Arithmetic",
+    ("standing", "Arithmetic",
      "Friends of 10s: any two cards summing to 10, 20 or 30 are a legal meld."),
-    ("CRAFTS", "Composition",
+    ("standing", "Composition",
      "Combination melds: play two or more melds of 2+ cards together as one."),
-    ("CRAFTS", "Archaeology",
+    ("spend", "Archaeology",
      "Swap a card from your hand for one of rank 10 or under from the pile of "
      "spent cards."),
-    ("CRAFTS", "Diplomacy",
+    ("spend", "Diplomacy",
      "When a rival matches your winning meld and loses, YOU choose which of "
      "their cards is set aside."),
-    ("CRAFTS", "Scholarship",
+    ("spend", "Scholarship",
      "Your rank cap is 1 higher than your tier prints."),
-    ("CRAFTS", "Foresight",
+    ("spend", "Foresight",
      "Look at the top card of the upgrade deck before deciding whether to "
      "research."),
-    # --- CUSTOMS: small, economic, frequent
-    ("CUSTOMS", "Granary",
+    ("standing", "Granary",
      "Pay one less food each recycle, to a minimum of none."),
-    ("CUSTOMS", "Coinage", "One cashed card pays 2 gold instead of 1."),
-    ("CUSTOMS", "Tribute",
+    ("spend", "Coinage", "One cashed card pays 2 gold instead of 1."),
+    ("spend", "Tribute",
      "Take 1 extra gold whenever your meld ranks last."),
-    ("CUSTOMS", "Markets",
+    ("spend", "Markets",
      "Move one face-up market card to a different grid position."),
 ]
 
@@ -151,12 +150,19 @@ body {{ margin: 0; background: {PAPER}; color: {INK};
 """
 
 
-def token(deck, name, rule):
-    accent = DECKS[deck]
+def token(kind, name, rule):
+    accent, label = KINDS[kind]
+    # A STANDING perk never turns over, so its back cannot say SPENT. If one
+    # does get flipped, the back is the place to say put me back.
+    if kind == "standing":
+        big, note = "ALWAYS ON", ("This one never turns over. Leave it face up "
+                                  "for as long as its slot holds a card.")
+    else:
+        big, note = "SPENT", "Turn this back over when your hand recycles."
     return f"""<div class="tok">
   <div class="face up">
     <div class="bar" style="background:{accent}"></div>
-    <div class="deck" style="color:{accent}">{deck}</div>
+    <div class="deck" style="color:{accent}">{label}</div>
     <div class="name">{name}</div>
     <div class="rule">{rule}</div>
     <div class="foot">READY &middot; any of slots 1&ndash;4</div>
@@ -164,10 +170,10 @@ def token(deck, name, rule):
   <div class="fold"></div>
   <div class="face dn">
     <div class="bar" style="background:{FAINT}"></div>
-    <div class="deck">{deck}</div>
+    <div class="deck">{label}</div>
     <div class="name">{name}</div>
-    <div class="spent">SPENT</div>
-    <div class="back">Turn this back over when your hand recycles.</div>
+    <div class="spent">{big}</div>
+    <div class="back">{note}</div>
     <div class="foot">Blink &middot; {VTAG} &middot; proposal</div>
   </div>
 </div>"""
@@ -197,8 +203,10 @@ def build():
   so <b>slot 4 wakes at two cards, slot 3 at three, slot 2 at four and slot 1
   needs all five</b> &mdash; the slot is the bet. Spend a perk by turning its
   token over; turn every token back when your hand recycles.<br>
-  The decks are flavour only: every perk is equal, and any perk may go on any
-  slot.<br>
+  Every perk is equal &mdash; there are no better or worse kinds, only the two
+  ways they work: <b>SPEND</b> perks turn face down when used and come back on
+  your recycle; <b>STANDING</b> perks simply run while their slot holds a card
+  and never turn over.<br>
   <b>Cutting:</b> the dashed rectangles are cuts. The dotted line down the
   middle of each token, marked with a triangle at each end, is a
   <b>fold</b> &mdash; fold it backwards so both printed faces end up outside,

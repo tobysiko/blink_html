@@ -99,9 +99,11 @@
   .pk em{font-size:9px; font-style:normal; opacity:.8; white-space:nowrap}
   .pk.locked{color:var(--mut); background:#F4F1EA; border-color:#DDD8CC}
   .pk.ready{color:#fff; border-color:transparent}
-  /* Colour by DECK now, not by slot — a perk can sit anywhere. */
-  .pk.ready.dk-wonders{background:#7B2018}.pk.ready.dk-works{background:#4A6670}
-  .pk.ready.dk-crafts{background:#5E5233}.pk.ready.dk-customs{background:#4F5E4A}
+  /* Two kinds, and only two: one you SPEND and turn over, one that simply runs
+     while its slot holds a card. The old four-deck colouring implied a power
+     order the design does not have. */
+  .pk.ready.spendable{background:#4A6670}
+  .pk.ready.standing{background:#4F5E4A}
   .pk.empty{background:none; border:1px dashed #C9C3B4; color:var(--mut);
     font-size:9px; cursor:pointer}
   .pk.pick{outline:2px solid var(--green); outline-offset:1px}
@@ -123,8 +125,8 @@
   .perkkey li.spent b{text-decoration:line-through}
   .perkkey i{width:8px; height:8px; border-radius:2px; flex:none;
     align-self:center}
-  .perkkey i.dk-wonders{background:#7B2018}.perkkey i.dk-works{background:#4A6670}
-  .perkkey i.dk-crafts{background:#5E5233}.perkkey i.dk-customs{background:#4F5E4A}
+  .perkkey i.spendable{background:#4A6670}
+  .perkkey i.standing{background:#4F5E4A; border-radius:50%}
   .perkkey b{color:var(--deep)}
   .perkkey span{color:var(--ink)}
   .perkkey em{font-style:normal; color:var(--mut); font-size:10px}
@@ -1210,7 +1212,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"59eb28fb25","branch":"main","dirty":true,"built":"2026-08-26T21:13:48Z"};
+const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"50ffaa43d6","branch":"main","dirty":true,"built":"2026-08-26T21:38:27Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1298,6 +1300,8 @@ en: {
   "perk.spentLong": "spent \u2014 back on your next recycle",
   "perk.needs": "needs {n}",
   "perk.away": "{n} more card(s)",
+  "perk.isSpend": "spend it, then it waits for your recycle",
+  "perk.isStanding": "always on while its slot holds a card",
   "perk.arrange": "Arrange your perks: tap one, then tap the slot it should sit in. This locks when your first card reaches the row.",
   "perk.nowPick": "Now tap the slot it should sit in.",
   "perk.putHere": "Put a perk here \u2014 it wakes at {n} cards",
@@ -1808,6 +1812,8 @@ de: {
   "perk.spentLong": "verbraucht \u2014 zurück beim nächsten Nachziehen",
   "perk.needs": "braucht {n}",
   "perk.away": "noch {n} Karte(n)",
+  "perk.isSpend": "einmal einsetzen, dann bis zum Nachziehen aus",
+  "perk.isStanding": "dauerhaft aktiv, solange der Platz eine Karte hält",
   "perk.arrange": "Ordne deine Boni: erst einen antippen, dann den Platz. Sobald die erste Karte in der Reihe liegt, ist es endgültig.",
   "perk.nowPick": "Jetzt den Platz antippen.",
   "perk.putHere": "Bonus hierher \u2014 wirkt ab {n} Karten",
@@ -2408,7 +2414,13 @@ function setTiers(which) {
  * Measured at 4 players, about three effect spends a game would each switch a
  * perk off (app/perkcost.js). Strong perks pay for themselves.
  *
- * `deck` survives as flavour only — a name and a colour, not a slot.
+ * The old deck names (WONDERS / WORKS / CRAFTS / CUSTOMS) are gone. They named
+ * a slot, then survived as flavour once the slots became the player's choice —
+ * but "WONDERS" against "CUSTOMS" implies a power order that this design
+ * removed, so the label taught something untrue. What replaces it is the one
+ * distinction that changes what you do with the token: `once` perks are SPENT
+ * and turned face down until the recycle; the rest are standing rates that
+ * never turn over at all.
  */
 function perkSlotNeeds(slot) { return 6 - slot; }
 /* Slots 1-4 carry perks; slot 5 stays blank. It fills on your first research,
@@ -2418,26 +2430,26 @@ const PERK_SLOTS = [1, 2, 3, 4];
 const PERKS = {
   /* Not yet implemented: each needs a new prompt, and a half-built prompt is
    * worse than none. Listed so the printed tokens and the code agree. */
-  coercion:     { deck: "wonders", name: "Coercion", once: true, todo: true },
-  displacement: { deck: "wonders", name: "Displacement", once: true, todo: true },
-  terracing:    { deck: "wonders", name: "Terracing", once: true, todo: true },
-  pioneering:   { deck: "wonders", name: "Pioneering", once: true },
-  salvage:      { deck: "wonders", name: "Salvage", once: true, todo: true },
-  roads:        { deck: "works", name: "Roads", once: true },
-  navigation:   { deck: "works", name: "Navigation", once: false },
-  ramparts:     { deck: "works", name: "Ramparts", once: true, todo: true },
-  siegecraft:   { deck: "works", name: "Siegecraft", once: true, todo: true },
-  outposts:     { deck: "works", name: "Outposts", once: true },
-  arithmetic:   { deck: "crafts", name: "Arithmetic", once: false, todo: true },
-  composition:  { deck: "crafts", name: "Composition", once: false, todo: true },
-  archaeology:  { deck: "crafts", name: "Archaeology", once: true, todo: true },
-  diplomacy:    { deck: "crafts", name: "Diplomacy", once: true, todo: true },
-  scholarship:  { deck: "crafts", name: "Scholarship", once: true },
-  foresight:    { deck: "crafts", name: "Foresight", once: true, todo: true },
-  granary:      { deck: "customs", name: "Granary", once: false },
-  coinage:      { deck: "customs", name: "Coinage", once: true },
-  tribute:      { deck: "customs", name: "Tribute", once: true },
-  markets:      { deck: "customs", name: "Markets", once: true, todo: true },
+  coercion:     { name: "Coercion", once: true, todo: true },
+  displacement: { name: "Displacement", once: true, todo: true },
+  terracing:    { name: "Terracing", once: true, todo: true },
+  pioneering:   { name: "Pioneering", once: true },
+  salvage:      { name: "Salvage", once: true, todo: true },
+  roads:        { name: "Roads", once: true },
+  navigation:   { name: "Navigation", once: false },
+  ramparts:     { name: "Ramparts", once: true, todo: true },
+  siegecraft:   { name: "Siegecraft", once: true, todo: true },
+  outposts:     { name: "Outposts", once: true },
+  arithmetic:   { name: "Arithmetic", once: false, todo: true },
+  composition:  { name: "Composition", once: false, todo: true },
+  archaeology:  { name: "Archaeology", once: true, todo: true },
+  diplomacy:    { name: "Diplomacy", once: true, todo: true },
+  scholarship:  { name: "Scholarship", once: true },
+  foresight:    { name: "Foresight", once: true, todo: true },
+  granary:      { name: "Granary", once: false },
+  coinage:      { name: "Coinage", once: true },
+  tribute:      { name: "Tribute", once: true },
+  markets:      { name: "Markets", once: true, todo: true },
 };
 
 const PERK_IDS = Object.keys(PERKS);
@@ -7932,10 +7944,12 @@ function renderPlayer() {
         ? tn("perk.away", needs - have)
         : (spent ? t("perk.spentLong") : t("perk.ready"));
       return `<li class="${liveNow ? (spent ? "spent" : "live") : "far"}">`
-        + `<i class="dk-${PERKS[id].deck}"></i>`
+        + `<i class="${PERKS[id].once ? "spendable" : "standing"}" title="${
+            t(PERKS[id].once ? "perk.isSpend" : "perk.isStanding")}"></i>`
         + `<b>${t("perk." + id + ".name")}</b> `
         + `<span>${t("perk." + id + ".rule")}</span>`
-        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state}</em></li>`;
+        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state} \u00b7 ${
+             t(PERKS[id].once ? "perk.isSpend" : "perk.isStanding")}</em></li>`;
     }).join("");
     s += `<ul class="perkkey">${rows}</ul>`;
   }

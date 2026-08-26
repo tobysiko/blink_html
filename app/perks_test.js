@@ -175,6 +175,34 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2]]) {
   ok(p.hasPerk('navigation'), 'Navigation switched off when something spent it');
 }
 
+// The tokens carry SPEND or STANDING, and nothing else — the old deck names
+// implied a power order this design removed. `once` is the only tag left, so
+// it has to be right: a STANDING perk that reports as spendable would print a
+// token telling the player to turn over something that never turns over.
+{
+  ok(!('deck' in E.PERKS.roads), 'the deck flavour tag survived in the engine');
+  const standing = E.playablePerks().filter((id) => !E.PERKS[id].once);
+  const spend = E.playablePerks().filter((id) => E.PERKS[id].once);
+  ok(standing.length > 0 && spend.length > 0,
+     'every wired perk is the same kind — one of the two labels is unused');
+  /* A standing perk must keep working after something tries to spend it. */
+  for (const id of standing) {
+    const p = withRow(2, { 4: id });
+    ok(p.hasPerk(id), `${id} was not live at slot 4 with two cards`);
+    p.spendPerk(id);
+    ok(p.hasPerk(id), `${id} is STANDING but switched off when spent`);
+  }
+  /* A spend perk must stop until the recycle. */
+  for (const id of spend) {
+    const p = withRow(2, { 4: id });
+    ok(p.perkReady(id), `${id} was not ready at slot 4 with two cards`);
+    p.spendPerk(id);
+    ok(!p.perkReady(id), `${id} is SPEND but stayed ready after being spent`);
+    p.refreshPerks();
+    ok(p.perkReady(id), `${id} did not come back on the recycle`);
+  }
+}
+
 // ------------------------------------------------ a whole game, perks on
 {
   for (let s = 1; s <= 40; s++) {

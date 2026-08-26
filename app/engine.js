@@ -137,7 +137,13 @@ function setTiers(which) {
  * Measured at 4 players, about three effect spends a game would each switch a
  * perk off (app/perkcost.js). Strong perks pay for themselves.
  *
- * `deck` survives as flavour only — a name and a colour, not a slot.
+ * The old deck names (WONDERS / WORKS / CRAFTS / CUSTOMS) are gone. They named
+ * a slot, then survived as flavour once the slots became the player's choice —
+ * but "WONDERS" against "CUSTOMS" implies a power order that this design
+ * removed, so the label taught something untrue. What replaces it is the one
+ * distinction that changes what you do with the token: `once` perks are SPENT
+ * and turned face down until the recycle; the rest are standing rates that
+ * never turn over at all.
  */
 function perkSlotNeeds(slot) { return 6 - slot; }
 /* Slots 1-4 carry perks; slot 5 stays blank. It fills on your first research,
@@ -147,26 +153,26 @@ const PERK_SLOTS = [1, 2, 3, 4];
 const PERKS = {
   /* Not yet implemented: each needs a new prompt, and a half-built prompt is
    * worse than none. Listed so the printed tokens and the code agree. */
-  coercion:     { deck: "wonders", name: "Coercion", once: true, todo: true },
-  displacement: { deck: "wonders", name: "Displacement", once: true, todo: true },
-  terracing:    { deck: "wonders", name: "Terracing", once: true, todo: true },
-  pioneering:   { deck: "wonders", name: "Pioneering", once: true },
-  salvage:      { deck: "wonders", name: "Salvage", once: true, todo: true },
-  roads:        { deck: "works", name: "Roads", once: true },
-  navigation:   { deck: "works", name: "Navigation", once: false },
-  ramparts:     { deck: "works", name: "Ramparts", once: true, todo: true },
-  siegecraft:   { deck: "works", name: "Siegecraft", once: true, todo: true },
-  outposts:     { deck: "works", name: "Outposts", once: true },
-  arithmetic:   { deck: "crafts", name: "Arithmetic", once: false, todo: true },
-  composition:  { deck: "crafts", name: "Composition", once: false, todo: true },
-  archaeology:  { deck: "crafts", name: "Archaeology", once: true, todo: true },
-  diplomacy:    { deck: "crafts", name: "Diplomacy", once: true, todo: true },
-  scholarship:  { deck: "crafts", name: "Scholarship", once: true },
-  foresight:    { deck: "crafts", name: "Foresight", once: true, todo: true },
-  granary:      { deck: "customs", name: "Granary", once: false },
-  coinage:      { deck: "customs", name: "Coinage", once: true },
-  tribute:      { deck: "customs", name: "Tribute", once: true },
-  markets:      { deck: "customs", name: "Markets", once: true, todo: true },
+  coercion:     { name: "Coercion", once: true, todo: true },
+  displacement: { name: "Displacement", once: true, todo: true },
+  terracing:    { name: "Terracing", once: true, todo: true },
+  pioneering:   { name: "Pioneering", once: true },
+  salvage:      { name: "Salvage", once: true, todo: true },
+  roads:        { name: "Roads", once: true },
+  navigation:   { name: "Navigation", once: false },
+  ramparts:     { name: "Ramparts", once: true, todo: true },
+  siegecraft:   { name: "Siegecraft", once: true, todo: true },
+  outposts:     { name: "Outposts", once: true },
+  arithmetic:   { name: "Arithmetic", once: false, todo: true },
+  composition:  { name: "Composition", once: false, todo: true },
+  archaeology:  { name: "Archaeology", once: true, todo: true },
+  diplomacy:    { name: "Diplomacy", once: true, todo: true },
+  scholarship:  { name: "Scholarship", once: true },
+  foresight:    { name: "Foresight", once: true, todo: true },
+  granary:      { name: "Granary", once: false },
+  coinage:      { name: "Coinage", once: true },
+  tribute:      { name: "Tribute", once: true },
+  markets:      { name: "Markets", once: true, todo: true },
 };
 
 const PERK_IDS = Object.keys(PERKS);

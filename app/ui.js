@@ -1711,10 +1711,12 @@ function renderPlayer() {
         ? tn("perk.away", needs - have)
         : (spent ? t("perk.spentLong") : t("perk.ready"));
       return `<li class="${liveNow ? (spent ? "spent" : "live") : "far"}">`
-        + `<i class="dk-${PERKS[id].deck}"></i>`
+        + `<i class="${PERKS[id].once ? "spendable" : "standing"}" title="${
+            t(PERKS[id].once ? "perk.isSpend" : "perk.isStanding")}"></i>`
         + `<b>${t("perk." + id + ".name")}</b> `
         + `<span>${t("perk." + id + ".rule")}</span>`
-        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state}</em></li>`;
+        + `<em>${t("perk.slotNeeds", { slot, n: needs })} \u00b7 ${state} \u00b7 ${
+             t(PERKS[id].once ? "perk.isSpend" : "perk.isStanding")}</em></li>`;
     }).join("");
     s += `<ul class="perkkey">${rows}</ul>`;
   }
