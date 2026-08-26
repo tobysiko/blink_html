@@ -134,7 +134,24 @@ played.
 That is twice in this note that bot behaviour has produced a confident wrong
 conclusion. Worth remembering before the next one.
 
-## 4. Equal perks, dealt to players, assigned by them
+## 4. Equal perks, dealt to players, assigned by them — BUILT
+
+**In the app now**, behind *Victory row perks → On* in setup, off by default.
+
+| | |
+|---|---|
+| deal | **4 per player**, every player count, from one flat pool |
+| slots | **1–4**. Slot 5 stays blank — it fills on your first research, so a perk there is a baseline everyone has rather than a bet anyone made |
+| wakes at | slot 4 → 2 cards, slot 3 → 3, slot 2 → 4, slot 1 → all five |
+| assignment | yours, by tapping a perk then a slot; **locks** the moment your row holds its first card |
+| pool target | **20**, so a 4-player deal of 4 each leaves spares |
+| wired so far | 8 of 20 — the rest are kept out of the deal, not shown greyed |
+
+The deal shrinks to keep hands equal while the pool is small: with 8 wired it is
+2 each at 4 players. That is the honest constraint, and the fix is wiring more
+perks rather than dealing unevenly.
+
+
 
 **The model:** every perk is equal in standing. Each player is dealt a few and
 assigns each to a slot on their own victory row, permanently, at setup.

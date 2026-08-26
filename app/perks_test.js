@@ -28,7 +28,10 @@ ok(E.playOut(3, 7, {}).P[0].perks === null, 'perks are on without being asked fo
 }
 
 // --------------------------------------------------- needs = 6 - slot
-for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
+ok(JSON.stringify(E.PERK_SLOTS) === '[1,2,3,4]',
+   `perks are assignable to ${JSON.stringify(E.PERK_SLOTS)} — slot 5 should stay blank`);
+ok(E.PERK_DEAL === 4, `each player is dealt ${E.PERK_DEAL}, not 4`);
+for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2]]) {
   ok(E.perkSlotNeeds(slot) === needs,
      `slot ${slot} claims to need ${E.perkSlotNeeds(slot)} cards, not ${needs}`);
   for (let n = 0; n <= 5; n++) {
@@ -103,7 +106,7 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
 // -------------------------------------------------------- the wired perks
 {
   const base = E.BANDS[0][4];
-  const p = withRow(1, { 5: 'roads' });            // slot 5 needs one card
+  const p = withRow(2, { 4: 'roads' });            // slot 4 needs two cards
   ok(p.freeMoves() === base + 1, `Roads gave ${p.freeMoves() - base} extra moves`);
   ok(p.spendPerk('roads'), 'Roads could not be spent while live');
   ok(p.freeMoves() === base, 'Roads still paying out after it was spent');
@@ -112,7 +115,7 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
   ok(p.freeMoves() === base + 1, 'the recycle did not turn Roads back over');
 }
 {
-  const p = withRow(1, { 5: 'scholarship' });
+  const p = withRow(2, { 4: 'scholarship' });
   ok(p.rankCap() === E.BANDS[0][6] + 1, `Scholarship gave cap ${p.rankCap()}`);
   p.spendPerk('scholarship');
   ok(p.rankCap() === E.BANDS[0][6], 'Scholarship still lifting the cap once spent');
@@ -120,19 +123,19 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
 {
   // Granary is a RATE, not a use: its token never turns over. Tribe eats
   // nothing, so walk up a tier to see it.
-  const p = withRow(1, { 5: 'granary' }, 1);
+  const p = withRow(2, { 4: 'granary' }, 1);
   const band = p.band();
   ok(band > 0, 'the fixture did not reach a tier that pays food');
   ok(p.food() === Math.max(0, E.BANDS[band][3] - 1), `Granary left food at ${p.food()}`);
   p.spendPerk('granary');
   ok(p.food() === Math.max(0, E.BANDS[band][3] - 1), 'Granary stopped after a spend');
-  ok(withRow(1, { 5: 'granary' }).food() >= 0, 'Granary drove food negative');
+  ok(withRow(2, { 4: 'granary' }).food() >= 0, 'Granary drove food negative');
 }
 // Pioneering relaxes the touch-two rule, and only while live and unspent.
 {
-  const g = E.playOut(3, 7, { perks: { 0: { 5: 'pioneering' } } });
+  const g = E.playOut(3, 7, { perks: { 0: { 4: 'pioneering' } } });
   const q = g.P[0];
-  q.vrow = [{ r: 5, s: 'plains' }];
+  q.vrow = [{ r: 5, s: 'plains' }, { r: 8, s: 'forest' }];
   q.refreshPerks();
   const strict = g.m.legalSpaces(2).size;
   const loose = g.spacesFor(q).size;
@@ -142,6 +145,34 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
   q.refreshPerks();
   ok(g.spacesFor(q).size === loose, 'the recycle did not restore Pioneering');
   ok(g.spacesFor(g.P[1]).size === strict, 'a player without it saw the loose map');
+}
+
+// Outposts widens reach by a ring. Compare the SAME player with the perk live
+// and spent — comparing two different players measures their territories, not
+// the perk, which is a mistake that reads as a pass.
+{
+  const g = E.playOut(3, 7, { perks: { 0: { 4: 'outposts' } } });
+  const q = g.P[0];
+  q.vrow = [{ r: 5, s: 'plains' }, { r: 8, s: 'forest' }];   // slot 4 needs two
+  q.refreshPerks();
+  ok(q.hasPerk('outposts'), 'the fixture never made Outposts live');
+  const wide = g.reachFor(q).size;
+  q.spendPerk('outposts');
+  const narrow = g.reachFor(q).size;
+  ok(wide > narrow, `Outposts changed reach by ${wide - narrow}`);
+  q.refreshPerks();
+  ok(g.reachFor(q).size === wide, 'the recycle did not restore Outposts');
+  /* and it is one ring, not the whole map */
+  ok(wide < g.m.tiles.size * 4, 'Outposts reached implausibly far');
+}
+// Navigation is a rate: live while the slot holds a card, never turned over.
+{
+  ok(E.PERKS.navigation.once === false,
+     'Navigation is marked once-per-recycle, but "every sea move" is not one use');
+  const p = withRow(2, { 4: 'navigation' });
+  ok(p.hasPerk('navigation'), 'Navigation was not live at its slot depth');
+  p.spendPerk('navigation');
+  ok(p.hasPerk('navigation'), 'Navigation switched off when something spent it');
 }
 
 // ------------------------------------------------ a whole game, perks on
@@ -162,7 +193,7 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2], [5, 1]]) {
 // deal that is pinned, not the odds.
 {
   let coinage = 0, tribute = 0;
-  const each = (id) => { const o = {}; for (let i = 0; i < 4; i++) o[i] = { 5: id }; return o; };
+  const each = (id) => { const o = {}; for (let i = 0; i < 4; i++) o[i] = { 4: id }; return o; };
   for (let s = 1; s <= 120; s++) {
     coinage += (E.playOut(4, s * 40503, { perks: each('coinage') }).stats || {}).perk_coinage || 0;
     tribute += (E.playOut(4, s * 40503, { perks: each('tribute') }).stats || {}).perk_tribute || 0;

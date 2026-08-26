@@ -140,7 +140,9 @@ function setTiers(which) {
  * `deck` survives as flavour only — a name and a colour, not a slot.
  */
 function perkSlotNeeds(slot) { return 6 - slot; }
-const PERK_SLOTS = [1, 2, 3, 4, 5];
+/* Slots 1-4 carry perks; slot 5 stays blank. It fills on your first research,
+ * so a perk there is a baseline everyone has rather than a bet anyone made. */
+const PERK_SLOTS = [1, 2, 3, 4];
 
 const PERKS = {
   /* Not yet implemented: each needs a new prompt, and a half-built prompt is
@@ -151,10 +153,10 @@ const PERKS = {
   pioneering:   { deck: "wonders", name: "Pioneering", once: true },
   salvage:      { deck: "wonders", name: "Salvage", once: true, todo: true },
   roads:        { deck: "works", name: "Roads", once: true },
-  navigation:   { deck: "works", name: "Navigation", once: true, todo: true },
+  navigation:   { deck: "works", name: "Navigation", once: false },
   ramparts:     { deck: "works", name: "Ramparts", once: true, todo: true },
   siegecraft:   { deck: "works", name: "Siegecraft", once: true, todo: true },
-  outposts:     { deck: "works", name: "Outposts", once: true, todo: true },
+  outposts:     { deck: "works", name: "Outposts", once: true },
   arithmetic:   { deck: "crafts", name: "Arithmetic", once: false, todo: true },
   composition:  { deck: "crafts", name: "Composition", once: false, todo: true },
   archaeology:  { deck: "crafts", name: "Archaeology", once: true, todo: true },
@@ -171,9 +173,9 @@ const PERK_IDS = Object.keys(PERKS);
 /* One flat pool. Only what is actually wired goes in the bag. */
 function playablePerks() { return PERK_IDS.filter((id) => !PERKS[id].todo); }
 
-/* How many each player gets. Three against five slots is a choice of which
- * slots to use as well as which perk goes where. */
-const PERK_DEAL = 3;
+/* Four each, one per slot, at every player count — so the target for the pool
+ * is 4 x 4 players = 16 plus spares, which is what twenty perks buys. */
+const PERK_DEAL = 4;
 
 /* Dealt from the GAME's rng, so the whole table is a pure function of the seed
  * and replays identically on every client — the same reason the cards are.
@@ -206,7 +208,8 @@ function dealPerks(rng, n, spec) {
  * would simply never use it. */
 function defaultAssign(ids) {
   const out = {};
-  const order = [5, 4, 3, 2, 1];
+  const order = [4, 3, 2, 1];        // easiest first: a bot that buried a perk
+                                     // in slot 1 would simply never use it
   ids.forEach((id, k) => { if (order[k]) out[order[k]] = id; });
   return out;
 }
@@ -573,13 +576,21 @@ function adjacentKeys(m, k) {
 
 /* Every cell a card of yours may act on: a tile you occupy, or any tile /
  * legal empty space adjacent to one you occupy. */
-function reach(m, pi, civ) {
+function reach(m, pi, civ, extra) {
   civ = civ || m.civ(pi);
   const spaces = m.legalSpaces();
   const out = new Set(civ);
-  for (const c of civ)
-    for (const u of adjacentKeys(m, c))
-      if (m.tiles.has(u) || spaces.has(u)) out.add(u);
+  /* One ring by default — the printed rule. `extra` adds rings for the
+   * Outposts perk, and defaults to none so every existing caller is
+   * unchanged. */
+  let frontier = new Set(civ);
+  for (let step = 0; step <= (extra || 0); step++) {
+    const next = new Set();
+    for (const c of frontier)
+      for (const u of adjacentKeys(m, c))
+        if ((m.tiles.has(u) || spaces.has(u)) && !out.has(u)) { out.add(u); next.add(u); }
+    frontier = next;
+  }
   return out;
 }
 
@@ -1627,6 +1638,11 @@ class Game {
     return false;
   }
 
+  /* How far THIS player reaches. Outposts adds a ring. */
+  reachFor(p, civ) {
+    return reach(this.m, p.i, civ, p.perkReady && p.perkReady("outposts") ? 1 : 0);
+  }
+
   /* The spaces THIS player may lay a tile on. Pioneering drops the touch
    * requirement to one; everyone else gets the printed two. */
   spacesFor(p) {
@@ -1642,7 +1658,7 @@ class Game {
     const spaces = this.spacesFor(p);
     const exempt = this.m.civ(p.i).size === 0;            // re-entry rule (§06)
     const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
-                             : reach(this.m, p.i);
+                             : this.reachFor(p);
     const cards = st.cards.map((card) => ({
       card,
       options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
@@ -1675,9 +1691,10 @@ class Game {
       /* Landfall cells per ocean source, so the client can light them up as
        * move destinations beside the ordinary ones. Keyed by source because
        * which cells are eligible depends on which water the ship is in. */
-      landfall: st.moves > 0 && !st.waterUsed
+      landfall: st.moves > 0 && (!st.waterUsed || p.hasPerk("navigation"))
         ? this.moveSources(p).reduce((acc, k) => {
-            const cells = this.landfallCells(p, k, st.waterUsed);
+            const cells = this.landfallCells(p, k,
+              st.waterUsed && !p.hasPerk("navigation"));
             if (cells.length) acc[k] = cells;
             return acc;
           }, {})
@@ -1693,7 +1710,7 @@ class Game {
       colonyCards, colonyBlocked: colonyBlocked || colonyNoRoom,
       /* Is the water advantage still on the table this turn? The client marks
        * the sea moves that would collect it. */
-      waterReady: !st.waterUsed,
+      waterReady: !st.waterUsed || p.hasPerk("navigation"),
       deck: this.DECK,
       cashCards: this.DECK === "abc" ? p.vrow.slice() : [],
       conquestTargets: this.DECK === "abd" ? this.conquestTargets(p) : [],
@@ -1757,7 +1774,8 @@ class Game {
            * client works out the same set, but a client is not the authority on
            * where a tile may be placed. */
           if (!this.m.tiles.has(ans.dest)) {
-            const legal = this.landfallCells(p, ans.src, st.waterUsed);
+            const legal = this.landfallCells(p, ans.src,
+              st.waterUsed && !p.hasPerk("navigation"));
             if (!legal.includes(ans.dest)) break;
             const terrains = TER.filter((t) => this.m.supply[t] > 0);
             if (!terrains.length) break;
@@ -1786,7 +1804,7 @@ class Game {
           if (st.moves < st.moveBase) p.spendPerk("roads");
           /* The water advantage (§07): your FIRST sea move each turn grants one
            * free explore of ANY terrain. It is a real choice, so it is asked. */
-          if (fromSea && toSea && !st.waterUsed) {
+          if (fromSea && toSea && (!st.waterUsed || p.hasPerk("navigation"))) {
             const cells = this.waterExploreCells(ans.src, ans.dest);
             const terrains = TER.filter((t) => this.m.supply[t] > 0);
             if (cells.length && terrains.length) {
@@ -1924,7 +1942,7 @@ class Game {
       return yield { type: "setaside", seat: p.i, options: use.slice() };
     const spaces = this.m.legalSpaces();
     const civ = this.m.civ(p.i);
-    const reachable = civ.size ? reach(this.m, p.i, civ)
+    const reachable = civ.size ? this.reachFor(p, civ)
                                : new Set([...this.m.tiles.keys(), ...spaces]);
     let worst = null, wv = 1e9;
     for (const c of use) {
@@ -1944,7 +1962,7 @@ class Game {
       return yield { type: "bonus", seat: p.i, options: p.hand.slice() };
     const spaces = this.m.legalSpaces();
     const civ = this.m.civ(p.i);
-    const reachable = civ.size ? reach(this.m, p.i, civ)
+    const reachable = civ.size ? this.reachFor(p, civ)
                                : new Set([...this.m.tiles.keys(), ...spaces]);
     let best = null, bestV = -1e9;
     for (const c of p.hand) {
@@ -1966,7 +1984,7 @@ class Game {
       const exempt = this.m.civ(p.i).size === 0;      // re-entry rule (§06)
       const spaces = this.spacesFor(p);
       const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
-                               : reach(this.m, p.i);
+                               : this.reachFor(p);
 
       let best = null;                               // [value, card, cell, act]
       const all = [];
@@ -2701,7 +2719,7 @@ class Game {
     const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     if (!civ) {
-      const rr = reach(this.m, p.i);
+      const rr = this.reachFor(p);
       return Array.from(spaces).filter((c) => rr.has(c)).sort();
     }
     const out = [];

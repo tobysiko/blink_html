@@ -159,7 +159,7 @@ def token(deck, name, rule):
     <div class="deck" style="color:{accent}">{deck}</div>
     <div class="name">{name}</div>
     <div class="rule">{rule}</div>
-    <div class="foot">READY &middot; put me on any slot</div>
+    <div class="foot">READY &middot; any of slots 1&ndash;4</div>
   </div>
   <div class="fold"></div>
   <div class="face dn">
@@ -188,13 +188,16 @@ def build():
     head = f"""<div class="head">
   <div class="warn">PROPOSAL &middot; UNTESTED &middot; NOT PART OF THE GAME</div>
   <h1>Victory row perks</h1>
-  <p>Shuffle the tokens and <b>deal three to each player</b>. Put each of yours
-  on any one slot of your victory row, face up &mdash; your choice, and it is
-  <b>permanent</b> once a card reaches the row. A perk is live while the slot
-  you put it on holds a card, so the leftmost slot needs all five cards and the
-  rightmost needs one: <b>the slot is the bet</b>. Spend a perk by turning its
+  <p>Shuffle the tokens and <b>deal four to each player</b>. Put one on each of
+  <b>slots 1 to 4</b> of your victory row, face up &mdash; your choice which
+  goes where, and it is <b>permanent</b> once a card reaches the row. The
+  fifth slot stays blank: it fills on your first research, so a perk there
+  would be a baseline everyone has rather than a bet anyone made.<br>
+  A perk is live while its slot holds a card. Cards fill the row from the right,
+  so <b>slot 4 wakes at two cards, slot 3 at three, slot 2 at four and slot 1
+  needs all five</b> &mdash; the slot is the bet. Spend a perk by turning its
   token over; turn every token back when your hand recycles.<br>
-  The decks are flavour: every perk is equal, and any perk may go on any
+  The decks are flavour only: every perk is equal, and any perk may go on any
   slot.<br>
   <b>Cutting:</b> the dashed rectangles are cuts. The dotted line down the
   middle of each token, marked with a triangle at each end, is a
