@@ -14,6 +14,8 @@ Run after build_html.py and board_a4.py:  python3 check_rules.py
 """
 import html
 import json
+import json
+import pathlib
 import re
 import sys
 from pathlib import Path
@@ -386,6 +388,77 @@ check(len(defence) == 4, f"the engine defines {len(defence)} terrains, expected 
 for terrain, bonus in defence.items():
     check(re.search(rf"\b{terrain.capitalize()} \+{bonus}\b", rules),
           f"the combat table does not print {terrain.capitalize()} +{bonus}")
+# THE FIGURES TEACH TOO, and check_figs.py only measures geometry — it cannot
+# see that a drawing is of the previous edition. The combat figure went a whole
+# version showing a gold coin being paid and the caption "one defender removed",
+# both rules that had already been replaced, and every text-level check above
+# passed the whole time because none of them look inside an <svg>.
+figs = json.load(open(HERE / "figs.json"))
+combat_fig = figs.get("combat", "")
+fig_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", combat_fig))
+check("attack" in fig_text and "defence" in fig_text,
+      "the combat figure does not show two sides to a fight")
+check(re.search(r"\d \+ \d = \d+", fig_text),
+      "the combat figure does not show the ground added to the defender")
+check("takes the ground" in fig_text,
+      "the combat figure does not show the winner taking the tile")
+check("#E8C25A" not in combat_fig,
+      "the combat figure still draws a gold coin — the duel charges none")
+for terr in ("forest", "mountain"):
+    if terr.capitalize() in fig_text:
+        check(f"+ {def_js[terr]}" in fig_text or f"+{def_js[terr]}" in fig_text,
+              f"the combat figure names {terr.capitalize()} without its "
+              f"+{def_js[terr]}")
+
+# THE WORKED ROUND is two figures and a page of prose, and all three can drift
+# apart from each other and from the engine. The first draft of the map figure
+# drew three Mountains in a ROW while the setup three lines above it said
+# triangle.
+#
+# The layout is compared against the engine's own STARTS[3] rather than against
+# section 03, so the picture, the printed setup and the simulator are one fact.
+starts3 = re.search(r"3:\s*\[\[(.*?)\]\],\s*\[\[(.*?)\]\]\]", js)
+check(bool(starts3), "cannot find the three-player start in app/engine.js")
+if starts3:
+    want = set()
+    for group in starts3.groups():
+        for pair in re.findall(r"(\d+),\s*(\d+)", group):
+            want.add((int(pair[0]), int(pair[1])))
+    fig_src = pathlib.Path("build_figs.py").read_text(encoding="utf8")
+    wm = fig_src[fig_src.index("def worked_map():"):fig_src.index('F["worked_map"]')]
+    drawn = {(int(a_), int(b_)) for a_, b_ in
+             re.findall(r"\((\d+),\s*(\d+)\)", wm[:wm.index("NEW =") + 40])}
+    check(want <= drawn,
+          "the worked-round map does not draw the engine's three-player start: "
+          f"missing {sorted(want - drawn)}")
+
+# The trick figure carries arithmetic, and arithmetic in a drawing is never
+# re-checked by anybody. Every sum printed on it has to be true, and the meld
+# marked as the winner has to be the largest.
+trick_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", figs.get("trick", "")))
+totals = []
+for expr in re.findall(r"(\d+(?: \+ \d+)+) = (\d+)", trick_text):
+    parts = [int(x) for x in expr[0].split(" + ")]
+    check(sum(parts) == int(expr[1]),
+          f"the trick figure prints {expr[0]} = {expr[1]}, which is {sum(parts)}")
+    totals.append(sum(parts))
+check(len(totals) >= 2, "the trick figure shows fewer than two melds to compare")
+loose = [int(x) for x in re.findall(r"(?<![+=] )\b(\d+)\b(?! [+=])", trick_text)]
+check(totals and max(totals) == max(totals + [t for t in loose if t < 21]),
+      "the trick figure's winning meld is not the highest total shown")
+check("winner" in trick_text and "meld" in trick_text,
+      "the trick figure does not say the winner's die shows the meld size")
+
+# The market figure told the same kind of lie: it offered a CHOICE of which
+# position to bury, years after the rule became "cover the highest rank, nobody
+# chooses". Both halves are checked, because "highest" appearing is not proof
+# that "any position you like" has gone.
+market_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", figs.get("market", "")))
+check("highest rank" in market_text,
+      "the market figure does not say a draw covers the highest rank")
+check("any position you like" not in market_text,
+      "the market figure still offers a choice of which position to bury")
+
 # ...and the bonus must not have quietly turned back into a toll at the gate.
 # Worded narrowly, because research legitimately costs 1 gold then 2, and the
 # first version of this check tripped over that. What is banned is a PRICE ON

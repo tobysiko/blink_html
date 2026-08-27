@@ -231,9 +231,14 @@ COMPARE, DETAIL, COMPONENT = 1.07, 1.60, 1.22
 # the print column ever since — check_figs.py has been failing on it. It gets
 # its own scale so nine positions fit the page instead of being clipped.
 MARKET = 1.45
+# The whole-table view is the widest thing in the book by some way — it has to
+# hold the map, the market, the supply, the play area and three seats at once —
+# so it gets a scale that lets it fill the column exactly rather than being
+# shrunk to fit beside figures it has nothing to do with.
+TABLE = 0.98
 SCALE = {
     "combat": DETAIL, "fortify": DETAIL, "market": MARKET,
-    "board": COMPONENT, "vprow": COMPONENT,
+    "board": COMPONENT, "vprow": COMPONENT, "table": TABLE,
 }
 _VB = re.compile(r'viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"')
 
@@ -305,12 +310,15 @@ HTML = f"""<!doctype html>
   <p>The game ends when someone places their last unit or the market thins to its last layer.
   Most points wins: one per unit on the map, plus your victory row, plus the terrain
   you dominate — the largest connected stretch of each.</p>
+  {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game; the market beside it is where cards are bought; every meld played goes to the play area and stays there until it is spent. Your own board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
+
   <div class="contents">
     <span class="tag">Contents</span>
-    <p><b>01</b> The idea · <b>02</b> Components · <b>03</b> Setup · <b>04</b> The round ·
+    <p><b>01</b> The idea · <b>02</b> Components · <b>03</b> Setup ·
+    <b>✦</b> A worked round · <b>04</b> The round ·
     <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
     <b>08</b> Terrain · <b>09</b> Feeding and refilling · <b>10</b> Research and the market ·
-    <b>✦</b> A worked example · <b>11</b> End of the game ·
+    <b>11</b> End of the game ·
     <b>12</b> Map objectives · <b>13</b> Perks ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
   </div>
@@ -403,6 +411,93 @@ HTML = f"""<!doctype html>
     nothing is played yet, so set it to 1.</li>
   </ol>
   {fig('setup_maps', 'The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.')}
+</section>
+
+<section class="example">
+  <div class="h2"><span class="num">✦</span><h2>A worked round</h2></div>
+  <p>Three players — <strong>Ada</strong>, <strong>Bex</strong> and <strong>Cy</strong> —
+  sit down to their first game. This is one whole round, start to finish, <em>before</em>
+  any of it is explained in detail: read it for the shape of a turn rather than for the
+  letter of the rules. Everything used here is set out properly in the sections that
+  follow, and named where it comes up, so nothing below has to be taken on trust.</p>
+
+  <h3>Setting up</h3>
+  <p>With three players, the <strong>starting deck</strong> is ranks 3–10 and the
+  <strong>upgrade deck</strong> ranks 11–20, shuffled together. They deal ten cards
+  apiece and draft — keep four and pass the rest, then keep six, keep eight, keep all
+  ten — until each holds a fixed hand of ten.</p>
+  <p>Each takes a board and loads all five tiers with twenty units, and sets their
+  ascension coins on the printed spots. They lay the three-player
+  starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
+  three tiles from the others — and each puts one unit on a Plains tile of their own. The
+  remaining tiles are sorted into four open piles by terrain. Finally they shuffle the
+  upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
+  it &mdash; that is the market. Their Tribe rank cap is 12, so most of what is showing is
+  out of reach until they grow.
+  Ada is chosen to start and takes the winner's die, set to 1.</p>
+
+  <h3>The card phase</h3>
+  <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
+  Ada leads.</p>
+  <ul>
+    <li><strong>Ada</strong> plays <strong>5 of Plains + 6 of Plains</strong> — the run
+    5-6.</li>
+    <li><strong>Bex</strong> plays <strong>8 of Mountain + 8 of Ocean</strong> — the run 8,
+    doubled. Suits are irrelevant to the meld.</li>
+    <li><strong>Cy</strong> plays a single <strong>4 of Mountain</strong>.</li>
+  </ul>
+  <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
+  <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
+  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes the winner's die, setting
+  it to <strong>2</strong> — the size of her meld, and a reminder that anyone who also played
+  two and lost owes a card. She is first in initiative regardless of the number; she
+  will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
+  <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
+  on its own. Under a total, one big card is a play, not a waste.</p>
+  <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
+  played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
+  instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
+  so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
+
+  {fig('trick', "Round one, all three melds at once. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick and the winner's die — set to the SIZE of her meld, two cards, not to her placing. Cy's single 4 is not a mistake in principle: a lone 17 would have beaten both of them.")}
+
+  <h3>The map phase</h3>
+  <p>Bex spends both her cards; Ada spends the one she kept; Cy spends his single. They act
+  in initiative order.</p>
+  <ul>
+    <li><strong>Bex</strong> (2 cards). Only Plains and Mountain exist at setup, so her
+    <strong>Mountain</strong> card is the one that can settle: the Mountain beside her start
+    is adjacent to her homeland — in reach — and she <strong>settles</strong> it, taking a
+    unit from her top band. Mountain holds one, so that tile is now hers alone. Her
+    <strong>Ocean</strong> card <strong>explores</strong>: she picks an empty space beside
+    her civilization, checks it touches at least two tiles already on the map (it touches
+    three), and lays the Ocean tile from the supply.</li>
+    <li><strong>Ada</strong> (2 cards, one of them set aside). She keeps the
+    <strong>6 of Plains</strong> and sets the 5 aside — the only Plains in reach is her own
+    homeland, and a second unit there is worth more than a coin. She
+    <strong>settles</strong> the 6 on it, Plains holding three. The 5 goes to the shared
+    pile and pays her <strong>1 gold</strong>: the cost of matching Bex and losing.</li>
+    <li><strong>Cy</strong> (1 card). He has already taken <strong>1 gold</strong> for
+    ranking last. The card itself he also cashes, for a second gold: nothing on the map is
+    worth reaching for yet, and he is banking toward an upgrade.</li>
+  </ul>
+  <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
+  units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
+  happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
+  to build the ground first. To finish the round they check the end triggers — no one has
+  placed their last unit and no suit deck is empty, so play continues. No one emptied a whole
+  tier, so meld limits stay at 2, nobody has claimed an ascension coin, and no food is due;
+  that only comes when a hand recycles.
+  <strong>Bex leads the next round.</strong></p>
+  {fig('worked_map', 'The board at the end of round one. Compare it with your own: three Mountains in a triangle, a Plains beyond each outer face, one Ocean added. Bex owns a Mountain as well as her homeland; Ada has two units on one Plains; Cy has nothing on the map yet and two coins in hand.')}
+
+  <div class="note">
+    <span class="tag">What just happened</span>
+    <p>One meld did two jobs for each player: it fought for the trick, then became the
+    budget they spent on the map. Bex’s 16 against Ada’s 11 won her both initiative and
+    a full turn; Cy’s cautious single let him hoard gold instead. That
+    trade — tempo now against resources later — is the whole game in miniature.</p>
+  </div>
 </section>
 
 <section>
@@ -925,87 +1020,6 @@ HTML = f"""<!doctype html>
     <em>trick insurance</em>. High cards score best in the centre slot — and their
     effects are also the strongest, so the card you most want to keep is the card you
     most want to spend. That tension is the point.</p>
-  </div>
-</section>
-
-<section class="example">
-  <div class="h2"><span class="num">✦</span><h2>A worked example</h2></div>
-  <p>Three players — <strong>Ada</strong>, <strong>Bex</strong> and <strong>Cy</strong> —
-  sit down to their first game. This walks their setup and one full round, so you can
-  watch every rule fire in order.</p>
-
-  <h3>Setting up</h3>
-  <p>With three players, the <strong>starting deck</strong> is ranks 3–10 and the
-  <strong>upgrade deck</strong> ranks 11–20, shuffled together. They deal ten cards
-  apiece and draft — keep four and pass the rest, then keep six, keep eight, keep all
-  ten — until each holds a fixed hand of ten.</p>
-  <p>Each takes a board and loads all five tiers with twenty units, and sets their
-  ascension coins on the printed spots. They lay the three-player
-  starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
-  three tiles from the others — and each puts one unit on a Plains tile of their own. The
-  remaining tiles are sorted into four open piles by terrain. Finally they shuffle the
-  upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
-  it &mdash; that is the market. Their Tribe rank cap is 12, so most of what is showing is
-  out of reach until they grow.
-  Ada is chosen to start and takes the winner's die, set to 1.</p>
-
-  <h3>The card phase</h3>
-  <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
-  Ada leads.</p>
-  <ul>
-    <li><strong>Ada</strong> plays <strong>5 of Plains + 6 of Plains</strong> — the run
-    5-6.</li>
-    <li><strong>Bex</strong> plays <strong>8 of Mountain + 8 of Ocean</strong> — the run 8,
-    doubled. Suits are irrelevant to the meld.</li>
-    <li><strong>Cy</strong> plays a single <strong>4 of Mountain</strong>.</li>
-  </ul>
-  <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
-  <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
-  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes the winner's die, setting
-  it to <strong>2</strong> — the size of her meld, and a reminder that anyone who also played
-  two and lost owes a card. She is first in initiative regardless of the number; she
-  will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
-  <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
-  on its own. Under a total, one big card is a play, not a waste.</p>
-  <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
-  played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
-  instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
-  so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
-
-  <h3>The map phase</h3>
-  <p>Bex spends both her cards; Ada spends the one she kept; Cy spends his single. They act
-  in initiative order.</p>
-  <ul>
-    <li><strong>Bex</strong> (2 cards). Only Plains and Mountain exist at setup, so her
-    <strong>Mountain</strong> card is the one that can settle: the Mountain beside her start
-    is adjacent to her homeland — in reach — and she <strong>settles</strong> it, taking a
-    unit from her top band. Mountain holds one, so that tile is now hers alone. Her
-    <strong>Ocean</strong> card <strong>explores</strong>: she picks an empty space beside
-    her civilization, checks it touches at least two tiles already on the map (it touches
-    three), and lays the Ocean tile from the supply.</li>
-    <li><strong>Ada</strong> (2 cards, one of them set aside). She keeps the
-    <strong>6 of Plains</strong> and sets the 5 aside — the only Plains in reach is her own
-    homeland, and a second unit there is worth more than a coin. She
-    <strong>settles</strong> the 6 on it, Plains holding three. The 5 goes to the shared
-    pile and pays her <strong>1 gold</strong>: the cost of matching Bex and losing.</li>
-    <li><strong>Cy</strong> (1 card). He has already taken <strong>1 gold</strong> for
-    ranking last. The card itself he also cashes, for a second gold: nothing on the map is
-    worth reaching for yet, and he is banking toward an upgrade.</li>
-  </ul>
-  <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
-  units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
-  happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
-  to build the ground first. To finish the round they check the end triggers — no one has
-  placed their last unit and no suit deck is empty, so play continues. No one emptied a whole
-  tier, so meld limits stay at 2, nobody has claimed an ascension coin, and no food is due;
-  that only comes when a hand recycles.
-  <strong>Bex leads the next round.</strong></p>
-  <div class="note">
-    <span class="tag">What just happened</span>
-    <p>One meld did two jobs for each player: it fought for the trick, then became the
-    budget they spent on the map. Bex’s 16 against Ada’s 11 won her both initiative and
-    a full turn; Cy’s cautious single let him hoard gold instead. That
-    trade — tempo now against resources later — is the whole game in miniature.</p>
   </div>
 </section>
 

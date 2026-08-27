@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-27T20:46:07Z
+ * Built 2026-08-27T21:21:33Z
  */
 
 /* ---------------- app/engine.js ---------------- */

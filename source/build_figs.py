@@ -65,6 +65,318 @@ def meld_rule():
 F["meld_rule"] = meld_rule()
 
 
+# ------------------------------------------------------- the whole table
+def table():
+    """What the table looks like, from YOUR seat.
+
+    The first thing anyone opening a rulebook wants is a photograph of the game
+    set up, and this book had every component drawn separately and none of them
+    together — so a reader could learn what a player board is without ever
+    learning where it sits.
+
+    Drawn from one seat rather than from above, because that is the view a
+    player actually has: your own board near, the shared middle at arm's
+    length, rivals across the table with their hands hidden. It is schematic on
+    purpose. Anything drawn to look like a photograph invites the reader to
+    count pips and units, and every one of those numbers is a hostage.
+    """
+    b = ""
+    INK, SOFT, LINE = "#2A2E2B", "#6B6F68", "#CDC7B8"
+
+    def panel(x, y, w, h, title, sub=None):
+        out = (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="7" '
+               f'fill="none" stroke="{LINE}" stroke-width="1.2" '
+               f'stroke-dasharray="4 3"/>')
+        out += label(x + w / 2, y - 6, title, 10, cls="fig-step")
+        if sub:
+            out += label(x + w / 2, y + h + 13, sub, 8.5, cls="fig-label")
+        return out
+
+    def facedown(x, y, w=17, h=24, n=1):
+        out = ""
+        for i in range(n):
+            ox = x + i * 4
+            out += (f'<rect x="{ox}" y="{y - i * 2}" width="{w}" height="{h}" rx="2.5" '
+                    f'fill="#8A837A" stroke="#5A544C" stroke-width="1"/>')
+        return out
+
+    def faceup(x, y, rank, suit, w=17, h=24):
+        c = TER[suit]["top"]
+        return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="2.5" '
+                f'fill="#FBFAF6" stroke="{INK}" stroke-width="1"/>'
+                f'<rect x="{x}" y="{y}" width="{w}" height="4" rx="2" fill="{c}"/>'
+                + label(x + w / 2, y + h / 2 + 5, str(rank), 9, cls="fig-strong"))
+
+    def die(x, y, n, winner=False):
+        f = "#C0392B" if winner else "#FBFAF6"
+        t = "#FBFAF6" if winner else INK
+        return (f'<rect x="{x}" y="{y}" width="17" height="17" rx="3.5" fill="{f}" '
+                f'stroke="{"#7B2018" if winner else INK}" stroke-width="1.3"/>'
+                f'<text x="{x + 8.5:.1f}" y="{y + 12.5:.1f}" text-anchor="middle" '
+                f'font-size="10.5" fill="{t}" class="fig-strong">{n}</text>')
+
+    def seat(x, y, w, who, name, row_filled, hidden):
+        """A rival across the table: colour, victory row, a hidden hand."""
+        p = PLAYER[who]
+        out = (f'<rect x="{x}" y="{y}" width="{w}" height="34" rx="5" '
+               f'fill="#F4F1E9" stroke="{LINE}" stroke-width="1"/>')
+        out += (f'<circle cx="{x + 13:.1f}" cy="{y + 17:.1f}" r="7" fill="{p["fill"]}" '
+                f'stroke="{p["edge"]}" stroke-width="1.2"/>')
+        out += label(x + 26, y + 20, name, 9.5, anchor="start", cls="fig-step")
+        sx = x + 60
+        for i in range(5):
+            fill = "#FBFAF6" if i >= 5 - row_filled else "#FBFAF6"
+            out += (f'<rect x="{sx + i * 14}" y="{y + 7}" width="12" height="20" rx="2" '
+                    f'fill="{fill}" stroke="{LINE}" stroke-width="1"'
+                    + ('' if i >= 5 - row_filled else ' stroke-dasharray="2 2"') + '/>')
+            if i >= 5 - row_filled:
+                out += (f'<rect x="{sx + i * 14}" y="{y + 7}" width="12" height="3.5" '
+                        f'rx="1.5" fill="{TER["plains"]["top"]}"/>')
+        out += label(sx + 35, y + 34, "victory row", 7.5, cls="fig-label")
+        out += facedown(x + w - 46, y + 5, 15, 22, hidden)
+        return out
+
+    # ---------------------------------------------------------- rivals, far
+    b += seat(60, 0, 210, "rival", "Bex", 2, 3)
+    b += seat(330, 0, 210, "third", "Cy", 1, 3)
+
+    # ---------------------------------------------------------- the middle
+    # the map: a small grown cluster, three colours on it
+    map_x, map_y = 250, 118
+    layout = [(0, 0, "plains"), (1, 0, "forest"), (2, 0, "mountain"),
+              (-1, 1, "ocean"), (0, 1, "plains"), (1, 1, "mountain"), (2, 1, "forest"),
+              (0, 2, "ocean"), (1, 2, "plains"), (2, 2, "plains")]
+    units = {(0, 0): ("you", 2), (0, 1): ("you", 1), (1, 2): ("you", 1),
+             (1, 0): ("rival", 1), (2, 1): ("rival", 2), (2, 0): ("third", 1),
+             (2, 2): ("third", 1)}
+    for col, row, ter in sorted(layout, key=lambda t: (t[1], t[0])):
+        x, y = axial(col, row)
+        b += prism(map_x + x, map_y + y, ter)
+        if (col, row) in units:
+            who, n = units[(col, row)]
+            b += unit(map_x + x, map_y + y, who, n)
+    x, y = axial(3, 1)
+    b += prism(map_x + x, map_y + y, None, empty=True, dashed=True)
+    b += label(map_x + 55, map_y - 42, "THE MAP", 11, cls="fig-strong")
+    b += label(map_x + 55, map_y - 29, "shared, and it grows", 8.5, cls="fig-label")
+
+    # the market: deck plus 3x3, to the left of the map
+    mk_x, mk_y = 40, 92
+    b += panel(mk_x - 10, mk_y - 10, 120, 108, "MARKET",
+               "nine face up \u00b7 buy at or under your rank cap")
+    b += facedown(mk_x, mk_y + 34, 22, 30, 3)
+    b += label(mk_x + 15, mk_y + 78, "upgrade", 7.5, cls="fig-label")
+    b += label(mk_x + 15, mk_y + 87, "deck", 7.5, cls="fig-label")
+    grid = [(11, "plains"), (16, "ocean"), (12, "forest"),
+            (18, "mountain"), (13, "plains"), (17, "ocean"),
+            (15, "forest"), (14, "mountain"), (20, "plains")]
+    for i, (rank, suit) in enumerate(grid):
+        gx = mk_x + 40 + (i % 3) * 22
+        gy = mk_y + (i // 3) * 30
+        b += faceup(gx, gy, rank, suit, 19, 26)
+
+    # the tile supply: four open piles, right of the map
+    sp_x, sp_y = 468, 92
+    b += panel(sp_x - 14, sp_y - 14, 124, 150, "TILE SUPPLY",
+               "open \u2014 no bag, nothing hidden")
+    # Two columns, and the row gap is set by the TALLEST prism rather than by a
+    # flat number: Mountain stands three layers and overlapped the pile beneath
+    # it when this was spaced evenly.
+    drop = R + TER["mountain"]["h"] + 22
+    for i, ter in enumerate(("plains", "forest", "ocean", "mountain")):
+        px = sp_x + 28 + (i % 2) * 56
+        py = sp_y + 16 + (i // 2) * drop
+        b += prism(px, py, ter)
+
+    # the play area: the melds and the dice, below the map
+    pa_x, pa_y = 178, 268
+    b += panel(pa_x - 12, pa_y - 12, 300, 74, "PLAY AREA",
+               "every meld stays here until it is spent")
+    melds = [("you", [(5, "plains"), (6, "plains")]),
+             ("rival", [(8, "mountain"), (8, "ocean")]),
+             ("third", [(4, "mountain")])]
+    mx = pa_x
+    for who, cards in melds:
+        p = PLAYER[who]
+        b += (f'<circle cx="{mx + 8:.1f}" cy="{pa_y + 6:.1f}" r="5" fill="{p["fill"]}" '
+              f'stroke="{p["edge"]}" stroke-width="1.1"/>')
+        for j, (rank, suit) in enumerate(cards):
+            b += faceup(mx + j * 20, pa_y + 14, rank, suit, 18, 26)
+        mx += max(2, len(cards)) * 20 + 26
+    b += die(pa_x + 214, pa_y + 16, 2, winner=True)
+    b += die(pa_x + 234, pa_y + 16, 2)
+    b += die(pa_x + 254, pa_y + 16, 3)
+    b += label(pa_x + 244, pa_y + 46, "dice \u2014 the coloured one led", 8, cls="fig-label")
+
+    # the shared pile and the coin supply
+    b += facedown(96, 296, 22, 30, 2)
+    b += label(110, 338, "shared pile", 8.5, cls="fig-label")
+    b += gold(492, 300)
+    b += gold(510, 306)
+    b += gold(500, 316)
+    b += label(502, 338, "gold supply", 8.5, cls="fig-label")
+
+    # ---------------------------------------------------------- your seat
+    yx, yy, yw = 96, 372, 420
+    b += (f'<rect x="{yx}" y="{yy}" width="{yw}" height="62" rx="7" fill="#F4F1E9" '
+          f'stroke="{LINE}" stroke-width="1.2"/>')
+    b += (f'<circle cx="{yx + 20:.1f}" cy="{yy + 20:.1f}" r="8" '
+          f'fill="{PLAYER["you"]["fill"]}" stroke="{PLAYER["you"]["edge"]}" '
+          f'stroke-width="1.3"/>')
+    b += label(yx + 36, yy + 26, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
+    b += label(yx + 192, yy + 9, "RESERVE", 8, cls="fig-step")
+    b += label(yx + 296, yy + 9, "VICTORY ROW", 8, cls="fig-step")
+    b += label(yx + 372, yy + 9, "GOLD", 8, cls="fig-step")
+    # The reserve: five tiers of EQUAL size, the emptied ones hollow. Drawn with
+    # growing heights at first, which read as a bar chart of something and made
+    # the leftmost tiers look small rather than spent.
+    for i in range(5):
+        rx = yx + 150 + i * 17
+        spent = i < 2
+        b += (f'<rect x="{rx}" y="{yy + 15}" width="14" height="22" rx="2" '
+              f'fill="{"#FBFAF6" if spent else PLAYER["you"]["fill"]}" '
+              f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.1"'
+              + (' stroke-dasharray="2 2"' if spent else '') + '/>')
+
+    for i in range(5):
+        vx = yx + 258 + i * 16
+        filled = i >= 2
+        b += (f'<rect x="{vx}" y="{yy + 12}" width="14" height="22" rx="2" '
+              f'fill="#FBFAF6" stroke="{LINE}" stroke-width="1"'
+              + ('' if filled else ' stroke-dasharray="2 2"') + '/>')
+        if filled:
+            b += (f'<rect x="{vx}" y="{yy + 15}" width="14" height="4" rx="2" '
+                  f'fill="{TER["forest"]["top"]}"/>')
+    b += label(yx + 258, yy + 55,
+               "tiers empty from the top \u00b7 the row fills from the right",
+               8, cls="fig-label")
+    b += gold(yx + 372, yy + 28)
+
+    # your hand, face up, nearest of all
+    # EIGHT cards, not ten: the 5 and 6 of Plains are sitting in the play area
+    # above, and a figure that says ten while showing a meld already played
+    # teaches the one thing about the hand that matters wrongly.
+    hand = [(2, "ocean"), (3, "mountain"), (7, "plains"), (9, "forest"),
+            (9, "ocean"), (11, "mountain"), (14, "ocean"), (17, "forest")]
+    for i, (rank, suit) in enumerate(hand):
+        b += faceup(yx + 30 + i * 45, yy + 74, rank, suit, 38, 52)
+    b += label(yx + 210, yy + 142,
+               "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
+               9.5, cls="fig-step")
+    b += label(yx + 210, yy + 155,
+               "ten between your turns, and nobody else ever sees it",
+               8.5, cls="fig-label")
+    return svg(0, 0, b, vb="auto")
+
+
+F["table"] = table()
+
+
+# ------------------------------------------------- the worked round, in two
+def trick():
+    """Round one of the worked round: three melds, one comparison, three dice.
+
+    The trick is the one moment where everybody acts at once, and prose has to
+    walk it player by player. Drawn side by side it is a single glance: add
+    each row, biggest wins, dice go out in order.
+    """
+    b = ""
+    melds = [("you", "Ada", [(5, "plains"), (6, "plains")], 11, 2),
+             ("rival", "Bex", [(8, "mountain"), (8, "ocean")], 16, 1),
+             ("third", "Cy", [(4, "mountain")], 4, 3)]
+    cw, ch = 40, 56
+    x = 0
+    for who, name, cards, total, place in melds:
+        p = PLAYER[who]
+        wide = max(2, len(cards)) * (cw + 6)
+        cx = x + wide / 2 - 3
+        b += (f'<circle cx="{x + 9:.1f}" cy="{8:.1f}" r="7" fill="{p["fill"]}" '
+              f'stroke="{p["edge"]}" stroke-width="1.2"/>')
+        b += label(x + 22, 12, name, 11, anchor="start", cls="fig-step")
+        for j, (rank, suit) in enumerate(cards):
+            b += card(x + j * (cw + 6), 22, rank, suit, w=cw, h=ch)
+        sums = (" + ".join(str(r) for r, _ in cards) + f" = {total}"
+                if len(cards) > 1 else str(total))
+        b += label(cx, 22 + ch + 18, sums, 13,
+                   cls="fig-strong" if place == 1 else "fig-label")
+        # the die each one takes: the winner's die is the coloured one, and it
+        # shows the MELD SIZE, not the placing — the single thing about the
+        # dice that readers get wrong
+        dx = cx - 8.5
+        dy = 22 + ch + 30
+        if place == 1:
+            b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
+                  f'fill="#C0392B" stroke="#7B2018" stroke-width="1.3"/>'
+                  f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
+                  f'font-size="10.5" fill="#FBFAF6" class="fig-strong">2</text>')
+            b += label(cx, dy + 30, "winner\u2019s die: her meld", 8, cls="fig-attack")
+            b += label(cx, dy + 40, "was 2 cards. Leads next.", 8, cls="fig-attack")
+        else:
+            b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
+                  f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.3"/>'
+                  f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
+                  f'font-size="10.5" class="fig-strong">{place}</text>')
+            b += label(cx, dy + 30, f"{place}{'nd' if place == 2 else 'rd'} to spend",
+                       8, cls="fig-label")
+        x += wide + 34
+    b += label((x - 34) / 2, 22 + ch + 100,
+               "Highest TOTAL takes the trick \u2014 one big card beats two small ones.",
+               11, cls="fig-strong")
+    b += label((x - 34) / 2, 22 + ch + 115,
+               "Ada matched Bex\u2019s two cards and lost, so one of hers is set aside "
+               "for a coin.", 9, cls="fig-label")
+    return svg(0, 0, b, vb="auto")
+
+
+F["trick"] = trick()
+
+
+def worked_map():
+    """The map at the end of that same round, so a reader can check their own.
+
+    THE LAYOUT IS THE REAL ONE. The first draft of this drew three Mountains in
+    a row, and the text three lines above it says they sit in a triangle with a
+    Plains beyond each outer face — a figure quietly contradicting the section
+    it illustrates, which is the exact fault that had the combat figure showing
+    a gold coin for a version. The cells below are the engine's STARTS[3], the
+    same ones setup_maps draws, plus the one Ocean tile Bex explored.
+    """
+    b = ""
+    MTS = [(1, 3), (2, 2), (2, 3)]
+    PLS = [(0, 3), (2, 1), (3, 4)]          # Ada, Bex, Cy in seat order
+    NEW = (1, 2)                            # the Ocean Bex laid this round
+    cells = ([(c, r, "mountain") for c, r in MTS]
+             + [(c, r, "plains") for c, r in PLS]
+             + [(NEW[0], NEW[1], "ocean")])
+    for col, row, ter in sorted(cells, key=lambda t: (t[1], t[0])):
+        x, y = axial(col, row)
+        b += prism(x, y, ter)
+    # Bex settled the Mountain at (2,2) and still holds her Plains
+    for (col, row), (who, n) in {PLS[0]: ("you", 2), PLS[1]: ("rival", 1),
+                                 PLS[2]: ("third", 1), (2, 2): ("rival", 1)}.items():
+        x, y = axial(col, row)
+        b += unit(x, y, who, n)
+    # call the new tile out with a leader line rather than a badge sitting on
+    # the tile above it
+    nx, ny = axial(*NEW)
+    b += (f'<path d="M{nx - 34:.1f} {ny - 46:.1f} L{nx - 8:.1f} {ny - 20:.1f}" '
+          f'fill="none" stroke="#C0392B" stroke-width="1.6" stroke-linecap="round"/>')
+    b += label(nx - 38, ny - 50, "Bex explored this", 9, anchor="end",
+               cls="fig-attack")
+    xs = [axial(c, r)[0] for c, r, _ in cells]
+    ys = [axial(c, r)[1] for c, r, _ in cells]
+    b += label((min(xs) + max(xs)) / 2, max(ys) + R + 36,
+               "After the map phase: Bex settled a Mountain and laid the Ocean;",
+               10, cls="fig-strong")
+    b += label((min(xs) + max(xs)) / 2, max(ys) + R + 51,
+               "Ada put a second unit on her Plains; Cy cashed and kept his coins.",
+               10, cls="fig-strong")
+    return svg(0, 0, b, vb="auto")
+
+
+F["worked_map"] = worked_map()
+
+
 # ------------------------------------------------------- terrain heights
 def terrains():
     b = ""
@@ -116,34 +428,55 @@ F["explore"] = explore()
 
 # ------------------------------------------------------- combat
 def combat():
-    """v0.21: no pattern, no movement. A single card spent on an adjacent
-    rival tile removes one defender — the attacker's unit never leaves the
-    reserve. Drawn in the same grammar as the other panels: card, arrow,
-    cells."""
-    cw, ch = 46, 62
-    x_you, _ = axial(0, 0)
-    x_riv, _ = axial(1, 0)
+    """v0.24: an attack is a DUEL, and the figure has to show two hands, not a
+    coin.
+
+    The previous version drew a gold piece beside the struck tile and said "one
+    defender removed — your unit stays in reserve". Both halves of that are now
+    wrong: there is no coin price, and clearing the last defender takes the
+    ground. A figure that teaches the replaced rule is worse than no figure,
+    because it is the part of the page a reader believes without checking.
+
+    Two rows rather than three beats across: a single line of card-card-tile
+    overflowed the print column by 114px, and this is a DETAIL figure, so it is
+    already drawn large.
+    """
+    cw, ch = 42, 58
+    gap = 30
     b = ""
-    # the card is spent on the rival cell, so it hangs over that tile
-    b += card(x_riv - cw / 2, 0, 6, "forest", w=cw, h=ch)
-    ay = ch + 10
-    b += (f'<path d="M{x_riv:.1f} {ay} l0 16 M{x_riv-5:.1f} {ay+10} l5 6 l5 -6" '
-          f'fill="none" stroke="#C0392B" stroke-width="2.2" stroke-linecap="round" '
-          f'stroke-linejoin="round"/>')
-    tile_y = ay + 34 + R
-    maxh = max(TER["plains"]["h"], TER["forest"]["h"])
-    b += prism(x_you, tile_y, "plains")
-    b += unit(x_you, tile_y, "you", 1)
-    b += prism(x_riv, tile_y, "forest")
-    b += unit(x_riv, tile_y, "rival", 2)
-    # the attack pays Forest's price: one gold beside the struck tile
-    b += gold(x_riv + 19, tile_y - R - 3)
-    b += label(x_you, tile_y + R + maxh + 17, "yours", 10, cls="fig-step")
-    b += label(x_riv, tile_y + R + maxh + 17, "attack", 10, cls="fig-attack")
-    centre = (x_you + x_riv) / 2
-    b += label(centre, tile_y + R + maxh + 38,
-               "One defender removed — your unit stays in reserve.",
+
+    # ---- row 1: one card each, revealed together
+    xa = 0
+    xd = xa + cw + gap + 14
+    b += card(xa, 12, 12, "plains", w=cw, h=ch)
+    b += card(xd, 12, 9, "forest", w=cw, h=ch)
+    b += label(xa + cw / 2, 4, "attack", 10, cls="fig-attack")
+    b += label(xd + cw / 2, 4, "defence", 10, cls="fig-step")
+    b += label((xa + cw + xd) / 2, 12 + ch / 2 + 8, "vs", 12, cls="fig-label")
+    b += label(xa + cw / 2, 12 + ch + 18, "12", 13, cls="fig-strong")
+    # the ground is on the DEFENDER's side of the sum, and that is the whole
+    # point of the terrain: a bonus, not a toll
+    b += label(xd + cw / 2, 12 + ch + 18, "9 + 1 = 10", 13, cls="fig-strong")
+    b += label(xd + cw / 2, 12 + ch + 32, "Forest defends", 9, cls="fig-step")
+
+    # ---- row 2: the ground changes hands
+    centre = (xa + xd + cw) / 2
+    ty = 12 + ch + 32 + 26 + R
+    b += prism(centre, ty, "forest")
+    b += unit(centre, ty, "you", 1)
+    # the defender going home
+    ax = centre + R + 6
+    b += (f'<path d="M{ax:.1f} {ty - 8:.1f} l16 0 M{ax + 10:.1f} {ty - 13:.1f} '
+          f'l6 5 l-6 5" fill="none" stroke="#C0392B" stroke-width="2.2" '
+          f'stroke-linecap="round" stroke-linejoin="round"/>')
+    b += label(ax + 20, ty - 12, "home", 9, anchor="start", cls="fig-attack")
+    b += label(centre, ty + R + TER["forest"]["h"] + 17, "yours now", 10,
+               cls="fig-step")
+    b += label(centre, ty + R + TER["forest"]["h"] + 38,
+               "Higher total wins \u2014 and clearing the LAST",
                11, cls="fig-strong")
+    b += label(centre, ty + R + TER["forest"]["h"] + 53,
+               "defender takes the ground.", 11, cls="fig-strong")
     return svg(0, 0, b, vb="auto")
 
 
@@ -226,8 +559,12 @@ def market():
     b += label(total_w / 2, total_h + 30,
                f"your rank cap is {CAP}: the taller cards are visible, not buyable",
                11, cls="fig-step")
+    # NOT a choice. The market used to let you bury whichever position you
+    # liked; it now covers the HIGHEST rank showing, which is what makes the
+    # step deterministic and the setup simple. A figure offering a decision the
+    # rules do not have is the kind of error a reader never thinks to check.
     b += label(total_w / 2, total_h + 46,
-               "draw onto any position you like — burying what is under it",
+               "a draw covers the highest rank showing \u2014 nobody chooses",
                11, cls="fig-step")
     return svg(0, 0, b, vb="auto")
 
