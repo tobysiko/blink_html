@@ -24,9 +24,13 @@ const ok = (c, what) => { if (!c) fail.push(what); };
 
 // ---------------------------------------------------------- 1. the engine
 /* A board where seat 0 sits next to a rival Mountain (attack costs 2) and a
- * rival Forest (costs 1), with the gold varied underneath. */
+ * rival Forest (costs 1), with the gold varied underneath.
+ *
+ * The gold rule is pinned on, because a price is the thing being tested and
+ * the duel does not charge one. What the duel does to this complaint is
+ * checked at the bottom of this section: it answers it by deletion. */
 function board(gold) {
-  const g = new E.Game(2, 1, { humans: [0] });
+  const g = new E.Game(2, 1, { humans: [0], combat: 'gold' });
   g.m.tiles.clear();
   const put = (c, r, terrain, seat) => {
     const t = g.m._add([c, r], terrain);
@@ -72,8 +76,34 @@ const keysOf = (list) => list.map((x) => x[0]).sort().join(' ');
      + 'is not an attack and there is no rival Plains on this board');
 }
 
+/* Under the DUEL — the default — the complaint is answered by removing the
+ * thing complained about. An attack costs no coins at all, so a player with an
+ * empty purse is refused nothing, and there is no price left to fail to
+ * display. The badge above must not appear here, or it would be telling the
+ * truth about a rule that is not being played. */
+{
+  const g = new E.Game(2, 1, { humans: [0] });          // no combat option: duel
+  g.m.tiles.clear();
+  const put = (c, r, terrain, seat) => {
+    const t = g.m._add([c, r], terrain);
+    if (seat !== null) t.units.push(seat);
+    return t;
+  };
+  put(0, 0, 'plains', 0);
+  put(1, 0, 'mountain', 1);
+  g.P[0].gold = 0;
+  const mtn = { r: 9, s: 'mountain' };
+  const reachable = E.reach(g.m, 0);
+  ok(E.cardOptions(g.m, mtn, 0, 0, reachable).some(([, a]) => a === 'attack'),
+     'the duel refused a penniless attack — it charges no coins');
+  ok(E.cardBlocked(g.m, mtn, 0, 0, reachable).length === 0,
+     'the duel flagged a tile as unaffordable, but there is no price to afford');
+  ok(g.m.attackGold('mountain') === 0 && g.m.attackGold('forest') === 0,
+     'the map is still quoting the gold rule\'s prices under the duel');
+}
+
 // ------------------------------------------------------------ 2. the page
-const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
 const w = dom.window, d = w.document;
 const errs = [];
@@ -87,8 +117,17 @@ setTimeout(() => {
 
   require('./test_setup.js').start(w, d, { players: 3, seat: 0, seed: 77 });
 
+  /* Wait for the MAP turn itself, asked of the page rather than read off the
+   * prompt: a duel can interrupt on somebody else's turn while the sentence
+   * above still reads like your own, and the setup below writes into
+   * REQ.state, which only a turn request has. */
+  const isTurn = () => w.eval('REQ && REQ.type') === 'turn';
   let guard = 0;
-  while (!/Your turn/.test(txt()) && guard++ < 60) {
+  while (!isTurn() && guard++ < 60) {
+    if (w.eval('REQ && REQ.type') === 'duel') {
+      const c = qa('#hand button.want')[0] || qa('#hand button').find((x) => !x.disabled);
+      if (c) { click(c); continue; }
+    }
     const b = qa('#prompt button').find((x) =>
       /Skip|Take the loss|Stop|Cancel|Play meld/.test(x.textContent) && !x.disabled);
     if (b) { click(b); continue; }
@@ -98,13 +137,22 @@ setTimeout(() => {
     if (aside) { click(aside); continue; }
     break;
   }
-  if (!/Your turn/.test(txt())) {
+  if (!isTurn()) {
     fail.push('never reached my own map turn: ' + txt().slice(0, 80));
     return report();
   }
 
-  /* Build the situation directly: a rival Mountain beside me, a Mountain card
-   * in the meld, and no gold. This is the exact board the complaint describes. */
+  /* Build the situation the complaint describes: a rival Mountain beside me, a
+   * Mountain card in the meld, and NOT A COIN to my name.
+   *
+   * Under the gold rule this was the confusing case — the tile simply was not
+   * highlighted, identically to a tile out of reach. The app now plays the
+   * duel, where an attack costs no coins at all, so the same board must come
+   * out the other way: the tile is live, there is no price on it, and a
+   * penniless player may walk straight into the fight. The complaint is
+   * answered by deletion rather than by a better badge, and this is where that
+   * is checked end to end. The badge itself still has a test — above, at the
+   * engine, with the gold rule pinned on, because the option still exists. */
   const set = w.eval(`(() => {
     const p = G.P[ME];
     for (const [k, t] of G.m.tiles) { t.units.length = 0; t.owner = null; }
@@ -124,47 +172,33 @@ setTimeout(() => {
     SEL.card = card;
     render();
     const e = REQ.opts.cards[0];
-    return { options: e.options.length, blocked: (e.blocked || []).map((x) => x.join(':')) };
+    return { options: e.options.length, blocked: (e.blocked || []).map((x) => x.join(':')),
+             combat: G.COMBAT };
   })()`);
 
-  ok(set.blocked.includes('1,0:2'),
-     `the turn options do not flag the unaffordable Mountain: ${JSON.stringify(set.blocked)}`);
+  ok(set.combat === 'duel', `the page is playing ${set.combat}, not the duel`);
+  ok(set.blocked.length === 0,
+     `a penniless attack was flagged as unaffordable: ${JSON.stringify(set.blocked)}`);
+  ok(set.options > 0, 'the Mountain card was offered no cell at all with no gold');
 
-  /* The map must SHOW it — this is the whole complaint. */
   const hex = q('#map [data-key="1,0"]');
   ok(!!hex, 'the rival Mountain is not drawn at all');
-  ok(hex && hex.classList.contains('nope'),
-     `the unaffordable tile is drawn as "${hex && hex.getAttribute('class')}" — `
-     + 'it needs to be visibly refused, not silently absent');
-  ok(hex && !hex.classList.contains('hot'),
-     'the unaffordable tile is drawn as clickable');
+  ok(hex && hex.classList.contains('hot'),
+     `the rival Mountain is drawn as "${hex && hex.getAttribute('class')}" — under `
+     + 'the duel an empty purse refuses nothing, so it should be live');
+  ok(hex && !hex.classList.contains('nope'),
+     'the tile is dimmed as unaffordable under a rule that charges nothing');
 
-  /* And it must say the price. */
   const badges = qa('#map text').map((n) => n.textContent).join(' | ');
-  ok(/needs 2/i.test(badges),
-     `no badge names the price on the map: ${badges.slice(0, 120)}`);
+  ok(!/needs \d/i.test(badges),
+     `the map is still quoting a price that is not charged: ${badges.slice(0, 120)}`);
 
-  /* Clicking it does nothing at all — no answer, no state change. */
-  const before = w.eval('JSON.stringify({log: LOG.length, gold: G.P[ME].gold,'
-    + ' units: [...G.m.tiles.values()].map((t) => t.units.length).join("")})');
+  /* And the click goes through: a penniless player gets their fight. */
   if (hex) click(hex);
-  const after = w.eval('JSON.stringify({log: LOG.length, gold: G.P[ME].gold,'
-    + ' units: [...G.m.tiles.values()].map((t) => t.units.length).join("")})');
-  ok(before === after,
-     'clicking a tile that says it cannot be attacked did something anyway');
+  const after = w.eval('REQ && REQ.type');
+  ok(after === 'duel',
+     `clicking the tile with no gold led to "${after}" instead of a duel`);
 
-  /* Give them the gold and the same tile becomes a real target. */
-  const now = w.eval(`(() => {
-    G.P[ME].gold = 2;
-    REQ.opts = G.turnOptions(G.P[ME], REQ.state);
-    render();
-    const h = document.querySelector('#map [data-key="1,0"]');
-    return { cls: h ? h.getAttribute('class') : null,
-             blocked: (REQ.opts.cards[0].blocked || []).length };
-  })()`);
-  ok(now.blocked === 0, 'the tile is still flagged as unaffordable with 2 gold');
-  ok(now.cls && /\bhot\b/.test(now.cls) && !/\bnope\b/.test(now.cls),
-     `with the gold in hand the tile is drawn as "${now.cls}" — it should be live`);
 
   report();
 }, 500);
@@ -172,8 +206,10 @@ setTimeout(() => {
 function report() {
   ok(!errs.length, 'the page logged errors: ' + errs.slice(0, 2).join(' | '));
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-    : 'unaffordable attacks: the engine reports them with their price, the map '
-      + 'draws them dimmed and says what they cost, the click is refused, and '
-      + 'they become live targets the moment the gold is there');
+    : 'unaffordable attacks: under the gold rule the engine still reports the '
+      + 'price so the map can dim the tile and say what it costs — and under the '
+      + 'duel, which is what the app plays, there is no price, no dimmed tile and '
+      + 'no refusal: a player with an empty purse clicks the Mountain and gets '
+      + 'their fight');
   process.exit(fail.length ? 1 : 0);
 }

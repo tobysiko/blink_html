@@ -90,6 +90,14 @@ function newSession(opts, rand) {
        * same four — but only if they agree the variant is ON. */
       perks: o.perks === true || (o.perks && typeof o.perks === "object")
         ? o.perks : false,
+      /* Combat belongs to the TABLE: two clients disagreeing about whether an
+       * attack is a duel would replay different boards. */
+      combat: o.combat === "gold" ? "gold" : "duel",
+      /* The spoils travel with it. Default true, so `false` has to survive the
+       * trip — `o.duelTake || true` would quietly turn it back on and the two
+       * clients would settle different tiles. */
+      duelTake: o.duelTake !== false,
+      duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
@@ -331,7 +339,7 @@ function sessionAnswer(s, Engine, token, step, tok) {
  * round, not to anyone's turn, and by then the round it would rewind into has
  * been seen by everybody. */
 const TURN_REQ = ["turn", "waterexplore", "conquest", "retire", "buy", "colony",
-                  "bonus", "discard", "setaside"];
+                  "bonus", "discard", "setaside", "duel"];
 function undoFloor(s, Engine, seat) {
   const a = gameArgs(s);
   const g = new Engine.Game(a.n, a.seed, a.opts);

@@ -37,7 +37,7 @@ const path = require('path');
  * players load. */
 const TARGETS = process.argv[2]
   ? [process.argv[2]]
-  : [path.join(__dirname, '..', 'Blink-play-v0.23.html'),
+  : [require('./test_setup.js').PLAY_HTML,
      path.join(__dirname, '..', 'deploy', 'index.html')].filter(fs.existsSync);
 const fail = [];
 let WHERE = '';

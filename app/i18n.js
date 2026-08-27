@@ -24,7 +24,7 @@ const LANGS = { en: "English", de: "Deutsch" };
 const STRINGS = {
 en: {
   // ---- shell / header --------------------------------------------------
-  "app.sub": "Climbing the Ladder of Civilization · rules v0.23",
+  "app.sub": "Climbing the Ladder of Civilization · rules __VTAG__",
   "app.round": "round",
   "app.lastRound": "· FINAL ROUND",
   "app.endTriggered": "· one round left",
@@ -354,6 +354,12 @@ en: {
   "btn.playMeld": "Play meld",
   "ask.bonus": "<b>Won the trick</b> <span class=\"muted\">— spend one extra card</span>",
   "ask.setaside": "<b>You matched the winner</b> <span class=\"muted\">— one of your played cards goes to the shared pile and pays you 🪙1 instead of acting on the map. Click it above.</span>",
+  "ask.duel.attack": "<b>Your attack</b> <span class=\"muted\">— commit one card from your hand. They defend on {terrain} (+{bonus}).</span>",
+  "ask.duel.defend": "<b>They are attacking your {terrain}</b> <span class=\"muted\">— commit one card to defend. The ground adds +{bonus}.</span>",
+  "ask.duel.decline": "Don't fight",
+  "ask.duel.attack": "<b>Dein Angriff</b> <span class=\"muted\">— lege eine Handkarte fest. Verteidigt wird auf {terrain} (+{bonus}).</span>",
+  "ask.duel.defend": "<b>Angriff auf dein {terrain}</b> <span class=\"muted\">— lege eine Handkarte zur Verteidigung fest. Das Gelände gibt +{bonus}.</span>",
+  "ask.duel.decline": "Nicht kämpfen",
   "ask.discard": "<b>Give up a card</b> <span class=\"muted\">— face down to the shared pile</span>",
   "ask.retire.lowest": "<b>Give up your lowest card</b> <span class=\"muted\">— rank {low}, lit below. {more}It becomes a victory card.</span>",
   "ask.retire.lowest.more": "You hold {n}; choose the suit you need least. ",
@@ -854,6 +860,9 @@ de: {
   "btn.playMeld": "Kombination spielen",
   "ask.bonus": "<b>Stich gewonnen</b> <span class=\"muted\">— spiele eine Extrakarte</span>",
   "ask.setaside": "<b>Gleichauf mit dem Gewinner</b> <span class=\"muted\">— eine deiner gespielten Karten wandert auf den gemeinsamen Ablagestapel und bringt dir 🪙1, statt auf der Karte zu wirken. Klicke sie oben an.</span>",
+  "ask.duel.attack": "<b>Dein Angriff</b> <span class=\"muted\">— lege eine Handkarte fest. Verteidigt wird auf {terrain} (+{bonus}).</span>",
+  "ask.duel.defend": "<b>Angriff auf dein {terrain}</b> <span class=\"muted\">— lege eine Handkarte zur Verteidigung fest. Das Gelände gibt +{bonus}.</span>",
+  "ask.duel.decline": "Nicht kämpfen",
   "ask.discard": "<b>Eine Karte abgeben</b> <span class=\"muted\">— verdeckt auf den gemeinsamen Ablagestapel</span>",
   "ask.retire.lowest": "<b>Gib deine niedrigste Karte ab</b> <span class=\"muted\">— Wert {low}, unten hervorgehoben. {more}Sie wird zur Siegkarte.</span>",
   "ask.retire.lowest.more": "Du hast {n} davon; wähle die Farbe, die du am wenigsten brauchst. ",

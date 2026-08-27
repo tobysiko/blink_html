@@ -19,7 +19,7 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); process.exit(2); }
 
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 
@@ -148,6 +148,12 @@ setTimeout(() => {
           if (h) click(h); else { const c = btn(/^Cash /); if (c) click(c); }
           if (steps % 3 === 0 && !undo.disabled) { click(undo); undos++; }
         } else click(btn(/^End turn/));
+      } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
+        /* A duel is a turn request, so it must be undoable like any other —
+         * that is the whole point of this file. Commit a card, or decline. */
+        const c = qa('#hand button')[0];
+        const decline = btn(/Don't fight|Nicht kämpfen/);
+        if (c) click(c); else if (decline) click(decline);
       } else if (/Give up|Retire a card|spend one extra|shared pile/.test(t)) {
         const c = qa('#hand button.want')[0] || qa('#hand button')[0]; if (c) click(c);
       } else if (/Take a card/.test(t)) {

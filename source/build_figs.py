@@ -76,7 +76,12 @@ def terrains():
         b += prism(x, y, key)
         b += label(x, y + TER[key]["h"] + 34, name, 14, cls="fig-strong")
         b += label(x, y + TER[key]["h"] + 52, f"holds {cap}", 12)
-        b += label(x, y + TER[key]["h"] + 68, ["free","free","costs 1 gold","costs 2 gold"][i], 11, cls="fig-step")
+        # The height of the prism IS the defence bonus — under the duel the
+        # terrain no longer charges a toll to enter, it adds to the defender's
+        # card. Printing a gold price here taught the rule that was removed.
+        b += label(x, y + TER[key]["h"] + 68,
+                   ["defence +0", "defence +0", "defence +1", "defence +2"][i],
+                   11, cls="fig-step")
     b += label(60, 30, "flat", 11, cls="fig-step")
     b += label(168, 30, "flat", 11, cls="fig-step")
     b += label(276, 30, "2 layers", 11, cls="fig-step")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blink — Rules v0.23</title>
+<title>Blink — Rules v0.24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -249,6 +249,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
     <b>08</b> Terrain · <b>09</b> Feeding and refilling · <b>10</b> Research and the market ·
     <b>✦</b> A worked example · <b>11</b> End of the game ·
+    <b>12</b> Map objectives · <b>13</b> Perks ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
   </div>
 </section>
@@ -280,9 +281,10 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     <li><strong>4 player boards</strong> — each with a <b>reserve</b> of five tiers, a
     <b>gold area</b>, and a <b>victory row</b> of five slots</li>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
-    <li><strong>4 initiative dice</strong> — use one per player</li>
+    <li><strong>4 dice</strong> — one <b>winner's die</b> in its own colour, and three
+    plain <b>initiative dice</b>. One per player.</li>
   </ul>
-  <figure><div class="figbox"><svg class="fig" width="448.3" height="211.9" viewBox="20 5 419 198" xmlns="http://www.w3.org/2000/svg" role="img"><polygon points="82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,114.00 60.00,127.00 82.52,114.00 82.52,88.00" fill="#123D53"/><polygon points="60.00,70.00 82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,83.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><text x="60.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Ocean</text><text x="60.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="60.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,114.00 168.00,127.00 190.52,114.00 190.52,88.00" fill="#9B7A16"/><polygon points="168.00,70.00 190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,83.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><text x="168.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Plains</text><text x="168.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 3</text><text x="168.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">free</text><polygon points="298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,122.00 276.00,135.00 298.52,122.00 298.52,96.00" fill="#1E4229"/><polygon points="276.00,70.00 298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,83.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><text x="276.00" y="143.00" text-anchor="middle" class="fig-strong" font-size="14">Forest</text><text x="276.00" y="161.00" text-anchor="middle" class="fig-label" font-size="12">holds 2</text><text x="276.00" y="177.00" text-anchor="middle" class="fig-step" font-size="11">costs 1 gold</text><polygon points="406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,130.00 384.00,143.00 406.52,130.00 406.52,104.00" fill="#5A544C"/><polygon points="384.00,70.00 406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,83.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><text x="384.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="14">Mountain</text><text x="384.00" y="169.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="384.00" y="185.00" text-anchor="middle" class="fig-step" font-size="11">costs 2 gold</text><text x="60.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="168.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="276.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">2 layers</text><text x="384.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">3 layers</text></svg></div><figcaption>The four terrains at a glance. Defended ground is shown taller — a visual reminder of its attack cost, nothing more. The numbers on the table are the rules.</figcaption></figure>
+  <figure><div class="figbox"><svg class="fig" width="450.5" height="211.9" viewBox="12 5 421 198" xmlns="http://www.w3.org/2000/svg" role="img"><polygon points="82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,114.00 60.00,127.00 82.52,114.00 82.52,88.00" fill="#123D53"/><polygon points="60.00,70.00 82.52,83.00 82.52,109.00 60.00,122.00 37.48,109.00 37.48,83.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><text x="60.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Ocean</text><text x="60.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="60.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">defence +0</text><polygon points="190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,114.00 168.00,127.00 190.52,114.00 190.52,88.00" fill="#9B7A16"/><polygon points="168.00,70.00 190.52,83.00 190.52,109.00 168.00,122.00 145.48,109.00 145.48,83.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><text x="168.00" y="135.00" text-anchor="middle" class="fig-strong" font-size="14">Plains</text><text x="168.00" y="153.00" text-anchor="middle" class="fig-label" font-size="12">holds 3</text><text x="168.00" y="169.00" text-anchor="middle" class="fig-step" font-size="11">defence +0</text><polygon points="298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,122.00 276.00,135.00 298.52,122.00 298.52,96.00" fill="#1E4229"/><polygon points="276.00,70.00 298.52,83.00 298.52,109.00 276.00,122.00 253.48,109.00 253.48,83.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><text x="276.00" y="143.00" text-anchor="middle" class="fig-strong" font-size="14">Forest</text><text x="276.00" y="161.00" text-anchor="middle" class="fig-label" font-size="12">holds 2</text><text x="276.00" y="177.00" text-anchor="middle" class="fig-step" font-size="11">defence +1</text><polygon points="406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,130.00 384.00,143.00 406.52,130.00 406.52,104.00" fill="#5A544C"/><polygon points="384.00,70.00 406.52,83.00 406.52,109.00 384.00,122.00 361.48,109.00 361.48,83.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><text x="384.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="14">Mountain</text><text x="384.00" y="169.00" text-anchor="middle" class="fig-label" font-size="12">holds 1</text><text x="384.00" y="185.00" text-anchor="middle" class="fig-step" font-size="11">defence +2</text><text x="60.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="168.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">flat</text><text x="276.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">2 layers</text><text x="384.00" y="30.00" text-anchor="middle" class="fig-step" font-size="11">3 layers</text></svg></div><figcaption>The four terrains at a glance. Defended ground is moulded taller, and how tall it stands is its defence bonus in a duel — nothing more. The numbers on the table are the rules.</figcaption></figure>
 </section>
 
 <section>
@@ -322,7 +324,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     </ul>
     <p class="fine">Three is not decoration. A card only acts next to your civilization, so
     in the opening rounds nobody can reach a rival's homeland at all. Long before homelands are
-    in danger, the Mountains become the contested ground — each holds one unit and costs 2 gold
+    in danger, the Mountains become the contested ground — each holds one unit and defends at +2
     a card to take — so the fight for the middle comes first.</p></li>
 
     <li><b>Tile supply.</b> Sort the remaining tiles into four open piles by terrain,
@@ -335,7 +337,8 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     (§10). Leave a clear space next to it for the <strong>shared pile</strong>: it starts
     empty, and fills with the cards losing melds discard (§04).</li>
 
-    <li><b>First player.</b> Choose a start player. They take initiative die “1”.</li>
+    <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>;
+    nothing is played yet, so set it to 1.</li>
   </ol>
   <figure><div class="figbox"><svg class="fig" width="673.0" height="286.8" viewBox="-6 -52 629 268" xmlns="http://www.w3.org/2000/svg" role="img"><g transform="translate(22.52,-0.00)"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#9B7A16"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="0.00" cy="6.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="0.00" cy="3.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,34.00 45.03,47.00 67.55,34.00 67.55,8.00" fill="#5A544C"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,34.00 90.07,47.00 112.58,34.00 112.58,8.00" fill="#5A544C"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,18.00 135.10,31.00 157.62,18.00 157.62,-8.00" fill="#9B7A16"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="135.10" cy="6.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="135.10" cy="3.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/></g><text x="90.07" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">2 players</text><g transform="translate(196.13,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#9B7A16"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#5A544C"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#9B7A16"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="22.52" cy="123.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="22.52" cy="120.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,151.00 67.55,164.00 90.07,151.00 90.07,125.00" fill="#5A544C"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#5A544C"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,174.00 135.10,187.00 157.62,174.00 157.62,148.00" fill="#9B7A16"/><polygon points="135.10,130.00 157.62,143.00 157.62,169.00 135.10,182.00 112.58,169.00 112.58,143.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="135.10" cy="162.00" rx="11" ry="5.5" fill="#232659"/><ellipse cx="135.10" cy="159.00" rx="11" ry="5.5" fill="#3B3F8F" stroke="#232659" stroke-width="1.2"/></g><text x="274.94" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">3 players</text><g transform="translate(392.27,-39.00)"><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,57.00 112.58,70.00 135.10,57.00 135.10,31.00" fill="#9B7A16"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#9B7A16"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,112.00 45.03,125.00 67.55,112.00 67.55,86.00" fill="#5A544C"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,112.00 90.07,125.00 112.58,112.00 112.58,86.00" fill="#5A544C"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,151.00 112.58,164.00 135.10,151.00 135.10,125.00" fill="#5A544C"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,151.00 157.62,164.00 180.13,151.00 180.13,125.00" fill="#5A544C"/><polygon points="157.62,91.00 180.13,104.00 180.13,130.00 157.62,143.00 135.10,130.00 135.10,104.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,135.00 202.65,148.00 225.17,135.00 225.17,109.00" fill="#9B7A16"/><polygon points="202.65,91.00 225.17,104.00 225.17,130.00 202.65,143.00 180.13,130.00 180.13,104.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="202.65" cy="123.00" rx="11" ry="5.5" fill="#4C2F63"/><ellipse cx="202.65" cy="120.00" rx="11" ry="5.5" fill="#7A4E9B" stroke="#4C2F63" stroke-width="1.2"/><polygon points="112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,174.00 90.07,187.00 112.58,174.00 112.58,148.00" fill="#9B7A16"/><polygon points="90.07,130.00 112.58,143.00 112.58,169.00 90.07,182.00 67.55,169.00 67.55,143.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="90.07" cy="162.00" rx="11" ry="5.5" fill="#232659"/><ellipse cx="90.07" cy="159.00" rx="11" ry="5.5" fill="#3B3F8F" stroke="#232659" stroke-width="1.2"/></g><text x="493.59" y="198.00" text-anchor="middle" class="fig-strong" font-size="11">4 players</text></svg></div><figcaption>The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.</figcaption></figure>
 </section>
@@ -403,8 +406,19 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
     <strong>highest card</strong>, then second-highest, and so on. If two melds are still
     identical, the one played <strong>earlier</strong> wins. There are never ties after
     this.</li>
-    <li>Set the initiative dice: winner to 1, then the rest in that same order.</li>
+    <li>Set the dice. The winner takes the <strong>winner's die</strong> and sets it to
+    the <strong>number of cards in their meld</strong>. It marks them as first in
+    initiative whatever number is showing — it is the only die of its colour, so there is
+    nothing to confuse it with. The rest take plain initiative dice showing
+    <strong>2, 3, 4</strong> in finishing order.</li>
   </ol>
+  <div class="note">
+    <span class="tag">Why the winner's die shows a card count</span>
+    <p>Two things have to be remembered between the card phase and the map phase: who goes
+    first, and <em>how many cards the winner played</em> — because anyone who matched that
+    number and lost gives a card up. One die carries both. The winner is the winner
+    because their die is the winner's die, not because of the number on its face.</p>
+  </div>
 
   <h3>Map phase</h3>
   <p>In initiative order, each player spends their meld — card by card, in any order,
@@ -530,28 +544,62 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 
   <h3>Attack</h3>
   <p>When the cell is a tile a rival occupies, you cannot settle there. Instead, spending
-  that card <strong>removes one of the rival's units</strong> from the tile, back to their
-  board. Your own unit is <strong>not</strong> placed — the card is spent on the attack, and
-  the unit you would have settled stays in your reserve.</p>
-  <p>So taking a contested tile is patient work: one card clears one defender, and only
-  once the tile is empty can a later card settle it. A stack of rivals must be worn
-  down over more than one turn.</p>
-  <figure><div class="figbox"><svg class="fig" width="590.4" height="385.6" viewBox="-162 -14 369 241" xmlns="http://www.w3.org/2000/svg" role="img"><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="#37704A"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="#37704A"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="#37704A"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#C0392B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#9B7A16"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#1E4229"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#E8C25A" stroke="#9B7A16" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#9B7A16" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile removes one defender — your own unit never leaves your reserve. Clearing a stack takes as many cards as there are defenders.</figcaption></figure>
-  <p>High ground is not safer, only dearer. <strong>Each card you spend attacking</strong>
-  pays the terrain's price first — so clearing a two-unit Forest with two cards costs 2 gold,
-  not 1. If you cannot pay, you cannot attack that cell; the card does something else, or
-  takes gold.</p>
+  that card <strong>declares an attack</strong> on it. Your own unit is <strong>not</strong>
+  placed — the card is spent on the attack, and the unit you would have settled stays in
+  your reserve.</p>
+
+  <p>An attack is not automatic. It is a <strong>duel</strong>, and both sides may fight
+  it with a card from hand.</p>
+  <ol class="seq">
+    <li><b>Is the defender fortified?</b> A coin on the unit absorbs the attack outright.
+    The gold goes to the supply, the unit stands, and there is no duel (§07).</li>
+    <li><b>Both commit, in secret.</b> You and the defender each choose one card from
+    hand and place it face down. Either of you may decline, and a player with an empty
+    hand has nothing to commit.</li>
+    <li><b>Reveal together.</b> Compare:
+      <br><strong>Attack</strong> = your card's rank.
+      <br><strong>Defence</strong> = their card's rank <strong>+ the terrain's defence
+      bonus</strong>. A card not committed counts as nothing.</li>
+    <li><b>The higher total wins.</b> If the totals are level, the card whose
+    <strong>suit matches the ground being fought over</strong> takes it; if both match or
+    neither does, <strong>the defender holds</strong>.</li>
+    <li><b>Attacker wins</b> — one defending unit returns to its owner's board.
+    If that was the <strong>last</strong> unit on the tile, <strong>the ground
+    changes hands</strong>: place a unit from your board on it at once, from
+    your top occupied tier as usual. No unit in reserve, or defenders still
+    standing, and the tile is simply left empty.
+    <br><b>Defender wins</b> — nothing happens; the attack is spent for
+    nothing.</li>
+  </ol>
+  <p>Both committed cards go to their owners' discards, and come back on the next
+  recycle. Losing a duel costs you tempo, not cards.</p>
+
   <table>
-    <thead><tr><th>Attacking into</th><th>Cost per card</th><th>Cards to clear a full stack</th></tr></thead>
+    <thead><tr><th>Attacking into</th><th>Defence bonus</th><th>What it means</th></tr></thead>
     <tbody>
-      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">free</td><td class="num-cell">3</td></tr>
-      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">free</td><td class="num-cell">1</td></tr>
-      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">1 gold</td><td class="num-cell">2</td></tr>
-      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">2 gold</td><td class="num-cell">1</td></tr>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">+0</td>
+        <td>Open ground. Rank alone decides it.</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">+0</td>
+        <td>Open water — but it holds one unit, so every duel is for everything.</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">+1</td>
+        <td>Cover. You need to beat them by two.</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">+2</td>
+        <td>High ground. Expensive to take and worth holding.</td></tr>
     </tbody>
   </table>
-  <p>To capture ground, empty it first and settle it after — which always takes more
-  than one round.</p>
+  <figure><div class="figbox"><svg class="fig" width="590.4" height="385.6" viewBox="-162 -14 369 241" xmlns="http://www.w3.org/2000/svg" role="img"><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="#37704A"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="#37704A"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="#37704A"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#C0392B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#9B7A16"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#1E4229"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#E8C25A" stroke="#9B7A16" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#9B7A16" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel, and your unit stays on your board until the tile is empty — clearing a stack takes as many won duels as there are defenders, and the last one takes the ground.</figcaption></figure>
+
+  <div class="note">
+    <span class="tag">Why your hand matters twice</span>
+    <p>Your cards fight for the trick, buy your turn on the map — and now defend your
+    ground. A hand kept back is an army; a hand played out is a frontier with nobody on
+    the walls. The moment before your hand recycles is the moment you are easiest to
+    attack, and everyone at the table can count your cards.</p>
+  </div>
+  <p>Taking a contested tile is still patient work. One won duel clears <em>one</em>
+  defender, so a Plains holding three takes three of them — and every one of those is a
+  card out of your hand against a card out of theirs. What changes on the last of them is
+  that you do not have to come back: the tile is yours the moment you empty it.</p>
 
   <h3>Take gold</h3>
   <p>Instead of using a card on the map, take <strong>1 gold</strong>. Any card, any number
@@ -648,21 +696,23 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 <section>
   <div class="h2"><span class="num">08</span><h2>Terrain</h2></div>
   <table>
-    <thead><tr><th>Terrain</th><th>Holds</th><th>Costs to attack</th></tr></thead>
+    <thead><tr><th>Terrain</th><th>Holds</th><th>Defence bonus</th></tr></thead>
     <tbody>
-      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">3</td><td class="num-cell">free</td></tr>
-      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">1</td><td class="num-cell">free</td></tr>
-      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">2</td><td class="num-cell">1 gold</td></tr>
-      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">1</td><td class="num-cell">2 gold</td></tr>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">3</td><td class="num-cell">+0</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">1</td><td class="num-cell">+0</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">2</td><td class="num-cell">+1</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">1</td><td class="num-cell">+2</td></tr>
     </tbody>
   </table>
-  <p>These values are fixed — nothing in the game ever modifies them. As a visual aid, defended
-  terrain is moulded taller: Forest stands two layers, Mountain three, so a glance at the map
-  recalls the attack cost without looking anything up.</p>
+  <p>These values are fixed — nothing in the game ever modifies them. The defence bonus is
+  added to the <em>defender's</em> card in a duel (§06): taking a Mountain needs a card three
+  ranks better than the one holding it. As a visual aid, defended terrain is moulded taller:
+  Forest stands two layers, Mountain three, so a glance at the map tells you how much harder
+  that ground will fight without looking anything up.</p>
   <p>The supply holds the four terrains in <strong>equal numbers — 15 each</strong>. That mirrors the
   deck, where every suit appears at every rank. No terrain is scarce, and no card in your hand is
   worth more than another because the ground it needs is rarer. What a terrain is worth is set by
-  how many units it holds and what it costs to take — never by how much of it exists.</p>
+  how many units it holds and how hard it is to take — never by how much of it exists.</p>
 </section>
 
 <section>
@@ -835,7 +885,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
   it &mdash; that is the market. Their Tribe rank cap is 12, so most of what is showing is
   out of reach until they grow.
-  Ada is chosen to start and takes initiative die “1”.</p>
+  Ada is chosen to start and takes the winner's die, set to 1.</p>
 
   <h3>The card phase</h3>
   <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
@@ -849,7 +899,9 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   </ul>
   <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
   <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
-  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes initiative die 1 — she
+  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes the winner's die, setting
+  it to <strong>2</strong> — the size of her meld, and a reminder that anyone who also played
+  two and lost owes a card. She is first in initiative regardless of the number; she
   will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
   <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
   on its own. Under a total, one big card is a play, not a waste.</p>
@@ -930,11 +982,128 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
   <p>Most points wins. Gold breaks a tie.</p>
   <div class="note">
     <span class="tag">Beyond the base game</span>
-    <p>Two optional layers deepen scoring once the base game is familiar, each in its
-    own booklet: <strong>shared map objectives</strong> — pattern cards like rivers,
-    silk roads and mountain ranges that everyone can score — and <strong>personal
-    objectives</strong>, secret goals held from the start. Add them one at a time, not
-    for your first game or two.</p>
+    <p>Two optional modules follow, and they sit on top of everything above without
+    changing any of it: <strong>§12 Map objectives</strong> gives every player a shape
+    to build toward, and <strong>§13 Perks</strong> gives the victory row something to
+    do before scoring. Add them one at a time, and not for your first game or two.</p>
+  </div>
+</section>
+
+<section id="objectives">
+  <div class="h2"><span class="num">12</span><h2>Map objectives</h2></div>
+  <p class="lede">A module. Everything in sections 01 to 11 still applies; this adds one
+  thing to setup and one line to scoring.</p>
+
+  <p>The map is where your civilization spreads. This module gives it a
+  <strong>shape to aim at</strong>. Each objective card names three tiles in a row — a
+  middle terrain with a particular terrain on either side — and pays <strong>4
+  points</strong> if you hold that arrangement when the game ends.</p>
+
+  <h3>The pattern</h3>
+  <p>Every objective is <strong>three tiles</strong>: a <b>middle</b>, and two <b>ends</b>
+  that each touch the middle. The ends do <em>not</em> need to touch each other, and the
+  three tiles may sit anywhere on the map.</p>
+  <ul>
+    <li>All three must be tiles <strong>you occupy</strong> — at least one of your units
+    standing on each. A tile with no units, or one held only by a rival, never counts.</li>
+    <li>An objective scores <strong>4 points once</strong>, or nothing. Building the
+    pattern twice does not pay twice, and failing costs nothing.</li>
+    <li>The terrain must match exactly. <em>Fjord</em> is Ocean between two Mountains;
+    two Oceans around a Mountain is <em>Mountain Lookout</em>, a different card.</li>
+  </ul>
+  <p>There are <strong>twelve</strong> objective cards, printed in their own booklet.</p>
+
+  <h3>Three ways to play it</h3>
+  <p>Agree on one before setup.</p>
+  <table>
+    <thead><tr><th>Mode</th><th>Setup</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Secret</strong></td>
+        <td>Deal <b>two</b> face down to each player. Look at both, keep <b>one</b>, return
+        the other to the box unseen.</td>
+        <td>The tightest. Nobody knows what anyone is building, and choosing which to keep
+        is the first real decision of the game. Choose <em>before</em> the card draft, so
+        the objective can shape the hand you keep.</td></tr>
+      <tr><td><strong>Open</strong></td>
+        <td>Turn <b>two</b> face up in the middle of the table. They belong to everyone.</td>
+        <td>The friendliest, and the most contested — you can see exactly what your rivals
+        want, because they want the same thing you do.</td></tr>
+      <tr><td><strong>Keep both</strong></td>
+        <td>Deal <b>two</b> face down to each player and keep them both. Both score.</td>
+        <td>The loosest. Up to 8 points, and two shapes to steer between.</td></tr>
+    </tbody>
+  </table>
+  <p>In every mode, objectives are revealed <strong>together</strong> at the end, after the
+  base score is counted.</p>
+
+  <div class="note">
+    <span class="tag">Why it changes the map</span>
+    <p>Without objectives, ground is ground: you take what you can reach. With them,
+    a particular empty hex beside your Forest is suddenly worth exploring
+    <em>specifically</em>, and dominance stops being the only reason to hold a stretch of
+    coast. Four points is roughly a fifth of a typical score, so an objective is worth
+    steering for — but not worth wrecking your position over.</p>
+  </div>
+</section>
+
+<section id="perks">
+  <div class="h2"><span class="num">13</span><h2>Perks</h2></div>
+  <p class="lede">A module, and a new one. Everything in sections 01 to 11 still applies.
+  This one has not been through a full playtest — treat it as an experiment and tell us
+  how it went.</p>
+
+  <p>Your victory row scores at the end and does nothing before it, which is a strange
+  thing for five slots sitting in front of you all game. Perks give them a job: a perk
+  <strong>wakes up when its slot holds a card</strong>, and works for the rest of the
+  game until you spend the card underneath it.</p>
+
+  <h3>Setup</h3>
+  <ol class="seq">
+    <li>Shuffle the perk tokens and <b>deal four to each player</b>.</li>
+    <li>Put one on each of <strong>slots 1, 2, 3 and 4</strong> of your victory row, face
+    up, wherever you like. <strong>Slot 5 stays empty</strong> — it fills on your first
+    research, so a perk there would be a gift rather than something earned.</li>
+    <li>You may rearrange them freely until the moment your first card reaches the row.
+    After that the arrangement is <strong>permanent</strong>.</li>
+  </ol>
+
+  <h3>Which slot, and why it matters</h3>
+  <p>Cards fill the victory row from the <strong>right</strong> (§11), so the slot you
+  choose decides how long you wait:</p>
+  <table>
+    <thead><tr><th>Slot</th><th>Wakes when your row holds</th><th>The bet</th></tr></thead>
+    <tbody>
+      <tr><td class="num-cell">4</td><td class="num-cell">2 cards</td>
+        <td>Working almost at once. The safe place for the perk you want most.</td></tr>
+      <tr><td class="num-cell">3</td><td class="num-cell">3 cards</td>
+        <td>Reachable in most games.</td></tr>
+      <tr><td class="num-cell">2</td><td class="num-cell">4 cards</td>
+        <td>Late, and only if you keep researching.</td></tr>
+      <tr><td class="num-cell">1</td><td class="num-cell">all 5</td>
+        <td>A long shot. It asks you to fill the row and never spend it down.</td></tr>
+    </tbody>
+  </table>
+  <p>Every perk is <strong>equal</strong> — there are no better and worse kinds. What
+  differs is how soon you want each one, and how much of your row you are willing to tie
+  up getting it.</p>
+
+  <h3>The two kinds</h3>
+  <ul>
+    <li><strong>SPEND</strong> — use it, then turn the token face down. It comes back the
+    next time your <b>hand recycles</b> (§09), which is also when you pay your food, so
+    the two happen together.</li>
+    <li><strong>STANDING</strong> — no use to spend. It simply works, for as long as its
+    slot holds a card. These tokens never turn over.</li>
+  </ul>
+  <p>Each token says which it is.</p>
+
+  <div class="note">
+    <span class="tag">The price of a perk</span>
+    <p>Spending a victory card on its <b>A</b>, <b>B</b> or <b>C</b> effect (§10) takes it
+    out of the row — and if that drops the row below a perk's slot, <strong>the perk
+    switches off</strong>. So the more you like your perks, the fewer effects you will
+    spend. That trade is the whole balance of this module: nothing here is free, and a
+    player who wants everything running has quietly given up their war chest to get it.</p>
   </div>
 </section>
 
@@ -987,16 +1156,24 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
       <h3>Round</h3>
       <p>Declare A effects blind → leader plays a meld → everyone plays a meld → highest total
       wins, then most cards, then highest card, then earliest played (never a tie) →
+      <b>winner's die = their meld size</b> (and always first), others 2/3/4 →
       spend melds in initiative order. The winner spends every card. Anyone who
       <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
       goes to the shared pile. Last place takes 1 gold.</p>
+      <h3>Combat — a duel</h3>
+      <p>Win the last defender and the tile is yours: settle it at once.
+      Fortified? The coin absorbs it, no duel. Otherwise both sides commit one hand
+      card face down and reveal: <b>attacker's rank</b> vs <b>defender's rank + terrain
+      (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
+      card matching the ground, and to the <b>defender</b> if both or neither match.
+      Attacker wins, one defender goes home. Both cards to their owners' discards.</p>
       <h3>Melds — one rule</h3>
       <p>Any cards whose ranks form an <b>unbroken run</b>. Duplicates of any rank are free;
       suits are irrelevant. One card is always legal.<br>
       2 ✓ · 2-2 ✓ · 2-3 ✓ · 2-3-3-4-4 ✓ · <b>2-2-4-4 ✗</b> (no 3).<br>
       Limit by tier: 2 / 3 / 4 / 5 / 6.</p>
       <h3>Each card of your meld</h3>
-      <p>ONE of: Settle a unit · Explore a tile · Attack (pay the terrain price) ·
+      <p>ONE of: Settle a unit · Explore a tile · Attack (duel) ·
       Take 1 gold. Any order; each card resolves on the map as the last one left it.</p>
       <p>Reach: a tile you occupy or adjacent to one you occupy. Suit matches terrain.
       No units on the map? Act anywhere.</p>
@@ -1010,8 +1187,8 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
         <tbody>
           <tr><td>Plains</td><td class="num-cell">holds 3</td></tr>
           <tr><td>Ocean</td><td class="num-cell">holds 1 · sea roads</td></tr>
-          <tr><td>Forest</td><td class="num-cell">holds 2 · attack costs 1</td></tr>
-          <tr><td>Mountain</td><td class="num-cell">holds 1 · attack costs 2</td></tr>
+          <tr><td>Forest</td><td class="num-cell">holds 2 · defends +1</td></tr>
+          <tr><td>Mountain</td><td class="num-cell">holds 1 · defends +2</td></tr>
         </tbody>
       </table>
       <h3>Exploring</h3>
@@ -1030,8 +1207,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
       One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
       <h3>Gold</h3>
       <p>1 per cashed card · ascension coins 1/2/3/4, once each · 1 for ranking last ·
-      pay 1 to research · pay 1 to fortify · pay 1–2 <em>per card</em> to attack Forest or
-      Mountain · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
+      pay 1 to research · pay 1 to fortify · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
       recycles — short slots starve units off the map.</p>
       <h3>Research — up to twice per turn</h3>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
@@ -1059,7 +1235,7 @@ p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
 </div>
 </div>
 
-<div class="pad"><footer>Blink · base game · draft rules v0.23 · Toby Siko ·
+<div class="pad"><footer>Blink · base game · draft rules v0.24 · Toby Siko ·
 deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
 separately</footer></div>
 

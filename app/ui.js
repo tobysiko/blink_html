@@ -852,7 +852,7 @@ function needZone() {
   if (!mine() || !REQ) return null;
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
-    case "retire": case "discard": case "bonus": return "#hand";
+    case "retire": case "discard": case "bonus": case "duel": return "#hand";
     case "buy": return "#market";
     case "setaside": return "#mymeld";           // the cards are already on the table
     case "feed": case "effectA": return ".vrowbox";
@@ -1748,7 +1748,12 @@ function renderPlayer() {
    * card FROM the hand, the ones you may take are lifted (`want`) and the rest
    * go dead — so "which card can I give up" is answered by the cards, not by
    * the sentence above them. */
-  const handPick = mine() && ["meld", "bonus", "discard", "retire"].includes(REQ.type);
+  /* A duel belongs in this list too: it asks for a card FROM the hand exactly
+   * like a discard does, and it is the one request that can arrive on somebody
+   * else's turn — so the cards must say which ones are legal, because the
+   * sentence above them is about a tile you may not even be looking at. */
+  const handPick = mine()
+    && ["meld", "bonus", "discard", "retire", "duel"].includes(REQ.type);
   const wanted = handPick && REQ.type !== "meld";
   $("#hand").innerHTML = p.hand.slice().sort(cardSortUI).map((c) => {
     const idx = p.hand.indexOf(c);
@@ -1798,7 +1803,7 @@ function onHandCard(c) {
     render();
     return;
   }
-  if (["bonus", "discard", "retire"].includes(REQ.type) && REQ.options.includes(c)) {
+  if (["bonus", "discard", "retire", "duel"].includes(REQ.type) && REQ.options.includes(c)) {
     if (REQ.type === "retire" && RESEARCH) { RESEARCH.retired = c; RESEARCH.stage = "buy"; }
     answer(c, REQ.type === "retire" && !!RESEARCH);
   }
@@ -1878,6 +1883,14 @@ function renderPrompt() {
     case "discard":
       ask(t("ask.discard"));
       break;
+    case "duel": {
+      /* Both sides commit in secret, so this must NOT show what the other
+       * player chose — the engine never sends it, and nothing here asks. */
+      const key = REQ.role === "attack" ? "ask.duel.attack" : "ask.duel.defend";
+      ask(t(key, { terrain: TL[REQ.terrain], bonus: REQ.bonus }));
+      btn(t("ask.duel.decline"), () => answer(null), "ghost");
+      break;
+    }
     case "retire":
       if (RESEARCH) {
         RESEARCH.drew = REQ.drew;

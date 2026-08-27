@@ -232,11 +232,17 @@ check("reachOut(this.m, p.i, dist)" in js,
 check("nine" in rules and "3 × 3" in rules, "the market is not printed as 3 x 3 = nine")
 check("opts.gridSize || 9" in js, "the engine's market is no longer nine positions")
 
-# 9. attack costs and capacities
-for terr, holds, cost in [("Plains", 3, "free"), ("Ocean", 1, "free"),
-                          ("Forest", 2, "1"), ("Mountain", 1, "2")]:
-    check(re.search(rf"{terr} {holds} {cost}", rules),
-          f"the terrain table does not print {terr} {holds} / {cost}")
+# 9. capacities and the defence bonus. The second column used to be a gold
+# price; under the duel it is what the ground adds to the DEFENDER's card, and
+# both numbers are read out of the engine rather than written here twice.
+holds_js = dict(re.findall(r"(\w+):\s*(\d+)",
+                           re.search(r"HOLDS = \{([^}]*)\}", js).group(1)))
+def_js = dict(re.findall(r"(\w+):\s*(\d+)",
+                         re.search(r"TERRAIN_DEFENCE = \{([^}]*)\}", js).group(1)))
+for terr in ("plains", "ocean", "forest", "mountain"):
+    check(re.search(rf"{terr.capitalize()} {holds_js[terr]} \+{def_js[terr]}", rules),
+          f"the terrain table does not print {terr.capitalize()} "
+          f"{holds_js[terr]} / +{def_js[terr]}")
 check('plains: 3, forest: 2, ocean: 1, mountain: 1' in js.replace('"', '')
       or 'HOLDS' in js, "cannot find the engine's terrain capacities")
 
@@ -369,11 +375,59 @@ for c in re.finditer(r'<circle[^>]*cy="([\d.]+)"[^>]*r="6.50"', board):
 drawn = [n for _, n in sorted(rows.items())]
 check(drawn == UNITS, f"the board draws {drawn} unit slots per tier, engine has {UNITS}")
 
+# ------------------------------------------------------------------ combat
+# The duel is the newest rule in the book and the one with a number per terrain,
+# which is exactly the shape that goes stale quietly: change TERRAIN_DEFENCE and
+# the table in section 06 keeps printing yesterday's game. So the table is read
+# back out of the printed page and compared, terrain by terrain.
+defence = dict(re.findall(r"(\w+):\s*(\d+)",
+                          re.search(r"TERRAIN_DEFENCE = \{([^}]*)\}", js).group(1)))
+check(len(defence) == 4, f"the engine defines {len(defence)} terrains, expected 4")
+for terrain, bonus in defence.items():
+    check(re.search(rf"\b{terrain.capitalize()} \+{bonus}\b", rules),
+          f"the combat table does not print {terrain.capitalize()} +{bonus}")
+# ...and the bonus must not have quietly turned back into a toll at the gate.
+# Worded narrowly, because research legitimately costs 1 gold then 2, and the
+# first version of this check tripped over that. What is banned is a PRICE ON
+# AN ATTACK: this caught a terrain figure still labelled "costs 2 gold", a
+# setup paragraph, a whole column of section 08 and two quick-reference rows,
+# all teaching a rule the engine had already stopped playing.
+toll = re.search(r"(?:attack|take|conquer)[^.]{0,60}costs? \d gold"
+                 r"|costs? to attack"
+                 r"|attack costs \d", rules, re.I)
+check(not toll, "the rulebook is still charging gold to attack "
+      f"(\u201c{toll.group(0) if toll else ''}\u201d) — the duel replaced that price")
+check("the defender holds" in rules,
+      "the rulebook does not say who wins a level duel")
+check("suit matches the ground" in rules,
+      "the rulebook does not print the suit tie-break for a level duel")
+# winning a duel that empties the tile takes the ground. This is the change that
+# made combat worth doing at all (DUEL-SPOILS.md), so the book must say it and
+# the engine must default to it.
+check(re.search(r"DUEL_TAKE = opts\.duelTake !== false", js),
+      "the engine no longer settles a won duel by default")
+check(re.search(r"ground changes hands", rules),
+      "section 06 does not say a won duel takes the ground")
+# a defence bonus is only a defence bonus if the rule adds it to the DEFENDER
+check(re.search(r"Defence.{0,80}rank.{0,40}terrain.s defence bonus", rules, re.S),
+      "section 06 no longer adds the terrain bonus to the defender's rank")
+
 # ------------------------------------------------------------- the tutorial
 tut = text_of(HERE / "Blink-first-game.html")
 check(", ".join(str(u) for u in UNITS) + " from the top" in tut,
       "the tutorial still prints the old tier unit counts")
 no_bonus_rule(tut, "the tutorial")
+# the tutorial is where a player meets combat for the first time, so it has to
+# teach the rule that is played and not the one that was replaced
+check(not re.search(r"attacking into \w+ \(\d\)", tut, re.I),
+      "the tutorial still charges gold to attack")
+check("duel" in tut.lower(), "the tutorial never mentions the duel")
+check("the tile is yours" in tut, "the tutorial does not say a won duel takes the ground")
+for terr in ("plains", "ocean", "forest", "mountain"):
+    check(f"{terr.capitalize()} +{def_js[terr]}" in tut
+          or f"{terr.capitalize()} and Ocean +{def_js[terr]}" in tut
+          or re.search(rf"{terr.capitalize()}[^.]{{0,30}}\+{def_js[terr]}", tut),
+          f"the tutorial does not give {terr.capitalize()} its +{def_js[terr]}")
 check("lowest-ranked card in your hand" in tut,
       "the tutorial does not teach the lowest-card retire")
 
@@ -382,5 +436,6 @@ print("\n".join("FAIL: " + f for f in fails) if fails else
       + "/".join(str(u) for u in UNITS)
       + ", caps " + "/".join(str(c) for c in CAPS)
       + ", meld limits " + "/".join(str(m) for m in MELD)
-      + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, and B in reach")
+      + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, B in reach, and a duel defended at "
+      + "/".join(defence[k] for k in ("plains", "ocean", "forest", "mountain")))
 sys.exit(1 if fails else 0)

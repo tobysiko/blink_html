@@ -77,7 +77,7 @@ if ((long.events || []).length > 400)
   { console.log('FAIL: event queue is unbounded'); process.exit(1); }
 
 // 3. in the app: the layer exists, events drain, nothing throws
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
 const w = dom.window, d = w.document;
 const errs = [];

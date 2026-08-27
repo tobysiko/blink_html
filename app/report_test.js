@@ -24,7 +24,7 @@ catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); p
 const E = require('./engine.js');
 /* The one decoder. See rebuild(). */
 const S = require('./session.js');
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 
@@ -97,6 +97,13 @@ setTimeout(() => {
         // undo occasionally: the record must rewind with the game
         if (steps % 7 === 0 && !q('#undo').disabled) { click(q('#undo')); undos += 1; }
       } else click(btn(/^End turn/));
+    } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
+      /* A duel. Commit a card most of the time, decline sometimes — both are
+       * legal answers and both have to survive the round trip through the
+       * report, or a replayed game diverges the moment somebody fights. */
+      const c = qa('#hand button')[0];
+      if (steps % 5 === 0 || !c) { const d = btn(/Don't fight/); if (d) click(d); }
+      else click(c);
     } else if (/Give up|Retire a card|spend one extra|shared pile/.test(t)) {
       const c = qa('#hand button.want')[0] || qa('#hand button')[0]; if (c) click(c);
     } else if (/Take a card/.test(t)) {
@@ -111,8 +118,19 @@ setTimeout(() => {
     setTimeout(tick, 0);
   };
 
+  function finish() {
+    console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ') : 'report: ok');
+    process.exit(fail.length ? 1 : 0);
+  }
+
   function done() {
-    ok(/Game over/.test(txt()), 'the game did not finish');
+    /* A stall used to crash a few lines later on a missing feedback form,
+     * which said nothing about the cause. Say what the game was waiting for. */
+    if (!/Game over/.test(txt())) {
+      fail.push('the game never finished — after ' + steps + ' steps it was still '
+        + 'waiting on: "' + txt().replace(/\s+/g, ' ').slice(0, 160) + '"');
+      return finish();
+    }
     ok(undos > 0, 'the run never undid anything, so the rewind is unchecked');
 
     // ---------- the form is there, and nothing has been sent

@@ -83,7 +83,9 @@ fi
 
 # topdf <input.html> <output.pdf-relative-to-parent>
 topdf() {
-  IN="$HERE/$1"
+  # An absolute first argument is used as-is: the boards render from a scratch
+  # file outside this folder.
+  case "$1" in /*) IN="$1" ;; *) IN="$HERE/$1" ;; esac
   OUT="$HERE/../$2"
   if [ "$RENDERER" = "chrome" ]; then
     # --no-pdf-header-footer is the current flag; --print-to-pdf-no-header is
@@ -125,10 +127,16 @@ topdf "Blink-objectives-bw.html"         "Blink-objectives-bw.pdf"
 # so the boards were the one thing this script could not produce. A browser
 # renders SVG to vector PDF perfectly well, so they go through the same renderer
 # as everything else; wrap_svg.py only supplies the page geometry.
+# The scratch file goes in TMPDIR, not here. wrap_svg.py inlines the SVG, so
+# the page has no relative references and can live anywhere — and writing it
+# beside the sources meant a folder that forbids deletes (a synced or mounted
+# one) failed the whole build at the very last step, after every PDF but the
+# boards had already been made.
 board() {
-  python3 wrap_svg.py "$1" "_board_tmp.html"
-  topdf "_board_tmp.html" "$2"
-  rm -f "_board_tmp.html"
+  tmp="$(mktemp "${TMPDIR:-/tmp}/blink-board-XXXXXX.html")"
+  python3 wrap_svg.py "$1" "$tmp"
+  topdf "$tmp" "$2"
+  rm -f "$tmp" || true
 }
 board board_a4.svg        Blink-player-board-A4.pdf
 board board_a4-bw.svg     Blink-player-board-A4-bw.pdf

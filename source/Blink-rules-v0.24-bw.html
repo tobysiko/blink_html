@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blink — Rules v0.23</title>
+<title>Blink — Rules v0.24</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -663,7 +663,12 @@ img,svg{filter:none}
     <strong>suit matches the ground being fought over</strong> takes it; if both match or
     neither does, <strong>the defender holds</strong>.</li>
     <li><b>Attacker wins</b> — one defending unit returns to its owner's board.
-    <b>Defender wins</b> — nothing happens; the attack is spent for nothing.</li>
+    If that was the <strong>last</strong> unit on the tile, <strong>the ground
+    changes hands</strong>: place a unit from your board on it at once, from
+    your top occupied tier as usual. No unit in reserve, or defenders still
+    standing, and the tile is simply left empty.
+    <br><b>Defender wins</b> — nothing happens; the attack is spent for
+    nothing.</li>
   </ol>
   <p>Both committed cards go to their owners' discards, and come back on the next
   recycle. Losing a duel costs you tempo, not cards.</p>
@@ -696,7 +701,7 @@ img,svg{filter:none}
 <pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
   <rect width="8" height="6" fill="#fff"/>
   <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
-</defs><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="url(#h-forest)"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="url(#h-forest)"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="url(#h-forest)"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#D9D9D9"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#D9D9D9"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel — your own unit never leaves your reserve. Clearing a stack takes as many won duels as there are defenders.</figcaption></figure>
+</defs><g><rect x="22.033320996790806" y="0" width="46" height="62" rx="4" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><rect x="22.033320996790806" y="0" width="46" height="9" rx="4" fill="url(#h-forest)"/><rect x="22.033320996790806" y="5" width="46" height="4" fill="url(#h-forest)"/><text x="45.0" y="42.0" text-anchor="middle" class="fig-rank" font-size="26">6</text><circle cx="45.0" cy="49.0" r="5" fill="url(#h-forest)"/></g><path d="M45.0 72 l0 16 M40.0 82 l5 6 l5 -6" fill="none" stroke="#555555" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,150.00 0.00,163.00 22.52,150.00 22.52,124.00" fill="#D9D9D9"/><polygon points="0.00,106.00 22.52,119.00 22.52,145.00 0.00,158.00 -22.52,145.00 -22.52,119.00" fill="url(#h-plains)" stroke="#000000" stroke-width="1.2"/><ellipse cx="0.00" cy="138.00" rx="11" ry="5.5" fill="#1A1A1A"/><ellipse cx="0.00" cy="135.00" rx="11" ry="5.5" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.2"/><polygon points="67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,158.00 45.03,171.00 67.55,158.00 67.55,132.00" fill="#D9D9D9"/><polygon points="45.03,106.00 67.55,119.00 67.55,145.00 45.03,158.00 22.52,145.00 22.52,119.00" fill="url(#h-forest)" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="138.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="135.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><ellipse cx="45.03" cy="131.00" rx="11" ry="5.5" fill="#D9D9D9"/><ellipse cx="45.03" cy="128.00" rx="11" ry="5.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/><circle cx="64.03" cy="103.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="64.03" cy="103.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="0.00" y="188.00" text-anchor="middle" class="fig-step" font-size="10">yours</text><text x="45.03" y="188.00" text-anchor="middle" class="fig-attack" font-size="10">attack</text><text x="22.52" y="209.00" text-anchor="middle" class="fig-strong" font-size="11">One defender removed — your unit stays in reserve.</text></svg></div><figcaption>Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel, and your unit stays on your board until the tile is empty — clearing a stack takes as many won duels as there are defenders, and the last one takes the ground.</figcaption></figure>
 
   <div class="note">
     <span class="tag">Why your hand matters twice</span>
@@ -705,9 +710,10 @@ img,svg{filter:none}
     the walls. The moment before your hand recycles is the moment you are easiest to
     attack, and everyone at the table can count your cards.</p>
   </div>
-  <p>Taking a contested tile is still patient work: one won duel clears one defender, and
-  only once the tile is empty can a later card settle it. To capture ground, empty it
-  first and settle it after — which always takes more than one round.</p>
+  <p>Taking a contested tile is still patient work. One won duel clears <em>one</em>
+  defender, so a Plains holding three takes three of them — and every one of those is a
+  card out of your hand against a card out of theirs. What changes on the last of them is
+  that you do not have to come back: the tile is yours the moment you empty it.</p>
 
   <h3>Take gold</h3>
   <p>Instead of using a card on the map, take <strong>1 gold</strong>. Any card, any number
@@ -1299,7 +1305,8 @@ img,svg{filter:none}
       <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
       goes to the shared pile. Last place takes 1 gold.</p>
       <h3>Combat — a duel</h3>
-      <p>Fortified? The coin absorbs it, no duel. Otherwise both sides commit one hand
+      <p>Win the last defender and the tile is yours: settle it at once.
+      Fortified? The coin absorbs it, no duel. Otherwise both sides commit one hand
       card face down and reveal: <b>attacker's rank</b> vs <b>defender's rank + terrain
       (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
       card matching the ground, and to the <b>defender</b> if both or neither match.
@@ -1372,7 +1379,7 @@ img,svg{filter:none}
 </div>
 </div>
 
-<div class="pad"><footer>Blink · base game · draft rules v0.23 · Toby Siko ·
+<div class="pad"><footer>Blink · base game · draft rules v0.24 · Toby Siko ·
 deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
 separately</footer></div>
 

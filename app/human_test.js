@@ -51,6 +51,10 @@ function autoHuman(G, req, rng) {
       }
       return { kind: 'end' };
     }
+    /* A duel: commit a card from hand, or decline. Both are legal, and a
+     * driver that always fought would never exercise the decline path. */
+    case 'duel':
+      return rng() < 0.25 ? null : pick(req.options);
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

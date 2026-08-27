@@ -4,7 +4,7 @@ const fs = require('fs'); const { JSDOM } = require('jsdom');
 const path = require('path');
 /* Relative to this file, not an absolute path: the repo folder gets renamed
    with the version, and every other test here already reads it this way. */
-const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const check = (runScripts, label, cb) => {
   const dom = new JSDOM(html, runScripts ? { runScripts:'dangerously', pretendToBeVisual:true } : {});
   const w = dom.window, d = w.document;

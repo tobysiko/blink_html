@@ -7,6 +7,14 @@ const path = require('path');
  * only works from one directory is a trap laid for the next person. */
 const here = (f) => path.join(__dirname, f);
 
+/* The version number lives in one plain text file at the top of the project,
+ * read by this script and by source/version.py. It used to be typed out in
+ * both, plus six string literals below and a filename in twenty test files,
+ * and a bump left some of them behind every time. */
+const VERSION = fs.readFileSync(here('../VERSION'), 'utf8').trim();
+const VTAG = 'v' + VERSION;
+const PLAY = `Blink-play-${VTAG}.html`;
+
 /* Which build is this?
  *
  * A playtest report is worthless if nobody can tell which version produced it.
@@ -21,7 +29,7 @@ function gitStamp() {
     /* "Dirty" must mean the SOURCE is uncommitted. The files this script
      * writes are outputs of this very run, so counting them would make every
      * build dirty forever — commit, rebuild, dirty again. */
-    const outs = ['Blink-play-v0.23.html', 'deploy', 'rulebook.html',
+    const outs = [PLAY, 'deploy', 'rulebook.html',
                   'card-effects.html', 'map-objectives.html']
       .map((f) => `':(exclude)${f}'`).join(' ');
     return { commit: run('git rev-parse --short=10 HEAD'),
@@ -38,7 +46,7 @@ function gitStamp() {
  * the standalone file falls back to downloading the report — it must work with
  * no network at all. Set BLINK_API to point a build at the session service. */
 const API = process.env.BLINK_API || null;
-const BUILD = Object.assign({ version: 'v0.23', api: API,
+const BUILD = Object.assign({ version: VTAG, api: API,
                               reportUrl: API ? API.replace(/\/$/, '') + '/report' : null },
                             gitStamp());
 console.log(`build ${BUILD.version} ${BUILD.commit}${BUILD.dirty ? '+dirty' : ''} (${BUILD.branch})`);
@@ -50,27 +58,31 @@ const sess = strip('session.js');
 const rep = strip('report.js');
 const net = fs.readFileSync(here('net.js'), 'utf8');
 const ui  = fs.readFileSync(here('ui.js'), 'utf8');
-const out = fs.readFileSync(here('shell.html'), 'utf8')
+/* __VTAG__ appears in the page title, the strapline and every translation of
+ * it. Substituted here rather than typed, so a bump cannot leave the header
+ * claiming one version while the rules PDF says another. */
+const stamp = (s) => s.split('__VTAG__').join(VTAG);
+const out = stamp(fs.readFileSync(here('shell.html'), 'utf8'))
   .replace('/*__ENGINE__*/',
     "document.documentElement.className += ' js';   // scripts run: hide the no-JS notice\n"
     + 'const BUILD = ' + JSON.stringify(BUILD) + ';\n'
-    + lang + '\n' + eng + '\n' + sess + '\n' + rep)
+    + stamp(lang) + '\n' + eng + '\n' + sess + '\n' + rep)
   .replace('/*__UI__*/', net + '\n' + ui);
-fs.writeFileSync(here('../Blink-play-v0.23.html'), out);
-console.log('built Blink-play-v0.23.html', (out.length/1024).toFixed(1)+' KB');
+fs.writeFileSync(here('../' + PLAY), out);
+console.log('built ' + PLAY, (out.length/1024).toFixed(1)+' KB');
 
 /* Also emit ../deploy/index.html — the same page with the tags a SERVED copy
  * wants (description, theme colour, noindex while it is a prototype) and, if
  * terser is installed, minified. Deploy that folder, not the whole project. */
-const meta = `<title>Blink — play the prototype (v0.23)</title>
-<meta name="description" content="Blink — a civilization card game by Toby Siko. Play the v0.23 prototype against tuned bots in your browser.">
+const meta = `<title>Blink — play the prototype (${VTAG})</title>
+<meta name="description" content="Blink — a civilization card game by Toby Siko. Play the ${VTAG} prototype against tuned bots in your browser.">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#1E4229">
 <meta property="og:title" content="Blink — play the prototype">
-<meta property="og:description" content="Climbing the Ladder of Civilization. Trick-taking melds, a growing hex map, and a victory row. Prototype v0.23.">
+<meta property="og:description" content="Climbing the Ladder of Civilization. Trick-taking melds, a growing hex map, and a victory row. Prototype ${VTAG}.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`;
-let page = out.replace('<title>Blink — play v0.23</title>', meta);
+let page = out.replace(`<title>Blink — play ${VTAG}</title>`, meta);
 /* Served from the site, there is somewhere to go back to. The standalone file
  * has no such page, so this link only exists in the deploy build. */
 page = page.replace('<span class="right">',
@@ -114,7 +126,7 @@ function buildServer() {
 /* The three documents the setup page links to, put where those links point:
  * beside the page, both in the project root and in the deploy folder. A link
  * that 404s is worse than no link. */
-const DOCS = { 'rulebook.html': '../source/Blink-rules-v0.23.html',
+const DOCS = { 'rulebook.html': `../source/Blink-rules-${VTAG}.html`,
                'card-effects.html': '../source/Blink-card-effects.html',
                'map-objectives.html': '../source/Blink-map-objectives.html' };
 for (const [name, src] of Object.entries(DOCS)) {

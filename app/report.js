@@ -61,7 +61,14 @@ function newReport(build, gargs, extra) {
       objectives: gargs.opts.objectives,
       retireRule: gargs.opts.retireRule,
       consolation: gargs.opts.consolation || "last",
-      researchRule: gargs.opts.researchRule || "once",
+      /* These fallbacks must match the ENGINE's defaults, not an older rule.
+       * A report that records "once" for a game the engine played "twice"
+       * replays a different game, and nothing downstream can tell. */
+      researchRule: gargs.opts.researchRule || "twice",
+      combat: gargs.opts.combat || "duel",
+      duelTake: gargs.opts.duelTake !== false,   // note: NOT `|| true`
+      duelKeep: !!gargs.opts.duelKeep,
+      perks: gargs.opts.perks || false,
       comboMelds: !!gargs.opts.comboMelds,
       friendsOf10: !!gargs.opts.friendsOf10,
       growLimits: !!gargs.opts.growLimits,

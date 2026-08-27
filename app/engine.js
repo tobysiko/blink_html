@@ -63,6 +63,47 @@ const BAND_HOLDS = [
   { plains: 3, forest: 3, ocean: 2, mountain: 2 },   // Civilization (as Empire)
 ];
 const ATTACK_COST = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
+
+/* What an attack costs in COINS, which depends on the rule in play. Under the
+ * duel it costs none: the price is a card and a risk, not a coin. Every place
+ * that gated an attack on gold has to ask this rather than read ATTACK_COST
+ * directly, or a poor player is refused an attack the rules allow. ATTACK_COST
+ * survives as the price a conquest pays (effect D), which is a card effect with
+ * its own printed price. */
+function attackGold(combat, terrain) {
+  return combat === "gold" ? ATTACK_COST[terrain] : 0;
+}
+/* COMBAT = "duel": the terrain's character moves from a gold TAX ON THE
+ * ATTACKER to a BONUS FOR THE DEFENDER, which is where it belongs and where
+ * v0.14 had it. A card price of "two of this suit" was measured at 8-10%
+ * payable against 86% for the gold (app/combatcost.js) — a prohibition, not a
+ * price — so the terrain acts through the duel instead of gating entry to it. */
+let TERRAIN_DEFENCE = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
+function setTerrainDefence(d) { TERRAIN_DEFENCE = d; }
+
+/* Who takes the tile. This IS the combat rule, and it is a pure function on
+ * purpose: two cards and a patch of ground decide it, so it can be checked
+ * exhaustively without a game around it — which matters here more than usual,
+ * because the only other witness to this rule is a bot that gets to choose
+ * whether to fight at all, and a bot that learns to avoid bad fights stops
+ * producing the very sample the rule would be measured from.
+ *
+ *   attack  = the attacker's rank
+ *   defence = the defender's rank PLUS the ground
+ *   higher wins; a level fight goes to the card matching the ground, and if
+ *   both match or neither does, the defender holds.
+ *
+ * A missing card counts as rank 0, so declining is legal and simply loses —
+ * except that a defender who declines on a Mountain still has two ranks of
+ * ground under them, and an attacker who declines can never win. */
+function duelWinner(aCard, dCard, terrain) {
+  const a = aCard ? aCard.r : 0;
+  const b = (dCard ? dCard.r : 0) + TERRAIN_DEFENCE[terrain];
+  if (a !== b) return a > b;
+  const am = !!aCard && aCard.s === terrain;
+  const dm = !!dCard && dCard.s === terrain;
+  return am && !dm;
+}
 const BAG_EACH = 15;
 
 /* tier -> [name, units, meld limit, food per recycle, free moves,
@@ -474,6 +515,10 @@ function draftPick(kept, offered, need) {
 class GameMap {
   constructor(n) {
     const [mts, pls] = STARTS[n];
+    /* Which combat rule is in force. The map has to know, because the map is
+     * what answers "may I attack here" — and under the duel the answer no
+     * longer depends on your purse. The Game overwrites this at setup. */
+    this.combat = "duel";
     this.limits = null;
     this.bandOf = () => 0;
     this.tiles = new Map();
@@ -531,12 +576,14 @@ class GameMap {
     return out;
   }
 
+  attackGold(terrain) { return attackGold(this.combat, terrain); }
+
   cellActions(k, suit, p, spaces, budget) {
     const t = this.tiles.get(k);
     if (t) {
       if (t.terrain !== suit) return [];
       if (t.owner === null || t.owner === p) return t.hasRoom(p) ? ["settle"] : [];
-      return budget >= ATTACK_COST[t.terrain] ? ["attack"] : [];
+      return budget >= this.attackGold(t.terrain) ? ["attack"] : [];
     }
     if (spaces.has(k) && this.tileAvailable(suit)) return ["explore"];
     return [];
@@ -637,7 +684,7 @@ function cardBlocked(m, card, p, gold, reachable) {
     const t = m.tiles.get(k);
     if (!t || t.terrain !== card.s) continue;
     if (t.owner === null || t.owner === p) continue;   // not an attack at all
-    const cost = ATTACK_COST[t.terrain];
+    const cost = m.attackGold(t.terrain);
     if (cost > gold) out.push([k, cost]);
   }
   return out.sort((a, b) => (a[0] < b[0] ? -1 : 1));
@@ -757,6 +804,10 @@ class Player {
   freeMoves() {
     return this.bands[this.band()][4] + (this.perkReady("roads") ? 1 : 0);
   }
+  /* Is there a unit ready to place, without taking it? The duel valuation asks
+   * before deciding a fight is worth having; taking one to find out would be a
+   * side effect in the middle of a score. */
+  reserveLeft() { return this.reserve[this.band()] > 0; }
   takeUnit() {
     const j = this.band();
     if (this.reserve[j] > 0) { this.reserve[j] -= 1; return true; }
@@ -909,6 +960,7 @@ const TUNED = {
   ATTACK_V: 1.4,           // worth of a strike, before its price
   ATTACK_COST_W: 0.9,      // how much its price puts you off
   ATTACK_LONE_V: 1.0,      // ...a tile you would empty outright
+  DUEL_CARD_W: 0.35,       // what committing a hand card to a duel puts you off
   // choosing a meld
   MELD_GREED: 0.30,        // how much you value the hand you keep back
   // the victory row
@@ -1020,12 +1072,55 @@ function valueCard(game, p, k, card, act) {
     const t = m.tiles.get(k);
     let v = w.ATTACK_V - w.ATTACK_COST_W * ATTACK_COST[t.terrain];
     if (t.units.length === 1) v += w.ATTACK_LONE_V;
+    if (game.COMBAT === "duel") v = duelValue(game, p, t, w);
     return v;
   }
   return 0.2;
 }
 
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
+
+/* What an attack is worth once it is a DUEL rather than a purchase.
+ *
+ * The gold formula this replaces valued an attack as a certainty with a price:
+ * you paid the terrain in coins and a unit died. None of that survives the
+ * duel — the coin price is gone, the kill is no longer certain, and the real
+ * bill is a card out of your hand. Left unchanged, the bot went on attacking
+ * as if it were shopping, and the Raider fell from 39% to 26% head to head.
+ *
+ * Three things had to be told to it, in descending order of how much they
+ * mattered when measured one at a time:
+ *
+ *   1. A COIN ON THE UNIT ABSORBS THE BLOW — there is no duel and nothing
+ *      dies. Attacking a fortified tile is pure loss, and simply refusing to
+ *      do it is worth 12 points of win rate on its own. This is the one the
+ *      gold rule never had to know, because there the coin only ate a strike
+ *      you had already paid for.
+ *   2. YOUR HAND DECIDES. You cannot win a duel with cards that do not clear
+ *      the ground, so an attack you cannot back is not an attack, it is a card
+ *      thrown away. Worth ~10 points.
+ *   3. IT COSTS A CARD EVEN WHEN IT WORKS, and the terrain is now a defence
+ *      bonus rather than a toll — the same 0/0/1/2, charged to the fight
+ *      instead of to the purse.
+ *
+ * The hand is also the only sample either side has of what the other holds:
+ * two players on comparable tiers hold comparable ranks. It is a crude model
+ * and it is deliberately the same one _duelCard uses, so the bot commits to
+ * fights on the same reasoning it picks cards for them. */
+function duelValue(game, p, t, w) {
+  if (t.gold) return -1;                       // a wall absorbs it: buys nothing
+  const bonus = TERRAIN_DEFENCE[t.terrain];
+  const expect = mean(p.hand.map((c) => c.r));
+  const able = p.hand.filter((c) => c.r >= expect + bonus + 1);
+  if (!able.length) return -1;                 // nothing in hand clears the ground
+  const odds = able.length / p.hand.length;
+  let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W;   // the ground, plus the card
+  /* Emptying a tile is worth more than a kill when the winner settles it: you
+   * do not merely deny a point, you take one. */
+  if (t.units.length === 1)
+    v += w.ATTACK_LONE_V + (game.DUEL_TAKE && p.reserveLeft() ? w.SETTLE_V : 0);
+  return v * (0.4 + 1.2 * odds);               // and scaled by the chance of it
+}
 
 /* A stronger meld chooser — see pro_bot in engine.py. */
 function proBot(game, p, what, options) {
@@ -1150,6 +1245,24 @@ class Game {
      * "units" — rulebook §13: most UNITS on that terrain, and only if all your
      *           units on it form one connected group. */
     this.MAJORITY = opts.majority || "area";
+    /* "gold": the printed rule — pay the terrain's price, remove a unit.
+     * "duel": both sides reveal a card from hand; the defender adds the
+     * terrain bonus — the printed rule as of v0.23. "gold" keeps the older
+     * flat terrain price so the two can still be measured against each other. */
+    this.COMBAT = opts.combat === "gold" ? "gold" : "duel";
+    /* A WON DUEL TAKES THE GROUND. Measured, not assumed: a bot forbidden to
+     * attack used to beat one that attacked, 56% to 44% — and that was true
+     * under the OLD gold rule too, so combat was a trap long before the duel.
+     * Winning a fight paid one dead unit and nothing else; the tile stayed in
+     * its owner's colour until some later card could settle it. Settling it
+     * on the spot is the only change measured that puts fighters ahead
+     * (51/49), and it is what an attack looks like it should do at a table.
+     * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
+    this.DUEL_TAKE = opts.duelTake !== false;
+    /* And a sweetener that was measured and NOT taken: letting the winner keep
+     * their committed card helps less (49/51) and costs a rule. Off. */
+    this.DUEL_KEEP = !!opts.duelKeep;
+    this.m.combat = this.COMBAT;
     /* off | secret (deal two, keep one) | open (two face up, shared) | both */
     this.OBJECTIVES_MODE = opts.objectives || "off";
     /* "lowest" — research retires the LOWEST rank you hold (any suit of it).
@@ -1400,6 +1513,10 @@ class Game {
       } else {
         cards = proBot(this, p, "meld", melds);
       }
+      /* An empty hand at the card phase is not a legal state (§05: you must
+       * play). If one ever appears it is a bug upstream, and crashing here
+       * hides it — so make the round survivable and count it. */
+      if (!cards) { cards = []; this.inc("meld_from_empty_hand"); }
       p.played = cards.slice();
       /* Kept for the shared play area: `played` is emptied when a seat takes
        * its map turn, but the table should still show what everyone put down
@@ -1605,6 +1722,7 @@ class Game {
       this.fx("turnend", { seat: i });
     }
     this.acting = null;
+    yield* this._sweepEmptyHands();
 
     this.leader = winner;
     this._checkEnd();
@@ -1754,7 +1872,7 @@ class Game {
         case "spend": {
           st.cards.splice(st.cards.indexOf(ans.card), 1);
           p.discard.push(ans.card);            // spent before any recycle can fire
-          this._resolve(p, ans.card, ans.cell, ans.act);
+          yield* this._resolve(p, ans.card, ans.cell, ans.act);
           break;
         }
         case "cash": {
@@ -2028,11 +2146,11 @@ class Game {
         p.gold += paid;
         continue;
       }
-      this._resolve(p, card, cell, act);
+      yield* this._resolve(p, card, cell, act);
     }
   }
 
-  _resolve(p, card, cell, act) {
+  *_resolve(p, card, cell, act) {
     this.inc("cards_resolved");
     if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
     if (act === "explore") {
@@ -2062,19 +2180,131 @@ class Game {
       }
     } else if (act === "attack") {
       const tile = this.m.tiles.get(cell);
-      const cost = ATTACK_COST[tile.terrain];
+      if (this.COMBAT === "duel") { yield* this._duel(p, cell, tile); return; }
+      const cost = attackGold(this.COMBAT, tile.terrain);
       if (p.gold >= cost && tile.units.length) {
         p.gold -= cost; this.inc("gold_out_attack", cost);
-        const victim = this.m.removeUnit(cell);
-        if (victim === null) {
-          this.inc("absorbed_by_fortification");
-          this.fx("shield", { seat: p.i, at: cell });
-        } else {
-          this.inc("killed_by_attack"); this.P[victim].returnUnit();
-          this.fx("unit-out", { seat: victim, from: cell });
-        }
+        this._takeUnit(p, cell);
       } else { p.gold += 1; this.inc("cards_to_gold"); }
     }
+  }
+
+  /* A duel is the one place a hand empties on somebody ELSE's turn, so the
+   * ordinary end-of-turn check never runs for the defender — and a player with
+   * no cards cannot play a meld, which section 05 requires.
+   *
+   * This runs at the END of the round on purpose. Recycling the moment the hand
+   * empties would be closer to the printed rule, but a player who has not taken
+   * their map turn yet still has a meld in flight, and the recycle's
+   * top-up-to-ten cannot see it — which quietly hands them an eleventh card.
+   * By the end of the round every meld has been spent and nothing is in flight.
+   */
+  *_sweepEmptyHands() {
+    for (const q of this.P) {
+      if (q.hand.length || q.played.length) continue;
+      this.inc("recycle_after_duel");
+      yield* this._reclaimForFood(q);
+      yield* this._recycle(q);
+    }
+  }
+
+  /* One defender removed, fortification absorbing first. */
+  _takeUnit(p, cell) {
+    const victim = this.m.removeUnit(cell);
+    if (victim === null) {
+      this.inc("absorbed_by_fortification");
+      this.fx("shield", { seat: p.i, at: cell });
+    } else {
+      this.inc("killed_by_attack"); this.P[victim].returnUnit();
+      this.fx("unit-out", { seat: victim, from: cell });
+    }
+  }
+
+  /* Which card a seat commits to a duel. Humans are asked; bots follow a
+   * first-pass policy that has NOT been tuned — see combat_test.js. Neither
+   * side is ever shown the other's card, so asking them in sequence is still
+   * a simultaneous reveal. */
+  *_duelCard(q, role, tile) {
+    if (!q.hand.length) return null;
+    if (this.isHuman(q.i)) {
+      const pick = yield { type: "duel", seat: q.i, role,
+                           cell: tile.key, terrain: tile.terrain,
+                           bonus: TERRAIN_DEFENCE[tile.terrain],
+                           options: q.hand.slice() };
+      return q.hand.includes(pick) ? pick : null;   // declining is legal
+    }
+    /* Bot policy. The first version of this always committed the highest card
+     * in hand, and it cost the Raider thirteen points of win rate: an attacker
+     * who burns its best card on every duel has nothing left to meld with,
+     * whether or not the duel is won. Two rules replace it.
+     *
+     * SPEND THE CHEAPEST CARD THAT DOES THE JOB. Neither side sees the other,
+     * so "the job" has to be estimated. Your own hand is the sample you have —
+     * you and your rival are on comparable tiers, holding comparable ranks —
+     * so the mean rank of your hand stands in for the card you are about to
+     * meet. The defender adds the ground and wins ties, so the two sides need
+     * different numbers, and the difference IS the terrain bonus.
+     *
+     * AND DECLINE WHEN NOTHING CLEARS IT. Spending a card you know will lose
+     * is worse than losing for free: you lose the unit either way and the card
+     * as well. This is why the terrain bonus finally bites — on a Mountain
+     * there are two more ranks a hand has to reach before an attack is worth
+     * making at all. */
+    const sorted = q.hand.slice().sort((a, b) => a.r - b.r);
+    const bonus = TERRAIN_DEFENCE[tile.terrain];
+    const expect = q.hand.reduce((s, c) => s + c.r, 0) / q.hand.length;
+    /* Ground nearly lost is worth a stretch; ground you can retake is not. */
+    const keen = role === "defend" && tile.units.length <= 1 ? 1 : 0;
+    const need = role === "attack" ? expect + bonus + 1 : expect - bonus - keen;
+    const able = sorted.filter((c) => c.r >= need);
+    if (!able.length) return null;
+    /* Among cards that clear it, the ground's own suit breaks a level fight,
+     * so prefer it — but never at the price of a higher rank. */
+    const floor = able[0].r;
+    return able.find((c) => c.r === floor && c.s === tile.terrain) || able[0];
+  }
+
+  *_duel(p, cell, tile) {
+    if (!tile.units.length) { p.gold += 1; this.inc("cards_to_gold"); return; }
+    /* A coin on the unit absorbs the blow outright — no duel, no interruption. */
+    if (tile.gold) { this._takeUnit(p, cell); this.inc("duel_absorbed"); return; }
+
+    const d = this.P[tile.owner];
+    const bonus = TERRAIN_DEFENCE[tile.terrain];
+    const aCard = yield* this._duelCard(p, "attack", tile);
+    const dCard = yield* this._duelCard(d, "defend", tile);
+    const spend = (q, c) => {
+      if (!c) return;
+      const i = q.hand.indexOf(c);
+      if (i >= 0) { q.hand.splice(i, 1); q.discard.push(c); }
+    };
+    const a = aCard ? aCard.r : 0;
+    const b = (dCard ? dCard.r : 0) + bonus;
+    const attackerWins = duelWinner(aCard, dCard, tile.terrain);
+    if (this.DUEL_KEEP) {
+      if (attackerWins) spend(d, dCard); else spend(p, aCard);
+    } else { spend(p, aCard); spend(d, dCard); }
+    this.inc("duels");
+    this.inc("duel_on_" + tile.terrain);
+    if (attackerWins) this.inc("duel_won_on_" + tile.terrain);
+    this.fx("duel", { seat: p.i, at: cell, a, b, won: attackerWins });
+    if (attackerWins) {
+      this.inc("duel_won"); this._takeUnit(p, cell);
+      /* The ground changes hands — but only if the fight actually emptied it,
+       * and only if you have a unit left on your board to put there. Clearing
+       * a stack still takes as many won duels as there are defenders. */
+      if (this.DUEL_TAKE && !tile.units.length && !tile.gold && p.takeUnit()) {
+        this.m.settle(cell, p.i);
+        this.fx("unit-in", { seat: p.i, to: cell });
+        this._payAscension(p);
+        this.inc("duel_settle");
+      }
+    } else this.inc("duel_held");
+
+    /* The defender may have just spent their last card on someone else's turn.
+     * That is handled at the END of the round, not here — see _sweepEmptyHands.
+     * Recycling mid-duel over-draws, because a player who has not taken their
+     * map turn still has a meld in flight that the top-up-to-ten cannot see. */
   }
 
   // --- research -------------------------------------------------
@@ -2843,7 +3073,7 @@ class Game {
       if (t.owner !== p.i || t.gold >= t.units.length) continue;
       const threats = t.neighbours().filter((u) => u.owner !== null && u.owner !== p.i);
       if (!threats.length) continue;
-      const cost = ATTACK_COST[t.terrain];
+      const cost = this.m.attackGold(t.terrain);
       if (!threats.some((u) => this.P[u.owner].gold >= cost)) continue;
       let v = threats.length * 1.0;
       if (t.units.length === 1) v += 2.0;      // losing this loses the tile
@@ -3113,6 +3343,7 @@ if (typeof module !== "undefined" && module.exports) {
     TUNED, BOT_STYLES, BOT_LEVELS, STYLE_KEYS, botWeights,
     setMeldRules, meldRules, meldFault, isRun, isFriends, canCombine, BAND_HOLDS,
     TIER_UNITS, TIER_CAPS, parseLayout, bandsFor,
+    get TERRAIN_DEFENCE() { return TERRAIN_DEFENCE; }, setTerrainDefence, duelWinner,
     PERKS, PERK_IDS, PERK_SLOTS, PERK_DEAL, perkSlotNeeds,
     playablePerks, dealPerks, defaultAssign,
     effectASum, A_SUM_LADDERS, setASumLadder,

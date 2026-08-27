@@ -274,7 +274,11 @@ function turnRun(g, seat, answers) {
  * moment they commit a move. Checked over whole games, both ways. */
 {
   let sails = 0, wrong = 0, paid = 0;
-  for (let s = 1; s <= 25; s++) {
+  /* 25 games used to yield 20+ sea moves. Under duel combat far fewer units
+   * come off the board, so oceans stay occupied — open water fell from 26% of
+   * ocean tiles to 20% — and sea moves got correspondingly rarer. The sample
+   * has to grow to stay meaningful; lowering the bar would just hide it. */
+  for (let s = 1; s <= 90; s++) {
     const rng = E.makeRng(s * 7919 + 3);
     const g = new E.Game(3, s * 3001 + 7, { humans: [0] });
     let pending = null;
@@ -314,6 +318,11 @@ function turnRun(g, seat, answers) {
             } else if (o.cards.length) ans = { kind: 'cash', card: o.cards[0].card };
             else ans = { kind: 'end' };
           }
+        } else if (req.type === 'duel') {
+          /* This file is about sea moves, not combat. Declining keeps hands
+           * full so the sea-move sample stays large enough to mean anything;
+           * combat_test.js is where duels are exercised. */
+          ans = null;
         } else if (req.type === 'waterexplore') {
           ans = { cell: req.options[0], terrain: req.terrains[0] };
         } else if (req.options && req.options.length) {

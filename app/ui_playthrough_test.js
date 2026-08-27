@@ -7,7 +7,7 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); process.exit(2); }
 
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 
 function run(seed, n, seat, deck, obj, cb) {
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
@@ -45,6 +45,16 @@ function run(seed, n, seat, deck, obj, cb) {
       const t = txt();
       if (/Game over/.test(t) || steps++ > 6000) return done(t);
 
+      /* A duel is asked of whoever is being attacked, so it lands in the middle
+       * of another seat's turn and in whatever language the page is in. Match
+       * it on the request, not on the sentence. */
+      if (w.eval('REQ && REQ.type') === 'duel') {
+        note('duel-' + w.eval('REQ.role'));
+        const c = qa('#hand button.want')[0] || qa('#hand button').find((b) => !b.disabled);
+        if (c) click(c);
+        else { note('duel-decline'); click(qa('#prompt button').find((b) => !b.disabled)); }
+        return;
+      }
       // research is a multi-step action now: preview -> steps -> completion
       if (btn(/Begin research/)) { note('research-begin'); click(btn(/Begin research/)); }
       else if (btn(/Continue my turn/)) { note('research-done'); click(btn(/Continue my turn/)); }

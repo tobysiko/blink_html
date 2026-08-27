@@ -6,7 +6,7 @@
 <path d="M279.0 196.0 h8 M283.0 192.0 v8" stroke="#B9B4A8" stroke-width="0.3"/>
 <text x="14.00" y="21.00" font-family="IBM Plex Sans" font-size="9" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">BLINK</text>
 <text x="48.00" y="21.00" font-family="IBM Plex Sans" font-size="5" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
-<text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.23 · units 13 mm</text>
+<text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.24 · units 13 mm</text>
 <line x1="14.0" y1="25.0" x2="283.0" y2="25.0" stroke="#2A2E2B" stroke-width="0.5"/>
 <text x="22.00" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0.4" style="">MELD</text>
 <text x="36.50" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0.4" style="">CAP</text>

@@ -28,7 +28,7 @@ try { ({ JSDOM } = require('jsdom')); WebSocket = require('ws'); }
 catch (e) { console.error('this test needs jsdom and ws — run: npm install jsdom ws'); process.exit(2); }
 
 const PORT = 8799 + (process.pid % 60);
-const html = fs.readFileSync(path.join(__dirname, '..', 'Blink-play-v0.23.html'), 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 /* Stop here, but say why. The setup path used to run on into `NET.seat` after
@@ -360,6 +360,13 @@ function clickThrough(p) {
 
   if (btn(/Begin research/)) return click(btn(/Begin research/));
   if (btn(/Continue my turn/)) return click(btn(/Continue my turn/));
+  /* A duel arrives on somebody ELSE's turn and in whatever language the page
+   * is set to, so it is matched on the request rather than on the sentence:
+   * commit a card, or decline if the hand has nothing legal. */
+  if (w.eval('REQ && REQ.type') === 'duel') {
+    const c = qa('#hand button.want')[0] || qa('#hand button').find((b) => !b.disabled);
+    return click(c || qa('#prompt button').find((b) => !b.disabled));
+  }
   if (/Play a meld/.test(t)) {
     /* Look, then click, then look again. Every click re-renders the hand, so a
      * list of buttons captured once goes stale after the first one — and a

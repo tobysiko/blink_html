@@ -14,7 +14,7 @@ let JSDOM;
 try { ({ JSDOM } = require('jsdom')); }
 catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); process.exit(2); }
 
-const html = fs.readFileSync(__dirname + '/../Blink-play-v0.23.html', 'utf8');
+const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 
 function run(seed, n, seat, retire, deck, obj, cb) {
   const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
@@ -63,7 +63,7 @@ function run(seed, n, seat, retire, deck, obj, cb) {
         if (want !== opts) fail.push(`feed: ${want} row cards lit, engine allows ${opts}`);
       }
       // the lit cards are the ones the engine would take, no more and no fewer
-      if (['retire', 'discard', 'bonus'].includes(type)) {
+      if (['retire', 'discard', 'bonus', 'duel'].includes(type)) {
         const want = qa('#hand button.want').length;
         const opts = w.eval('REQ.options.length');
         if (want !== opts)
@@ -116,6 +116,12 @@ function run(seed, n, seat, retire, deck, obj, cb) {
           const b = qa('.vpanel .vp-opt:not(.off)').find((x) => x.dataset.fx === 'B');
           if (b) click(b); else click(btn(/Keep this card/) || btn(/Play no effect/));
         } else click(btn(/^End turn/));
+      } else if (w.eval('REQ && REQ.type') === 'duel') {
+        /* A duel interrupts whoever's turn it is, so it cannot be matched on
+         * prompt text like the branches around it — this file runs in whatever
+         * language the page is in. Ask the page what it wants instead. */
+        const c = qa('#hand button.want')[0] || qa('#hand button').find((b) => !b.disabled);
+        if (c) click(c); else click(qa('#prompt button').find((b) => !b.disabled));
       } else if (/Give up|Retire a card|spend one extra card|shared pile/.test(t)) {
         const c = qa('#hand button.want')[0] || qa('#hand button').find((b) => !b.className.includes('dead'));
         if (c) click(c);

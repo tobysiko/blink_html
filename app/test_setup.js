@@ -4,6 +4,17 @@
  * `#my-seat` directly — so a change to the setup page broke eight files at
  * once. They now ask for a game by description and this translates.
  */
+/* Where the built page is. Every DOM test read `../Blink-play-v0.23.html`
+ * straight out of a string literal, so bumping the version silently broke
+ * twenty files at once — the same failure this module was written to prevent
+ * for the setup page. The name is derived from the VERSION file, which is the
+ * one place the number lives. */
+const PLAY_HTML = require("path").join(
+  __dirname, "..",
+  "Blink-play-v" + require("fs")
+    .readFileSync(require("path").join(__dirname, "..", "VERSION"), "utf8").trim()
+  + ".html");
+
 function configure(w, d, opts) {
   opts = opts || {};
   const players = opts.players || 3;
@@ -43,4 +54,4 @@ function start(w, d, opts) {
   return cfg;
 }
 
-module.exports = { configure, start };
+module.exports = { configure, start, PLAY_HTML };

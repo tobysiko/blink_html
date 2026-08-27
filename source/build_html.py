@@ -343,9 +343,10 @@ HTML = f"""<!doctype html>
     <li><strong>4 player boards</strong> — each with a <b>reserve</b> of five tiers, a
     <b>gold area</b>, and a <b>victory row</b> of five slots</li>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
-    <li><strong>4 initiative dice</strong> — use one per player</li>
+    <li><strong>4 dice</strong> — one <b>winner's die</b> in its own colour, and three
+    plain <b>initiative dice</b>. One per player.</li>
   </ul>
-  {fig('terrain', 'The four terrains at a glance. Defended ground is shown taller — a visual reminder of its attack cost, nothing more. The numbers on the table are the rules.')}
+  {fig('terrain', "The four terrains at a glance. Defended ground is moulded taller, and how tall it stands is its defence bonus in a duel — nothing more. The numbers on the table are the rules.")}
 </section>
 
 <section>
@@ -385,7 +386,7 @@ HTML = f"""<!doctype html>
     </ul>
     <p class="fine">Three is not decoration. A card only acts next to your civilization, so
     in the opening rounds nobody can reach a rival's homeland at all. Long before homelands are
-    in danger, the Mountains become the contested ground — each holds one unit and costs 2 gold
+    in danger, the Mountains become the contested ground — each holds one unit and defends at +2
     a card to take — so the fight for the middle comes first.</p></li>
 
     <li><b>Tile supply.</b> Sort the remaining tiles into four open piles by terrain,
@@ -398,7 +399,8 @@ HTML = f"""<!doctype html>
     (§10). Leave a clear space next to it for the <strong>shared pile</strong>: it starts
     empty, and fills with the cards losing melds discard (§04).</li>
 
-    <li><b>First player.</b> Choose a start player. They take initiative die “1”.</li>
+    <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>;
+    nothing is played yet, so set it to 1.</li>
   </ol>
   {fig('setup_maps', 'The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.')}
 </section>
@@ -466,8 +468,19 @@ HTML = f"""<!doctype html>
     <strong>highest card</strong>, then second-highest, and so on. If two melds are still
     identical, the one played <strong>earlier</strong> wins. There are never ties after
     this.</li>
-    <li>Set the initiative dice: winner to 1, then the rest in that same order.</li>
+    <li>Set the dice. The winner takes the <strong>winner's die</strong> and sets it to
+    the <strong>number of cards in their meld</strong>. It marks them as first in
+    initiative whatever number is showing — it is the only die of its colour, so there is
+    nothing to confuse it with. The rest take plain initiative dice showing
+    <strong>2, 3, 4</strong> in finishing order.</li>
   </ol>
+  <div class="note">
+    <span class="tag">Why the winner's die shows a card count</span>
+    <p>Two things have to be remembered between the card phase and the map phase: who goes
+    first, and <em>how many cards the winner played</em> — because anyone who matched that
+    number and lost gives a card up. One die carries both. The winner is the winner
+    because their die is the winner's die, not because of the number on its face.</p>
+  </div>
 
   <h3>Map phase</h3>
   <p>In initiative order, each player spends their meld — card by card, in any order,
@@ -593,28 +606,62 @@ HTML = f"""<!doctype html>
 
   <h3>Attack</h3>
   <p>When the cell is a tile a rival occupies, you cannot settle there. Instead, spending
-  that card <strong>removes one of the rival's units</strong> from the tile, back to their
-  board. Your own unit is <strong>not</strong> placed — the card is spent on the attack, and
-  the unit you would have settled stays in your reserve.</p>
-  <p>So taking a contested tile is patient work: one card clears one defender, and only
-  once the tile is empty can a later card settle it. A stack of rivals must be worn
-  down over more than one turn.</p>
-  {fig('combat', 'Attacking is not moving a unit across the map. A card spent on a rival tile removes one defender — your own unit never leaves your reserve. Clearing a stack takes as many cards as there are defenders.')}
-  <p>High ground is not safer, only dearer. <strong>Each card you spend attacking</strong>
-  pays the terrain's price first — so clearing a two-unit Forest with two cards costs 2 gold,
-  not 1. If you cannot pay, you cannot attack that cell; the card does something else, or
-  takes gold.</p>
+  that card <strong>declares an attack</strong> on it. Your own unit is <strong>not</strong>
+  placed — the card is spent on the attack, and the unit you would have settled stays in
+  your reserve.</p>
+
+  <p>An attack is not automatic. It is a <strong>duel</strong>, and both sides may fight
+  it with a card from hand.</p>
+  <ol class="seq">
+    <li><b>Is the defender fortified?</b> A coin on the unit absorbs the attack outright.
+    The gold goes to the supply, the unit stands, and there is no duel (§07).</li>
+    <li><b>Both commit, in secret.</b> You and the defender each choose one card from
+    hand and place it face down. Either of you may decline, and a player with an empty
+    hand has nothing to commit.</li>
+    <li><b>Reveal together.</b> Compare:
+      <br><strong>Attack</strong> = your card's rank.
+      <br><strong>Defence</strong> = their card's rank <strong>+ the terrain's defence
+      bonus</strong>. A card not committed counts as nothing.</li>
+    <li><b>The higher total wins.</b> If the totals are level, the card whose
+    <strong>suit matches the ground being fought over</strong> takes it; if both match or
+    neither does, <strong>the defender holds</strong>.</li>
+    <li><b>Attacker wins</b> — one defending unit returns to its owner's board.
+    If that was the <strong>last</strong> unit on the tile, <strong>the ground
+    changes hands</strong>: place a unit from your board on it at once, from
+    your top occupied tier as usual. No unit in reserve, or defenders still
+    standing, and the tile is simply left empty.
+    <br><b>Defender wins</b> — nothing happens; the attack is spent for
+    nothing.</li>
+  </ol>
+  <p>Both committed cards go to their owners' discards, and come back on the next
+  recycle. Losing a duel costs you tempo, not cards.</p>
+
   <table>
-    <thead><tr><th>Attacking into</th><th>Cost per card</th><th>Cards to clear a full stack</th></tr></thead>
+    <thead><tr><th>Attacking into</th><th>Defence bonus</th><th>What it means</th></tr></thead>
     <tbody>
-      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">free</td><td class="num-cell">3</td></tr>
-      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">free</td><td class="num-cell">1</td></tr>
-      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">1 gold</td><td class="num-cell">2</td></tr>
-      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">2 gold</td><td class="num-cell">1</td></tr>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">+0</td>
+        <td>Open ground. Rank alone decides it.</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">+0</td>
+        <td>Open water — but it holds one unit, so every duel is for everything.</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">+1</td>
+        <td>Cover. You need to beat them by two.</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">+2</td>
+        <td>High ground. Expensive to take and worth holding.</td></tr>
     </tbody>
   </table>
-  <p>To capture ground, empty it first and settle it after — which always takes more
-  than one round.</p>
+  {fig('combat', 'Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel, and your unit stays on your board until the tile is empty — clearing a stack takes as many won duels as there are defenders, and the last one takes the ground.')}
+
+  <div class="note">
+    <span class="tag">Why your hand matters twice</span>
+    <p>Your cards fight for the trick, buy your turn on the map — and now defend your
+    ground. A hand kept back is an army; a hand played out is a frontier with nobody on
+    the walls. The moment before your hand recycles is the moment you are easiest to
+    attack, and everyone at the table can count your cards.</p>
+  </div>
+  <p>Taking a contested tile is still patient work. One won duel clears <em>one</em>
+  defender, so a Plains holding three takes three of them — and every one of those is a
+  card out of your hand against a card out of theirs. What changes on the last of them is
+  that you do not have to come back: the tile is yours the moment you empty it.</p>
 
   <h3>Take gold</h3>
   <p>Instead of using a card on the map, take <strong>1 gold</strong>. Any card, any number
@@ -711,21 +758,23 @@ HTML = f"""<!doctype html>
 <section>
   <div class="h2"><span class="num">08</span><h2>Terrain</h2></div>
   <table>
-    <thead><tr><th>Terrain</th><th>Holds</th><th>Costs to attack</th></tr></thead>
+    <thead><tr><th>Terrain</th><th>Holds</th><th>Defence bonus</th></tr></thead>
     <tbody>
-      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">3</td><td class="num-cell">free</td></tr>
-      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">1</td><td class="num-cell">free</td></tr>
-      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">2</td><td class="num-cell">1 gold</td></tr>
-      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">1</td><td class="num-cell">2 gold</td></tr>
+      <tr><td><span class="chip plains">Plains</span></td><td class="num-cell">3</td><td class="num-cell">+0</td></tr>
+      <tr><td><span class="chip ocean">Ocean</span></td><td class="num-cell">1</td><td class="num-cell">+0</td></tr>
+      <tr><td><span class="chip forest">Forest</span></td><td class="num-cell">2</td><td class="num-cell">+1</td></tr>
+      <tr><td><span class="chip mountain">Mountain</span></td><td class="num-cell">1</td><td class="num-cell">+2</td></tr>
     </tbody>
   </table>
-  <p>These values are fixed — nothing in the game ever modifies them. As a visual aid, defended
-  terrain is moulded taller: Forest stands two layers, Mountain three, so a glance at the map
-  recalls the attack cost without looking anything up.</p>
+  <p>These values are fixed — nothing in the game ever modifies them. The defence bonus is
+  added to the <em>defender's</em> card in a duel (§06): taking a Mountain needs a card three
+  ranks better than the one holding it. As a visual aid, defended terrain is moulded taller:
+  Forest stands two layers, Mountain three, so a glance at the map tells you how much harder
+  that ground will fight without looking anything up.</p>
   <p>The supply holds the four terrains in <strong>equal numbers — 15 each</strong>. That mirrors the
   deck, where every suit appears at every rank. No terrain is scarce, and no card in your hand is
   worth more than another because the ground it needs is rarer. What a terrain is worth is set by
-  how many units it holds and what it costs to take — never by how much of it exists.</p>
+  how many units it holds and how hard it is to take — never by how much of it exists.</p>
 </section>
 
 <section>
@@ -898,7 +947,7 @@ HTML = f"""<!doctype html>
   upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
   it &mdash; that is the market. Their Tribe rank cap is 12, so most of what is showing is
   out of reach until they grow.
-  Ada is chosen to start and takes initiative die “1”.</p>
+  Ada is chosen to start and takes the winner's die, set to 1.</p>
 
   <h3>The card phase</h3>
   <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
@@ -912,7 +961,9 @@ HTML = f"""<!doctype html>
   </ul>
   <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
   <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
-  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes initiative die 1 — she
+  <strong>4</strong>. <strong>Bex wins the trick</strong> and takes the winner's die, setting
+  it to <strong>2</strong> — the size of her meld, and a reminder that anyone who also played
+  two and lost owes a card. She is first in initiative regardless of the number; she
   will lead next round. Ada, next best, takes die 2; Cy takes die 3.</p>
   <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
   on its own. Under a total, one big card is a play, not a waste.</p>
@@ -1167,16 +1218,24 @@ HTML = f"""<!doctype html>
       <h3>Round</h3>
       <p>Declare A effects blind → leader plays a meld → everyone plays a meld → highest total
       wins, then most cards, then highest card, then earliest played (never a tie) →
+      <b>winner's die = their meld size</b> (and always first), others 2/3/4 →
       spend melds in initiative order. The winner spends every card. Anyone who
       <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
       goes to the shared pile. Last place takes 1 gold.</p>
+      <h3>Combat — a duel</h3>
+      <p>Win the last defender and the tile is yours: settle it at once.
+      Fortified? The coin absorbs it, no duel. Otherwise both sides commit one hand
+      card face down and reveal: <b>attacker's rank</b> vs <b>defender's rank + terrain
+      (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
+      card matching the ground, and to the <b>defender</b> if both or neither match.
+      Attacker wins, one defender goes home. Both cards to their owners' discards.</p>
       <h3>Melds — one rule</h3>
       <p>Any cards whose ranks form an <b>unbroken run</b>. Duplicates of any rank are free;
       suits are irrelevant. One card is always legal.<br>
       2 ✓ · 2-2 ✓ · 2-3 ✓ · 2-3-3-4-4 ✓ · <b>2-2-4-4 ✗</b> (no 3).<br>
       Limit by tier: 2 / 3 / 4 / 5 / 6.</p>
       <h3>Each card of your meld</h3>
-      <p>ONE of: Settle a unit · Explore a tile · Attack (pay the terrain price) ·
+      <p>ONE of: Settle a unit · Explore a tile · Attack (duel) ·
       Take 1 gold. Any order; each card resolves on the map as the last one left it.</p>
       <p>Reach: a tile you occupy or adjacent to one you occupy. Suit matches terrain.
       No units on the map? Act anywhere.</p>
@@ -1190,8 +1249,8 @@ HTML = f"""<!doctype html>
         <tbody>
           <tr><td>Plains</td><td class="num-cell">holds 3</td></tr>
           <tr><td>Ocean</td><td class="num-cell">holds 1 · sea roads</td></tr>
-          <tr><td>Forest</td><td class="num-cell">holds 2 · attack costs 1</td></tr>
-          <tr><td>Mountain</td><td class="num-cell">holds 1 · attack costs 2</td></tr>
+          <tr><td>Forest</td><td class="num-cell">holds 2 · defends +1</td></tr>
+          <tr><td>Mountain</td><td class="num-cell">holds 1 · defends +2</td></tr>
         </tbody>
       </table>
       <h3>Exploring</h3>
@@ -1210,8 +1269,7 @@ HTML = f"""<!doctype html>
       One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
       <h3>Gold</h3>
       <p>1 per cashed card · ascension coins 1/2/3/4, once each · 1 for ranking last ·
-      pay 1 to research · pay 1 to fortify · pay 1–2 <em>per card</em> to attack Forest or
-      Mountain · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
+      pay 1 to research · pay 1 to fortify · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
       recycles — short slots starve units off the map.</p>
       <h3>Research — up to twice per turn</h3>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
