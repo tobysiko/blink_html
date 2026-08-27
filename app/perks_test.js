@@ -203,6 +203,19 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2]]) {
   }
 }
 
+// Slot 5 is not assignable — the engine refuses it, and the UI must not offer
+// it either. It rendered as a drop target for a while, which silently threw a
+// player's selection away.
+{
+  const p = new E.Player(0, E.BANDS, ['roads', 'coinage']);
+  ok(!E.PERK_SLOTS.includes(5), 'slot 5 is in the assignable list');
+  ok(!p.assignPerk('roads', 5), 'the engine accepted an assignment to slot 5');
+  ok(p.slotOf('roads') !== 5, 'a perk ended up on slot 5 anyway');
+  for (let s = 1; s <= 60; s++)
+    for (const q of E.playOut(3, s * 17, { perks: true }).P)
+      ok(!q.perks[5], `seed ${s} dealt a perk onto slot 5`);
+}
+
 // ------------------------------------------------ a whole game, perks on
 {
   for (let s = 1; s <= 40; s++) {

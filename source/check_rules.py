@@ -296,6 +296,63 @@ check("four suit decks" not in rules and "four-card market" not in rules,
 check(rules.count("3 \u00d7 3 grid") >= 2 or rules.count("3 × 3 grid") >= 2,
       "the rulebook does not consistently describe the 3x3 market grid")
 
+# ---------------------------------------------- the two optional modules
+# Both sit on top of the base rules, so they can go stale on their own without
+# breaking anything the earlier checks look at.
+
+# 12 — map objectives. The card count, the points and the modes all live in the
+# engine; the section must not invent its own.
+# Scope each module check to its OWN section. Searching the whole document
+# passes on coincidence — "12" is also a rank cap, and "4 points" appears in
+# the dominance rule, so both checks were green no matter what section 12 said.
+def section(html_src, sid):
+    m = re.search(rf'<section id="{sid}">(.*?)</section>', html_src, re.S)
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", m.group(1)))) if m else ""
+
+raw_rules = (HERE / RULES_HTML).read_text(encoding="utf8")
+obj_sec = section(raw_rules, "objectives")
+perk_sec = section(raw_rules, "perks")
+check(bool(obj_sec), "the rulebook has no map objectives section")
+check(bool(perk_sec), "the rulebook has no perks section")
+
+n_obj = len(re.findall(r'\["[A-Z][a-z]+[^"]*",\s*"(?:mountain|forest|plains|ocean)"', js))
+check(n_obj > 0, "cannot find the objective cards in app/engine.js")
+words = {12: "twelve", 6: "six", 8: "eight", 10: "ten", 14: "fourteen"}
+check(words.get(n_obj, str(n_obj)) in obj_sec,
+      f"section 12 does not say there are {n_obj} objective cards")
+pts = re.search(r"points:\s*(\d+)", js)
+check(bool(pts) and f"{pts.group(1)} points" in obj_sec,
+      f"section 12 does not print an objective as worth {pts and pts.group(1)} points")
+for mode in ["Secret", "Open", "Keep both"]:
+    check(mode in obj_sec, f"the objectives module is missing the {mode} mode")
+modes = re.search(r'OBJECTIVES_MODE = opts\.objectives \|\| "([a-z]+)"', js)
+check(bool(modes) and modes.group(1) == "off",
+      "map objectives are no longer off by default in the engine")
+
+# 13 — perks. Every number here is one the engine owns.
+deal = re.search(r"const PERK_DEAL = (\d+);", js)
+slots = re.search(r"const PERK_SLOTS = \[([\d, ]+)\];", js)
+check(bool(deal) and bool(slots), "cannot find PERK_DEAL / PERK_SLOTS in app/engine.js")
+if deal:
+    numword = {2: "two", 3: "three", 4: "four", 5: "five"}.get(int(deal.group(1)))
+    check(re.search(rf"deal\s+(?:{numword}|{deal.group(1)})\s+to each player",
+                    perk_sec, re.I),
+          f"section 13 does not say to deal {deal.group(1)} to each player")
+if slots:
+    nums = [int(x) for x in slots.group(1).split(",")]
+    check(max(nums) == 4 and 5 not in nums,
+          f"PERK_SLOTS is {nums}; the rulebook says slots 1 to 4 and slot 5 blank")
+    check("slot 5 stays empty" in perk_sec.lower(),
+          "section 13 does not say slot 5 stays empty")
+# the wake-up thresholds, straight from perkSlotNeeds
+for slot, needs in [(4, 2), (3, 3), (2, 4), (1, 5)]:
+    hit = re.search(rf"\b{slot}\s+{needs} cards", perk_sec) or (slot == 1 and "all 5" in perk_sec)
+    check(bool(hit), f"section 13 does not show slot {slot} waking at {needs} cards")
+check("SPEND" in perk_sec and "STANDING" in perk_sec,
+      "section 13 does not name the two kinds of token")
+check("switches off" in perk_sec,
+      "section 13 does not say that spending a card can switch a perk off")
+
 check("YOUR TURN" in board_txt, "the player board does not say what a turn may contain")
 check(re.search(r"Research: twice", board_txt),
       f"the board does not print research twice a turn (engine default "

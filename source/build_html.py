@@ -311,6 +311,7 @@ HTML = f"""<!doctype html>
     <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
     <b>08</b> Terrain · <b>09</b> Feeding and refilling · <b>10</b> Research and the market ·
     <b>✦</b> A worked example · <b>11</b> End of the game ·
+    <b>12</b> Map objectives · <b>13</b> Perks ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
   </div>
 </section>
@@ -992,11 +993,128 @@ HTML = f"""<!doctype html>
   <p>Most points wins. Gold breaks a tie.</p>
   <div class="note">
     <span class="tag">Beyond the base game</span>
-    <p>Two optional layers deepen scoring once the base game is familiar, each in its
-    own booklet: <strong>shared map objectives</strong> — pattern cards like rivers,
-    silk roads and mountain ranges that everyone can score — and <strong>personal
-    objectives</strong>, secret goals held from the start. Add them one at a time, not
-    for your first game or two.</p>
+    <p>Two optional modules follow, and they sit on top of everything above without
+    changing any of it: <strong>§12 Map objectives</strong> gives every player a shape
+    to build toward, and <strong>§13 Perks</strong> gives the victory row something to
+    do before scoring. Add them one at a time, and not for your first game or two.</p>
+  </div>
+</section>
+
+<section id="objectives">
+  <div class="h2"><span class="num">12</span><h2>Map objectives</h2></div>
+  <p class="lede">A module. Everything in sections 01 to 11 still applies; this adds one
+  thing to setup and one line to scoring.</p>
+
+  <p>The map is where your civilization spreads. This module gives it a
+  <strong>shape to aim at</strong>. Each objective card names three tiles in a row — a
+  middle terrain with a particular terrain on either side — and pays <strong>4
+  points</strong> if you hold that arrangement when the game ends.</p>
+
+  <h3>The pattern</h3>
+  <p>Every objective is <strong>three tiles</strong>: a <b>middle</b>, and two <b>ends</b>
+  that each touch the middle. The ends do <em>not</em> need to touch each other, and the
+  three tiles may sit anywhere on the map.</p>
+  <ul>
+    <li>All three must be tiles <strong>you occupy</strong> — at least one of your units
+    standing on each. A tile with no units, or one held only by a rival, never counts.</li>
+    <li>An objective scores <strong>4 points once</strong>, or nothing. Building the
+    pattern twice does not pay twice, and failing costs nothing.</li>
+    <li>The terrain must match exactly. <em>Fjord</em> is Ocean between two Mountains;
+    two Oceans around a Mountain is <em>Mountain Lookout</em>, a different card.</li>
+  </ul>
+  <p>There are <strong>twelve</strong> objective cards, printed in their own booklet.</p>
+
+  <h3>Three ways to play it</h3>
+  <p>Agree on one before setup.</p>
+  <table>
+    <thead><tr><th>Mode</th><th>Setup</th><th>Character</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Secret</strong></td>
+        <td>Deal <b>two</b> face down to each player. Look at both, keep <b>one</b>, return
+        the other to the box unseen.</td>
+        <td>The tightest. Nobody knows what anyone is building, and choosing which to keep
+        is the first real decision of the game. Choose <em>before</em> the card draft, so
+        the objective can shape the hand you keep.</td></tr>
+      <tr><td><strong>Open</strong></td>
+        <td>Turn <b>two</b> face up in the middle of the table. They belong to everyone.</td>
+        <td>The friendliest, and the most contested — you can see exactly what your rivals
+        want, because they want the same thing you do.</td></tr>
+      <tr><td><strong>Keep both</strong></td>
+        <td>Deal <b>two</b> face down to each player and keep them both. Both score.</td>
+        <td>The loosest. Up to 8 points, and two shapes to steer between.</td></tr>
+    </tbody>
+  </table>
+  <p>In every mode, objectives are revealed <strong>together</strong> at the end, after the
+  base score is counted.</p>
+
+  <div class="note">
+    <span class="tag">Why it changes the map</span>
+    <p>Without objectives, ground is ground: you take what you can reach. With them,
+    a particular empty hex beside your Forest is suddenly worth exploring
+    <em>specifically</em>, and dominance stops being the only reason to hold a stretch of
+    coast. Four points is roughly a fifth of a typical score, so an objective is worth
+    steering for — but not worth wrecking your position over.</p>
+  </div>
+</section>
+
+<section id="perks">
+  <div class="h2"><span class="num">13</span><h2>Perks</h2></div>
+  <p class="lede">A module, and a new one. Everything in sections 01 to 11 still applies.
+  This one has not been through a full playtest — treat it as an experiment and tell us
+  how it went.</p>
+
+  <p>Your victory row scores at the end and does nothing before it, which is a strange
+  thing for five slots sitting in front of you all game. Perks give them a job: a perk
+  <strong>wakes up when its slot holds a card</strong>, and works for the rest of the
+  game until you spend the card underneath it.</p>
+
+  <h3>Setup</h3>
+  <ol class="seq">
+    <li>Shuffle the perk tokens and <b>deal four to each player</b>.</li>
+    <li>Put one on each of <strong>slots 1, 2, 3 and 4</strong> of your victory row, face
+    up, wherever you like. <strong>Slot 5 stays empty</strong> — it fills on your first
+    research, so a perk there would be a gift rather than something earned.</li>
+    <li>You may rearrange them freely until the moment your first card reaches the row.
+    After that the arrangement is <strong>permanent</strong>.</li>
+  </ol>
+
+  <h3>Which slot, and why it matters</h3>
+  <p>Cards fill the victory row from the <strong>right</strong> (§11), so the slot you
+  choose decides how long you wait:</p>
+  <table>
+    <thead><tr><th>Slot</th><th>Wakes when your row holds</th><th>The bet</th></tr></thead>
+    <tbody>
+      <tr><td class="num-cell">4</td><td class="num-cell">2 cards</td>
+        <td>Working almost at once. The safe place for the perk you want most.</td></tr>
+      <tr><td class="num-cell">3</td><td class="num-cell">3 cards</td>
+        <td>Reachable in most games.</td></tr>
+      <tr><td class="num-cell">2</td><td class="num-cell">4 cards</td>
+        <td>Late, and only if you keep researching.</td></tr>
+      <tr><td class="num-cell">1</td><td class="num-cell">all 5</td>
+        <td>A long shot. It asks you to fill the row and never spend it down.</td></tr>
+    </tbody>
+  </table>
+  <p>Every perk is <strong>equal</strong> — there are no better and worse kinds. What
+  differs is how soon you want each one, and how much of your row you are willing to tie
+  up getting it.</p>
+
+  <h3>The two kinds</h3>
+  <ul>
+    <li><strong>SPEND</strong> — use it, then turn the token face down. It comes back the
+    next time your <b>hand recycles</b> (§09), which is also when you pay your food, so
+    the two happen together.</li>
+    <li><strong>STANDING</strong> — no use to spend. It simply works, for as long as its
+    slot holds a card. These tokens never turn over.</li>
+  </ul>
+  <p>Each token says which it is.</p>
+
+  <div class="note">
+    <span class="tag">The price of a perk</span>
+    <p>Spending a victory card on its <b>A</b>, <b>B</b> or <b>C</b> effect (§10) takes it
+    out of the row — and if that drops the row below a perk's slot, <strong>the perk
+    switches off</strong>. So the more you like your perks, the fewer effects you will
+    spend. That trade is the whole balance of this module: nothing here is free, and a
+    player who wants everything running has quietly given up their war chest to get it.</p>
   </div>
 </section>
 

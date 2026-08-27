@@ -1668,11 +1668,15 @@ function renderPlayer() {
       const id = p.perks[slot];
       const needs = perkSlotNeeds(slot);
       if (!id) {
-        /* An empty slot is a drop target while the arrangement is open. */
-        s += open
+        /* An empty slot is a drop target while the arrangement is open — but
+         * ONLY slots that can actually hold a perk. Slot 5 stays blank by
+         * design, and rendering it as a button invited a tap that silently
+         * threw the selection away. */
+        const droppable = open && PERK_SLOTS.includes(slot);
+        s += droppable
           ? `<button class="pk empty" data-slot="${slot}" title="${
               t("perk.putHere", { n: needs })}">${t("perk.needs", { n: needs })}</button>`
-          : `<span class="pk none"></span>`;
+          : `<span class="pk none"${slot === 5 ? ` title="${t("perk.slotFive")}"` : ""}></span>`;
         continue;
       }
       const liveNow = p.vrow.length >= needs;

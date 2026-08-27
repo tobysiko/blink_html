@@ -1212,7 +1212,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"50ffaa43d6","branch":"main","dirty":true,"built":"2026-08-26T21:38:27Z"};
+const BUILD = {"version":"v0.23","api":null,"reportUrl":null,"commit":"424253c788","branch":"main","dirty":true,"built":"2026-08-27T06:20:19Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1305,6 +1305,7 @@ en: {
   "perk.arrange": "Arrange your perks: tap one, then tap the slot it should sit in. This locks when your first card reaches the row.",
   "perk.nowPick": "Now tap the slot it should sit in.",
   "perk.putHere": "Put a perk here \u2014 it wakes at {n} cards",
+  "perk.slotFive": "This slot never takes a perk — it fills on your first research",
   "perk.slotNeeds": "slot {slot} \u00b7 needs {n} cards",
   "perk.roads.rule": "one extra free move",
   "perk.scholarship.rule": "one research may buy a rank above your cap",
@@ -1817,6 +1818,7 @@ de: {
   "perk.arrange": "Ordne deine Boni: erst einen antippen, dann den Platz. Sobald die erste Karte in der Reihe liegt, ist es endgültig.",
   "perk.nowPick": "Jetzt den Platz antippen.",
   "perk.putHere": "Bonus hierher \u2014 wirkt ab {n} Karten",
+  "perk.slotFive": "Dieser Platz nimmt nie einen Bonus — er füllt sich beim ersten Forschen",
   "perk.slotNeeds": "Platz {slot} \u00b7 braucht {n} Karten",
   "perk.roads.rule": "ein zusätzlicher freier Zug",
   "perk.scholarship.rule": "ein Kauf darf einen Wert über der Obergrenze liegen",
@@ -7901,11 +7903,15 @@ function renderPlayer() {
       const id = p.perks[slot];
       const needs = perkSlotNeeds(slot);
       if (!id) {
-        /* An empty slot is a drop target while the arrangement is open. */
-        s += open
+        /* An empty slot is a drop target while the arrangement is open — but
+         * ONLY slots that can actually hold a perk. Slot 5 stays blank by
+         * design, and rendering it as a button invited a tap that silently
+         * threw the selection away. */
+        const droppable = open && PERK_SLOTS.includes(slot);
+        s += droppable
           ? `<button class="pk empty" data-slot="${slot}" title="${
               t("perk.putHere", { n: needs })}">${t("perk.needs", { n: needs })}</button>`
-          : `<span class="pk none"></span>`;
+          : `<span class="pk none"${slot === 5 ? ` title="${t("perk.slotFive")}"` : ""}></span>`;
         continue;
       }
       const liveNow = p.vrow.length >= needs;
