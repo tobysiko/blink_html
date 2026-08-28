@@ -410,6 +410,17 @@ for terr in ("forest", "mountain"):
               f"the combat figure names {terr.capitalize()} without its "
               f"+{def_js[terr]}")
 
+# WHOSE CARDS FIGHT. The first duel asked the attacker for a card from hand as
+# well as the meld card they had already spent, which is not what anybody
+# expects and left the rank of the spent card doing nothing at all. Both halves
+# are pinned, because the engine and the book drifted apart here once already.
+check(re.search(r"\*_duelCard\(q, role, tile, against\)", js),
+      "the defender is no longer told what they are answering")
+check("_duelCard(p, \"attack\"" not in js,
+      "the attacker is being asked for a card from hand again")
+check(re.search(r"attack is the card you spent", rules, re.I),
+      "section 06 does not say the spent card IS the attack")
+
 # THE FORTIFICATION is the rule most recently rewritten, and the old version of
 # it survived in print for a version while the engine had moved on. Both halves
 # are pinned: the engine must refuse a lone card, and the book must say so.

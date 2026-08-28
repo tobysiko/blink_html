@@ -63,6 +63,19 @@ function run(seed, n, seat, retire, deck, obj, cb) {
         if (want !== opts) fail.push(`feed: ${want} row cards lit, engine allows ${opts}`);
       }
       // the lit cards are the ones the engine would take, no more and no fewer
+      /* A duel must SHOW what is being answered: the contested tile marked on
+       * the map, and the attacking card next to the question. Both were
+       * missing in the first build of it, and "which Forest?" was the first
+       * thing anybody asked. */
+      if (type === 'duel') {
+        const lit = qa('#map .fight');
+        if (lit.length !== 1)
+          fail.push(`duel: ${lit.length} tiles marked as contested, expected 1`);
+        if (lit[0] && lit[0].dataset.key !== w.eval('REQ.cell'))
+          fail.push('duel: the marked tile is not the one being fought over');
+        if (w.eval('REQ.against') && !q('.duelsum'))
+          fail.push('duel: the attacking card is not shown beside the question');
+      }
       if (['retire', 'discard', 'bonus', 'duel'].includes(type)) {
         const want = qa('#hand button.want').length;
         const opts = w.eval('REQ.options.length');

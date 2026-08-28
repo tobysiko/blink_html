@@ -84,6 +84,47 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
      'a defender who declines on a Mountain still has the ground under them');
 }
 
+// -------------------------------- the attacker never pays twice for one attack
+/* The rule as first built asked the attacker for a card from HAND on top of
+ * the meld card already spent on the tile. Two cards for one attack is not
+ * what the rules charge, and it left the rank of the spent card meaning
+ * nothing — you could storm a Mountain with a 2 as long as you held a 19 back.
+ * Now the card you spend IS the attack, and only the defender is asked. */
+{
+  const g = new E.Game(3, 77, { humans: [] });
+  const tile = [...g.m.tiles.values()]
+    .find((t) => t.owner !== null && t.units.length === 1 && !t.gold);
+  const me = g.P[(tile.owner + 1) % g.P.length];
+  const before = me.hand.length;
+  g.P[tile.owner].hand = [{ r: 2, s: 'ocean' }];       // a token defence
+  const it = g._duel(me, tile.key, tile, { r: 18, s: tile.terrain });
+  let r = it.next(), asked = [];
+  while (!r.done) { asked.push(r.value && r.value.type); r = it.next(null); }
+  ok(!asked.includes('duel') || asked.length <= 1,
+     `the engine asked ${asked.length} questions for one attack: ${asked}`);
+  ok(me.hand.length === before,
+     'the attacker lost a card from hand — the spent card is the whole attack');
+  ok(tile.owner === me.i, 'an 18 against a 2 did not take the tile');
+}
+
+/* ...and the rank of the spent card is what decides it. Same defender, same
+ * ground, two different cards spent. */
+{
+  const fight = (rank) => {
+    const g = new E.Game(3, 77, { humans: [] });
+    const tile = [...g.m.tiles.values()]
+      .find((t) => t.owner !== null && t.units.length === 1 && !t.gold);
+    const me = g.P[(tile.owner + 1) % g.P.length];
+    g.P[tile.owner].hand = [{ r: 9, s: 'ocean' }];
+    const it = g._duel(me, tile.key, tile, { r: rank, s: 'ocean' });
+    let r = it.next();
+    while (!r.done) r = it.next(null);
+    return tile.owner === me.i;
+  };
+  ok(fight(20), 'a 20 lost to a 9 on open ground');
+  ok(!fight(3), 'a 3 beat a 9 — the spent card is not deciding the fight');
+}
+
 // ------------------------------------ a coin makes it an ASSAULT, not a veto
 /* The rule this replaces let a coin absorb an attack outright. It read well and
  * measured terribly: once the bots learned that hitting a wall bought nothing,
@@ -163,15 +204,11 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
     .find((x) => x.owner !== null && x.units.length === 1 && !x.gold);
   const me = g.P[(tile.owner + 1) % g.P.length];
   const victim = tile.owner;
-  /* One high card among low ones. Not just the 20: the bot commits the cheapest
-   * card that clears what it expects to meet, and it judges that from the mean
-   * of its own hand — so a hand of nothing but 20s makes it decline its own
-   * certain win. Stacking the hand realistically is part of the test. */
-  me.hand = [{ r: 20, s: tile.terrain }, { r: 1, s: 'plains' }, { r: 2, s: 'ocean' },
-             { r: 1, s: 'forest' }, { r: 3, s: 'plains' }];
-  g.P[victim].hand = [];                          // and certain not to be beaten
+  g.P[victim].hand = [];                          // certain not to be beaten
   const reserve = me.reserve.slice();
-  const it = g._duel(me, tile.key, tile);
+  /* The attack is the card spent on the tile, so it is passed in rather than
+   * asked for — the attacker's own hand is not consulted at all. */
+  const it = g._duel(me, tile.key, tile, { r: 20, s: tile.terrain });
   let r = it.next();
   while (!r.done) r = it.next(null);
   ok(tile.owner === me.i, `the winner did not take the tile (owner ${tile.owner})`);
@@ -188,10 +225,8 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
   const victim = tile.owner;
   while (tile.units.length < 2) tile.units.push(victim);
   const me = g.P[(victim + 1) % g.P.length];
-  me.hand = [{ r: 20, s: tile.terrain }, { r: 1, s: 'plains' }, { r: 2, s: 'ocean' },
-             { r: 1, s: 'forest' }, { r: 3, s: 'plains' }];
   g.P[victim].hand = [];
-  const it = g._duel(me, tile.key, tile);
+  const it = g._duel(me, tile.key, tile, { r: 20, s: tile.terrain });
   let r = it.next();
   while (!r.done) r = it.next(null);
   ok(tile.owner === victim, 'a tile with a defender still standing changed hands');
@@ -266,8 +301,8 @@ ok(E.playOut(3, 7, { duelTake: false }).DUEL_TAKE === false,
 }
 
 console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-  : 'combat: an attack is a duel — both sides commit a hand card and the defender '
-    + 'adds the ground (0/0/1/2). The rule is '
+  : 'combat: an attack is a duel — the card you SPEND is the attack, the defender '
+    + 'answers from hand, and the ground is added to them (0/0/1/2). The rule is '
     + 'checked card by card rather than by counting bot fights. A coin does not '
     + 'stop an attack, it prices one: a lone card is refused, two cards get a '
     + 'fight, and the LOWER of the pair is the attack. Clear the last '

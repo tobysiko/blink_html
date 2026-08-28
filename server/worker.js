@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-28T15:09:52Z
+ * Built 2026-08-28T18:36:22Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -978,6 +978,7 @@ const TUNED = {
   ATTACK_COST_W: 0.9,      // how much its price puts you off
   ATTACK_LONE_V: 1.0,      // ...a tile you would empty outright
   DUEL_CARD_W: 0.35,       // what committing a hand card to a duel puts you off
+  WALL_DETERRENCE: 1.4,    // what refusing every single-card attack is worth
   // choosing a meld
   MELD_GREED: 0.30,        // how much you value the hand you keep back
   // the victory row
@@ -1127,31 +1128,26 @@ const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
 function duelValue(game, p, t, w, card) {
   const bonus = TERRAIN_DEFENCE[t.terrain];
   const hand = p.hand.length ? p.hand : [{ r: 10 }];
-  let odds, cards;
+  let value = card.r, cards = 1;
 
   if (t.gold) {
-    /* AN ASSAULT (§07). Two cards, and the LOWER of the two ranks fights, so
-     * the attack value is fixed before the defender does anything — which
-     * makes the odds a different sum from an ordinary duel. Here we know our
-     * number and ask how much of a typical hand it beats; in a duel we do not
-     * know our number yet and ask how much of our hand could supply one.
-     *
-     * The meld is the only sample of "my other cards" available at this point,
-     * and the bot will bring its best one, so that is what is assumed. */
+    /* AN ASSAULT (§07): two cards, and the LOWER of the two ranks fights, so
+     * bringing a weak second card throws the fight away. The meld is the only
+     * sample of "my other cards" available here, and the bot will bring its
+     * best one, so that is what is assumed. */
     const others = (p.played || []).filter((c) => c !== card);
     if (!others.length) return -1;             // nothing to back it with
-    const value = Math.min(card.r, Math.max(...others.map((c) => c.r)));
-    odds = hand.filter((c) => value > c.r + bonus).length / hand.length;
+    value = Math.min(card.r, Math.max(...others.map((c) => c.r)));
     cards = 2;
-  } else {
-    const expect = mean(hand.map((c) => c.r));
-    const able = hand.filter((c) => c.r >= expect + bonus + 1);
-    if (!able.length) return -1;               // nothing in hand clears the ground
-    odds = able.length / hand.length;
-    cards = 1;
   }
 
-  let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * cards;
+  /* The attack value is known before the defender answers — it is the card
+   * being spent — so the odds are one sum rather than a guess about what we
+   * might commit later. What is still unknown is the defender's HAND, and our
+   * own is the only sample of a comparable hand we have. */
+  const odds = hand.filter((c) => value > c.r + bonus).length / hand.length;
+
+  let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * (cards - 1);
   /* Emptying a tile is worth more than a kill when the winner settles it: you
    * do not merely deny a point, you take one. */
   if (t.units.length === 1)
@@ -2226,7 +2222,7 @@ class Game {
       const tile = this.m.tiles.get(cell);
       if (this.COMBAT === "duel") {
         if (tile.gold) yield* this._assault(p, cell, tile, card, pool || []);
-        else yield* this._duel(p, cell, tile);
+        else yield* this._duel(p, cell, tile, card);
         return;
       }
       const cost = attackGold(this.COMBAT, tile.terrain);
@@ -2268,46 +2264,39 @@ class Game {
     }
   }
 
-  /* Which card a seat commits to a duel. Humans are asked; bots follow a
-   * first-pass policy that has NOT been tuned — see combat_test.js. Neither
-   * side is ever shown the other's card, so asking them in sequence is still
-   * a simultaneous reveal. */
-  *_duelCard(q, role, tile) {
+  /* Which card the DEFENDER commits. Only the defender is ever asked: the
+   * attack is the card already spent on the map (see _duel).
+   *
+   * They can see what they are answering — `against` is the attacker's card —
+   * so this is a priced decision, not a guess: beat `against.r - bonus` and
+   * the tile holds. Humans are asked; bots follow the policy below.
+   */
+  *_duelCard(q, role, tile, against) {
     if (!q.hand.length) return null;
+    const bonus = TERRAIN_DEFENCE[tile.terrain];
     if (this.isHuman(q.i)) {
       const pick = yield { type: "duel", seat: q.i, role,
-                           cell: tile.key, terrain: tile.terrain,
-                           bonus: TERRAIN_DEFENCE[tile.terrain],
+                           cell: tile.key, terrain: tile.terrain, bonus,
+                           against: against || null,
+                           need: against ? Math.max(0, against.r - bonus) : 0,
                            options: q.hand.slice() };
       return q.hand.includes(pick) ? pick : null;   // declining is legal
     }
-    /* Bot policy. The first version of this always committed the highest card
-     * in hand, and it cost the Raider thirteen points of win rate: an attacker
-     * who burns its best card on every duel has nothing left to meld with,
-     * whether or not the duel is won. Two rules replace it.
+    /* SPEND THE CHEAPEST CARD THAT HOLDS THE GROUND, and decline when nothing
+     * does. Spending a card you know will lose is worse than losing for free:
+     * you lose the unit either way and the card as well.
      *
-     * SPEND THE CHEAPEST CARD THAT DOES THE JOB. Neither side sees the other,
-     * so "the job" has to be estimated. Your own hand is the sample you have —
-     * you and your rival are on comparable tiers, holding comparable ranks —
-     * so the mean rank of your hand stands in for the card you are about to
-     * meet. The defender adds the ground and wins ties, so the two sides need
-     * different numbers, and the difference IS the terrain bonus.
-     *
-     * AND DECLINE WHEN NOTHING CLEARS IT. Spending a card you know will lose
-     * is worse than losing for free: you lose the unit either way and the card
-     * as well. This is why the terrain bonus finally bites — on a Mountain
-     * there are two more ranks a hand has to reach before an attack is worth
-     * making at all. */
+     * The defender can see the attack, so unlike the earlier version of this
+     * there is nothing to estimate — `need` is exact. */
     const sorted = q.hand.slice().sort((a, b) => a.r - b.r);
-    const bonus = TERRAIN_DEFENCE[tile.terrain];
-    const expect = q.hand.reduce((s, c) => s + c.r, 0) / q.hand.length;
-    /* Ground nearly lost is worth a stretch; ground you can retake is not. */
-    const keen = role === "defend" && tile.units.length <= 1 ? 1 : 0;
-    const need = role === "attack" ? expect + bonus + 1 : expect - bonus - keen;
+    const need = against ? against.r - bonus : 0;
+    /* Ground nearly lost is worth stretching for; ground you can retake is not.
+     * A level fight goes to the defender, so meeting `need` exactly is enough. */
     const able = sorted.filter((c) => c.r >= need);
     if (!able.length) return null;
-    /* Among cards that clear it, the ground's own suit breaks a level fight,
-     * so prefer it — but never at the price of a higher rank. */
+    if (tile.units.length > 1 && !able.length) return null;
+    /* Among cards that hold, the ground's own suit also wins a level fight, so
+     * prefer it — but never at the price of a higher rank. */
     const floor = able[0].r;
     return able.find((c) => c.r === floor && c.s === tile.terrain) || able[0];
   }
@@ -2346,7 +2335,15 @@ class Game {
                            bonus: TERRAIN_DEFENCE[tile.terrain], lead: card,
                            options: pool.slice() };
       second = pool.includes(pick) ? pick : null;
-      if (!second) { this.inc("assault_declined"); return; }   // keep the card
+      if (!second) {
+        /* Calling it off must not silently eat the card that declared it.
+         * That card has already left the meld, so it takes the same way out
+         * every unusable card takes (§06): it is cashed for a coin. */
+        this.inc("assault_declined"); this.inc("cards_to_gold");
+        p.gold += 1;
+        this.fx("gold", { seat: p.i, amount: 1, from: "hand" });
+        return;
+      }
     } else {
       /* min() punishes bringing a weak card, so the bot brings its best other
        * one — which is precisely the cost this rule charges. */
@@ -2365,18 +2362,33 @@ class Game {
     this.fx("shield", { seat: p.i, at: cell });
     const value = Math.min(card.r, second.r);
     const suit = (card.r <= second.r ? card : second).s;
-    yield* this._duel(p, cell, tile, { r: value, s: suit });
+    yield* this._duel(p, cell, tile, { r: value, s: suit, assault: true });
   }
 
   /* `assault` is a card-shaped value already paid for on the map, used instead
    * of asking the attacker for one from hand. */
-  *_duel(p, cell, tile, assault) {
+  /* `attack` is the card that already declared the fight: the meld card spent
+   * on the map, or — against a fortification — the lower of the two spent
+   * there. Its RANK IS THE ATTACK. The attacker is never asked for a card from
+   * hand.
+   *
+   * The first version did ask, and it was wrong twice over. It made an attack
+   * cost two cards where the rules charge one, which nobody expects; and it
+   * left the rank of the card you spent doing nothing at all, so choosing
+   * WHICH card to attack with carried no weight. Now it carries all of it.
+   *
+   * The consequence, and it is a real one: the attack value is face up on the
+   * table before the defender answers. The fight stops being a blind guess and
+   * becomes a priced decision — is this tile worth a card that beats an 11? —
+   * which is a better question than the one it replaces, and the terrain
+   * bonus is now something the defender can count on rather than hope for. */
+  *_duel(p, cell, tile, attack) {
     if (!tile.units.length) { p.gold += 1; this.inc("cards_to_gold"); return; }
 
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
-    const aCard = assault || (yield* this._duelCard(p, "attack", tile));
-    const dCard = yield* this._duelCard(d, "defend", tile);
+    const aCard = attack;
+    const dCard = yield* this._duelCard(d, "defend", tile, aCard);
     const spend = (q, c) => {
       if (!c) return;
       const i = q.hand.indexOf(c);
@@ -2385,16 +2397,19 @@ class Game {
     const a = aCard ? aCard.r : 0;
     const b = (dCard ? dCard.r : 0) + bonus;
     const attackerWins = duelWinner(aCard, dCard, tile.terrain);
-    /* An assault's cards were spent on the map before we got here, and the
-     * stand-in is nobody's hand card, so only the defender pays here. */
-    if (assault) { spend(d, dCard); }
-    else if (this.DUEL_KEEP) {
-      if (attackerWins) spend(d, dCard); else spend(p, aCard);
-    } else { spend(p, aCard); spend(d, dCard); }
+    /* The attacker's card was spent on the map before we got here; only the
+     * defender pays out of hand. */
+    if (!this.DUEL_KEEP || attackerWins) spend(d, dCard);
     this.inc("duels");
     this.inc("duel_on_" + tile.terrain);
     if (attackerWins) this.inc("duel_won_on_" + tile.terrain);
-    this.fx("duel", { seat: p.i, at: cell, a, b, won: attackerWins });
+    /* Everything the table needs to replay the fight in its head: who, where,
+     * both cards, the ground, and the two totals. The UI draws this rather
+     * than announcing a winner and leaving the arithmetic to be trusted. */
+    this.fx("duel", { seat: p.i, at: cell, a, b, won: attackerWins,
+                      terrain: tile.terrain, bonus, defender: d.i,
+                      attackCard: aCard || null, defendCard: dCard || null,
+                      assault: !!(attack && attack.assault) });
     if (attackerWins) {
       this.inc("duel_won"); this._takeUnit(p, cell);
       /* The ground changes hands — but only if the fight actually emptied it,
@@ -3184,7 +3199,19 @@ class Game {
       if (!threats.some((u) => this.P[u.owner].gold >= cost)) continue;
       let v = threats.length * 1.0;
       if (t.units.length === 1) v += 2.0;      // losing this loses the tile
-      v -= cost;                               // dear ground defends itself
+      /* Dear ground defends itself, so a coin adds least where the terrain
+       * already does the work. Under the duel this is the DEFENCE BONUS; under
+       * the gold rule it was the toll. Written as the bonus either way, because
+       * attackGold() now returns zero under the duel and this line had quietly
+       * stopped distinguishing Plains from Mountain at all. */
+      v -= TERRAIN_DEFENCE[t.terrain];
+      /* And what a coin is actually FOR changed with it. It no longer absorbs
+       * a hit; it refuses any single-card attack outright (§07), and most
+       * attacks are single cards. That deterrence is the whole modern value of
+       * a wall, and without this term the bot was pricing a rule that had been
+       * replaced — it built the same 2.6 walls a game whether the world was
+       * dangerous or not. */
+      if (this.COMBAT === "duel") v += p.w.WALL_DETERRENCE;
       if (v > 0) out.push([v, k]);
     }
     out.sort((a, b) => b[0] - a[0]);

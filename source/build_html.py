@@ -713,8 +713,8 @@ HTML = f"""<!doctype html>
   placed — the card is spent on the attack, and the unit you would have settled stays in
   your reserve.</p>
 
-  <p>An attack is not automatic. It is a <strong>duel</strong>, and both sides may fight
-  it with a card from hand.</p>
+  <p>An attack is not automatic. It is a <strong>duel</strong> — the card you spent
+  against a card from their hand.</p>
   <ol class="seq">
     <li><b>Is the defender fortified?</b> Then this is an <strong>assault</strong>, and it
     costs you a second card: spend <strong>two</strong> cards from your meld — the one
@@ -722,12 +722,14 @@ HTML = f"""<!doctype html>
     <strong>the lower of the two ranks is your attack</strong>. You commit nothing from
     hand; an assault is decided by what you brought. The coin goes to the supply either
     way. Cannot spare a second card? Then you cannot attack that tile at all (§07).</li>
-    <li><b>Both commit, in secret.</b> You and the defender each choose one card from
-    hand and place it face down. Either of you may decline, and a player with an empty
-    hand has nothing to commit. In an <em>assault</em> only the defender does this —
-    your number is already on the table.</li>
-    <li><b>Reveal together.</b> Compare:
-      <br><strong>Attack</strong> = your card's rank.
+    <li><b>Your attack is the card you spent.</b> Its rank, face up on the tile — you
+    commit nothing further. Which card you send is the whole decision, and it is made
+    before you know how they will answer.</li>
+    <li><b>The defender answers.</b> They commit one card from their hand, face up.
+    They may decline, and a player with an empty hand has nothing to commit — a hand
+    played out is a frontier with nobody on the walls.</li>
+    <li><b>Compare:</b>
+      <br><strong>Attack</strong> = the rank of the card you spent.
       <br><strong>Defence</strong> = their card's rank <strong>+ the terrain's defence
       bonus</strong>. A card not committed counts as nothing.</li>
     <li><b>The higher total wins.</b> If the totals are level, the card whose
@@ -741,8 +743,10 @@ HTML = f"""<!doctype html>
     <br><b>Defender wins</b> — nothing happens; the attack is spent for
     nothing.</li>
   </ol>
-  <p>Both committed cards go to their owners' discards, and come back on the next
-  recycle. Losing a duel costs you tempo, not cards.</p>
+  <p>The defender's card goes to their discard and comes back on the next recycle, so
+  holding a tile costs tempo rather than material. The attacker spends nothing beyond
+  the card already on the tile: an attack costs exactly what settling costs, and buys
+  a fight instead of a certainty.</p>
 
   <table>
     <thead><tr><th>Attacking into</th><th>Defence bonus</th><th>What it means</th></tr></thead>
@@ -852,8 +856,7 @@ HTML = f"""<!doctype html>
     the usual card matching the ground, plus <strong>one more of any suit</strong>.</li>
     <li><strong>The lower of the two ranks is the attack.</strong> A great card dragged
     down by a poor one is a poor assault; walls are broken by weight, not by one hero.</li>
-    <li>The attacker commits <strong>nothing from hand</strong>. The defender fights
-    normally — one hand card, plus the ground.</li>
+    <li>The defender fights it normally — one card from hand, plus the ground.</li>
     <li>The <strong>coin goes to the supply</strong> whichever way the fight goes. It
     bought what it was sold as buying: one attack made much harder, once.</li>
   </ul>
@@ -1263,8 +1266,8 @@ HTML = f"""<!doctype html>
       goes to the shared pile. Last place takes 1 gold.</p>
       <h3>Combat — a duel</h3>
       <p>Win the last defender and the tile is yours: settle it at once.
-      Fortified? The coin absorbs it, no duel. Otherwise both sides commit one hand
-      card face down and reveal: <b>attacker's rank</b> vs <b>defender's rank + terrain
+      Fortified? See §07 — an assault costs two cards. Otherwise the card you spent
+      IS the attack: <b>its rank</b> vs <b>the defender's hand card + terrain
       (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
       card matching the ground, and to the <b>defender</b> if both or neither match.
       Attacker wins, one defender goes home. Both cards to their owners' discards.</p>

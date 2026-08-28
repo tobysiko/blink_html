@@ -193,11 +193,18 @@ setTimeout(() => {
   ok(!/needs \d/i.test(badges),
      `the map is still quoting a price that is not charged: ${badges.slice(0, 120)}`);
 
-  /* And the click goes through: a penniless player gets their fight. */
+  /* And the click goes through: a penniless player gets their fight.
+   *
+   * The fight is not a PROMPT for the attacker — the card spent on the tile is
+   * the attack, and a bot defender answers in the same breath — so what is
+   * checked is that a duel happened at all, not that a question appeared. */
+  const duelsBefore = w.eval('G.stats.duels || 0');
   if (hex) click(hex);
-  const after = w.eval('REQ && REQ.type');
-  ok(after === 'duel',
-     `clicking the tile with no gold led to "${after}" instead of a duel`);
+  const duelsAfter = w.eval('G.stats.duels || 0');
+  ok(duelsAfter > duelsBefore,
+     `clicking the tile with no gold started no fight (${duelsBefore} -> ${duelsAfter})`);
+  ok(w.eval('REQ && REQ.type') !== 'duel',
+     'the attacker was asked to commit a second card — the spent card is the attack');
 
 
   report();

@@ -476,6 +476,18 @@
   .tile.nope{stroke:#8C3A16; stroke-width:2; stroke-dasharray:4 3; opacity:.62;
     cursor:not-allowed}
   .tile.src{stroke:#fff; stroke-width:3.5}
+  /* The tile a fight is over. A duel arrives on somebody else's turn and asks
+     about a hex you were not looking at, so it pulses until it is answered. */
+  .tile.fight{stroke:#C0392B; stroke-width:4; opacity:1;
+              animation:fightpulse 1s ease-in-out infinite}
+  @keyframes fightpulse{0%,100%{stroke-width:3}50%{stroke-width:5.5}}
+  @media (prefers-reduced-motion:reduce){
+    .tile.fight{animation:none; stroke-width:4.5}
+  }
+  /* The arithmetic of a duel, next to the question that needs it. */
+  .duelsum{display:inline-flex; align-items:center; gap:.4rem; margin-left:.5rem;
+           padding:.15rem .45rem; border:1px solid var(--line); border-radius:6px}
+  .duelsum .need{font-weight:600; color:#C0392B}
   .ghost{fill:#fff; fill-opacity:.28; stroke:var(--line); stroke-width:1;
     stroke-dasharray:4 3}
   .ghost.hot{fill-opacity:.6; stroke:#111; stroke-width:2.5; cursor:pointer}

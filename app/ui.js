@@ -1021,7 +1021,13 @@ function renderMap() {
     const isSrc = SEL.moveSrc === d.key;
     /* `nope` rather than `hot`: a tile that is only being explained must not
      * look like one that can be clicked. */
-    const mark = a ? (a.blocked ? " nope" : " hot") : "";
+    /* The tile a fight is over is marked for as long as the question stands.
+     * A duel interrupts somebody else's turn and asks about a hex that may be
+     * nowhere near where you were looking — "which Forest?" was the first
+     * thing anybody asked. */
+    const fighting = REQ && (REQ.type === "duel" || REQ.type === "assault")
+                     && REQ.cell === d.key ? " fight" : "";
+    const mark = (a ? (a.blocked ? " nope" : " hot") : "") + fighting;
     s += `<polygon class="tile${mark}${isSrc ? " src" : ""}" data-key="${d.key}"
       points="${hexPoints(d.cx, d.cy, HEXR - 1)}" fill="${TC[t.terrain]}"/>`;
     const n = t.units.length;
@@ -1897,10 +1903,21 @@ function renderPrompt() {
       break;
     }
     case "duel": {
-      /* Both sides commit in secret, so this must NOT show what the other
-       * player chose — the engine never sends it, and nothing here asks. */
-      const key = REQ.role === "attack" ? "ask.duel.attack" : "ask.duel.defend";
-      ask(t(key, { terrain: TL[REQ.terrain], bonus: REQ.bonus }));
+      /* Only the defender is ever asked now — the attack is the card already
+       * spent on the map — so the attacking card can be SHOWN. It is face up
+       * on the table in a real game, and hiding it here turned a priced
+       * decision into a guess. */
+      ask(t("ask.duel.defend", { terrain: TL[REQ.terrain], bonus: REQ.bonus }));
+      if (REQ.against) {
+        const need = REQ.need;
+        bar.insertAdjacentHTML("beforeend",
+          `<span class="duelsum"><span class="cf mini"
+             style="--suit:${TC[REQ.against.s]}">${faceInner(REQ.against, "mini")}</span>`
+          + `<b>${REQ.against.r}</b> <span class="muted">vs</span> `
+          + `<span class="need">${need > 0 ? need : 1}+</span>`
+          + `<span class="muted">${t("ask.duel.need", { bonus: REQ.bonus })}</span>`
+          + `</span>`);
+      }
       btn(t("ask.duel.decline"), () => answer(null), "ghost");
       break;
     }

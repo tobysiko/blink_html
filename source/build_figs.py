@@ -536,13 +536,17 @@ def combat():
     gap = 30
     b = ""
 
-    # ---- row 1: one card each, revealed together
+    # ---- row 1: the card you SPENT against a card from their HAND
     xa = 0
     xd = xa + cw + gap + 14
     b += card(xa, 12, 12, "plains", w=cw, h=ch)
     b += card(xd, 12, 9, "forest", w=cw, h=ch)
     b += label(xa + cw / 2, 4, "attack", 10, cls="fig-attack")
     b += label(xd + cw / 2, 4, "defence", 10, cls="fig-step")
+    # WHERE each card comes from is the part players got wrong: the attacker
+    # commits nothing extra, so an attack costs exactly what a settle costs.
+    b += label(xa + cw / 2, ch + 42, "the card you spent", 8, cls="fig-label")
+    b += label(xd + cw / 2, ch + 42, "one card from hand", 8, cls="fig-label")
     b += label((xa + cw + xd) / 2, 12 + ch / 2 + 8, "vs", 12, cls="fig-label")
     b += label(xa + cw / 2, 12 + ch + 18, "12", 13, cls="fig-strong")
     # the ground is on the DEFENDER's side of the sum, and that is the whole
