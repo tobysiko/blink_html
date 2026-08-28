@@ -7,13 +7,21 @@ Run after build_figs.py. Catches the two failure modes that bit v0.18/v0.19:
   2. a figure whose scaled width exceeds the print column or its grid cell.
 """
 import json, re, sys
+from pathlib import Path
 from figs import fig_bounds
 from build_html import SCALE, COMPARE
+
+# Anchored to this file rather than to the shell's working directory. The
+# builders are always run from source/ by build_pdfs.sh, but the CHECKERS get
+# run by hand from wherever somebody happens to be standing — and a checker
+# that crashes on a FileNotFoundError instead of reporting on the figures is
+# worse than no checker, because the exit code looks the same as a real fail.
+HERE = Path(__file__).resolve().parent
 
 FULL = 178 / 25.4 * 96          # A4 minus 16mm side margins, at 96px/in
 GRID = (FULL - 26) / 2          # one cell of the two-column meld grid
 
-F = json.load(open("figs.json"))
+F = json.load(open(HERE / "figs.json"))
 fails = []
 print(f"{'figure':16}{'tier':>10}{'width':>8}{'limit':>8}   status")
 for k, v in sorted(F.items()):

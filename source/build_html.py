@@ -2,7 +2,13 @@
 import json, pathlib, re
 from version import VTAG, RULES_HTML
 
-F = json.loads(pathlib.Path("figs.json").read_text())
+# Anchored to this file. build_pdfs.sh always runs the builders from source/,
+# so a bare name worked — but check_figs.py IMPORTS this module for its scale
+# constants, and an import inherits the caller's working directory. Running a
+# checker from the project root therefore died on a missing figs.json before it
+# had checked anything. Reading an input by absolute path costs nothing; where
+# this module WRITES is left alone on purpose.
+F = json.loads((pathlib.Path(__file__).resolve().parent / "figs.json").read_text())
 
 CSS = """
 :root{

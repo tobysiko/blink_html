@@ -468,7 +468,10 @@ if starts3:
     for group in starts3.groups():
         for pair in re.findall(r"(\d+),\s*(\d+)", group):
             want.add((int(pair[0]), int(pair[1])))
-    fig_src = pathlib.Path("build_figs.py").read_text(encoding="utf8")
+    # HERE, not a bare name: this script has to work from any directory,
+    # and build_pdfs.sh happens to run it from source/ so a relative path
+    # passed there and crashed for anyone standing at the project root.
+    fig_src = (HERE / "build_figs.py").read_text(encoding="utf8")
     wm = fig_src[fig_src.index("def worked_map():"):fig_src.index('F["worked_map"]')]
     drawn = {(int(a_), int(b_)) for a_, b_ in
              re.findall(r"\((\d+),\s*(\d+)\)", wm[:wm.index("NEW =") + 40])}
