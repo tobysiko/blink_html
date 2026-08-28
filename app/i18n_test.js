@@ -21,6 +21,36 @@ const EN = I.STRINGS.en, DE = I.STRINGS.de;
 const langs = Object.keys(I.STRINGS);
 ok(langs.length >= 2, 'fewer than two languages');
 
+/* ---------------------------------------- 0. one key, one place
+ *
+ * The quietest failure of all, and it shipped: three GERMAN strings were
+ * pasted into the ENGLISH block. Duplicate keys in a JS object literal do not
+ * error — the last one simply wins — so English players were shown German duel
+ * prompts, and every check above passed, because by the time i18n.js is
+ * `require`d the duplicates have already collapsed into one entry.
+ *
+ * The only place the evidence survives is the SOURCE, so that is what is read.
+ */
+{
+  const text = src('i18n.js');
+  for (const lang of langs) {
+    const at = text.indexOf(`\n${lang}: {`);
+    if (at < 0) { fail.push(`cannot find the ${lang} block in i18n.js`); continue; }
+    let depth = 0, end = at;
+    for (let i = text.indexOf('{', at); i < text.length; i++) {
+      if (text[i] === '{') depth++;
+      else if (text[i] === '}' && --depth === 0) { end = i; break; }
+    }
+    const seen = new Map();
+    for (const m of text.slice(at, end).matchAll(/^\s*"([^"]+)":/gm)) {
+      const k = m[1];
+      if (seen.has(k)) fail.push(`"${k}" is defined twice in the ${lang} block `
+        + '— the second one silently wins');
+      seen.set(k, true);
+    }
+  }
+}
+
 // ---------------------------------------------------- 1. the two agree
 for (const k of Object.keys(EN)) if (!(k in DE)) fail.push(`de is missing "${k}"`);
 for (const k of Object.keys(DE)) if (!(k in EN)) fail.push(`en is missing "${k}"`);

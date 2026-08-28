@@ -84,22 +84,73 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
      'a defender who declines on a Mountain still has the ground under them');
 }
 
-// -------------------------------------- a coin absorbs the blow outright
-/* Constructed, because the bots now (correctly) refuse to attack walls, so
- * playing games no longer produces this case at all. */
+// ------------------------------------ a coin makes it an ASSAULT, not a veto
+/* The rule this replaces let a coin absorb an attack outright. It read well and
+ * measured terribly: once the bots learned that hitting a wall bought nothing,
+ * walls were never hit again — ZERO absorbs in 360 games, with 8.5 coins still
+ * sitting on the map at final scoring. A rule no competent player triggers is
+ * not a rule.
+ *
+ * Now a wall is a price. One card cannot attack it at all; two cards can, and
+ * the LOWER of the two ranks is the attack.
+ */
 {
+  // ...one card is refused outright, and the tile is not even offered
   const g = new E.Game(3, 4242, { humans: [] });
-  const target = [...g.m.tiles.values()].find((t) => t.owner !== null && t.units.length);
-  const attacker = g.P[(target.owner + 1) % g.P.length];
-  target.gold = 1;
-  const before = target.units.length;
-  const it = g._duel(attacker, target.key, target);
+  const tile = [...g.m.tiles.values()].find((t) => t.owner !== null && t.units.length);
+  const me = (tile.owner + 1) % g.P.length;
+  tile.gold = 1;
+  const card = { r: 12, s: tile.terrain };
+  const reachable = new Set(g.m.tiles.keys());
+  const alone = E.cardOptions(g.m, card, me, 9, reachable, g.m.legalSpaces(), 0);
+  ok(!alone.some(([k, a]) => k === tile.key && a === 'attack'),
+     'a lone card was offered an attack on a fortified tile');
+  const backed = E.cardOptions(g.m, card, me, 9, reachable, g.m.legalSpaces(), 1);
+  ok(backed.some(([k, a]) => k === tile.key && a === 'attack'),
+     'a fortified tile stayed un-attackable even with a second card in hand');
+  // and the map says WHY, rather than going quiet
+  const why = E.cardBlocked(g.m, card, me, 9, reachable, 0);
+  ok(why.some(([k, r]) => k === tile.key && r === 'wall'),
+     'the refusal is silent — the map gives no reason for a fortified tile');
+}
+
+{
+  // ...two cards break the wall, and the LOWER rank fights
+  const g = new E.Game(3, 4242, { humans: [] });
+  const tile = [...g.m.tiles.values()]
+    .find((t) => t.owner !== null && t.units.length === 1);
+  const me = g.P[(tile.owner + 1) % g.P.length];
+  tile.gold = 1;
+  const lead = { r: 20, s: tile.terrain };
+  const pool = [{ r: 4, s: 'ocean' }];        // a poor second card drags it down
+  g.P[tile.owner].hand = [{ r: 8, s: 'plains' }];   // defends at 8 + the ground
+  const it = g._assault(me, tile.key, tile, lead, pool);
   let r = it.next();
-  ok(r.done, 'a fortified tile should not ask anybody for a card');
-  ok(target.units.length === before, 'the coin should have saved the unit');
-  ok(target.gold === 0, 'the coin should have been spent absorbing the blow');
-  ok((g.stats.duel_absorbed || 0) === 1, 'the absorb was not recorded');
-  ok((g.stats.duels || 0) === 0, 'an absorbed attack is not a duel');
+  while (!r.done) r = it.next(null);
+  ok(tile.gold === 0, 'the coin was not spent by the assault');
+  ok((g.stats.assaults || 0) === 1, 'the assault was not recorded');
+  ok(pool.length === 0, 'the second card was not taken out of the meld');
+  /* 20 and 4 make an attack of FOUR, which loses to a defended 8. If the rule
+   * took the higher card this would have been a walkover. */
+  ok(tile.units.length === 1,
+     'a 20 backed by a 4 took the tile — the assault used the higher rank');
+  ok((g.stats.duel_held || 0) === 1, 'the defender was not credited with holding');
+}
+
+{
+  // ...and two good cards do take it
+  const g = new E.Game(3, 4242, { humans: [] });
+  const tile = [...g.m.tiles.values()]
+    .find((t) => t.owner !== null && t.units.length === 1);
+  const me = g.P[(tile.owner + 1) % g.P.length];
+  tile.gold = 1;
+  const pool = [{ r: 19, s: 'ocean' }];
+  g.P[tile.owner].hand = [{ r: 8, s: 'plains' }];
+  const it = g._assault(me, tile.key, tile, { r: 20, s: tile.terrain }, pool);
+  let r = it.next();
+  while (!r.done) r = it.next(null);
+  ok(tile.owner === me.i, 'two high cards failed to break a wall');
+  ok((g.stats.wall_broken || 0) === 1, 'the wall was not recorded as broken');
 }
 
 // ------------------------------------------- a won duel takes the ground
@@ -215,9 +266,11 @@ ok(E.playOut(3, 7, { duelTake: false }).DUEL_TAKE === false,
 }
 
 console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-  : 'combat: an attack is a duel — a coin absorbs it outright, otherwise both sides '
-    + 'commit a hand card and the defender adds the ground (0/0/1/2). The rule is '
-    + 'checked card by card rather than by counting bot fights. Clear the last '
+  : 'combat: an attack is a duel — both sides commit a hand card and the defender '
+    + 'adds the ground (0/0/1/2). The rule is '
+    + 'checked card by card rather than by counting bot fights. A coin does not '
+    + 'stop an attack, it prices one: a lone card is refused, two cards get a '
+    + 'fight, and the LOWER of the pair is the attack. Clear the last '
     + 'defender and the ground changes hands; leave one standing and it does not. '
     + "A hand emptied on somebody else's turn recycles instead of arriving at the "
     + 'card phase with nothing');

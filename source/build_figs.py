@@ -377,28 +377,119 @@ def worked_map():
 F["worked_map"] = worked_map()
 
 
-# ------------------------------------------------------- terrain heights
+# ------------------------------------------------------- terrain, compared
 def terrains():
+    """What actually differs between the four terrains.
+
+    The version this replaces printed a name, a capacity and a defence bonus
+    under each tile, with "flat / 2 layers / 3 layers" above them — three of
+    those four things being facts about the plastic rather than about the game.
+    It also left out the single largest difference between one terrain and the
+    others: Ocean is the only one with a rule of its own.
+
+    So: four columns of the things a player compares, and a band underneath for
+    the sea, which is not a column because it is not the same kind of fact.
+
+    The defence row prints the bonus AND what it means in the hand. "+2" is the
+    number in the rule; "beat them by 3" is the number you need when you are
+    holding cards and deciding whether to try. A reader should not have to do
+    that addition themselves at the table.
+    """
     b = ""
-    order = [("ocean", "Ocean", "1"), ("plains", "Plains", "3"),
-             ("forest", "Forest", "2"), ("mountain", "Mountain", "1")]
-    for i, (key, name, cap) in enumerate(order):
-        x = 60 + i * 108
-        y = 96
-        b += prism(x, y, key)
-        b += label(x, y + TER[key]["h"] + 34, name, 14, cls="fig-strong")
-        b += label(x, y + TER[key]["h"] + 52, f"holds {cap}", 12)
-        # The height of the prism IS the defence bonus — under the duel the
-        # terrain no longer charges a toll to enter, it adds to the defender's
-        # card. Printing a gold price here taught the rule that was removed.
-        b += label(x, y + TER[key]["h"] + 68,
-                   ["defence +0", "defence +0", "defence +1", "defence +2"][i],
-                   11, cls="fig-step")
-    b += label(60, 30, "flat", 11, cls="fig-step")
-    b += label(168, 30, "flat", 11, cls="fig-step")
-    b += label(276, 30, "2 layers", 11, cls="fig-step")
-    b += label(384, 30, "3 layers", 11, cls="fig-step")
+    INK, SOFT, LINE, PANEL = "#2A2E2B", "#6B6F68", "#CDC7B8", "#F4F1E9"
+    COL, GAP = 138, 12
+    # Ordered by how hard they are to take, which is the order the rules table
+    # uses and the order the numbers make sense in.
+    cols = [
+        ("plains", "Plains", 3, 0, "Room to grow.", "Three units fit \u2014 the only",
+         "ground that stacks deep."),
+        ("ocean", "Ocean", 1, 0, "A road, not a home.", "Holds one, and open water",
+         "carries a unit any distance."),
+        ("forest", "Forest", 2, 1, "Cover.", "Two units, and the trees are",
+         "worth a rank in a fight."),
+        ("mountain", "Mountain", 1, 2, "The hard ground.", "One unit, and the best",
+         "defence in the game."),
+    ]
+
+    top = 0
+    for i, (key, name, holds, bonus, head, l1, l2) in enumerate(cols):
+        x = i * (COL + GAP)
+        cx = x + COL / 2
+        b += (f'<rect x="{x}" y="{top}" width="{COL}" height="286" rx="8" '
+              f'fill="{PANEL}" stroke="{LINE}" stroke-width="1.1"/>')
+        # The tile sits on its own height, so the moulding reads at a glance —
+        # but every LABEL below it is at a fixed y, shared across the four
+        # columns. Hanging the name off the prism instead put Mountain's name
+        # through the row beneath it, because Mountain is the tall one.
+        b += prism(cx, top + 52, key)
+        b += label(cx, top + 118, name, 13, cls="fig-strong")
+
+        # HOLDS, drawn as the units themselves: a number you can count is a
+        # number nobody has to trust
+        b += label(cx, top + 136, "HOLDS", 8, cls="fig-step")
+        span = (holds - 1) * 24
+        for k in range(holds):
+            b += unit(cx - span / 2 + k * 24, top + 152, "rival", 1)
+        b += label(cx, top + 172, f"{holds} unit" + ("s" if holds > 1 else ""),
+                   9, cls="fig-label")
+
+        # DEFENCE, both ways round
+        b += (f'<line x1="{x + 14}" y1="{top + 182}" x2="{x + COL - 14}" '
+              f'y2="{top + 182}" stroke="{LINE}" stroke-width="1"/>')
+        b += label(cx, top + 196, "DEFENCE", 8, cls="fig-step")
+        b += label(cx, top + 216, f"+{bonus}", 17,
+                   cls="fig-attack" if bonus else "fig-label")
+        b += label(cx, top + 230, f"beat them by {bonus + 1}", 8.5, cls="fig-label")
+
+        # what it is FOR
+        b += (f'<line x1="{x + 14}" y1="{top + 240}" x2="{x + COL - 14}" '
+              f'y2="{top + 240}" stroke="{LINE}" stroke-width="1"/>')
+        b += label(cx, top + 254, head, 9.5, cls="fig-strong")
+        b += label(cx, top + 266, l1, 8, cls="fig-label")
+        b += label(cx, top + 276, l2, 8, cls="fig-label")
+
+    # ---- the sea gets a band, because it is the one rule no other terrain has
+    W = 4 * COL + 3 * GAP
+    sy = 308
+    b += (f'<rect x="0" y="{sy}" width="{W}" height="158" rx="8" fill="none" '
+          f'stroke="{TER["ocean"]["side"]}" stroke-width="1.3" '
+          f'stroke-dasharray="5 3"/>')
+    b += label(20, sy + 22, "ONLY THE SEA DOES THIS", 10, anchor="start",
+               cls="fig-step")
+    b += label(200, sy + 22,
+               "\u2014 the first sea move each turn also lays a tile, free",
+               9, anchor="start", cls="fig-label")
+
+    # a unit sailing across open water, then a tile of ANY terrain arriving
+    ox, oy = 158, sy + 82
+    for k in range(3):
+        b += prism(ox + k * (DX + 2), oy, "ocean")
+    b += unit(ox, oy, "you", 1)
+    ay = oy - R - 12
+    b += (f'<path d="M{ox:.1f} {ay:.1f} L{ox + 2 * DX + 2:.1f} {ay:.1f} '
+          f'M{ox + 2 * DX - 8:.1f} {ay - 6:.1f} l10 6 l-10 6" '
+          f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
+          f'stroke-linejoin="round"/>')
+    b += label(ox + DX, oy + R + 20, "sail as far as the open water reaches",
+               8.5, cls="fig-label")
+
+    nx = ox + 2 * (DX + 2) + 168
+    b += (f'<path d="M{ox + 2 * DX + SQ + 14:.1f} {ay:.1f} L{nx - SQ - 10:.1f} '
+          f'{ay:.1f} M{nx - SQ - 20:.1f} {ay - 6:.1f} l10 6 l-10 6" '
+          f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
+          f'stroke-linejoin="round"/>')
+    # An empty dashed cell rather than a green one: the point is that you pick
+    # the terrain, and drawing a Forest there says Forest.
+    b += prism(nx, oy, None, empty=True, dashed=True)
+    b += label(nx, oy + 4, "ANY", 11, cls="fig-attack")
+    b += label(nx, oy + R + 20, "then lay a tile of ANY terrain,", 8.5,
+               cls="fig-label")
+    b += label(nx, oy + R + 31, "anywhere the map legally takes it", 8.5,
+               cls="fig-label")
+    b += label(nx, oy + R + 42, "\u2014 no card needed, once a turn", 8.5,
+               cls="fig-label")
     return svg(0, 0, b, vb="auto")
+
 
 F["terrain"] = terrains()
 
@@ -484,23 +575,66 @@ F["combat"] = combat()
 
 # ------------------------------------------------------- fortify
 def fortify():
+    """What a coin on a unit actually buys, in v0.24.
+
+    The old figure showed one attack arriving, the coin being spent and the
+    unit surviving. That is no longer what happens, and worse, it was the rule
+    nobody could ever trigger: once the bots learned a wall absorbed an attack
+    for nothing, walls stopped being attacked at all — zero absorbs in 360
+    games.
+
+    The coin now prices the attack instead of cancelling it, so the figure has
+    to show a REFUSAL and a FIGHT side by side. That contrast is the rule.
+    """
     b = ""
-    x, y = axial(0, 0)
-    b += prism(x, y, "plains")
-    b += unit(x, y, "you", 1)
-    b += gold(x, y - 9)
-    b += label(x, y + 46, "fortified", 11, cls="fig-strong")
-    b += ('<path d="M40 0 l30 0 M64 -6 l6 6 l-6 6" fill="none" stroke="#C0392B" '
-          'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>')
-    b += label(55, -24, "attacked", 11, cls="fig-step")
-    g = '<g transform="translate(112,0)">'
-    x, y = axial(0, 0)
-    g += prism(x, y, "plains")
-    g += unit(x, y, "you", 1)
-    g += label(x, y + 46, "unit survives", 11, cls="fig-strong")
-    g += label(x, y - 34, "gold spent", 11)
-    g += '</g>'
-    b += g
+    cw, ch = 34, 48
+    INK, SOFT, LINE = "#2A2E2B", "#6B6F68", "#CDC7B8"
+
+    # ---- left: one card is not enough
+    b += label(52, -26, "ONE CARD", 10, cls="fig-step")
+    b += card(0, -8, 14, "plains", w=cw, h=ch)
+    b += (f'<path d="M{cw + 10} {ch / 2 - 8:.0f} l34 0 M{cw + 36} '
+          f'{ch / 2 - 14:.0f} l6 6 l-6 6" fill="none" stroke="{SOFT}" '
+          f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')
+    # the refusal, drawn as a barred circle rather than said in words
+    bx, by = cw + 62, ch / 2 - 8
+    b += (f'<circle cx="{bx}" cy="{by}" r="13" fill="none" stroke="#C0392B" '
+          f'stroke-width="2.4"/>'
+          f'<line x1="{bx - 9}" y1="{by + 9}" x2="{bx + 9}" y2="{by - 9}" '
+          f'stroke="#C0392B" stroke-width="2.4" stroke-linecap="round"/>')
+    b += label(bx, by + 34, "refused", 10, cls="fig-attack")
+    b += label(bx, by + 47, "outright", 10, cls="fig-attack")
+
+    # ---- the fortified tile in the middle
+    tx, ty = 200, ch / 2 - 6
+    b += prism(tx, ty, "plains")
+    b += unit(tx, ty, "rival", 1)
+    b += gold(tx, ty - 11)
+    b += label(tx, ty + R + TER["plains"]["h"] + 18, "fortified", 11,
+               cls="fig-strong")
+
+    # ---- right: two cards, and the LOWER one fights
+    rx = 268
+    b += label(rx + cw + 6, -26, "TWO CARDS", 10, cls="fig-step")
+    b += card(rx, -8, 14, "plains", w=cw, h=ch)
+    b += card(rx + cw + 12, -8, 9, "ocean", w=cw, h=ch)
+    b += label(rx + cw / 2, ch + 8, "matches", 8, cls="fig-label")
+    b += label(rx + cw / 2, ch + 18, "the ground", 8, cls="fig-label")
+    b += label(rx + cw + 12 + cw / 2, ch + 8, "any suit", 8, cls="fig-label")
+    # a brace under the pair, and the number that comes out of it
+    b += (f'<path d="M{rx} {ch + 26} l0 6 l{2 * cw + 12} 0 l0 -6" fill="none" '
+          f'stroke="{LINE}" stroke-width="1.3"/>')
+    b += label(rx + cw + 6, ch + 50, "attack = 9", 13, cls="fig-attack")
+    b += label(rx + cw + 6, ch + 63, "the LOWER of the two", 8.5, cls="fig-label")
+
+    b += label(200, ch + 96,
+               "The coin does not save the unit \u2014 it doubles the price of coming",
+               11, cls="fig-strong")
+    b += label(200, ch + 111,
+               "for it. The coin goes to the supply either way; the defender still",
+               11, cls="fig-strong")
+    b += label(200, ch + 126,
+               "fights, one card from hand plus the ground.", 11, cls="fig-strong")
     return svg(0, 0, b, vb="auto")
 
 F["fortify"] = fortify()

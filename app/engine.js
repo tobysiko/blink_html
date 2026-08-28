@@ -578,12 +578,19 @@ class GameMap {
 
   attackGold(terrain) { return attackGold(this.combat, terrain); }
 
-  cellActions(k, suit, p, spaces, budget) {
+  /* `spare` is how many OTHER cards the actor still has to spend this turn.
+   * It matters for exactly one thing: a fortified tile takes two cards to
+   * assault (§07), so with nothing to back it up the attack is not on offer at
+   * all. Defaults to 0, which is the safe answer — a caller that has not
+   * thought about it gets the stricter rule rather than an illegal move. */
+  cellActions(k, suit, p, spaces, budget, spare = 0) {
     const t = this.tiles.get(k);
     if (t) {
       if (t.terrain !== suit) return [];
       if (t.owner === null || t.owner === p) return t.hasRoom(p) ? ["settle"] : [];
-      return budget >= this.attackGold(t.terrain) ? ["attack"] : [];
+      if (budget < this.attackGold(t.terrain)) return [];
+      if (t.gold && this.combat === "duel" && spare < 1) return [];
+      return ["attack"];
     }
     if (spaces.has(k) && this.tileAvailable(suit)) return ["explore"];
     return [];
@@ -677,13 +684,16 @@ function reachOut(m, pi, n) {
  * Returns [[cell, cost], ...]. Cost is what the terrain charges, so the badge
  * can say how much is missing rather than just "no".
  */
-function cardBlocked(m, card, p, gold, reachable) {
+function cardBlocked(m, card, p, gold, reachable, spare = 0) {
   reachable = reachable || reach(m, p);
   const out = [];
   for (const k of reachable) {
     const t = m.tiles.get(k);
     if (!t || t.terrain !== card.s) continue;
     if (t.owner === null || t.owner === p) continue;   // not an attack at all
+    /* A wall with nothing to throw at it is the other kind of refusal, and it
+     * needs its own answer on the map: "bring a second card", not a price. */
+    if (t.gold && m.combat === "duel" && spare < 1) { out.push([k, "wall"]); continue; }
     const cost = m.attackGold(t.terrain);
     if (cost > gold) out.push([k, cost]);
   }
@@ -691,12 +701,12 @@ function cardBlocked(m, card, p, gold, reachable) {
 }
 
 /* Every legal (cell, action) for ONE card, judged against the map NOW. */
-function cardOptions(m, card, p, gold, reachable, spaces) {
+function cardOptions(m, card, p, gold, reachable, spaces, spare = 0) {
   spaces = spaces || m.legalSpaces();
   reachable = reachable || reach(m, p);
   const out = [];
   for (const k of Array.from(reachable).sort())
-    for (const a of m.cellActions(k, card.s, p, spaces, gold)) out.push([k, a]);
+    for (const a of m.cellActions(k, card.s, p, spaces, gold, spare)) out.push([k, a]);
   return out;
 }
 
@@ -1072,7 +1082,7 @@ function valueCard(game, p, k, card, act) {
     const t = m.tiles.get(k);
     let v = w.ATTACK_V - w.ATTACK_COST_W * ATTACK_COST[t.terrain];
     if (t.units.length === 1) v += w.ATTACK_LONE_V;
-    if (game.COMBAT === "duel") v = duelValue(game, p, t, w);
+    if (game.COMBAT === "duel") v = duelValue(game, p, t, w, card);
     return v;
   }
   return 0.2;
@@ -1107,14 +1117,34 @@ const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0)
  * two players on comparable tiers hold comparable ranks. It is a crude model
  * and it is deliberately the same one _duelCard uses, so the bot commits to
  * fights on the same reasoning it picks cards for them. */
-function duelValue(game, p, t, w) {
-  if (t.gold) return -1;                       // a wall absorbs it: buys nothing
+function duelValue(game, p, t, w, card) {
   const bonus = TERRAIN_DEFENCE[t.terrain];
-  const expect = mean(p.hand.map((c) => c.r));
-  const able = p.hand.filter((c) => c.r >= expect + bonus + 1);
-  if (!able.length) return -1;                 // nothing in hand clears the ground
-  const odds = able.length / p.hand.length;
-  let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W;   // the ground, plus the card
+  const hand = p.hand.length ? p.hand : [{ r: 10 }];
+  let odds, cards;
+
+  if (t.gold) {
+    /* AN ASSAULT (§07). Two cards, and the LOWER of the two ranks fights, so
+     * the attack value is fixed before the defender does anything — which
+     * makes the odds a different sum from an ordinary duel. Here we know our
+     * number and ask how much of a typical hand it beats; in a duel we do not
+     * know our number yet and ask how much of our hand could supply one.
+     *
+     * The meld is the only sample of "my other cards" available at this point,
+     * and the bot will bring its best one, so that is what is assumed. */
+    const others = (p.played || []).filter((c) => c !== card);
+    if (!others.length) return -1;             // nothing to back it with
+    const value = Math.min(card.r, Math.max(...others.map((c) => c.r)));
+    odds = hand.filter((c) => value > c.r + bonus).length / hand.length;
+    cards = 2;
+  } else {
+    const expect = mean(hand.map((c) => c.r));
+    const able = hand.filter((c) => c.r >= expect + bonus + 1);
+    if (!able.length) return -1;               // nothing in hand clears the ground
+    odds = able.length / hand.length;
+    cards = 1;
+  }
+
+  let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * cards;
   /* Emptying a tile is worth more than a kill when the winner settles it: you
    * do not merely deny a point, you take one. */
   if (t.units.length === 1)
@@ -1785,9 +1815,11 @@ class Game {
                              : this.reachFor(p);
     const cards = st.cards.map((card) => ({
       card,
-      options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces),
+      options: cardOptions(this.m, card, p.i, p.gold, reachable, spaces,
+                           st.cards.length - 1),
       /* Shown greyed rather than not shown: see cardBlocked(). */
-      blocked: cardBlocked(this.m, card, p.i, p.gold, reachable),
+      blocked: cardBlocked(this.m, card, p.i, p.gold, reachable,
+                           st.cards.length - 1),
     }));
     const fortifyCells = [];
     for (const [k, t] of this.m.tiles)
@@ -1872,7 +1904,7 @@ class Game {
         case "spend": {
           st.cards.splice(st.cards.indexOf(ans.card), 1);
           p.discard.push(ans.card);            // spent before any recycle can fire
-          yield* this._resolve(p, ans.card, ans.cell, ans.act);
+          yield* this._resolve(p, ans.card, ans.cell, ans.act, st.cards);
           break;
         }
         case "cash": {
@@ -2113,7 +2145,8 @@ class Game {
       let best = null;                               // [value, card, cell, act]
       const all = [];
       for (const card of todo) {
-        for (const [k, act] of cardOptions(this.m, card, p.i, p.gold, reachable, spaces)) {
+        for (const [k, act] of cardOptions(this.m, card, p.i, p.gold, reachable,
+                                           spaces, todo.length - 1)) {
           const v = valueCard(this, p, k, card, act);
           all.push([v, card, k, act]);
           if (best === null || v > best[0]) best = [v, card, k, act];
@@ -2146,11 +2179,15 @@ class Game {
         p.gold += paid;
         continue;
       }
-      yield* this._resolve(p, card, cell, act);
+      yield* this._resolve(p, card, cell, act, todo);
     }
   }
 
-  *_resolve(p, card, cell, act) {
+  /* `pool` is the cards this player still has to spend, and _resolve may take
+   * one out of it: assaulting a fortification costs a second card (§07). It is
+   * the live array in both callers, so a card removed here is a card the rest
+   * of the turn no longer has. */
+  *_resolve(p, card, cell, act, pool) {
     this.inc("cards_resolved");
     if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
     if (act === "explore") {
@@ -2180,7 +2217,11 @@ class Game {
       }
     } else if (act === "attack") {
       const tile = this.m.tiles.get(cell);
-      if (this.COMBAT === "duel") { yield* this._duel(p, cell, tile); return; }
+      if (this.COMBAT === "duel") {
+        if (tile.gold) yield* this._assault(p, cell, tile, card, pool || []);
+        else yield* this._duel(p, cell, tile);
+        return;
+      }
       const cost = attackGold(this.COMBAT, tile.terrain);
       if (p.gold >= cost && tile.units.length) {
         p.gold -= cost; this.inc("gold_out_attack", cost);
@@ -2264,14 +2305,70 @@ class Game {
     return able.find((c) => c.r === floor && c.s === tile.terrain) || able[0];
   }
 
-  *_duel(p, cell, tile) {
+  /* ASSAULTING A FORTIFICATION (§07).
+   *
+   * A coin used to absorb an attack outright, which read well and measured
+   * terribly: once the bots learned that hitting a wall bought nothing, walls
+   * stopped being hit at all. Over 360 games a fortification absorbed exactly
+   * ZERO attacks, while 8.5 coins sat untouched on the map at final scoring.
+   * A rule no competent player ever triggers is not a rule, it is a sign.
+   *
+   * So a wall is a price rather than a veto. To attack it you spend TWO cards
+   * from your meld — the usual one matching the ground, plus one more of any
+   * suit — and THE LOWER OF THE TWO RANKS IS YOUR ATTACK. You commit nothing
+   * from hand: an assault is decided by what you brought, not by what you held
+   * back. The defender fights as always, hand card plus the ground.
+   *
+   * Two cards of the SAME suit was the first shape and was measured out: a
+   * meld holds two of one suit only 9-14% of the time, because a meld is a run
+   * and suits are irrelevant to it. That is not a price, it is a prohibition —
+   * the same number that killed this shape for terrain earlier.
+   *
+   * The coin goes to the supply either way. It bought exactly what it was
+   * always sold as buying: one attack made much harder, once.
+   */
+  *_assault(p, cell, tile, card, pool) {
+    if (!pool.length) {                     // legality should have stopped this
+      this.inc("assault_without_a_second_card");
+      tile.gold -= 1; this._takeUnit(p, cell); this.inc("duel_absorbed");
+      return;
+    }
+    let second;
+    if (this.isHuman(p.i)) {
+      const pick = yield { type: "assault", seat: p.i, cell, terrain: tile.terrain,
+                           bonus: TERRAIN_DEFENCE[tile.terrain], lead: card,
+                           options: pool.slice() };
+      second = pool.includes(pick) ? pick : null;
+      if (!second) { this.inc("assault_declined"); return; }   // keep the card
+    } else {
+      /* min() punishes bringing a weak card, so the bot brings its best other
+       * one — which is precisely the cost this rule charges. */
+      second = pool.slice().sort((a, b) => b.r - a.r)[0];
+    }
+    pool.splice(pool.indexOf(second), 1);
+    /* WHO DISCARDS IT depends on which caller we are inside, and getting this
+     * wrong breaks the ten-card invariant rather than anything visible. A
+     * person's turn discards each card as it is spent, so the second card has
+     * to be discarded here or it is simply lost. A bot's whole meld is added
+     * to its discard in one go AFTER _place returns, so pushing here would
+     * count the card twice and hand it back an eleventh card at the recycle. */
+    if (this.isHuman(p.i)) p.discard.push(second);
+    tile.gold -= 1;
+    this.inc("assaults"); this.inc("wall_broken");
+    this.fx("shield", { seat: p.i, at: cell });
+    const value = Math.min(card.r, second.r);
+    const suit = (card.r <= second.r ? card : second).s;
+    yield* this._duel(p, cell, tile, { r: value, s: suit });
+  }
+
+  /* `assault` is a card-shaped value already paid for on the map, used instead
+   * of asking the attacker for one from hand. */
+  *_duel(p, cell, tile, assault) {
     if (!tile.units.length) { p.gold += 1; this.inc("cards_to_gold"); return; }
-    /* A coin on the unit absorbs the blow outright — no duel, no interruption. */
-    if (tile.gold) { this._takeUnit(p, cell); this.inc("duel_absorbed"); return; }
 
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
-    const aCard = yield* this._duelCard(p, "attack", tile);
+    const aCard = assault || (yield* this._duelCard(p, "attack", tile));
     const dCard = yield* this._duelCard(d, "defend", tile);
     const spend = (q, c) => {
       if (!c) return;
@@ -2281,7 +2378,10 @@ class Game {
     const a = aCard ? aCard.r : 0;
     const b = (dCard ? dCard.r : 0) + bonus;
     const attackerWins = duelWinner(aCard, dCard, tile.terrain);
-    if (this.DUEL_KEEP) {
+    /* An assault's cards were spent on the map before we got here, and the
+     * stand-in is nobody's hand card, so only the defender pays here. */
+    if (assault) { spend(d, dCard); }
+    else if (this.DUEL_KEEP) {
       if (attackerWins) spend(d, dCard); else spend(p, aCard);
     } else { spend(p, aCard); spend(d, dCard); }
     this.inc("duels");

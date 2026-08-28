@@ -410,6 +410,50 @@ for terr in ("forest", "mountain"):
               f"the combat figure names {terr.capitalize()} without its "
               f"+{def_js[terr]}")
 
+# THE FORTIFICATION is the rule most recently rewritten, and the old version of
+# it survived in print for a version while the engine had moved on. Both halves
+# are pinned: the engine must refuse a lone card, and the book must say so.
+check(re.search(r"if \(t\.gold && this\.combat === \"duel\" && spare < 1\) return \[\];", js),
+      "the engine no longer refuses a single-card attack on a fortified tile")
+check(re.search(r"Math\.min\(card\.r, second\.r\)", js),
+      "the assault no longer takes the LOWER of the two cards")
+for phrase, why in [
+    ("assault", "section 07 never names the assault"),
+    ("two cards", "section 07 does not say an assault costs two cards"),
+    ("lower of the two ranks is the attack",
+     "section 07 does not say the lower rank is the attack"),
+    ("cannot attack that tile at all",
+     "section 07 does not say a lone card is refused outright")]:
+    check(phrase.lower() in rules.lower(), why)
+# ...and the figure has to show the refusal beside the fight, not an absorb
+fort_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", figs.get("fortify", "")))
+check("refused" in fort_text, "the fortify figure no longer shows a lone card being refused")
+check("LOWER" in fort_text, "the fortify figure does not show which of the two cards fights")
+check("unit survives" not in fort_text,
+      "the fortify figure still promises the unit survives — a coin no longer does that")
+
+# THE TERRAIN FIGURE carries the two numbers that decide every fight and every
+# settlement, once per terrain, and it prints the defence bonus twice — as the
+# rule ("+2") and as the thing a player actually needs ("beat them by 3"). Two
+# renderings of one fact is two chances to be wrong, so both are read back.
+ter_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", figs.get("terrain", "")))
+for terr in ("plains", "ocean", "forest", "mountain"):
+    seg = ter_text[ter_text.find(terr.capitalize()):]
+    seg = seg[:120]
+    check(bool(seg), f"the terrain figure has no {terr.capitalize()} column")
+    holds = holds_js[terr]
+    check(f"{holds} unit" in seg,
+          f"the terrain figure does not give {terr.capitalize()} its {holds}-unit limit")
+    bonus = int(def_js[terr])
+    check(f"+{bonus}" in seg,
+          f"the terrain figure does not give {terr.capitalize()} defence +{bonus}")
+    check(f"beat them by {bonus + 1}" in seg,
+          f"the terrain figure says the wrong margin for {terr.capitalize()}: "
+          f"+{bonus} means beating them by {bonus + 1}")
+# and the sea's own rule, which is the reason this figure is not just a table
+check("ANY terrain" in ter_text and "once a turn" in ter_text,
+      "the terrain figure no longer shows the water advantage")
+
 # THE WORKED ROUND is two figures and a page of prose, and all three can drift
 # apart from each other and from the engine. The first draft of the map figure
 # drew three Mountains in a ROW while the setup three lines above it said

@@ -97,6 +97,13 @@ setTimeout(() => {
         // undo occasionally: the record must rewind with the game
         if (steps % 7 === 0 && !q('#undo').disabled) { click(q('#undo')); undos += 1; }
       } else click(btn(/^End turn/));
+    } else if (w.eval('REQ && REQ.type') === 'assault') {
+      /* An assault takes its second card off the MELD, and calling it off is
+       * a legal answer too — both have to survive the round trip through the
+       * report or a replay diverges the moment somebody storms a wall. */
+      const c = q('#mymeld button[data-aside]');
+      if (steps % 4 === 0 || !c) { const d = btn(/Call it off|Abbrechen/); if (d) click(d); }
+      else click(c);
     } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
       /* A duel. Commit a card most of the time, decline sometimes — both are
        * legal answers and both have to survive the round trip through the

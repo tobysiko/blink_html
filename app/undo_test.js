@@ -148,6 +148,12 @@ setTimeout(() => {
           if (h) click(h); else { const c = btn(/^Cash /); if (c) click(c); }
           if (steps % 3 === 0 && !undo.disabled) { click(undo); undos++; }
         } else click(btn(/^End turn/));
+      } else if (w.eval('REQ && REQ.type') === 'assault') {
+        /* An assault asks for a SECOND meld card, off the table rather
+         * than out of hand — the same list the set-aside uses. */
+        const c = q('#mymeld button[data-aside]');
+        if (c) click(c);
+        else click(qa('#prompt button').find((b) => !b.disabled));
       } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
         /* A duel is a turn request, so it must be undoable like any other —
          * that is the whole point of this file. Commit a card, or decline. */

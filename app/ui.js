@@ -854,7 +854,8 @@ function needZone() {
     case "meld": return "#hand";                 // build it out of your hand
     case "retire": case "discard": case "bonus": case "duel": return "#hand";
     case "buy": return "#market";
-    case "setaside": return "#mymeld";           // the cards are already on the table
+    case "setaside": case "assault":              // the cards are already on the table
+      return "#mymeld";
     case "feed": case "effectA": return ".vrowbox";
     case "objective": return ".objpick";
     case "conquest": case "waterexplore": case "colony": return "#mapbox";
@@ -1495,7 +1496,10 @@ function renderMyMeld() {
   const lim = p.meldLimit();
   const choosing = mine() && REQ.type === "meld";
   const spending = mine() && REQ.type === "turn";
-  const aside = mine() && REQ.type === "setaside";
+  /* An assault (§07) also asks for a card off the table rather than out of
+   * hand — the second card you throw at a wall is a meld card. Same list, same
+   * clicks, so it rides on the set-aside path. */
+  const aside = mine() && (REQ.type === "setaside" || REQ.type === "assault");
   const won = uiWinner() === ME;
 
   let cards = "";
@@ -1883,6 +1887,15 @@ function renderPrompt() {
     case "discard":
       ask(t("ask.discard"));
       break;
+    case "assault": {
+      /* The wall is what makes this different from a duel, so the sentence has
+       * to name the price and the arithmetic: two cards, and the LOWER one
+       * fights. Declining keeps the card and calls the attack off. */
+      ask(t("ask.assault", { terrain: TL[REQ.terrain], bonus: REQ.bonus,
+                             lead: REQ.lead.r }));
+      btn(t("ask.assault.stop"), () => answer(null), "ghost");
+      break;
+    }
     case "duel": {
       /* Both sides commit in secret, so this must NOT show what the other
        * player chose — the engine never sends it, and nothing here asks. */

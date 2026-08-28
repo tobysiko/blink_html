@@ -237,7 +237,9 @@ MARKET = 1.45
 # shrunk to fit beside figures it has nothing to do with.
 TABLE = 0.98
 SCALE = {
-    "combat": DETAIL, "fortify": DETAIL, "market": MARKET,
+    # Fortify grew a second half in v0.24 — a refusal beside a fight — and no
+    # longer fits at DETAIL. It is still a close-up, just a wider one.
+    "combat": DETAIL, "fortify": 1.35, "market": MARKET,
     "board": COMPONENT, "vprow": COMPONENT, "table": TABLE,
 }
 _VB = re.compile(r'viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"')
@@ -354,7 +356,7 @@ HTML = f"""<!doctype html>
     <li><strong>4 dice</strong> — one <b>winner's die</b> in its own colour, and three
     plain <b>initiative dice</b>. One per player.</li>
   </ul>
-  {fig('terrain', "The four terrains at a glance. Defended ground is moulded taller, and how tall it stands is its defence bonus in a duel — nothing more. The numbers on the table are the rules.")}
+  {fig('terrain', "Everything that differs between the four terrains. How many units the ground holds, how much it adds to a defender in a duel — and, read the other way, how far you have to beat them by to take it. Defended ground is moulded taller, so its height is its defence bonus. Ocean is the odd one: it holds a single unit and is a road rather than a place to live.")}
 </section>
 
 <section>
@@ -708,11 +710,16 @@ HTML = f"""<!doctype html>
   <p>An attack is not automatic. It is a <strong>duel</strong>, and both sides may fight
   it with a card from hand.</p>
   <ol class="seq">
-    <li><b>Is the defender fortified?</b> A coin on the unit absorbs the attack outright.
-    The gold goes to the supply, the unit stands, and there is no duel (§07).</li>
+    <li><b>Is the defender fortified?</b> Then this is an <strong>assault</strong>, and it
+    costs you a second card: spend <strong>two</strong> cards from your meld — the one
+    matching the ground, plus <strong>one more of any suit</strong> — and
+    <strong>the lower of the two ranks is your attack</strong>. You commit nothing from
+    hand; an assault is decided by what you brought. The coin goes to the supply either
+    way. Cannot spare a second card? Then you cannot attack that tile at all (§07).</li>
     <li><b>Both commit, in secret.</b> You and the defender each choose one card from
     hand and place it face down. Either of you may decline, and a player with an empty
-    hand has nothing to commit.</li>
+    hand has nothing to commit. In an <em>assault</em> only the defender does this —
+    your number is already on the table.</li>
     <li><b>Reveal together.</b> Compare:
       <br><strong>Attack</strong> = your card's rank.
       <br><strong>Defence</strong> = their card's rank <strong>+ the terrain's defence
@@ -832,14 +839,26 @@ HTML = f"""<!doctype html>
   hand recycles.</p>
 
   <h3>Fortifying</h3>
-  <p>A coin on one of your units means that unit <strong>cannot be removed by an
-  attack</strong>: the attack takes the gold to the supply instead, and both units survive.
-  One coin per unit, never two. The coin is lost to the supply the moment the unit is
-  disturbed in any way — attacked, moved, or stacked onto.</p>
-  <p>You cannot fortify in response to an attack — attacks happen on someone else's turn,
-  and by then it is too late. A fortification is a read on your neighbours, paid for in
-  advance.</p>
-  {fig('fortify', 'Gold on a unit buys it exactly one escape. Move that unit, stack onto it, or disturb it in any way, and the gold is lost to the supply.')}
+  <p>A coin on one of your units means that unit <strong>cannot be attacked by a single
+  card</strong>. Taking it is an <strong>assault</strong>, and an assault costs two:</p>
+  <ul>
+    <li>The attacker spends <strong>two cards</strong> from their meld instead of one —
+    the usual card matching the ground, plus <strong>one more of any suit</strong>.</li>
+    <li><strong>The lower of the two ranks is the attack.</strong> A great card dragged
+    down by a poor one is a poor assault; walls are broken by weight, not by one hero.</li>
+    <li>The attacker commits <strong>nothing from hand</strong>. The defender fights
+    normally — one hand card, plus the ground.</li>
+    <li>The <strong>coin goes to the supply</strong> whichever way the fight goes. It
+    bought what it was sold as buying: one attack made much harder, once.</li>
+  </ul>
+  <p>A rival who cannot spare a second card <strong>cannot attack that tile at all</strong>.
+  That is the whole value of the coin: not that it saves the unit, but that it prices
+  the attack out of most turns.</p>
+  <p>One coin per unit, never two. The coin is also lost the moment the unit is disturbed
+  any other way — moved, or stacked onto. You cannot fortify in response to an attack —
+  attacks happen on someone else's turn, and by then it is too late. A fortification is a
+  read on your neighbours, paid for in advance.</p>
+  {fig('fortify', "A coin does not save the unit — it doubles the price of coming for it. One card is refused outright; two cards get a fight, with the LOWER of the pair as the attack.")}
 
   <h3>One victory card</h3>
   <p>Once per map phase you may spend a card from your victory row on its
@@ -1279,7 +1298,10 @@ HTML = f"""<!doctype html>
       between reserve, food slots and fortifications; research spending is one-way. ·
       <b>One victory card on B</b> per turn.</p>
       <h3>Fortifying</h3>
-      <p>1 gold on one of your units: the next attack takes the gold instead of the unit.
+      <p>1 gold on one of your units. A single card cannot attack it at all; an
+      <b>assault</b> costs <b>two meld cards</b> (one matching the ground, one any suit)
+      and <b>the lower rank is the attack</b> — the attacker commits nothing from hand,
+      the defender fights as usual, and the coin goes to the supply either way.
       One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
       <h3>Gold</h3>
       <p>1 per cashed card · ascension coins 1/2/3/4, once each · 1 for ranking last ·

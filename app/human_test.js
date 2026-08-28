@@ -55,6 +55,10 @@ function autoHuman(G, req, rng) {
      * driver that always fought would never exercise the decline path. */
     case 'duel':
       return rng() < 0.25 ? null : pick(req.options);
+    /* An assault: the second card comes off the MELD, and calling it off is
+     * legal too — which is the branch that used to lose a card silently. */
+    case 'assault':
+      return rng() < 0.2 ? null : pick(req.options);
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

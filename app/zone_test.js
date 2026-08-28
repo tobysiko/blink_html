@@ -116,6 +116,12 @@ function run(seed, n, seat, retire, deck, obj, cb) {
           const b = qa('.vpanel .vp-opt:not(.off)').find((x) => x.dataset.fx === 'B');
           if (b) click(b); else click(btn(/Keep this card/) || btn(/Play no effect/));
         } else click(btn(/^End turn/));
+      } else if (w.eval('REQ && REQ.type') === 'assault') {
+        /* An assault asks for a SECOND meld card, off the table rather
+         * than out of hand — the same list the set-aside uses. */
+        const c = q('#mymeld button[data-aside]');
+        if (c) click(c);
+        else click(qa('#prompt button').find((b) => !b.disabled));
       } else if (w.eval('REQ && REQ.type') === 'duel') {
         /* A duel interrupts whoever's turn it is, so it cannot be matched on
          * prompt text like the branches around it — this file runs in whatever
