@@ -67,6 +67,7 @@ function newReport(build, gargs, extra) {
       researchRule: gargs.opts.researchRule || "twice",
       combat: gargs.opts.combat || "duel",
       duelTake: gargs.opts.duelTake !== false,   // note: NOT `|| true`
+      frontier: gargs.opts.frontier || "low",
       duelKeep: !!gargs.opts.duelKeep,
       perks: gargs.opts.perks || false,
       comboMelds: !!gargs.opts.comboMelds,

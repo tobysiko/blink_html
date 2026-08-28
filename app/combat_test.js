@@ -238,6 +238,35 @@ ok(E.playOut(3, 7, {}).DUEL_TAKE === true, 'a won duel no longer takes the groun
 ok(E.playOut(3, 7, { duelTake: false }).DUEL_TAKE === false,
    'the older spoils cannot be selected for comparison');
 
+// --------------------------------------------------- the frontier pays
+/* Gold, not appetite, is what limits fortification: holding everything else
+ * still and varying only the surplus a bot keeps back moves walls built from
+ * 19.9 a game to 0.6. So exploring with a starting-deck card now pays a coin —
+ * measured at +4.2 gold a game, walls 2.9 to 3.5, and the upgrade race
+ * untouched at 34.4.
+ *
+ * The boundary is the one that explains itself: rank 10 is the top of every
+ * starting deck and the bottom of the market. */
+{
+  const g = E.playOut(3, 7, {});
+  ok(g.FRONTIER === 'low', `the frontier rule defaults to ${g.FRONTIER}`);
+  ok(g.FRONTIER_RANK === 10, `the frontier pays up to ${g.FRONTIER_RANK}, not 10`);
+  ok(E.playOut(3, 7, { frontier: 'off' }).FRONTIER === 'off',
+     'the older economy cannot be selected for comparison');
+
+  let paid = 0, explored = 0, off = 0;
+  for (const n of [2, 3, 4]) for (let s = 0; s < 40; s++) {
+    const a = E.playOut(n, (s * 40503) % 2147483647, {});
+    paid += a.stats.frontier_paid || 0;
+    explored += a.stats.explore || 0;
+    off += E.playOut(n, (s * 40503) % 2147483647, { frontier: 'off' })
+             .stats.frontier_paid || 0;
+  }
+  ok(paid > 0, 'no explore ever paid a coin');
+  ok(paid < explored, `every one of ${explored} explores paid — the rank gate is not biting`);
+  ok(off === 0, 'the frontier paid even with the rule turned off');
+}
+
 // ------------------------------------------ nobody arrives with no cards
 // The regression that started this: a defender spends out of turn, their hand
 // empties, and nothing recycles it.

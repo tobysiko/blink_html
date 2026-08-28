@@ -410,6 +410,21 @@ for terr in ("forest", "mountain"):
               f"the combat figure names {terr.capitalize()} without its "
               f"+{def_js[terr]}")
 
+# THE FRONTIER PAYS, and the rank it pays up to is a number that exists twice.
+frontier = re.search(r'FRONTIER = \[[^\]]*\]\s*\.includes\(opts\.frontier\)\s*'
+                     r'\?\s*opts\.frontier\s*:\s*"(\w+)"', js, re.S)
+check(bool(frontier) and frontier.group(1) == "low",
+      "the engine no longer pays for exploring with a low card by default")
+rank = re.search(r"FRONTIER_RANK = opts\.frontierRank \|\| (\d+)", js)
+check(bool(rank), "cannot find the frontier rank in app/engine.js")
+if rank:
+    check(f"rank {rank.group(1)} or under" in rules,
+          f"section 06 does not say the frontier pays at rank {rank.group(1)} or under")
+    # and the boundary has to be the starting deck / upgrade line, or the rule
+    # stops explaining itself
+    check(int(rank.group(1)) == 10,
+          "the frontier rank is no longer the starting-deck boundary")
+
 # WHOSE CARDS FIGHT. The first duel asked the attacker for a card from hand as
 # well as the meld card they had already spent, which is not what anybody
 # expects and left the rank of the spent card doing nothing at all. Both halves
@@ -553,6 +568,8 @@ no_bonus_rule(tut, "the tutorial")
 check(not re.search(r"attacking into \w+ \(\d\)", tut, re.I),
       "the tutorial still charges gold to attack")
 check("duel" in tut.lower(), "the tutorial never mentions the duel")
+check(bool(rank) and f"rank {rank.group(1)} or under" in tut,
+      f"the tutorial does not teach the frontier coin at rank {rank and rank.group(1)}")
 check("the tile is yours" in tut, "the tutorial does not say a won duel takes the ground")
 for terr in ("plains", "ocean", "forest", "mountain"):
     check(f"{terr.capitalize()} +{def_js[terr]}" in tut

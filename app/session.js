@@ -97,6 +97,10 @@ function newSession(opts, rand) {
        * trip — `o.duelTake || true` would quietly turn it back on and the two
        * clients would settle different tiles. */
       duelTake: o.duelTake !== false,
+      /* Default "low", so anything else has to survive the trip — two clients
+       * disagreeing about whether the frontier pays would replay different
+       * purses and then different boards. */
+      frontier: ["always", "seams", "off"].includes(o.frontier) ? o.frontier : "low",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,

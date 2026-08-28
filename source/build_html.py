@@ -705,7 +705,14 @@ HTML = f"""<!doctype html>
   <p>The supply is open, so there is never any searching: take the tile you need. If that
   terrain has <strong>run out</strong> — all fifteen are already on the map — the card takes
   gold instead.</p>
-  {fig('explore', "Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two existing tiles — and the very next card may settle it.")}
+  <p><strong>The frontier pays.</strong> If the card you explored with is
+  <strong>rank 10 or under</strong>, take <strong>1 gold</strong> from the supply. That is
+  every card in the starting deck and none from the market: your weakest cards are worth
+  something on the edge of the map, and the tap closes by itself as your deck improves.
+  A card too poor to fight for a trick can still open ground and pay for the wall that
+  holds it.</p>
+
+  {fig('explore', "Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two existing tiles — and the very next card may settle it. A card of rank 10 or under also pays a coin.")}
 
   <h3>Attack</h3>
   <p>When the cell is a tile a rival occupies, you cannot settle there. Instead, spending
@@ -1313,7 +1320,8 @@ HTML = f"""<!doctype html>
       the defender fights as usual, and the coin goes to the supply either way.
       One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
       <h3>Gold</h3>
-      <p>1 per cashed card · ascension coins 1/2/3/4, once each · 1 for ranking last ·
+      <p>1 per cashed card · <b>1 for exploring with a card of rank 10 or under</b> ·
+      ascension coins 1/2/3/4, once each · 1 for ranking last ·
       pay 1 to research · pay 1 to fortify · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
       recycles — short slots starve units off the map.</p>
       <h3>Research — up to twice per turn</h3>

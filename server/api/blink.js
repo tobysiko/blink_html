@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-28T18:36:22Z
+ * Built 2026-08-28T19:09:31Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1292,6 +1292,16 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
+     * so the measurements that chose it can be reproduced. */
+    this.FRONTIER = ["always", "seams", "off"].includes(opts.frontier)
+      ? opts.frontier : "low";
+    this.FRONTIER_RANK = opts.frontierRank || 10;
+    /* Coins under the supply piles, if "seams" is in play: four per terrain out
+     * of fifteen, so a little over a quarter of the ground pays. */
+    this.seams = {};
+    for (const s of Object.keys(SUIT_LETTER))
+      this.seams[s] = opts.seamsEach === undefined ? 4 : opts.seamsEach;
     /* And a sweetener that was measured and NOT taken: letting the winner keep
      * their committed card helps less (49/51) and costs a rule. Off. */
     this.DUEL_KEEP = !!opts.duelKeep;
@@ -2200,6 +2210,7 @@ class Game {
         this.inc("explore");
         if (lone) this._payPioneering(p);
         this.fx("tile", { seat: p.i, to: cell });
+        this._payFrontier(p, card, cell);
       }
       else { p.gold += 1; this.inc("cards_to_gold"); }
     } else if (act === "settle") {
@@ -2427,6 +2438,48 @@ class Game {
      * That is handled at the END of the round, not here — see _sweepEmptyHands.
      * Recycling mid-duel over-draws, because a player who has not taken their
      * map turn still has a meld in flight that the top-up-to-ten cannot see. */
+  }
+
+  /* WHAT THE FRONTIER PAYS (experimental, off by default).
+   *
+   * Fortifying is gated by gold, not by appetite: holding the bot's spending
+   * cushion fixed and varying nothing else moves walls built from 19.9 a game
+   * to 0.6. So the question "should there be a little more coin about?" is
+   * really "should the map pay for being opened up?", and there are three
+   * shapes worth telling apart.
+   *
+   *   "always"  every explore pays 1. Simplest, and the most inflationary.
+   *   "low"     THE RULE. An explore pays 1 only when the card spent is rank 10
+   *             or under — a starting-deck card, never an upgrade. No
+   *             components, nothing random, and it pays the players who need
+   *             it: your weakest cards find work on the frontier, and the tap
+   *             closes by itself as your deck improves. Measured at +4.2 gold
+   *             a game, which moved walls built from 2.9 to 3.5 and left the
+   *             upgrade race untouched at 34.4.
+   *   "seams"   a coin sits under some tiles in the supply piles. Discovery,
+   *             and it works with an OPEN supply because the coins are under
+   *             the stack rather than hidden in a bag. A fixed number per
+   *             terrain, so the frontier really does run out.
+   */
+  _payFrontier(p, card, cell) {
+    const rule = this.FRONTIER;
+    if (rule === "off") return;
+    let pay = 0;
+    if (rule === "always") pay = 1;
+    else if (rule === "low") pay = card.r <= this.FRONTIER_RANK ? 1 : 0;
+    else if (rule === "seams") {
+      const left = this.seams[card.s] || 0;
+      const tiles = this.m.supply[card.s] + 1;  // the one just laid is off the pile
+      if (left > 0 && this.rng.random() < left / tiles) {
+        this.seams[card.s] = left - 1;
+        pay = 1;
+      }
+    }
+    if (!pay) return;
+    p.gold += pay;
+    this.inc("gold_in_frontier", pay);
+    this.inc("frontier_paid");
+    this.fx("gold", { seat: p.i, amount: pay, from: "board", at: cell });
   }
 
   // --- research -------------------------------------------------
@@ -3568,6 +3621,10 @@ function newSession(opts, rand) {
        * trip — `o.duelTake || true` would quietly turn it back on and the two
        * clients would settle different tiles. */
       duelTake: o.duelTake !== false,
+      /* Default "low", so anything else has to survive the trip — two clients
+       * disagreeing about whether the frontier pays would replay different
+       * purses and then different boards. */
+      frontier: ["always", "seams", "off"].includes(o.frontier) ? o.frontier : "low",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,

@@ -256,6 +256,9 @@ HTML = f"""<!doctype html>
   so it is a bet rather than an answer; the other two — extra units, and taking gold — are
   used when you can already see the board. That choice is the heart of the game's second half;
   ignore it for now and just keep them.</p>
+  <div class="say"><b>The frontier pays.</b> Explore with a card of <b>rank 10 or under</b>
+  — anything from your starting deck — and take <b>1 gold</b>. Your weakest cards are worth
+  something on the edge of the map. Once you start buying upgrades, that tap closes.</div>
   <p>Gold also pays for: fortifying a unit against one attack (1) — a coin on a unit stops an
   attack outright, with no duel at all — researching, and, from the moment you empty your first
   band, <b>feeding your people</b>.
