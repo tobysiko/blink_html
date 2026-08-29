@@ -1,0 +1,54 @@
+v0.24: combat you can see, and a purse that explains itself
+
+COMBAT
+- the card you SPEND is the attack. The attacker is never asked for a second
+  card from hand, so which card you send is the whole decision. Before this the
+  rank of the spent card did nothing at all: you could storm a Mountain with a
+  2 as long as you held a 19 back.
+- a fortification is a price, not a veto. One card cannot attack it; two can,
+  and the LOWER of the two ranks fights. "Two of the same suit" was measured
+  out first - a meld holds two of one suit only 9-14% of the time, which is a
+  prohibition wearing a price tag.
+- a won duel that empties the tile takes the ground. Measured: a bot forbidden
+  to attack used to beat one that attacked 56/44 under the OLD gold rule, so
+  combat was already a trap; this is the only change tested that flips it
+  (51/49). See DUEL-SPOILS.md.
+- declining an assault used to eat the card that declared it. It now cashes.
+- the contested tile is marked on the map for as long as the question stands,
+  and the attacking card is shown beside the prompt with the rank needed to
+  hold it. zone_test fails if either is missing.
+
+GOLD
+- exploring with a card of rank 10 or under pays 1. Rank 10 is the top of every
+  starting deck and the bottom of the market, so the tap is open while you are
+  poor and closes as you upgrade. +4.2 gold a game, walls 2.9 -> 3.5, and the
+  upgrade race untouched at 34.4. "always" and "seams" stay selectable so the
+  comparison that chose this can be re-run.
+- Game.purse() is now the only way a purse changes. Sixteen declared reasons,
+  each writing a caption where the coin lands AND a sentence in the log, in
+  both languages. purse_test forbids raw mutation, refuses an undeclared or
+  dead reason, and requires the log to agree with the counters to the coin -
+  which immediately caught gold_in_cashed being double-counted on every bot
+  cash.
+
+RULEBOOK
+- a view of the table from one seat, on page one.
+- the worked round moved to follow Setup, with two new figures: the trick with
+  all three melds compared at once, and the map at the end of that round.
+- the terrain figure rebuilt to compare what actually differs, including the
+  water advantage it never mentioned.
+- the combat and market figures were still drawing replaced rules - a gold coin
+  being paid, and a choice of which market position to bury. check_rules now
+  reads figs.json, so a drawing can no longer lie while the prose is correct.
+- section 07 rewritten for the assault; section 06 for the single attacking
+  card; the frontier coin added to section 06 and the tutorial.
+
+FIXES
+- English players were shown German duel prompts. Three de strings had been
+  pasted into the en block, where duplicate keys silently win. i18n_test now
+  reads the source, which is the only place the evidence survives.
+- check_rules.py and check_figs.py crashed when run from outside source/.
+- build_pdfs.sh failed at the last step in a folder that forbids deletes.
+- new check_fonts.py: the PDFs have NEVER embedded Fraunces or IBM Plex Sans,
+  because every builder fetches them from Google at render time and falls back
+  silently. Install them locally and the whole toolchain works offline.

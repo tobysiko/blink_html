@@ -62,6 +62,19 @@ const BAND_HOLDS = [
   { plains: 3, forest: 3, ocean: 2, mountain: 2 },   // Empire       (Empire)
   { plains: 3, forest: 3, ocean: 2, mountain: 2 },   // Civilization (as Empire)
 ];
+/* Every reason gold is allowed to move. This list is the contract between the
+ * engine, the counters and the two translations: purse() throws on anything
+ * not named here, and i18n_test requires a `log.gold.<reason>` line in both
+ * languages for each one. Adding a coin without explaining it is now a build
+ * failure rather than a thing a player notices six months later. */
+const GOLD_REASONS = [
+  // coming in
+  "lost_trick", "docked", "bonus_gold", "ascension", "cashed", "unplaceable",
+  "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
+  // going out
+  "food", "upgrade", "fortify", "attack",
+];
+
 const ATTACK_COST = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
 
 /* What an attack costs in COINS, which depends on the rule in play. Under the
@@ -1405,6 +1418,45 @@ class Game {
    * Nothing in the engine may contain text a player sees. */
   say(key, vars) { this.log.push([this.round, key, vars || null]); }
 
+  /* EVERY COIN HAS A REASON.
+   *
+   * Gold used to move in twenty-six places and explain itself in almost none
+   * of them: the purse changed and the player was left to work out why. Three
+   * reports in a row were some version of "nothing happens" or "where did that
+   * come from" — the frontier coin, the two trick coins, the assault refund.
+   * Each was a correct rule that the app kept to itself.
+   *
+   * So gold no longer moves by assignment. It moves through here, and the
+   * reason is not optional: `why` is a stat suffix AND a translation key, so
+   * one call lands in the counters, the animation layer and the log at once.
+   * `where` is the other end of the journey — a piece of furniture ("hand",
+   * "pile", "market") or a map cell — so the coin visibly comes from or goes
+   * to the thing that caused it.
+   *
+   * purse_test.js fails the build if anyone writes `p.gold +=` again.
+   */
+  purse(p, amount, why, where, vars) {
+    if (!GOLD_REASONS.includes(why))
+      throw new Error("gold moved for an unnamed reason: " + why);
+    if (!amount) return 0;
+    const before = p.gold;
+    p.gold = Math.max(0, p.gold + amount);
+    const moved = p.gold - before;
+    if (!moved) return 0;
+    const n = Math.abs(moved);
+    this.inc((moved > 0 ? "gold_in_" : "gold_out_") + why, n);
+    /* The fx layer reads `from` for a gain and `to` for a spend, and `why` so
+     * the coin can carry a two-word caption as it flies. The log explains a
+     * coin AFTER the fact, in a list a player has to look at; the caption
+     * explains it AT the moment, where they are already looking. */
+    this.fx("gold", moved > 0
+      ? { seat: p.i, amount: moved, from: where || "board", why }
+      : { seat: p.i, amount: moved, to: where || "board", why });
+    this.say("log.gold." + why,
+             Object.assign({ seat: p.i, n }, vars || {}));
+    return moved;
+  }
+
   // --- setup ---------------------------------------------------
   _deal() {
     const n = this.n, R = this.rng;
@@ -1675,9 +1727,11 @@ class Game {
         this.inc("perk_tribute");
       }
       if (coins > 0) {
-        p.gold += coins;
-        this.inc("gold_in_lost_trick", coins);
-        this.fx("gold", { seat: i, amount: coins, from: "board" });
+        /* Two different coins are paid at trick resolution and they STACK —
+         * the consolation for ranking last, and the coin a set-aside card
+         * pays. A player who does both takes two, which §04 says and the app
+         * did not: the purse simply went up by an unexplained amount. */
+        this.purse(p, coins, "lost_trick", "board");
       }
 
       if (this.TRICK_RULE === "bonus") {
@@ -1692,7 +1746,7 @@ class Game {
             p.tableauBonus = bonus;
             this.inc("bonus_card");
           } else {                       // hand empty: take the consolation coin
-            p.gold += 1; this.inc("bonus_gold");
+            this.purse(p, 1, "bonus_gold", "pile");
           }
         }
         if (i !== winner && cards.length === winSize && p.hand.length) {
@@ -1719,11 +1773,10 @@ class Game {
            * the player's own discard and came straight back, so the shared pile
            * was never fed and nobody ever drew from it. */
           this.pile.push(aside);
-          p.gold += 1;
           this.inc("docked_card"); this.inc("cards_to_gold");
-          this.inc("gold_in_docked"); this.inc("to_shared_pile");
+          this.inc("to_shared_pile");
           this.fx("card", { seat: p.i, card: aside, from: "meld", to: "pile" });
-          this.fx("gold", { seat: p.i, amount: 1, from: "pile" });
+          this.purse(p, 1, "docked", "pile", { cards: cards.length });
         } else {
           p.asideCard = null;
         }
@@ -1767,8 +1820,8 @@ class Game {
   _payAscension(p) {
     const owed = p.ascensionDue();
     if (owed) {
-      p.gold += owed; this.inc("gold_in_ascension", owed); this.inc("ascensions");
-      this.fx("gold", { seat: p.i, amount: owed, from: "board" });
+      this.inc("ascensions");
+      this.purse(p, owed, "ascension", "board", { tier: p.band() + 1 });
     }
   }
 
@@ -1917,9 +1970,10 @@ class Game {
           st.cards.splice(st.cards.indexOf(ans.card), 1);
           p.discard.push(ans.card);
           const paid = p.spendPerk("coinage") ? 2 : 1;
-          p.gold += paid;
-          this.inc("cards_to_gold"); this.inc("gold_in_cashed", paid);
+          this.inc("cards_to_gold");
           if (paid > 1) this.inc("perk_coinage");
+          this.purse(p, paid, "cashed", "hand",
+                     { card: ans.card.r + SUIT_LETTER[ans.card.s] });
           this.fx("gold", { seat: p.i, amount: paid, from: "hand" });
           this.say("log.cashed", { card: ans.card.r + SUIT_LETTER[ans.card.s] });
           break;
@@ -1997,7 +2051,8 @@ class Game {
         }
         case "fortify": {
           if (p.gold >= 1 && this.m.fortify(ans.cell)) {
-            p.gold -= 1; this.inc("fortified");
+            this.inc("fortified");
+            this.purse(p, -1, "fortify", ans.cell);
           }
           break;
         }
@@ -2039,8 +2094,8 @@ class Game {
             const t = this.m.tiles.get(cell);
             const cost = ATTACK_COST[t.terrain];
             if (p.gold < cost) break;
-            p.gold -= cost;
-            this.inc("gold_out_attack", cost); this.inc("gold_out_conquest", cost);
+            this.inc("conquest_gold", cost);   // a tally, not a purse reason
+            this.purse(p, -cost, "attack", cell, { terrain: t.terrain });
             const victim = this.m.removeUnit(cell);
             if (victim === null) { this.inc("absorbed_by_fortification"); continue; }
             this.P[victim].returnUnit();
@@ -2060,9 +2115,9 @@ class Game {
           if (i >= 0) {
             p.vrow.splice(i, 1);
             this.removed.push(ans.card);
-            p.gold += effectC(ans.card.r);
-            this.inc("effect_c_used"); this.inc("gold_in_effect_c", effectC(ans.card.r));
-            this.say("log.cashRow", { n: effectC(ans.card.r) });
+            this.inc("effect_c_used");
+            this.purse(p, effectC(ans.card.r), "effect_c", "vrow",
+                       { card: ans.card.r });
           }
           break;
         }
@@ -2072,8 +2127,9 @@ class Game {
     /* Meld cards not used for map actions earn one gold each (§06). */
     for (const c of st.cards) {
       p.discard.push(c);
-      p.gold += 1;
-      this.inc("cards_to_gold"); this.inc("gold_in_unplaceable");
+      this.inc("cards_to_gold");
+      this.purse(p, 1, "unplaceable", "hand",
+                 { card: c.r + SUIT_LETTER[c.s] });
     }
     if (st.cards.length)
       this.say("log.unusedGold", { n: st.cards.length });
@@ -2164,7 +2220,7 @@ class Game {
       if (best === null) {                           // nothing legal for any card
         this.inc("no_legal_placement", todo.length);
         this.inc("cards_to_gold", todo.length);
-        p.gold += todo.length;
+        this.purse(p, todo.length, "unplaceable", "hand", { n: todo.length });
         return;
       }
       const [v, card, cell, act] = best;
@@ -2179,10 +2235,10 @@ class Game {
          * has to be paid in both places or it only ever works for people. */
         const paid = p.spendPerk("coinage") ? 2 : 1;
         this.inc("cash_events"); this.inc("cards_to_gold");
-        this.inc("gold_in_cashed", paid);
         if (paid > 1) this.inc("perk_coinage");
         if (act === "settle") this.inc("cash_gave_up_a_settle");
-        p.gold += paid;
+        this.purse(p, paid, "cashed", "hand",
+                   { card: card.r + SUIT_LETTER[card.s] });
         continue;
       }
       yield* this._resolve(p, card, cell, act, todo);
@@ -2195,7 +2251,11 @@ class Game {
    * of the turn no longer has. */
   *_resolve(p, card, cell, act, pool) {
     this.inc("cards_resolved");
-    if (act === "cash") { p.gold += 1; this.inc("cards_to_gold"); return; }
+    if (act === "cash") {
+      this.inc("cards_to_gold");
+      this.purse(p, 1, "cashed", "hand", { card: card.r + SUIT_LETTER[card.s] });
+      return;
+    }
     if (act === "explore") {
       /* Read the touch count BEFORE the tile lands, or it counts itself. */
       const lone = this.m.touchCount(cell) < 2;
@@ -2205,7 +2265,7 @@ class Game {
         this.fx("tile", { seat: p.i, to: cell });
         this._payFrontier(p, card, cell);
       }
-      else { p.gold += 1; this.inc("cards_to_gold"); }
+      else { this.inc("cards_to_gold"); this.purse(p, 1, "unplaceable", "hand"); }
     } else if (act === "settle") {
       /* Holding back — taking gold rather than climbing into a tier you cannot
        * feed — is the BOT'S policy, not a rule. Applying it to a person turned
@@ -2213,14 +2273,16 @@ class Game {
        * game losing your unit. A human who clicks Settle, settles. */
       if (!this.isHuman(p.i) && !p.reserveEmpty()
           && this._wouldClimb(p) && p.gold < this._nextFood(p)) {
-        this.inc("held_back"); this.inc("cards_to_gold"); p.gold += 1;
+        this.inc("held_back"); this.inc("cards_to_gold");
+        this.purse(p, 1, "held_back", "hand");
       } else if (p.takeUnit()) {
         this.inc("settle");
         this.m.settle(cell, p.i);
         this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
       } else {
-        this.inc("settle_no_reserve"); this.inc("cards_to_gold"); p.gold += 1;
+        this.inc("settle_no_reserve"); this.inc("cards_to_gold");
+        this.purse(p, 1, "no_units", "hand");
       }
     } else if (act === "attack") {
       const tile = this.m.tiles.get(cell);
@@ -2231,9 +2293,9 @@ class Game {
       }
       const cost = attackGold(this.COMBAT, tile.terrain);
       if (p.gold >= cost && tile.units.length) {
-        p.gold -= cost; this.inc("gold_out_attack", cost);
+        this.purse(p, -cost, "attack", cell, { terrain: tile.terrain });
         this._takeUnit(p, cell);
-      } else { p.gold += 1; this.inc("cards_to_gold"); }
+      } else { this.inc("cards_to_gold"); this.purse(p, 1, "unplaceable", "hand"); }
     }
   }
 
@@ -2344,8 +2406,7 @@ class Game {
          * That card has already left the meld, so it takes the same way out
          * every unusable card takes (§06): it is cashed for a coin. */
         this.inc("assault_declined"); this.inc("cards_to_gold");
-        p.gold += 1;
-        this.fx("gold", { seat: p.i, amount: 1, from: "hand" });
+        this.purse(p, 1, "called_off", cell);
         return;
       }
     } else {
@@ -2387,7 +2448,11 @@ class Game {
    * which is a better question than the one it replaces, and the terrain
    * bonus is now something the defender can count on rather than hope for. */
   *_duel(p, cell, tile, attack) {
-    if (!tile.units.length) { p.gold += 1; this.inc("cards_to_gold"); return; }
+    if (!tile.units.length) {
+      this.inc("cards_to_gold");
+      this.purse(p, 1, "unplaceable", cell);
+      return;
+    }
 
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
@@ -2469,10 +2534,12 @@ class Game {
       }
     }
     if (!pay) return;
-    p.gold += pay;
-    this.inc("gold_in_frontier", pay);
     this.inc("frontier_paid");
-    this.fx("gold", { seat: p.i, amount: pay, from: "board", at: cell });
+    /* The coin comes FROM THE GROUND YOU JUST OPENED — a cell key, not a piece
+     * of furniture. "board" pointed at the unit reserve, which is both wrong
+     * and unreadable. */
+    this.purse(p, pay, "frontier", cell,
+               { rank: card.r, cap: this.FRONTIER_RANK });
   }
 
   // --- research -------------------------------------------------
@@ -2630,10 +2697,9 @@ class Game {
     p.hand.splice(p.hand.indexOf(retire), 1);
     p.vrow.push(retire);
     this.fx("card", { seat: p.i, card: retire, from: "hand", to: "vrow" });
-    p.gold -= price;
-    this.inc("gold_out_upgrade", price); this.inc("upgrades");
+    this.inc("upgrades");
+    this.purse(p, -price, "upgrade", "market", { card: buy.r, price });
     if (price > 1) this.inc("research_repeat"); // a second or later one this turn
-    this.fx("gold", { seat: p.i, amount: -price, to: "market" });
     this.grid[k].pop();
     p.hand.push(buy);
     this.fx("card", { seat: p.i, card: buy, from: "market", to: "hand", slot: k });
@@ -2906,9 +2972,8 @@ class Game {
         const t = this.m.tiles.get(cell);
         const cost = ATTACK_COST[t.terrain];
         if (p.gold < cost) break;
-        p.gold -= cost;
-        this.inc("gold_out_attack", cost);
-        if (cost) this.fx("gold", { seat: p.i, amount: -cost, to: cell }); this.inc("gold_out_conquest", cost);
+        this.inc("conquest_gold", cost);   // a tally, not a purse reason
+        this.purse(p, -cost, "attack", cell, { terrain: t.terrain });
         const victim = this.m.removeUnit(cell);
         done += 1;
         if (victim === null) { this.inc("absorbed_by_fortification"); continue; }
@@ -2950,8 +3015,8 @@ class Game {
       if (!broke || gain < cost * p.w.C_GOLD_PER_POINT) return;
       p.vrow.splice(p.vrow.indexOf(low), 1);
       this.removed.push(low);
-      p.gold += gain;
-      this.inc("effect_c_used"); this.inc("gold_in_effect_c", gain);
+      this.inc("effect_c_used");
+      this.purse(p, gain, "effect_c", "vrow", { card: low.r });
     }
     if (false) yield null;
   }
@@ -2961,8 +3026,8 @@ class Game {
       const card = p.vrow.slice().sort(cardSort)[0];
       p.vrow.splice(p.vrow.indexOf(card), 1);
       this.removed.push(card);
-      p.gold += effectC(card.r);
-      this.inc("effect_c_used"); this.inc("gold_in_effect_c", effectC(card.r));
+      this.inc("effect_c_used");
+      this.purse(p, effectC(card.r), "effect_c", "vrow", { card: card.r });
     }
   }
 
@@ -3271,7 +3336,10 @@ class Game {
     if (p.gold < p.food() + 1 + p.w.FORTIFY_MIN_GOLD) return;
     const cand = this.fortifyCandidates(p);
     if (!cand.length) return;
-    if (this.m.fortify(cand[0][1])) { p.gold -= 1; this.inc("fortified"); }
+    if (this.m.fortify(cand[0][1])) {
+      this.inc("fortified");
+      this.purse(p, -1, "fortify", cand[0][1]);
+    }
     if (false) yield null;
   }
 
@@ -3283,8 +3351,8 @@ class Game {
       if (p.gold >= need) return;
       if (t.owner === p.i && t.gold) {
         const take = Math.min(t.gold, need - p.gold);
-        t.gold -= take; p.gold += take;
-        this.inc("gold_reclaimed", take);
+        t.gold -= take;
+        this.purse(p, take, "reclaimed", k);
       }
     }
     if (false) yield null;                     // keeps the generator signature
@@ -3340,8 +3408,8 @@ class Game {
         if (!card) break;
         p.vrow.splice(p.vrow.indexOf(card), 1);
         this.removed.push(card);
-        p.gold += effectC(card.r);
-        this.inc("effect_c_used"); this.inc("gold_in_effect_c", effectC(card.r));
+        this.inc("effect_c_used");
+        this.purse(p, effectC(card.r), "effect_c", "vrow", { card: card.r });
       }
     } else if (!this.isHuman(p.i)) {
       this._spendC(p, owed);
@@ -3359,8 +3427,7 @@ class Game {
     }
     if (short) this._shedOverLimit(p);
     owed = Math.min(owed, p.gold);
-    this.inc("gold_out_food", Math.min(owed, p.gold));
-    p.gold = Math.max(0, p.gold - owed);
+    this.purse(p, -owed, "food", "board", { tier: p.band() + 1 });
     this.inc("recycles"); this.inc("food_paid", owed);
     /* Every perk token turns back face up here — the one beat the board
      * already stops play for. */
@@ -3516,7 +3583,7 @@ function playOut(n, seed, opts) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = {
-    TER, HOLDS, BANDS, ATTACK_COST, SUIT_LETTER, K, unK, step, nbrKeys,
+    TER, HOLDS, BANDS, ATTACK_COST, GOLD_REASONS, SUIT_LETTER, K, unK, step, nbrKeys,
     Tile, GameMap, Player, Game, playOut,
     enumerateMelds, isLegalMeld, handPower, reach, cardOptions, cardBlocked, valueCard,
     vrowScore, setVrowRule, setTiers, effectA, effectText, effectD, effectDText, OBJECTIVES, effectBv22, effectC, bandOfRank, proBot, makeRng,

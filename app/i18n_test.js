@@ -82,6 +82,13 @@ for (const m of shell.matchAll(/data-i18n="([\w.]+)"/g)) asked.add(m[1]);
 // the deploy build injects one more tagged element (the back link)
 for (const m of src('build.js').matchAll(/data-i18n=\\?"([\w.]+)\\?"/g)) asked.add(m[1]);
 for (const m of engine.matchAll(/\bsay\("([\w.]+)"/g)) asked.add(m[1]);
+/* purse() builds its key at run time — `"log.gold." + why` — so the literal in
+ * the source is a fragment. The reasons themselves are declared in one list,
+ * which is the thing to enumerate: every coin the engine can move must have a
+ * sentence in both languages. */
+asked.delete('log.gold.');
+for (const why of I.GOLD_REASONS || require('./engine.js').GOLD_REASONS)
+  asked.add('log.gold.' + why);
 for (const m of engine.matchAll(/"(why\.[\w.]+)"/g)) asked.add(m[1]);
 for (const m of engine.matchAll(/"(end\.[\w.]+)"/g)) asked.add(m[1]);
 for (const k of asked) if (!(k in EN)) fail.push(`nobody wrote "${k}", but the code asks for it`);

@@ -709,6 +709,22 @@ function shove(sel, delay) {
   }, Math.max(0, delay));
 }
 
+/* A short line of text that floats where something just happened and fades.
+ * Used for the reason a coin moved; kept to two or three words, because it has
+ * to be readable in the half second it is on screen. */
+function caption(at, text, good, delay) {
+  const layer = $("#fx");
+  if (!layer || !at || !text) return;
+  setTimeout(() => {
+    const n = el("div", "cap" + (good ? " good" : " bad"));
+    n.textContent = text;
+    n.style.transform = `translate(${at.x}px, ${at.y}px)`;
+    layer.appendChild(n);
+    setTimeout(() => n.classList.add("up"), 20);
+    setTimeout(() => n.remove(), 1400);
+  }, Math.max(0, delay));
+}
+
 function ring(at, bad, delay) {
   const layer = $("#fx");
   if (!layer || !at) return;
@@ -758,6 +774,16 @@ function playEvents() {
         const dst = gained ? uiPoint("gold") : point(e.to);
         for (let k = 0; k < Math.min(Math.abs(e.amount), 4); k++)
           token("coin", src, dst, "", d + k * 60);
+        /* And say WHY, right where the coin is going. A coin that appears with
+         * no caption is the single most common "what just happened" in this
+         * app — it produced three separate reports before this existed. Only
+         * for your own purse: a caption over a rival's seat is noise. */
+        if (e.seat === ME && e.why) {
+          const at = gained ? dst : src;
+          const sign = gained ? "+" : "\u2212";
+          caption(at, `${sign}${Math.abs(e.amount)} ${t("fx.why." + e.why)}`,
+                  gained, d + 120);
+        }
         break;
       }
       case "card": {

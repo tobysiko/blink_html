@@ -181,6 +181,33 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'sum',
   for (const r of ['last', 'half', 'ladder'])
     ok(String(of(r, 2)) === '0,1', `${r} at 2p pays ${of(r, 2)}, expected 0,1`);
 
+  /* TWO COINS, AND THEY STACK. The consolation for ranking last and the coin a
+   * set-aside card pays are separate taps: §04 says a player who matched the
+   * winner's count AND ranked last takes both. Neither said anything in the
+   * app, so a purse rising by two at trick resolution had no explanation, and
+   * that is exactly how it was reported. Pinned together, because it is the
+   * STACKING that surprises — either coin alone reads as "the" consolation. */
+  {
+    let cons = 0, dock = 0, pair = 0;
+    for (const n of [3, 4]) for (let s = 0; s < 30; s++) {
+      const g = E.playOut(n, (s * 40503) % 2147483647, {});
+      const seen = {};
+      for (const [r, key, v] of g.log) {
+        if (key !== 'log.gold.lost_trick' && key !== 'log.gold.docked') continue;
+        const k = r + ':' + v.seat;
+        (seen[k] = seen[k] || {})[key] = true;
+      }
+      for (const k in seen) {
+        if (seen[k]['log.gold.lost_trick'] && seen[k]['log.gold.docked']) pair++;
+        else if (seen[k]['log.gold.lost_trick']) cons++;
+        else dock++;
+      }
+    }
+    ok(cons > 0, 'ranking last is never written to the log');
+    ok(dock > 0, 'a set-aside card never says it paid a coin');
+    ok(pair > 0, 'nobody ever took both coins in one round — §04 says they stack');
+  }
+
   ok(new E.Game(3, 1, { humans: [] }).CONSOLATION === 'last',
      'the printed single coin is not the default');
   ok(new E.Game(3, 1, { humans: [], consolation: 'junk' }).CONSOLATION === 'last',

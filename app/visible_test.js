@@ -141,6 +141,34 @@ setTimeout(() => {
   if (![...d.querySelectorAll('#prompt button')].some((b) => /Take the loss/.test(b.textContent)))
     fail.push('a famine offers no way to refuse');
 
+  /* THE FRONTIER COIN HAS TO SAY SOMETHING. It was landing silently: the purse
+   * ticked up by one, the coin animation flew out of the unit reserve (the
+   * wrong furniture entirely), and nothing named the rule — so the first
+   * report of it was "nothing happens when I explore with a low card". A gold
+   * income nobody notices is a gold income nobody plays around. */
+  w.eval(`(() => {
+    const p = G.P[ME];
+    const cell = [...G.m.legalSpaces()][0];
+    G.log.length = 0;
+    G._payFrontier(p, { r: 3, s: 'plains' }, cell);
+    G._payFrontier(p, { r: 20, s: 'plains' }, cell);
+    render();
+  })()`);
+  const logged = d.querySelector('#log').textContent;
+  if (!/new ground/i.test(logged))
+    fail.push('exploring with a low card says nothing in the log');
+  if ((logged.match(/new ground/gi) || []).length !== 1)
+    fail.push('a rank-20 card was paid the frontier coin as well');
+  const goldFx = w.eval(`(() => {
+    G.events.length = 0;
+    G._payFrontier(G.P[ME], { r: 4, s: 'plains' }, [...G.m.legalSpaces()][0]);
+    const e = G.events.find((x) => x.type === 'gold');
+    return e ? String(e.from) : 'none';
+  })()`);
+  if (!/^-?\d+,-?\d+$/.test(goldFx))
+    fail.push(`the frontier coin flies from "${goldFx}" — it should come off the `
+      + 'new tile, not out of the furniture');
+
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
     : 'visible after start: map, play area, player board, hand, sidebar — '
       + d.querySelectorAll('#map polygon').length + ' hexes, '

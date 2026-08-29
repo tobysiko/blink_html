@@ -669,8 +669,21 @@
   .ring.bad{border-color:#B33A2E}
   @keyframes ping{from{transform:scale(.5); opacity:.9}
                   to{transform:scale(3.4); opacity:0}}
+  /* The reason a coin moved, floating where it landed. Two or three words, and
+     it has to be readable in the half second it is on screen — so: opaque
+     background, no animation of the text itself beyond the drift up. */
+  .cap{position:absolute; left:0; top:0; margin:-10px 0 0 -50%;
+    padding:.14rem .4rem; border-radius:5px; white-space:nowrap;
+    font-size:.72rem; font-weight:600; letter-spacing:.01em;
+    background:var(--ink); color:var(--page); pointer-events:none;
+    opacity:0; transition:transform .5s ease-out, opacity .5s ease-out;
+    z-index:6}
+  .cap.good{background:#2F6B45}
+  .cap.bad{background:#8C3A16}
+  .cap.up{opacity:1}
   @media (prefers-reduced-motion: reduce){
     .tok{transition:none} .ring{animation:none; display:none}
+    .cap{transition:none; opacity:1}
   }
 
   /* ---- one card face, three sizes ---- */
@@ -1068,6 +1081,7 @@
         <option value="half" data-i18n="setup.consolation.half"></option>
         <option value="ladder" data-i18n="setup.consolation.ladder"></option>
       </select>
+      <p class="hint" data-i18n="setup.consolation.note"></p>
     </div>
     <div class="field">
       <label for="research-rule" data-i18n="setup.research">Research per turn</label>
