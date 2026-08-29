@@ -57,23 +57,68 @@ function check() {
     }
   }
 
-  /* ---- 2. the feeding cost is a number, per tier ------------------------ */
-  /* This is the one the note singled out. For every tier that charges, the
-   * amount has to be READABLE — present as a digit, not implied by how many
-   * small circles are drawn. */
-  E.BANDS.forEach(([name, , , food], j) => {
+  /* ---- 2. the feeding cost, as countable slots ------------------------- */
+  /* This used to demand a DIGIT in every row, because a playtester read past
+   * two small empty circles and was surprised by the bill. The digit is still
+   * there — once, in the note under the table, for the tier you are actually
+   * on, which is the only one you can be charged for. In the table itself the
+   * cost is now a row of slots you can count, and those same slots carry the
+   * ascension coins until you claim them, so the number arrives as something
+   * you are about to GAIN rather than as small print.
+   *
+   * What is checked here is that the count is exact and that the ascension
+   * reward is finally visible at all — it was drawn nowhere before. */
+  E.BANDS.forEach(([name, , , food, , ascend], j) => {
     const cell = body[j] && body[j].querySelector('.food');
-    const shown = txt(cell);
+    const slots = cell ? cell.querySelectorAll('.cslot').length : -1;
     if (food > 0) {
-      ok(new RegExp(`\\b${food}\\b`).test(shown),
-         `${name} charges ${food} to refill, and its board row shows "${shown}"`
-         + ' — the cost is not written anywhere a player can read it');
+      ok(slots === food,
+         `${name} charges ${food} to refill and draws ${slots} slot(s)`);
+      /* Food and the ascension reward are the same number at every tier, which
+       * is what lets one row of slots carry both. If that ever stops being
+       * true the whole gauge is a lie. */
+      ok(ascend === food,
+         `${name} pays ${ascend} on ascension but eats ${food} — the feed slots `
+         + 'can no longer hold the ascension coins');
+      const asc = cell.querySelectorAll('.cslot.asc').length;
+      ok(asc === food,
+         `${name} has not been reached yet, so all ${food} slots should hold an `
+         + `ascension coin; ${asc} do`);
     } else {
-      ok(shown.length > 0,
+      ok(txt(cell).length > 0,
          `${name} costs nothing to refill and its row says nothing at all — `
          + '"free" is information too');
     }
   });
+
+  /* ONE VOCABULARY ACROSS BOTH SURFACES. A player with the A4 board on the
+   * table and this open on a phone should be reading the same shapes: a meld
+   * is a fan of that many cards, a rank cap is a card's index corner, moves
+   * are a number and a stride, and the tier name reaches across to the reserve
+   * it governs. Drift here is two boards teaching two games. */
+  E.BANDS.forEach(([name, , meld, , , , cap], j) => {
+    const row = body[j];
+    const cards = row ? row.querySelectorAll('.mlim .fan i').length : -1;
+    ok(cards === meld,
+       `${name} may play ${meld} cards and its fan draws ${cards}`);
+    const top = row && row.querySelector('.mlim .fan i:last-child b');
+    ok(top && txt(top) === String(meld),
+       `${name}'s fan does not carry ${meld} on its top card`);
+    const corner = row && row.querySelector('.cap .corner b');
+    ok(corner && txt(corner) === String(cap),
+       `${name} buys up to ${cap}; its rank corner shows "${corner && txt(corner)}"`);
+    ok(row && row.querySelector('.mv .stride svg'),
+       `${name} has no stride arrow beside its move count`);
+    ok(row && row.querySelector('.tname .lead'),
+       `${name} does not reach across to its own reserve row`);
+  });
+
+  /* ...and the bill in words, for the tier you are on. */
+  {
+    const note = d.querySelector('.foodnote');
+    ok(!!note && txt(note).length > 0,
+       'the tier you are on does not say what feeding will cost you');
+  }
 
   /* ---- 3. move limit and rank cap, per tier ----------------------------- */
   /* `\b` is no use against "1mv" — there is no word boundary between a digit

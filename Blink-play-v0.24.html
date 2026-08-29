@@ -478,16 +478,49 @@
   .tile.src{stroke:#fff; stroke-width:3.5}
   /* The tile a fight is over. A duel arrives on somebody else's turn and asks
      about a hex you were not looking at, so it pulses until it is answered. */
-  .tile.fight{stroke:#C0392B; stroke-width:4; opacity:1;
+  .tile.fight{stroke:var(--fight,#C0392B); stroke-width:4; opacity:1;
               animation:fightpulse 1s ease-in-out infinite}
   @keyframes fightpulse{0%,100%{stroke-width:3}50%{stroke-width:5.5}}
   @media (prefers-reduced-motion:reduce){
     .tile.fight{animation:none; stroke-width:4.5}
   }
-  /* The arithmetic of a duel, next to the question that needs it. */
-  .duelsum{display:inline-flex; align-items:center; gap:.4rem; margin-left:.5rem;
-           padding:.15rem .45rem; border:1px solid var(--line); border-radius:6px}
-  .duelsum .need{font-weight:600; color:#C0392B}
+  /* A duel, drawn rather than described: whose attack, the card, the ground it
+     is fought over with its bonus as shields, and the rank that holds it. */
+  .duelsum{display:inline-flex; align-items:center; flex:none; gap:.45rem;
+           margin-left:.5rem;
+           padding:.2rem .5rem; border:1px solid var(--line); border-radius:7px;
+           vertical-align:middle}
+  .duelsum .seatdot{flex:none; width:12px; height:12px; border-radius:50%;
+           box-shadow:0 0 0 1.5px rgba(0,0,0,.35)}
+  .duelsum .gl{flex:none; width:17px; height:17px; fill:var(--ink-soft); display:block}
+  .duelsum .vs{display:flex; opacity:.75}
+  .duelsum .ground{flex:none; display:inline-flex; align-items:center;
+           justify-content:center; gap:1px; min-width:24px; height:22px;
+           padding:0 .22rem; border-radius:4px; background:var(--terr)}
+  .duelsum .ground .sh{width:12px; height:13px; fill:rgba(255,255,255,.92)}
+  /* The answer is a card, so the number you need is drawn on one. */
+  .duelsum .needcard{flex:none; display:inline-flex; align-items:baseline; gap:1px;
+           padding:.1rem .34rem; border:1.5px solid #C0392B; border-radius:4px;
+           color:#C0392B; font-weight:700; line-height:1.1}
+  .duelsum .needcard em{font-style:normal; font-size:.78em}
+  /* The wall being stormed, and the second card the assault still needs. */
+  .duelsum .wall{flex:none; position:relative; display:inline-flex}
+  .duelsum .wall .gl{fill:var(--stone)}
+  .duelsum .wall .coin{position:absolute; right:-3px; bottom:-2px; width:9px;
+           height:9px; border-radius:50%; background:#E8C25A;
+           box-shadow:0 0 0 1.2px #9B7A16}
+  .duelsum .plus{flex:none; font-weight:700; color:var(--ink-soft)}
+  .duelsum .slot2{flex:none; display:inline-flex; align-items:center;
+           justify-content:center; width:20px; height:26px; border-radius:3px;
+           border:1.5px dashed var(--line); color:var(--ink-soft);
+           font-weight:700; font-size:.8rem}
+  /* The fight on the map: the target pulses, the attacker's own tiles beside it
+     are ringed, and an arrow runs between them — all in the attacker's colour. */
+  .tile.from{stroke:var(--fight,#C0392B); stroke-width:3; stroke-dasharray:5 3;
+             opacity:1}
+  .raid{stroke-width:3; stroke-linecap:round; opacity:.85}
+  .raidhead{opacity:.9}
+  @media (prefers-reduced-motion:reduce){ .raid{opacity:1} }
   .ghost{fill:#fff; fill-opacity:.28; stroke:var(--line); stroke-width:1;
     stroke-dasharray:4 3}
   .ghost.hot{fill-opacity:.6; stroke:#111; stroke-width:2.5; cursor:pointer}
@@ -532,32 +565,72 @@
     color:var(--mut)}
 
   .tiers{border:1px solid var(--line); border-radius:5px; overflow:hidden}
-  .tier-row{display:flex; align-items:center; gap:8px; padding:2px 6px;
+  /* GRID, NOT FLEX. Six columns of per-item widths drifted out of alignment
+     the moment any of them wrapped, which is what made this table look
+     misformatted. A grid template makes every row line up by construction, and
+     the whole thing is one declaration to change. */
+  .tier-row{display:grid; align-items:center; gap:7px; padding:3px 6px;
+    grid-template-columns:34px 26px 96px 1fr auto 40px;
     border-bottom:1px solid #E7E3D8; font-size:11px; color:var(--mut)}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}
-  .mlim{width:17px; height:17px; flex:none; border:1px solid #2A2E2B; border-radius:3px;
-    background:#fff; text-align:center; font-weight:700; font-size:11px; color:var(--ink);
-    line-height:16px}
-  .tname{width:88px; flex:none; font-weight:600; color:var(--ink)}
+  /* MELD, as a fan of that many cards - the same shape the printed board uses,
+     shrunk. The number rides the top card, exactly as it does on paper. */
+  .fan{position:relative; display:block; height:20px; width:34px}
+  .fan i{position:absolute; top:0; width:9px; height:14px; border-radius:1.5px;
+    background:#fff; border:1px solid #2A2E2B; transform-origin:50% 90%}
+  .fan i b{position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:9px; font-weight:700; color:var(--ink)}
+  .tier-row.head .fan, .tier-row.head .corner, .tier-row.head .stride{display:none}
+  /* BUY UP TO, as a card's index corner: an L with the rank inside it. */
+  .corner{position:relative; display:block; width:24px; height:18px;
+    border-left:1.5px solid var(--ink); border-top:1.5px solid var(--ink);
+    border-radius:2px 0 0 0}
+  .corner b{position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:11px; font-weight:700}
+  /* MOVES, as a number and a stride. */
+  .stride{display:inline-flex; align-items:center; gap:2px; color:var(--mut)}
+  .stride b{font-size:12px; font-weight:700; color:var(--ink)}
+  .stride svg{width:15px; height:10px}
+  /* The name reaches across to the reserve it governs, the way the printed
+     board's lead line does. */
+  .tname{position:relative; padding-right:12px; font-weight:600; color:var(--ink)}
+  .tname .lead{position:absolute; right:0; top:50%; width:9px; height:1px;
+    background:var(--line)}
+  .tname .lead::after{content:""; position:absolute; right:0; top:-2.5px;
+    border-left:3px solid var(--line); border-top:2.5px solid transparent;
+    border-bottom:2.5px solid transparent}
   .tier-row:not(.here) .tname{color:var(--mut)}
   .tname em{font-style:normal; font-weight:400; font-size:9.5px; color:var(--mut);
     margin-left:4px}
-  .uslots{flex:1; display:flex; gap:3px; min-width:96px}
-  .uslot{width:11px; height:11px; border-radius:50%; border:1px dashed #B9B4A8;
-    display:inline-block}
+  /* ...and one faint arrow down the whole reserve, saying which end you take
+     from. Drawn on the track rather than per row, like the printed board. */
+  .tiers{position:relative}
+  .tiers::after{content:""; position:absolute; left:0; top:26px; bottom:6px;
+    width:0; border-left:1px solid var(--line); margin-left:150px}
+  .uslots{display:flex; gap:3px; min-width:0; position:relative}
+  .uslot{flex:none; width:11px; height:11px; border-radius:50%;
+    border:1px dashed #B9B4A8; display:inline-block}
   .uslot.full{border:1px solid #1C1F1D; border-style:solid}
-  .food{width:56px; flex:none; display:flex; gap:2px; align-items:center}
+  /* The feed slots. Right-aligned so the row of coins grows leftward from a
+     fixed edge and every tier's slots share one baseline. */
+  .food{display:flex; gap:3px; align-items:center; justify-content:flex-end;
+    min-width:52px}
   .food .free{font-style:italic; font-size:9.5px}
-  .food b{font-weight:700; color:var(--ink)}
-  .tier-row:not(.here) .food b{color:var(--mut); font-weight:600}
-  .cslot{width:9px; height:9px; border-radius:50%; border:1px solid #C9992B;
-    background:#FBF3DC; display:inline-block}
-  .mv{width:30px; flex:none; font-weight:600; color:var(--ink)}
+  .cslot{flex:none; width:11px; height:11px; border-radius:50%;
+    border:1.5px dashed #C9A22B; background:transparent; display:inline-block}
+  /* Money you have not collected yet: a coin with a ring, so it reads as
+     something sitting ON the board rather than something you have spent. */
+  .cslot.asc{border-style:solid; background:#E8C25A;
+    box-shadow:inset 0 0 0 1.5px #FBF3DC}
+  /* Money of yours already committed against the next recycle. */
+  .cslot.paid{border-style:solid; background:#C9992B; border-color:#8A6A12}
+  .tier-row.unclaimed .tname{opacity:.85}
+  .mv{justify-self:end}
   .tier-row:not(.here) .mv{color:var(--mut); font-weight:400}
   .mv em{font-style:normal; font-size:9px; color:var(--mut); margin-left:1px}
-  .cap{width:22px; flex:none; text-align:right; font-weight:600}
+
 
   /* The heading row. Every number in this table used to be unlabelled, with
      its meaning only in a `title` tooltip — invisible on a desktop until you
@@ -570,7 +643,7 @@
   .tier-row.head .tname, .tier-row.head .mv, .tier-row.head .cap,
   .tier-row.head .food{color:var(--hint); font-weight:600}
   .tier-row.head .cap{text-align:right}
-  .tier-row.head .uslots{min-width:96px}
+  .tier-row.head .food{justify-content:flex-end}
 
   /* The countdown to the end of the game. §11 gives you a whole extra round
      after the trigger, which is enough time to do something about it — but only
@@ -1238,7 +1311,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":null,"reportUrl":null,"commit":"744fec8783","branch":"main","dirty":true,"built":"2026-08-29T06:49:02Z"};
+const BUILD = {"version":"v0.24","api":null,"reportUrl":null,"commit":"f336535131","branch":"main","dirty":true,"built":"2026-08-29T09:27:49Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1555,6 +1628,9 @@ en: {
   "board.rankCap": "highest rank you may buy",
   "board.mv": "mv",
   "board.free": "free",
+  "board.foodFree": "Tribe eats nothing",
+  "board.foodAscend": "{n} ascension coins waiting here \u2014 reach this tier and take them; the slots they leave are what it then costs to feed",
+  "board.foodCovered": "{have} of {owe} already covered by your gold",
   /* Column headings for the tier table. These used to be `title` tooltips
      only, which meant the numbers were unlabelled on a desktop and completely
      unreachable on a phone — a player met the feeding cost for the first time
@@ -1600,6 +1676,7 @@ en: {
   "ask.duel.defend": "<b>They are attacking your {terrain}</b> <span class=\"muted\">— commit one card to defend. The ground adds +{bonus}.</span>",
   "ask.duel.decline": "Don't fight",
   "ask.duel.need": "to hold it — the ground already gives you +{bonus}",
+  "ask.duel.defend.short": "<b>Defend</b> <span class=\"muted\">— commit a card, or don't</span>",
   "fx.why.lost_trick": "last place",
   "fx.why.docked": "set aside",
   "fx.why.bonus_gold": "no bonus card",
@@ -1634,6 +1711,7 @@ en: {
   "log.gold.attack": "Seat {seat} paid the {terrain} attack price: −🪙{n}",
   "ask.assault": "<b>Assault</b> <span class=\"muted\">— their coin refuses a single card. Spend a SECOND card from your meld: the lower of the two ranks is your attack, and yours is {lead}. They defend on {terrain} (+{bonus}).</span>",
   "ask.assault.stop": "Call it off",
+  "ask.assault.short": "<b>Assault</b> <span class=\"muted\">— a second card; the lower rank fights</span>",
   "ask.discard": "<b>Give up a card</b> <span class=\"muted\">— face down to the shared pile</span>",
   "ask.retire.lowest": "<b>Give up your lowest card</b> <span class=\"muted\">— rank {low}, lit below. {more}It becomes a victory card.</span>",
   "ask.retire.lowest.more": "You hold {n}; choose the suit you need least. ",
@@ -2098,6 +2176,9 @@ de: {
   "board.rankCap": "höchster Wert, den du kaufen darfst",
   "board.mv": "Bw",
   "board.free": "frei",
+  "board.foodFree": "Der Stamm isst nichts",
+  "board.foodAscend": "{n} Aufstiegsmünzen liegen hier \u2014 erreiche diese Stufe und nimm sie; die frei werdenden Felder sind dann die Verpflegung",
+  "board.foodCovered": "{have} von {owe} schon durch dein Gold gedeckt",
   "board.colMeld": "Karten",
   "board.colTier": "Stufe",
   "board.colUnits": "Bevölkerung",
@@ -2139,6 +2220,7 @@ de: {
   "ask.duel.defend": "<b>Angriff auf dein {terrain}</b> <span class=\"muted\">— lege eine Handkarte zur Verteidigung fest. Das Gelände gibt +{bonus}.</span>",
   "ask.duel.decline": "Nicht kämpfen",
   "ask.duel.need": "zum Halten — das Gelände gibt dir schon +{bonus}",
+  "ask.duel.defend.short": "<b>Verteidigen</b> <span class=\"muted\">— eine Karte festlegen, oder nicht</span>",
   "fx.why.lost_trick": "letzter Platz",
   "fx.why.docked": "beiseitegelegt",
   "fx.why.bonus_gold": "keine Extrakarte",
@@ -2173,6 +2255,7 @@ de: {
   "log.gold.attack": "Platz {seat} zahlt den Angriffspreis für {terrain}: −🪙{n}",
   "ask.assault": "<b>Sturmangriff</b> <span class=\"muted\">— die Münze wehrt eine einzelne Karte ab. Gib eine ZWEITE Karte aus deiner Kombination: der niedrigere der beiden Werte ist dein Angriff, deiner ist {lead}. Verteidigt wird auf {terrain} (+{bonus}).</span>",
   "ask.assault.stop": "Abbrechen",
+  "ask.assault.short": "<b>Sturmangriff</b> <span class=\"muted\">— eine zweite Karte; der niedrigere Wert zählt</span>",
   "ask.discard": "<b>Eine Karte abgeben</b> <span class=\"muted\">— verdeckt auf den gemeinsamen Ablagestapel</span>",
   "ask.retire.lowest": "<b>Gib deine niedrigste Karte ab</b> <span class=\"muted\">— Wert {low}, unten hervorgehoben. {more}Sie wird zur Siegkarte.</span>",
   "ask.retire.lowest.more": "Du hast {n} davon; wähle die Farbe, die du am wenigsten brauchst. ",
@@ -4720,12 +4803,21 @@ class Game {
    * so this is a priced decision, not a guess: beat `against.r - bonus` and
    * the tile holds. Humans are asked; bots follow the policy below.
    */
-  *_duelCard(q, role, tile, against) {
+  *_duelCard(q, role, tile, against, by) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     if (this.isHuman(q.i)) {
+      /* WHERE IT IS COMING FROM. A duel lands on somebody else's turn, so the
+       * first question is not "how much" but "who, and from where" — and the
+       * answer used to require scrolling back to find the acting seat. The
+       * attacker's own tiles next to the target are sent along so the map can
+       * show the fight as a direction rather than a dot. */
+      const from = by === undefined ? [] : tile.neighbours()
+        .filter((u) => u.owner === by && u.units.length)
+        .map((u) => u.key);
       const pick = yield { type: "duel", seat: q.i, role,
                            cell: tile.key, terrain: tile.terrain, bonus,
+                           by: by === undefined ? null : by, from,
                            against: against || null,
                            need: against ? Math.max(0, against.r - bonus) : 0,
                            options: q.hand.slice() };
@@ -4840,7 +4932,7 @@ class Game {
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     const aCard = attack;
-    const dCard = yield* this._duelCard(d, "defend", tile, aCard);
+    const dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
     const spend = (q, c) => {
       if (!c) return;
       const i = q.hand.indexOf(c);
@@ -7877,19 +7969,23 @@ function renderMap() {
       points="${hexPoints(gh.cx, gh.cy, HEXR - 1)}"/>`;
     if (a) s += haloText(gh.cx, gh.cy + 4, "badge", cellBadge(a));
   }
+  /* Hoisted out of the loop: the arrows below the loop need it too, and it is
+   * one answer for the whole render rather than one per tile. */
+  const duelling = !!REQ && (REQ.type === "duel" || REQ.type === "assault");
+
   for (const d of draw) {
     const t = d.t;
     const a = act.get(d.key);
     const isSrc = SEL.moveSrc === d.key;
     /* `nope` rather than `hot`: a tile that is only being explained must not
      * look like one that can be clicked. */
-    /* The tile a fight is over is marked for as long as the question stands.
-     * A duel interrupts somebody else's turn and asks about a hex that may be
-     * nowhere near where you were looking — "which Forest?" was the first
-     * thing anybody asked. */
-    const fighting = REQ && (REQ.type === "duel" || REQ.type === "assault")
-                     && REQ.cell === d.key ? " fight" : "";
-    const mark = (a ? (a.blocked ? " nope" : " hot") : "") + fighting;
+    /* A fight is drawn as a DIRECTION, not a dot. The tile under attack pulses,
+     * and the attacker's own tiles beside it are ringed in their colour — so
+     * "who is doing this, and from where" is answered on the map instead of by
+     * scrolling back to find whose turn it is. */
+    const fighting = duelling && REQ.cell === d.key ? " fight" : "";
+    const staging = duelling && (REQ.from || []).includes(d.key) ? " from" : "";
+    const mark = (a ? (a.blocked ? " nope" : " hot") : "") + fighting + staging;
     s += `<polygon class="tile${mark}${isSrc ? " src" : ""}" data-key="${d.key}"
       points="${hexPoints(d.cx, d.cy, HEXR - 1)}" fill="${TC[t.terrain]}"/>`;
     const n = t.units.length;
@@ -7903,6 +7999,33 @@ function renderMap() {
     s += haloText(d.cx, d.cy - 12, "cap", `${n}/${cap}`);
     if (a) s += haloText(d.cx, d.cy + 19, "badge", cellBadge(a));
   }
+
+  /* An arrow from each of the attacker's tiles to the one under attack. Two
+   * hexes ringed in the same colour is a hint; an arrow is a sentence, and it
+   * answers "where is this coming from" without naming anybody. */
+  if (duelling && REQ.from && REQ.from.length) {
+    const at = (key) => draw.find((x) => x.key === key);
+    const tgt = at(REQ.cell);
+    const col = SEAT_C[REQ.by] || "#C0392B";
+    for (const k of REQ.from) {
+      const src = at(k);
+      if (!src || !tgt) continue;
+      const dx = tgt.cx - src.cx, dy = tgt.cy - src.cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const x1 = src.cx + ux * HEXR * 0.5, y1 = src.cy + uy * HEXR * 0.5;
+      const x2 = tgt.cx - ux * HEXR * 0.66, y2 = tgt.cy - uy * HEXR * 0.66;
+      s += `<line class="raid" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" `
+        + `x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${col}"/>`;
+      const ang = Math.atan2(uy, ux);
+      const wing = (turn) =>
+        `${(x2 - Math.cos(ang + turn) * 10).toFixed(1)},`
+        + `${(y2 - Math.sin(ang + turn) * 10).toFixed(1)}`;
+      s += `<polygon class="raidhead" points="${x2.toFixed(1)},${y2.toFixed(1)} `
+        + `${wing(0.42)} ${wing(-0.42)}" fill="${col}"/>`;
+    }
+  }
+
   svg.innerHTML = s;
   svg.querySelectorAll("[data-key]").forEach((node) =>
     node.addEventListener("click", () => onCell(node.dataset.key)));
@@ -8218,6 +8341,37 @@ function cardBtn(c, cls, attr, size) {
 const CROWN = `<svg class="crown" viewBox="0 0 24 16" aria-hidden="true">
   <path d="M2 14.5 L2.4 3 L8 8 L12 1.5 L16 8 L21.6 3 L22 14.5 Z"/></svg>`;
 
+/* Two glyphs the duel readout is built from. Crossed swords for the fight
+ * itself, and one shield per point the ground gives the defender — a number a
+ * player can count rather than parse. */
+/* THE PRINTED BOARD'S VOCABULARY, at screen size. A player who has the A4
+ * board on the table and this open on a phone should be reading one language:
+ * a meld is a fan of cards, a rank cap is a card's index corner, and moves are
+ * a number with a stride. */
+const meldFan = (n) => {
+  let out = '<span class="fan" aria-hidden="true">';
+  for (let k = 0; k < n; k++) {
+    const lean = n > 1 ? -14 + k * (28 / (n - 1)) : 0;
+    const last = k === n - 1;
+    out += `<i style="transform:rotate(${lean.toFixed(1)}deg);left:${k * 3.2}px">`
+      + (last ? `<b>${n}</b>` : "") + "</i>";
+  }
+  return out + "</span>";
+};
+const rankCorner = (n) =>
+  `<span class="corner" aria-hidden="true"><b>${n}</b></span>`;
+const stride = (n) =>
+  `<span class="stride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
+  + '<path d="M1 5 h11 M9 1.6 L12.6 5 L9 8.4" fill="none" stroke="currentColor"'
+  + ' stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
+  + "</svg></span>";
+
+const SWORDS = `<svg viewBox="0 0 24 24" class="gl" aria-hidden="true">
+  <path d="M3 3 L9 3 L21 15 L21 21 L15 21 L3 9 Z" opacity=".9"/>
+  <path d="M21 3 L15 3 L3 15 L3 21 L9 21 L21 9 Z" opacity=".55"/></svg>`;
+const SHIELD = `<svg viewBox="0 0 20 22" class="gl sh" aria-hidden="true">
+  <path d="M10 1 L18 4 V11 C18 16 14 19.5 10 21 C6 19.5 2 16 2 11 V4 Z"/></svg>`;
+
 /* One meld, printed the same way for everyone: the same card faces you hold,
  * the card set aside for a coin faded out, the winner's extra card double
  * framed, and a faint placeholder for every card that seat's tier still
@@ -8454,38 +8608,61 @@ function renderPlayer() {
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
+        <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
         <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
         <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
-        <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
       </div>`;
 
   /* THIS game's tier table, not the module default — a table playing a custom
    * layout must show the board it is actually using. */
   const bands = (G && G.BANDS) || BANDS;
   for (let j = 0; j < bands.length; j++) {
-    const [name, units, meld, food, moves, , cap] = bands[j];
+    const [name, units, meld, food, moves, ascend, cap] = bands[j];
     const here = j === p.band();
     const left = p.reserve[j];
     let pips = "";
     for (let u = 0; u < units; u++)
       pips += `<i class="uslot${u < left ? " full" : ""}"
         style="${u < left ? `background:${SEAT_C[ME]}` : ""}"></i>`;
-    /* The cost as a NUMBER first, then the coin slots that mirror the printed
-     * board. The slots alone are the thing players were reading straight past:
-     * two small empty circles do not say "this will cost you two gold every
-     * time you refill your hand". */
-    let coins = food
-      ? `<b>${food}</b>` + `<i class="cslot"></i>`.repeat(food)
-      : `<span class="free">${t("board.free")}</span>`;
-    s += `<div class="tier-row${here ? " here" : ""}">
-      <span class="mlim" title="${t("board.meldLimit")}">${meld}</span>
-      <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em></span>
+
+    /* ONE GAUGE FOR THREE FACTS.
+     *
+     * A tier's food and its ascension reward are the same number at every tier
+     * - 0/1/2/3/4 both - so they are drawn as one row of slots rather than as
+     * a number, a separate reward nobody could see, and a row of decorative
+     * circles beside them.
+     *
+     *   unclaimed   the ascension coins, sitting on the slots. Reach the tier
+     *               and you take them; the slots they leave are the bill.
+     *   covered     on the tier you are ON, your own gold filling the slots:
+     *               how much of the next recycle is already paid for.
+     *   empty       what you still owe.
+     *
+     * Ascension coins are drawn with a ring so they cannot be mistaken for
+     * money you have spent - they are money you have not collected yet. */
+    const claimed = j <= p.reached;
+    const covered = here ? Math.min(p.gold, food) : 0;
+    let coins = "";
+    for (let c = 0; c < food; c++) {
+      const kind = !claimed ? " asc" : c < covered ? " paid" : "";
+      coins += `<i class="cslot${kind}"></i>`;
+    }
+    if (!food) coins = `<span class="free">${t("board.free")}</span>`;
+    const foodTip = !food ? t("board.foodFree")
+      : !claimed ? t("board.foodAscend", { n: ascend })
+      : here ? t("board.foodCovered", { have: covered, owe: food })
+      : t("board.foodPer");
+
+    s += `<div class="tier-row${here ? " here" : ""}${claimed ? "" : " unclaimed"}">
+      <span class="mlim" title="${t("board.meldLimit")}">${meldFan(meld)}</span>
+      <span class="cap" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
+      <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
+        <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
-      <span class="food" title="${t("board.foodPer")}">${coins}</span>
-      <span class="mv" title="${t("board.freeMoves")}">${moves}<em>${t("board.mv")}</em></span>
-      <span class="cap" title="${t("board.rankCap")}">${cap}</span>
+      <span class="food" title="${foodTip}">${coins}</span>
+      <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
     </div>`;
   }
   s += `</div>`;
@@ -8759,8 +8936,21 @@ function renderPrompt() {
       /* The wall is what makes this different from a duel, so the sentence has
        * to name the price and the arithmetic: two cards, and the LOWER one
        * fights. Declining keeps the card and calls the attack off. */
-      ask(t("ask.assault", { terrain: TL[REQ.terrain], bonus: REQ.bonus,
-                             lead: REQ.lead.r }));
+      /* Same idea as the duel: the wall, the card already committed, an empty
+       * slot for the second one, and the ground. The rule that the LOWER of
+       * the two fights is the one thing a picture cannot carry, so that stays
+       * as four words. */
+      ask(t("ask.assault.short"));
+      bar.insertAdjacentHTML("beforeend",
+        `<span class="duelsum"><span class="wall" title="${t("fx.why.fortify")}">`
+        + `${SHIELD}<i class="coin"></i></span>`
+        + `<span class="cf mini" style="--suit:${TC[REQ.lead.s]}">`
+        + `${faceInner(REQ.lead, "mini")}</span>`
+        + `<span class="plus">+</span><span class="slot2">?</span>`
+        + `<span class="vs">${SWORDS}</span>`
+        + `<span class="ground" style="--terr:${TC[REQ.terrain]}"`
+        + ` title="${TL[REQ.terrain]}">`
+        + (REQ.bonus ? SHIELD.repeat(REQ.bonus) : "") + `</span></span>`);
       btn(t("ask.assault.stop"), () => answer(null), "ghost");
       break;
     }
@@ -8769,15 +8959,28 @@ function renderPrompt() {
        * spent on the map — so the attacking card can be SHOWN. It is face up
        * on the table in a real game, and hiding it here turned a priced
        * decision into a guess. */
-      ask(t("ask.duel.defend", { terrain: TL[REQ.terrain], bonus: REQ.bonus }));
+      /* SHOWN, NOT SPELLED OUT. The old version of this was a sentence naming
+       * the terrain and its bonus, then a second sentence explaining the sum.
+       * All of it is a picture: whose attack, the card itself, the ground it is
+       * being fought over with its bonus as shields, and the rank that holds —
+       * on a card outline, because that is what you are being asked for. */
+      ask(t("ask.duel.defend.short"));
       if (REQ.against) {
-        const need = REQ.need;
+        const need = Math.max(1, REQ.need);
+        const chip = REQ.by === null || REQ.by === undefined ? ""
+          : `<i class="seatdot" style="background:${SEAT_C[REQ.by]}"></i>`;
+        const shields = REQ.bonus
+          ? `<span class="shields" title="${TL[REQ.terrain]} +${REQ.bonus}">`
+            + SHIELD.repeat(REQ.bonus) + "</span>"
+          : "";
         bar.insertAdjacentHTML("beforeend",
-          `<span class="duelsum"><span class="cf mini"
-             style="--suit:${TC[REQ.against.s]}">${faceInner(REQ.against, "mini")}</span>`
-          + `<b>${REQ.against.r}</b> <span class="muted">vs</span> `
-          + `<span class="need">${need > 0 ? need : 1}+</span>`
-          + `<span class="muted">${t("ask.duel.need", { bonus: REQ.bonus })}</span>`
+          `<span class="duelsum">${chip}`
+          + `<span class="cf mini" style="--suit:${TC[REQ.against.s]}">`
+          + `${faceInner(REQ.against, "mini")}</span>`
+          + `<span class="vs">${SWORDS}</span>`
+          + `<span class="ground" style="--terr:${TC[REQ.terrain]}"`
+          + ` title="${TL[REQ.terrain]}">${shields}</span>`
+          + `<span class="needcard"><b>${need}</b><em>+</em></span>`
           + `</span>`);
       }
       btn(t("ask.duel.decline"), () => answer(null), "ghost");

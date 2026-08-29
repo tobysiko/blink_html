@@ -478,16 +478,49 @@
   .tile.src{stroke:#fff; stroke-width:3.5}
   /* The tile a fight is over. A duel arrives on somebody else's turn and asks
      about a hex you were not looking at, so it pulses until it is answered. */
-  .tile.fight{stroke:#C0392B; stroke-width:4; opacity:1;
+  .tile.fight{stroke:var(--fight,#C0392B); stroke-width:4; opacity:1;
               animation:fightpulse 1s ease-in-out infinite}
   @keyframes fightpulse{0%,100%{stroke-width:3}50%{stroke-width:5.5}}
   @media (prefers-reduced-motion:reduce){
     .tile.fight{animation:none; stroke-width:4.5}
   }
-  /* The arithmetic of a duel, next to the question that needs it. */
-  .duelsum{display:inline-flex; align-items:center; gap:.4rem; margin-left:.5rem;
-           padding:.15rem .45rem; border:1px solid var(--line); border-radius:6px}
-  .duelsum .need{font-weight:600; color:#C0392B}
+  /* A duel, drawn rather than described: whose attack, the card, the ground it
+     is fought over with its bonus as shields, and the rank that holds it. */
+  .duelsum{display:inline-flex; align-items:center; flex:none; gap:.45rem;
+           margin-left:.5rem;
+           padding:.2rem .5rem; border:1px solid var(--line); border-radius:7px;
+           vertical-align:middle}
+  .duelsum .seatdot{flex:none; width:12px; height:12px; border-radius:50%;
+           box-shadow:0 0 0 1.5px rgba(0,0,0,.35)}
+  .duelsum .gl{flex:none; width:17px; height:17px; fill:var(--ink-soft); display:block}
+  .duelsum .vs{display:flex; opacity:.75}
+  .duelsum .ground{flex:none; display:inline-flex; align-items:center;
+           justify-content:center; gap:1px; min-width:24px; height:22px;
+           padding:0 .22rem; border-radius:4px; background:var(--terr)}
+  .duelsum .ground .sh{width:12px; height:13px; fill:rgba(255,255,255,.92)}
+  /* The answer is a card, so the number you need is drawn on one. */
+  .duelsum .needcard{flex:none; display:inline-flex; align-items:baseline; gap:1px;
+           padding:.1rem .34rem; border:1.5px solid #C0392B; border-radius:4px;
+           color:#C0392B; font-weight:700; line-height:1.1}
+  .duelsum .needcard em{font-style:normal; font-size:.78em}
+  /* The wall being stormed, and the second card the assault still needs. */
+  .duelsum .wall{flex:none; position:relative; display:inline-flex}
+  .duelsum .wall .gl{fill:var(--stone)}
+  .duelsum .wall .coin{position:absolute; right:-3px; bottom:-2px; width:9px;
+           height:9px; border-radius:50%; background:#E8C25A;
+           box-shadow:0 0 0 1.2px #9B7A16}
+  .duelsum .plus{flex:none; font-weight:700; color:var(--ink-soft)}
+  .duelsum .slot2{flex:none; display:inline-flex; align-items:center;
+           justify-content:center; width:20px; height:26px; border-radius:3px;
+           border:1.5px dashed var(--line); color:var(--ink-soft);
+           font-weight:700; font-size:.8rem}
+  /* The fight on the map: the target pulses, the attacker's own tiles beside it
+     are ringed, and an arrow runs between them — all in the attacker's colour. */
+  .tile.from{stroke:var(--fight,#C0392B); stroke-width:3; stroke-dasharray:5 3;
+             opacity:1}
+  .raid{stroke-width:3; stroke-linecap:round; opacity:.85}
+  .raidhead{opacity:.9}
+  @media (prefers-reduced-motion:reduce){ .raid{opacity:1} }
   .ghost{fill:#fff; fill-opacity:.28; stroke:var(--line); stroke-width:1;
     stroke-dasharray:4 3}
   .ghost.hot{fill-opacity:.6; stroke:#111; stroke-width:2.5; cursor:pointer}
@@ -532,32 +565,72 @@
     color:var(--mut)}
 
   .tiers{border:1px solid var(--line); border-radius:5px; overflow:hidden}
-  .tier-row{display:flex; align-items:center; gap:8px; padding:2px 6px;
+  /* GRID, NOT FLEX. Six columns of per-item widths drifted out of alignment
+     the moment any of them wrapped, which is what made this table look
+     misformatted. A grid template makes every row line up by construction, and
+     the whole thing is one declaration to change. */
+  .tier-row{display:grid; align-items:center; gap:7px; padding:3px 6px;
+    grid-template-columns:34px 26px 96px 1fr auto 40px;
     border-bottom:1px solid #E7E3D8; font-size:11px; color:var(--mut)}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}
-  .mlim{width:17px; height:17px; flex:none; border:1px solid #2A2E2B; border-radius:3px;
-    background:#fff; text-align:center; font-weight:700; font-size:11px; color:var(--ink);
-    line-height:16px}
-  .tname{width:88px; flex:none; font-weight:600; color:var(--ink)}
+  /* MELD, as a fan of that many cards - the same shape the printed board uses,
+     shrunk. The number rides the top card, exactly as it does on paper. */
+  .fan{position:relative; display:block; height:20px; width:34px}
+  .fan i{position:absolute; top:0; width:9px; height:14px; border-radius:1.5px;
+    background:#fff; border:1px solid #2A2E2B; transform-origin:50% 90%}
+  .fan i b{position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:9px; font-weight:700; color:var(--ink)}
+  .tier-row.head .fan, .tier-row.head .corner, .tier-row.head .stride{display:none}
+  /* BUY UP TO, as a card's index corner: an L with the rank inside it. */
+  .corner{position:relative; display:block; width:24px; height:18px;
+    border-left:1.5px solid var(--ink); border-top:1.5px solid var(--ink);
+    border-radius:2px 0 0 0}
+  .corner b{position:absolute; inset:0; display:flex; align-items:center;
+    justify-content:center; font-size:11px; font-weight:700}
+  /* MOVES, as a number and a stride. */
+  .stride{display:inline-flex; align-items:center; gap:2px; color:var(--mut)}
+  .stride b{font-size:12px; font-weight:700; color:var(--ink)}
+  .stride svg{width:15px; height:10px}
+  /* The name reaches across to the reserve it governs, the way the printed
+     board's lead line does. */
+  .tname{position:relative; padding-right:12px; font-weight:600; color:var(--ink)}
+  .tname .lead{position:absolute; right:0; top:50%; width:9px; height:1px;
+    background:var(--line)}
+  .tname .lead::after{content:""; position:absolute; right:0; top:-2.5px;
+    border-left:3px solid var(--line); border-top:2.5px solid transparent;
+    border-bottom:2.5px solid transparent}
   .tier-row:not(.here) .tname{color:var(--mut)}
   .tname em{font-style:normal; font-weight:400; font-size:9.5px; color:var(--mut);
     margin-left:4px}
-  .uslots{flex:1; display:flex; gap:3px; min-width:96px}
-  .uslot{width:11px; height:11px; border-radius:50%; border:1px dashed #B9B4A8;
-    display:inline-block}
+  /* ...and one faint arrow down the whole reserve, saying which end you take
+     from. Drawn on the track rather than per row, like the printed board. */
+  .tiers{position:relative}
+  .tiers::after{content:""; position:absolute; left:0; top:26px; bottom:6px;
+    width:0; border-left:1px solid var(--line); margin-left:150px}
+  .uslots{display:flex; gap:3px; min-width:0; position:relative}
+  .uslot{flex:none; width:11px; height:11px; border-radius:50%;
+    border:1px dashed #B9B4A8; display:inline-block}
   .uslot.full{border:1px solid #1C1F1D; border-style:solid}
-  .food{width:56px; flex:none; display:flex; gap:2px; align-items:center}
+  /* The feed slots. Right-aligned so the row of coins grows leftward from a
+     fixed edge and every tier's slots share one baseline. */
+  .food{display:flex; gap:3px; align-items:center; justify-content:flex-end;
+    min-width:52px}
   .food .free{font-style:italic; font-size:9.5px}
-  .food b{font-weight:700; color:var(--ink)}
-  .tier-row:not(.here) .food b{color:var(--mut); font-weight:600}
-  .cslot{width:9px; height:9px; border-radius:50%; border:1px solid #C9992B;
-    background:#FBF3DC; display:inline-block}
-  .mv{width:30px; flex:none; font-weight:600; color:var(--ink)}
+  .cslot{flex:none; width:11px; height:11px; border-radius:50%;
+    border:1.5px dashed #C9A22B; background:transparent; display:inline-block}
+  /* Money you have not collected yet: a coin with a ring, so it reads as
+     something sitting ON the board rather than something you have spent. */
+  .cslot.asc{border-style:solid; background:#E8C25A;
+    box-shadow:inset 0 0 0 1.5px #FBF3DC}
+  /* Money of yours already committed against the next recycle. */
+  .cslot.paid{border-style:solid; background:#C9992B; border-color:#8A6A12}
+  .tier-row.unclaimed .tname{opacity:.85}
+  .mv{justify-self:end}
   .tier-row:not(.here) .mv{color:var(--mut); font-weight:400}
   .mv em{font-style:normal; font-size:9px; color:var(--mut); margin-left:1px}
-  .cap{width:22px; flex:none; text-align:right; font-weight:600}
+
 
   /* The heading row. Every number in this table used to be unlabelled, with
      its meaning only in a `title` tooltip — invisible on a desktop until you
@@ -570,7 +643,7 @@
   .tier-row.head .tname, .tier-row.head .mv, .tier-row.head .cap,
   .tier-row.head .food{color:var(--hint); font-weight:600}
   .tier-row.head .cap{text-align:right}
-  .tier-row.head .uslots{min-width:96px}
+  .tier-row.head .food{justify-content:flex-end}
 
   /* The countdown to the end of the game. §11 gives you a whole extra round
      after the trigger, which is enough time to do something about it — but only

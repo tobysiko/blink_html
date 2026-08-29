@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-29T06:49:02Z
+ * Built 2026-08-29T09:27:49Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2344,12 +2344,21 @@ class Game {
    * so this is a priced decision, not a guess: beat `against.r - bonus` and
    * the tile holds. Humans are asked; bots follow the policy below.
    */
-  *_duelCard(q, role, tile, against) {
+  *_duelCard(q, role, tile, against, by) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     if (this.isHuman(q.i)) {
+      /* WHERE IT IS COMING FROM. A duel lands on somebody else's turn, so the
+       * first question is not "how much" but "who, and from where" — and the
+       * answer used to require scrolling back to find the acting seat. The
+       * attacker's own tiles next to the target are sent along so the map can
+       * show the fight as a direction rather than a dot. */
+      const from = by === undefined ? [] : tile.neighbours()
+        .filter((u) => u.owner === by && u.units.length)
+        .map((u) => u.key);
       const pick = yield { type: "duel", seat: q.i, role,
                            cell: tile.key, terrain: tile.terrain, bonus,
+                           by: by === undefined ? null : by, from,
                            against: against || null,
                            need: against ? Math.max(0, against.r - bonus) : 0,
                            options: q.hand.slice() };
@@ -2464,7 +2473,7 @@ class Game {
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     const aCard = attack;
-    const dCard = yield* this._duelCard(d, "defend", tile, aCard);
+    const dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
     const spend = (q, c) => {
       if (!c) return;
       const i = q.hand.indexOf(c);

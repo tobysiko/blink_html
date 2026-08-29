@@ -75,6 +75,22 @@ function run(seed, n, seat, retire, deck, obj, cb) {
           fail.push('duel: the marked tile is not the one being fought over');
         if (w.eval('REQ.against') && !q('.duelsum'))
           fail.push('duel: the attacking card is not shown beside the question');
+        /* Where it is coming FROM, drawn rather than named — the attacker's own
+         * tiles ringed and an arrow running to the target. Only asserted when
+         * the engine actually reported an origin. */
+        if ((w.eval('(REQ.from || []).length') || 0) > 0) {
+          const rings = qa('#map .from').length;
+          const arrows = qa('#map .raid').length;
+          if (!rings) fail.push('duel: the attacker\'s own tiles are not marked');
+          if (!arrows) fail.push('duel: no arrow shows which way the attack runs');
+        }
+        /* And the readout is a picture, not a sentence: a card face and the
+         * ground, with no rank spelled out in prose. */
+        if (w.eval('REQ.against')) {
+          if (!q('.duelsum .cf')) fail.push('duel: the attacking card is not a card face');
+          if (!q('.duelsum .ground')) fail.push('duel: the ground is not shown');
+          if (!q('.duelsum .needcard')) fail.push('duel: the rank needed is not shown');
+        }
       }
       if (['retire', 'discard', 'bonus', 'duel'].includes(type)) {
         const want = qa('#hand button.want').length;

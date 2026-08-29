@@ -154,7 +154,10 @@ setTimeout(() => {
         const c = q('#mymeld button[data-aside]');
         if (c) click(c);
         else click(qa('#prompt button').find((b) => !b.disabled));
-      } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
+      } else if (w.eval('REQ && REQ.type') === 'duel') {
+      /* Matched on the REQUEST, not on the sentence. The duel prompt is a
+       * picture now — a card face, the ground, the rank needed — with four
+       * words beside it, and both of those change with the language. */
         /* A duel is a turn request, so it must be undoable like any other —
          * that is the whole point of this file. Commit a card, or decline. */
         const c = qa('#hand button')[0];

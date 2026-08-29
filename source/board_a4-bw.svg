@@ -23,102 +23,101 @@
 <text x="48.00" y="21.00" font-family="IBM Plex Sans" font-size="5" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
 <text x="283.00" y="20.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6E6E6E" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.24 · units 13 mm</text>
 <line x1="14.0" y1="25.0" x2="283.0" y2="25.0" stroke="#2D2D2D" stroke-width="0.5"/>
-<text x="22.00" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6E6E6E" text-anchor="middle" font-weight="400" letter-spacing="0.4" style="">MELD</text>
-<text x="36.50" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6E6E6E" text-anchor="middle" font-weight="400" letter-spacing="0.4" style="">CAP</text>
-<text x="74.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">RESERVE</text>
-<text x="167.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6B6B6B" text-anchor="start" font-weight="600" letter-spacing="0.6" style="">FOOD</text>
-<text x="223.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">MV</text>
-<text x="238.00" y="30.00" font-family="IBM Plex Mono" font-size="3.8" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.6" style="">ASCEND</text>
+<text x="16.00" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">MELD</text>
+<text x="55.00" y="30.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">BUY UP TO</text>
+<text x="122.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">RESERVE</text>
+<text x="236.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6B6B6B" text-anchor="middle" font-weight="600" letter-spacing="0.6" style="">FOOD</text>
+<text x="274.00" y="30.00" font-family="IBM Plex Mono" font-size="4.2" fill="#6E6E6E" text-anchor="middle" font-weight="400" letter-spacing="0.6" style="">MOVES</text>
 <rect x="14.0" y="34.25" width="267.0" height="15.5" rx="2.4" fill="#ECECEC" stroke="#C7C7C7" stroke-width="0.4"/>
-<rect x="163.0" y="34.25" width="55.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
-<rect x="16.0" y="35.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
-<text x="22.00" y="44.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
-<text x="36.50" y="44.40" font-family="IBM Plex Sans" font-size="7" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">12</text>
-<text x="44.00" y="40.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Tribe</text>
-<text x="44.00" y="45.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">2 units</text>
-<circle cx="106.00" cy="42.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="123.00" cy="42.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<text x="173.00" y="43.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">free</text>
-<rect x="223.0" y="37.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
-<text x="228.00" y="44.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">1</text>
-<text x="244.00" y="43.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">—</text>
+<rect x="212.0" y="34.25" width="48.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
+<g transform="rotate(-14.0 19.50 47.25)"><rect x="16.00" y="36.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(14.0 23.90 47.25)"><rect x="20.40" y="36.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/><text x="23.90" y="44.60" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">2</text></g>
+<path d="M55.00 48.00 L55.00 37.80 Q55.00 36.00 56.80 36.00 L70.00 36.00" fill="none" stroke="#2D2D2D" stroke-width="0.7" stroke-linecap="round"/><path d="M70.00 48.00 l-3.5 0" fill="none" stroke="#B4B4B4" stroke-width="0.7" stroke-linecap="round"/><text x="63.10" y="44.60" font-family="IBM Plex Sans" font-size="7.0" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">12</text>
+<text x="74.00" y="40.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Tribe</text>
+<text x="74.00" y="45.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">2 units</text>
+<path d="M108.0 42.0 L111.0 42.0" fill="none" stroke="#B4B4B4" stroke-width="0.4"/>
+<path d="M108.8 40.4 l2.2 1.6 l-2.2 1.6" fill="none" stroke="#B4B4B4" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="128.50" cy="42.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="145.50" cy="42.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<text x="236.00" y="43.50" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="middle" font-weight="400" letter-spacing="0" style="font-style:italic">free</text>
+<text x="269.50" y="44.40" font-family="IBM Plex Sans" font-size="7.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">1</text>
+<path d="M274.5 42.0 l7 0 M279.1 39.4 l2.6 2.6 l-2.6 2.6" fill="none" stroke="#6E6E6E" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
 <rect x="14.0" y="51.25" width="267.0" height="15.5" rx="2.4" fill="#FAFAFA" stroke="#C7C7C7" stroke-width="0.4"/>
-<rect x="163.0" y="51.25" width="55.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
-<rect x="16.0" y="52.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
-<text x="22.00" y="61.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
-<text x="36.50" y="61.40" font-family="IBM Plex Sans" font-size="7" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">14</text>
-<text x="44.00" y="57.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Settlement</text>
-<text x="44.00" y="62.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">3 units</text>
-<circle cx="97.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="114.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="131.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="171.50" cy="59.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="171.50" cy="59.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<rect x="223.0" y="54.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
-<text x="228.00" y="61.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
-<circle cx="242.50" cy="59.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="242.50" cy="59.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<rect x="212.0" y="51.25" width="48.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
+<g transform="rotate(-14.0 19.50 64.25)"><rect x="16.00" y="53.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(0.0 23.90 64.25)"><rect x="20.40" y="53.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(14.0 28.30 64.25)"><rect x="24.80" y="53.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/><text x="28.30" y="61.60" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">3</text></g>
+<path d="M55.00 65.00 L55.00 54.80 Q55.00 53.00 56.80 53.00 L70.00 53.00" fill="none" stroke="#2D2D2D" stroke-width="0.7" stroke-linecap="round"/><path d="M70.00 65.00 l-3.5 0" fill="none" stroke="#B4B4B4" stroke-width="0.7" stroke-linecap="round"/><text x="63.10" y="61.60" font-family="IBM Plex Sans" font-size="7.0" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">14</text>
+<text x="74.00" y="57.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Settlement</text>
+<text x="74.00" y="62.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">3 units</text>
+<path d="M108.0 59.0 L111.0 59.0" fill="none" stroke="#B4B4B4" stroke-width="0.4"/>
+<path d="M108.8 57.4 l2.2 1.6 l-2.2 1.6" fill="none" stroke="#B4B4B4" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="128.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="145.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="162.50" cy="59.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="236.00" cy="59.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="236.00" cy="59.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<path d="M232.50 64.90 l0 1.2 L239.50 66.10 l0 -1.2" fill="none" stroke="#6B6B6B" stroke-width="0.4"/>
+<text x="269.50" y="61.40" font-family="IBM Plex Sans" font-size="7.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">2</text>
+<path d="M274.5 59.0 l7 0 M279.1 56.4 l2.6 2.6 l-2.6 2.6" fill="none" stroke="#6E6E6E" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
 <rect x="14.0" y="68.25" width="267.0" height="15.5" rx="2.4" fill="#ECECEC" stroke="#C7C7C7" stroke-width="0.4"/>
-<rect x="163.0" y="68.25" width="55.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
-<rect x="16.0" y="69.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
-<text x="22.00" y="78.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
-<text x="36.50" y="78.40" font-family="IBM Plex Sans" font-size="7" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">16</text>
-<text x="44.00" y="74.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Kingdom</text>
-<text x="44.00" y="79.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
-<circle cx="80.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="97.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="114.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="131.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="148.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="171.50" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="171.50" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="183.50" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="183.50" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<rect x="223.0" y="71.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
-<text x="228.00" y="78.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
-<circle cx="242.50" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="242.50" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="253.00" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="253.00" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<rect x="212.0" y="68.25" width="48.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
+<g transform="rotate(-14.0 19.50 81.25)"><rect x="16.00" y="70.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(-4.7 23.90 81.25)"><rect x="20.40" y="70.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(4.7 28.30 81.25)"><rect x="24.80" y="70.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(14.0 32.70 81.25)"><rect x="29.20" y="70.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/><text x="32.70" y="78.60" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">4</text></g>
+<path d="M55.00 82.00 L55.00 71.80 Q55.00 70.00 56.80 70.00 L70.00 70.00" fill="none" stroke="#2D2D2D" stroke-width="0.7" stroke-linecap="round"/><path d="M70.00 82.00 l-3.5 0" fill="none" stroke="#B4B4B4" stroke-width="0.7" stroke-linecap="round"/><text x="63.10" y="78.60" font-family="IBM Plex Sans" font-size="7.0" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">16</text>
+<text x="74.00" y="74.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Kingdom</text>
+<text x="74.00" y="79.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
+<path d="M108.0 76.0 L111.0 76.0" fill="none" stroke="#B4B4B4" stroke-width="0.4"/>
+<path d="M108.8 74.4 l2.2 1.6 l-2.2 1.6" fill="none" stroke="#B4B4B4" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="128.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="145.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="162.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="179.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="196.50" cy="76.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="230.75" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="230.75" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="241.25" cy="76.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="241.25" cy="76.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<path d="M227.25 81.90 l0 1.2 L244.75 83.10 l0 -1.2" fill="none" stroke="#6B6B6B" stroke-width="0.4"/>
+<text x="269.50" y="78.40" font-family="IBM Plex Sans" font-size="7.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">3</text>
+<path d="M274.5 76.0 l7 0 M279.1 73.4 l2.6 2.6 l-2.6 2.6" fill="none" stroke="#6E6E6E" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
 <rect x="14.0" y="85.25" width="267.0" height="15.5" rx="2.4" fill="#FAFAFA" stroke="#C7C7C7" stroke-width="0.4"/>
-<rect x="163.0" y="85.25" width="55.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
-<rect x="16.0" y="86.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
-<text x="22.00" y="95.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
-<text x="36.50" y="95.40" font-family="IBM Plex Sans" font-size="7" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">18</text>
-<text x="44.00" y="91.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Empire</text>
-<text x="44.00" y="96.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
-<circle cx="80.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="97.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="114.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="131.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="148.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="171.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="171.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="183.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="183.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="195.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="195.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<rect x="223.0" y="88.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
-<text x="228.00" y="95.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
-<circle cx="242.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="242.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="253.00" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="253.00" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="263.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="263.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<rect x="212.0" y="85.25" width="48.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
+<g transform="rotate(-14.0 19.50 98.25)"><rect x="16.00" y="87.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(-7.0 23.90 98.25)"><rect x="20.40" y="87.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(0.0 28.30 98.25)"><rect x="24.80" y="87.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(7.0 32.70 98.25)"><rect x="29.20" y="87.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(14.0 37.10 98.25)"><rect x="33.60" y="87.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/><text x="37.10" y="95.60" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">5</text></g>
+<path d="M55.00 99.00 L55.00 88.80 Q55.00 87.00 56.80 87.00 L70.00 87.00" fill="none" stroke="#2D2D2D" stroke-width="0.7" stroke-linecap="round"/><path d="M70.00 99.00 l-3.5 0" fill="none" stroke="#B4B4B4" stroke-width="0.7" stroke-linecap="round"/><text x="63.10" y="95.60" font-family="IBM Plex Sans" font-size="7.0" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">18</text>
+<text x="74.00" y="91.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Empire</text>
+<text x="74.00" y="96.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
+<path d="M108.0 93.0 L111.0 93.0" fill="none" stroke="#B4B4B4" stroke-width="0.4"/>
+<path d="M108.8 91.4 l2.2 1.6 l-2.2 1.6" fill="none" stroke="#B4B4B4" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="128.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="145.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="162.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="179.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="196.50" cy="93.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="225.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="225.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="236.00" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="236.00" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="246.50" cy="93.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="246.50" cy="93.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<path d="M222.00 98.90 l0 1.2 L250.00 100.10 l0 -1.2" fill="none" stroke="#6B6B6B" stroke-width="0.4"/>
+<text x="269.50" y="95.40" font-family="IBM Plex Sans" font-size="7.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">4</text>
+<path d="M274.5 93.0 l7 0 M279.1 90.4 l2.6 2.6 l-2.6 2.6" fill="none" stroke="#6E6E6E" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
 <rect x="14.0" y="102.25" width="267.0" height="15.5" rx="2.4" fill="#ECECEC" stroke="#C7C7C7" stroke-width="0.4"/>
-<rect x="163.0" y="102.25" width="55.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
-<rect x="16.0" y="103.5" width="12" height="13.0" rx="2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.6"/>
-<text x="22.00" y="112.40" font-family="IBM Plex Sans" font-size="8" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">6</text>
-<text x="36.50" y="112.40" font-family="IBM Plex Sans" font-size="7" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">20</text>
-<text x="44.00" y="108.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Civilization</text>
-<text x="44.00" y="113.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
-<circle cx="80.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="97.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="114.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="131.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="148.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
-<circle cx="171.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="171.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="183.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="183.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="195.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="195.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="207.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="207.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<rect x="223.0" y="105.0" width="10" height="10.0" rx="2" fill="#FAFAFA" stroke="#6E6E6E" stroke-width="0.5"/>
-<text x="228.00" y="112.20" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
-<circle cx="242.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="242.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="253.00" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="253.00" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="263.50" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="263.50" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<circle cx="274.00" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="274.00" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
-<line x1="160.0" y1="34.25" x2="160.0" y2="117.75" stroke="#C7C7C7" stroke-width="0.4"/>
-<text x="14.00" y="130.00" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">MELD = most cards you may play in a round · CAP = highest rank you may buy, +2 a tier · MV = your free moves</text>
-<text x="14.00" y="134.40" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">FOOD is NOT cumulative: each recycle you pay your CURRENT tier · ASCEND taken once, on arrival · RESERVE empties top down</text>
+<rect x="212.0" y="102.25" width="48.0" height="15.5" fill="#D9D9D9" fill-opacity="0.3"/>
+<g transform="rotate(-14.0 19.50 115.25)"><rect x="16.00" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(-8.4 23.90 115.25)"><rect x="20.40" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(-2.8 28.30 115.25)"><rect x="24.80" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(2.8 32.70 115.25)"><rect x="29.20" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(8.4 37.10 115.25)"><rect x="33.60" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/></g><g transform="rotate(14.0 41.50 115.25)"><rect x="38.00" y="104.75" width="7.0" height="10.5" rx="1.2" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="0.5"/><text x="41.50" y="112.60" font-family="IBM Plex Sans" font-size="6.5" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">6</text></g>
+<path d="M55.00 116.00 L55.00 105.80 Q55.00 104.00 56.80 104.00 L70.00 104.00" fill="none" stroke="#2D2D2D" stroke-width="0.7" stroke-linecap="round"/><path d="M70.00 116.00 l-3.5 0" fill="none" stroke="#B4B4B4" stroke-width="0.7" stroke-linecap="round"/><text x="63.10" y="112.60" font-family="IBM Plex Sans" font-size="7.0" fill="#2D2D2D" text-anchor="middle" font-weight="700" letter-spacing="0" style="">20</text>
+<text x="74.00" y="108.70" font-family="IBM Plex Sans" font-size="4.0" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">Civilization</text>
+<text x="74.00" y="113.60" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">5 units</text>
+<path d="M108.0 110.0 L111.0 110.0" fill="none" stroke="#B4B4B4" stroke-width="0.4"/>
+<path d="M108.8 108.4 l2.2 1.6 l-2.2 1.6" fill="none" stroke="#B4B4B4" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="128.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="145.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="162.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="179.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="196.50" cy="110.00" r="6.50" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>
+<circle cx="220.25" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="220.25" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="230.75" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="230.75" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="241.25" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="241.25" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<circle cx="251.75" cy="110.00" r="4.50" fill="#FAFAFA" stroke="#9B9B9B" stroke-width="0.7"/><circle cx="251.75" cy="110.00" r="2.50" fill="none" stroke="#D9D9D9" stroke-width="0.6"/>
+<path d="M216.75 115.90 l0 1.2 L255.25 117.10 l0 -1.2" fill="none" stroke="#6B6B6B" stroke-width="0.4"/>
+<text x="269.50" y="112.40" font-family="IBM Plex Sans" font-size="7.5" fill="#2D2D2D" text-anchor="middle" font-weight="600" letter-spacing="0" style="">5</text>
+<path d="M274.5 110.0 l7 0 M279.1 107.4 l2.6 2.6 l-2.6 2.6" fill="none" stroke="#6E6E6E" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M116.0 33.2 L116.0 113.7" fill="none" stroke="#B4B4B4" stroke-width="0.5"/>
+<path d="M114.2 112.8 L116.0 116.2 L117.8 112.8" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
+<line x1="209.0" y1="34.25" x2="209.0" y2="117.75" stroke="#C7C7C7" stroke-width="0.4"/>
+<text x="14.00" y="130.00" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">MELD = cards you may play in a round · BUY UP TO = highest rank you may take · MOVES = free moves each turn</text>
+<text x="14.00" y="134.40" font-family="IBM Plex Mono" font-size="3.3" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">FOOD slots hold that tier's ASCENSION coins — take them on arrival, then feed the same slots each recycle · RESERVE empties top down</text>
 <text x="14.00" y="140.50" font-family="IBM Plex Mono" font-size="3.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0.4" style="">ROUND</text>
 <text x="36.00" y="140.50" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  Declare A effects, blind   →   2  Leader plays a meld, then clockwise   →   3  Highest TOTAL wins the trick</text>
 <text x="36.00" y="144.80" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">4  Spend melds in initiative order — on your turn, see right   →   5  Trick winner leads the next round</text>
@@ -140,8 +139,8 @@
 <text x="106.00" y="177.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">gold breaks ties</text>
 <text x="196.00" y="154.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">YOUR TURN</text>
 <text x="230.00" y="154.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="">— in any order</text>
-<text x="196.00" y="160.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Each card: settle · explore · attack · take 1 gold</text>
-<text x="196.00" y="165.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Move: up to MV, by land or by sea</text>
+<text x="196.00" y="160.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Each card: settle · explore · attack · cash</text>
+<text x="196.00" y="165.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Move: up to your MOVES, by land or by sea</text>
 <text x="196.00" y="169.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Research: twice — 1 gold, then 2</text>
 <text x="196.00" y="173.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Fortify: 1 gold on one of your units</text>
 <text x="196.00" y="177.30" font-family="IBM Plex Mono" font-size="3.0" fill="#2D2D2D" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Colony (B): one victory card · C: any time</text>

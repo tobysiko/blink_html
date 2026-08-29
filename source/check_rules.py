@@ -367,7 +367,12 @@ check(re.search(r"Research: twice", board_txt),
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
 check(re.search(r"Research: twice \u2014 1 gold, then 2|Research: twice — 1 gold, then 2", board_txt),
       "the board does not print the 1-then-2 research price")
-for item in ["Fortify: 1 gold", "Move: up to MV", "refill to 10"]:
+# "MV" and the meld chip looked like the same small numbered box from across a
+# table, which is a poor way to draw the two numbers a player uses most. MOVES
+# is spelled out now, and MELD is a fan of that many cards.
+check("MV" not in board_txt,
+      "the board is abbreviating MOVES again — it reads as another chip")
+for item in ["Fortify: 1 gold", "Move: up to your MOVES", "refill to 10"]:
     check(item in board_txt, f"the board's turn menu is missing: {item}")
 # the unit slots, counted per row: this is the component players actually load
 import collections
@@ -376,6 +381,45 @@ for c in re.finditer(r'<circle[^>]*cy="([\d.]+)"[^>]*r="6.50"', board):
     rows[round(float(c.group(1)), 1)] += 1
 drawn = [n for _, n in sorted(rows.items())]
 check(drawn == UNITS, f"the board draws {drawn} unit slots per tier, engine has {UNITS}")
+
+# the meld fan: one small card per card you may play, counted off the sheet
+fans = re.findall(r'<g transform="rotate\([^"]*"><rect[^>]*width="7\.0"', board)
+melds_js = [int(m) for m in re.findall(r'\["\w+", \d+, (\d+),', js)]
+check(len(fans) == sum(melds_js),
+      f"the board fans {len(fans)} cards across the five tiers; the engine's "
+      f"meld limits total {sum(melds_js)}")
+# A tier NAME points at the reserve it governs - one lead line per row - and a
+# single faint arrow runs down the column to say which end you take from. That
+# last rule is the only one on this board with no number to print, so if the
+# arrow goes it goes silently.
+leads = re.findall(r'<path d="M[\d.]+ [\d.]+ L[\d.]+ [\d.]+" fill="none" '
+                   r'stroke="#B9B4A8" stroke-width="0\.4"', board)
+check(len(leads) == len(UNITS),
+      f"{len(leads)} tier names point at their reserve row; there are {len(UNITS)} tiers")
+check(re.search(r'<path d="M[\d.]+ [\d.]+ L[\d.]+ [\d.]+ L[\d.]+ [\d.]+" '
+                r'fill="none" stroke="#B9B4A8" stroke-width="0\.6"', board),
+      "the reserve has lost the arrow that says which end to take units from")
+
+# CAP is drawn as the INDEX CORNER of a card, one per tier, each carrying its
+# own rank. A bare number was the one column on this board with no shape at all.
+corners = re.findall(r'<path d="M[\d.]+ [\d.]+ L[\d.]+ [\d.]+ Q[^"]*"\s*'
+                     r'fill="none" stroke="#2A2E2B"', board)
+check(len(corners) == len(CAPS),
+      f"the board draws {len(corners)} rank corners for {len(CAPS)} tiers")
+# The HEADING, not just the glossary: reverting the column label alone left the
+# explanatory line behind and the first version of this check passed anyway.
+check(not re.search(r">\s*CAP\s*<", board),
+      "the board still heads the rank column CAP - the app calls it 'buy up to'")
+check("BUY UP TO" in board_txt,
+      "the rank column has lost its heading")
+
+# ...and the count is printed on the top card of each fan, so the number can be
+# read without counting the cards
+for limit in melds_js:
+    check(re.search(rf'<rect[^>]*width="7\.0"[^>]*/>\s*<text[^>]*>{limit}</text>',
+                    board),
+          f"the meld fan for a limit of {limit} does not carry the number on its "
+          "top card")
 
 # ------------------------------------------------------------------ combat
 # The duel is the newest rule in the book and the one with a number per terrain,
@@ -429,7 +473,7 @@ if rank:
 # well as the meld card they had already spent, which is not what anybody
 # expects and left the rank of the spent card doing nothing at all. Both halves
 # are pinned, because the engine and the book drifted apart here once already.
-check(re.search(r"\*_duelCard\(q, role, tile, against\)", js),
+check(re.search(r"\*_duelCard\(q, role, tile, against(?:, by)?\)", js),
       "the defender is no longer told what they are answering")
 check("_duelCard(p, \"attack\"" not in js,
       "the attacker is being asked for a card from hand again")

@@ -104,7 +104,10 @@ setTimeout(() => {
       const c = q('#mymeld button[data-aside]');
       if (steps % 4 === 0 || !c) { const d = btn(/Call it off|Abbrechen/); if (d) click(d); }
       else click(c);
-    } else if (/Your attack|attacking your|Dein Angriff|Angriff auf dein/.test(t)) {
+    } else if (w.eval('REQ && REQ.type') === 'duel') {
+      /* Matched on the REQUEST, not on the sentence. The duel prompt is a
+       * picture now — a card face, the ground, the rank needed — with four
+       * words beside it, and both of those change with the language. */
       /* A duel. Commit a card most of the time, decline sometimes — both are
        * legal answers and both have to survive the round trip through the
        * report, or a replayed game diverges the moment somebody fights. */
