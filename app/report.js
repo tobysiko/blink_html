@@ -145,6 +145,27 @@ function reportFlag(rep, g, req, note) {
   return f;
 }
 
+/* A FLAG MUST OUTLIVE THE GAME IT WAS RAISED IN.
+ *
+ * A report belongs to one game, and starting another builds a fresh one — so
+ * anything flagged and then not carried through to the feedback form was
+ * dropped on the floor, without a word. That is the worst possible thing to do
+ * with it: a flag is a sentence a person stopped playing to type, and it is
+ * worth more than the game state around it. A report arrived with a full
+ * feedback form and `flags: []`, which is exactly this.
+ *
+ * So unsent flags move to the next report. They keep the id and seed of the
+ * game they were raised in, because "round 3" means nothing without knowing
+ * which game's round 3 — and `carried` marks them so nobody reads them as
+ * observations about the game they arrive attached to. */
+function carryFlags(from, to) {
+  if (!from || !to || from.sent) return to;
+  for (const f of from.flags || [])
+    to.flags.push(Object.assign({}, f, { carried: true,
+      game: from.id, seed: from.setup && from.setup.seed }));
+  return to;
+}
+
 /* --- when it is over --------------------------------------------------- */
 
 function reportFinish(rep, g) {
@@ -182,6 +203,6 @@ function reportFilename(rep) {
 }
 
 if (typeof module !== "undefined" && module.exports)
-  module.exports = { REPORT_SCHEMA, shortId, newReport, reportAsked, reportAnswered,
+  module.exports = { REPORT_SCHEMA, shortId, newReport, carryFlags, reportAsked, reportAnswered,
                      reportUndone, reportFlag, reportFinish, reportFeedback,
                      reportSize, reportFilename };

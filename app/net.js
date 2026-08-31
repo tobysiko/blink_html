@@ -42,8 +42,30 @@ function netToken(code, set) {
  * entirely. A relative setting is resolved against the page, which is what you
  * want when the two ship together: no domain baked into the build, and preview
  * deployments talk to their own copy rather than to production. */
-function netApi() {
+/* IS THERE A SERVER WE CAN ACTUALLY REACH? One answer, used by both the table
+ * panel and the report endpoint, because they are the same question.
+ *
+ * An ABSOLUTE setting names a host and works from anywhere, including a page
+ * opened from a file. A RELATIVE one means "the site that served this page",
+ * which a file:// page cannot resolve — it has no origin to join it to. So a
+ * standalone download has no table and no endpoint, which is correct: it must
+ * work with no network at all, and it falls back to handing the player their
+ * report as a file.
+ *
+ * The default matters. A page served over http with nothing configured still
+ * knows where its API is, because vercel.json rewrites /api/blink/:path* to
+ * the function on the same origin. That is what stops this from being a
+ * build-time setting anybody can forget — and it was forgotten, for months. */
+function apiBase() {
   const raw = (BUILD.api || "").replace(/\/$/, "");
+  if (/^https?:\/\//.test(raw)) return raw;
+  const served = typeof location !== "undefined"
+    && /^https?:$/.test(location.protocol);
+  return served ? (raw || "/api/blink") : "";
+}
+
+function netApi() {
+  const raw = apiBase();
   if (!raw) return "";
   if (/^https?:\/\//.test(raw)) return raw;
   try { return new URL(raw, location.href).href.replace(/\/$/, ""); }

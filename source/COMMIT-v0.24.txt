@@ -43,6 +43,34 @@ RULEBOOK
 - section 07 rewritten for the assault; section 06 for the single attacking
   card; the frontier coin added to section 06 and the tutorial.
 
+PLAYTEST REPORTS - THEY WERE NEVER BEING SENT
+- the deployed page shipped with `reportUrl: null`, so every report a tester
+  submitted was DOWNLOADED to their own machine instead of posted. The page
+  showed no error because there was none from its side. The cause: reportUrl
+  came from BLINK_API, a build-time variable the release script did not set.
+- so the page now works it out at run time. A page served over http knows where
+  its API is - its own origin, which vercel.json already rewrites - and needs
+  no configuration. A file:// page still has no server and still downloads.
+  One apiBase() answers it for both the report endpoint and the table panel,
+  and report_test now loads the page at an https origin and asks it directly.
+- the release script sets BLINK_API and refuses to ship a page without it.
+- flags raised mid-game were lost the moment a new game started: a fresh report
+  replaced the old one, silently. A report arrived with a full feedback form and
+  `flags: []`, which is this. Unsent flags now carry forward, marked, with the
+  id and seed of the game they were raised in.
+- /health now answers the question people actually have - "would a report reach
+  me?" - with `reports` and `notify` alongside `store`. Never the webhook URL
+  itself, which is a credential on a public endpoint.
+
+PLAYER BOARD
+- the app board was missing its BUY UP TO column entirely. `.cap` meant three
+  things in one stylesheet - a label on a map tile, the floating caption for a
+  coin, and this column - and the caption's `position:absolute; opacity:0` won.
+  Renamed to .tilecap / .whycap / .capcol.
+- board_test now refuses any class name the tier table shares with the rest of
+  the page, and asks jsdom for the COMPUTED style of every cell, so a column
+  that is present in the DOM but painted out of existence fails the build.
+
 FIXES
 - English players were shown German duel prompts. Three de strings had been
   pasted into the en block, where duplicate keys silently win. i18n_test now

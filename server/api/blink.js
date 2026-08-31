@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-08-29T09:27:49Z
+ * Built 2026-08-31T16:36:37Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -4501,9 +4501,22 @@ const server = http.createServer(async (req, res) => {
   try {
     const hub = await getHub();
 
+    /* Health says whether a REPORT would survive the trip, not just whether the
+     * function is up. Both halves of that are environment variables nobody sees
+     * until they are missing, and both were: a report is kept only if there is
+     * a blob token, and it reaches Discord only if there is a notify URL. Zero
+     * reports arrived for weeks and every visible signal said the service was
+     * fine, because it was — it simply had nowhere to put anything.
+     *
+     * Names only. Never the URL: a Discord webhook is a credential, and this
+     * endpoint is public. */
     if (p === "/" || p === "/health")
       return reply(res, 200, { ok: true, service: "blink-sessions",
-                               protocol: SESSION_PROTOCOL, store: hub.store.kind });
+                               protocol: SESSION_PROTOCOL, store: hub.store.kind,
+                               reports: process.env.BLOB_READ_WRITE_TOKEN
+                                 ? "stored" : "not stored — set BLOB_READ_WRITE_TOKEN",
+                               notify: process.env.BLINK_NOTIFY_URL
+                                 ? "on" : "off — set BLINK_NOTIFY_URL" });
 
     if (p === "/session" && req.method === "POST") {
       const s = await hub.create(await readBody(req));

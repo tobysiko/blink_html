@@ -242,7 +242,8 @@ function startGame(force) {
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
-  REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
+  REP = carryFlags(REP,
+    newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
   IT = null; REQ = null; SEL = blankSel();
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
@@ -716,7 +717,7 @@ function caption(at, text, good, delay) {
   const layer = $("#fx");
   if (!layer || !at || !text) return;
   setTimeout(() => {
-    const n = el("div", "cap" + (good ? " good" : " bad"));
+    const n = el("div", "whycap" + (good ? " good" : " bad"));
     n.textContent = text;
     n.style.transform = `translate(${at.x}px, ${at.y}px)`;
     layer.appendChild(n);
@@ -1068,7 +1069,7 @@ function renderMap() {
     }
     if (t.gold) s += `<circle class="coin" cx="${d.cx + 15}" cy="${d.cy - 14}" r="5"/>`;
     const cap = t.capacityFor(t.owner === null ? ME : t.owner);
-    s += haloText(d.cx, d.cy - 12, "cap", `${n}/${cap}`);
+    s += haloText(d.cx, d.cy - 12, "tilecap", `${n}/${cap}`);
     if (a) s += haloText(d.cx, d.cy + 19, "badge", cellBadge(a));
   }
 
@@ -1421,7 +1422,7 @@ const CROWN = `<svg class="crown" viewBox="0 0 24 16" aria-hidden="true">
  * a meld is a fan of cards, a rank cap is a card's index corner, and moves are
  * a number with a stride. */
 const meldFan = (n) => {
-  let out = '<span class="fan" aria-hidden="true">';
+  let out = '<span class="meldfan" aria-hidden="true">';
   for (let k = 0; k < n; k++) {
     const lean = n > 1 ? -14 + k * (28 / (n - 1)) : 0;
     const last = k === n - 1;
@@ -1431,9 +1432,9 @@ const meldFan = (n) => {
   return out + "</span>";
 };
 const rankCorner = (n) =>
-  `<span class="corner" aria-hidden="true"><b>${n}</b></span>`;
+  `<span class="rankix" aria-hidden="true"><b>${n}</b></span>`;
 const stride = (n) =>
-  `<span class="stride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
+  `<span class="movestride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
   + '<path d="M1 5 h11 M9 1.6 L12.6 5 L9 8.4" fill="none" stroke="currentColor"'
   + ' stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
   + "</svg></span>";
@@ -1680,7 +1681,7 @@ function renderPlayer() {
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
-        <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
+        <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
         <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
@@ -1729,7 +1730,7 @@ function renderPlayer() {
 
     s += `<div class="tier-row${here ? " here" : ""}${claimed ? "" : " unclaimed"}">
       <span class="mlim" title="${t("board.meldLimit")}">${meldFan(meld)}</span>
-      <span class="cap" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
+      <span class="capcol" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
@@ -2461,9 +2462,31 @@ function renderFeedback(bar) {
 /* Post it if there is somewhere to post it, and fall back to a file if not —
  * a playtester who has just written three sentences must never lose them to a
  * network error. */
+/* WHERE A REPORT GOES, decided at run time rather than at build time.
+ *
+ * This was `BUILD.reportUrl` alone, which is set only when BLINK_API is in the
+ * environment of whoever ran the build. Nobody's was: every deployed page went
+ * out with `reportUrl: null`, took the fallback below, and DOWNLOADED the
+ * report to the playtester's own machine instead of sending it. The page said
+ * nothing was wrong, because nothing was wrong from its side. Reports were
+ * quietly piling up in Downloads folders for as long as the site has been up.
+ *
+ * A page served over http already knows where its API is - it is the same
+ * origin, and vercel.json rewrites /api/blink/:path* to the function. So no
+ * configuration is needed for the ordinary case, and there is nothing left to
+ * forget. BLINK_API still wins, for pointing a build at a different host, and
+ * a page opened from a file:// URL still has no server and still downloads. */
+function reportEndpoint() {
+  const u = BUILD.reportUrl;
+  if (u && /^https?:\/\//.test(u)) return u;      // a named host: reachable anywhere
+  const base = apiBase();
+  if (!base) return null;                         // a file has nowhere to post
+  return u || base + "/report";
+}
+
 function finishFeedback() {
   reportFeedback(REP, FB);
-  const url = BUILD.reportUrl;
+  const url = reportEndpoint();
   if (!url) { downloadReport(REP); return Promise.resolve("download"); }
   return fetch(url, { method: "POST", headers: { "content-type": "application/json" },
                       body: JSON.stringify(REP) })
@@ -2782,11 +2805,11 @@ function startNetGame(st) {
   HUMANS = st.humans.slice();
   ME = netMySeat();
   PASSED = ME;                                  // no device is being handed over
-  REP = newReport(BUILD, GARGS, {
+  REP = carryFlags(REP, newReport(BUILD, GARGS, {
     lang: getLang(), session: st.code,
     players: st.seats.map((x) => ({ seat: x.seat, kind: x.taken ? "human" : "bot",
                                     style: null, name: x.name })),
-  });
+  }));
   NETQ = [];
   ZOOM = null; PAN = { x: 0, y: 0 };
   hidePass();
@@ -2903,7 +2926,7 @@ let NET_WIRED = false;
 function netSetup() {
   const box = $("#remote");
   if (!box) return;
-  if (!BUILD.api) { box.hidden = true; return; }   // a local file has no table
+  if (!apiBase()) { box.hidden = true; return; }   // a local file has no table
   box.hidden = false;
   const nameBox = $("#net-name");
   if (!nameBox.value) nameBox.value = defaultName();

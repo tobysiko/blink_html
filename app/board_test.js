@@ -50,7 +50,7 @@ function check() {
   ok(!!head, 'the tier table has no heading row — every number on the player '
      + 'board is unlabelled, and the meanings live in tooltips a phone cannot show');
   if (head) {
-    for (const cls of ['mlim', 'tname', 'uslots', 'food', 'mv', 'cap']) {
+    for (const cls of ['mlim', 'tname', 'uslots', 'food', 'mv', 'capcol']) {
       const cell = head.querySelector('.' + cls);
       ok(cell && txt(cell).length > 0,
          `the \`${cls}\` column has no heading — its numbers mean nothing on sight`);
@@ -98,20 +98,76 @@ function check() {
    * it governs. Drift here is two boards teaching two games. */
   E.BANDS.forEach(([name, , meld, , , , cap], j) => {
     const row = body[j];
-    const cards = row ? row.querySelectorAll('.mlim .fan i').length : -1;
+    const cards = row ? row.querySelectorAll('.mlim .meldfan i').length : -1;
     ok(cards === meld,
        `${name} may play ${meld} cards and its fan draws ${cards}`);
-    const top = row && row.querySelector('.mlim .fan i:last-child b');
+    const top = row && row.querySelector('.mlim .meldfan i:last-child b');
     ok(top && txt(top) === String(meld),
        `${name}'s fan does not carry ${meld} on its top card`);
-    const corner = row && row.querySelector('.cap .corner b');
+    const corner = row && row.querySelector('.capcol .rankix b');
     ok(corner && txt(corner) === String(cap),
        `${name} buys up to ${cap}; its rank corner shows "${corner && txt(corner)}"`);
-    ok(row && row.querySelector('.mv .stride svg'),
+    ok(row && row.querySelector('.mv .movestride svg'),
        `${name} has no stride arrow beside its move count`);
     ok(row && row.querySelector('.tname .lead'),
        `${name} does not reach across to its own reserve row`);
   });
+
+  /* ...AND EVERY CELL HAS TO SURVIVE THE CASSCADE.
+   *
+   * The name check above is the cause; this is the symptom, and it is worth
+   * testing separately because the next collision will have a different cause.
+   * "The player board has parts missing" was reported while every assertion
+   * above passed: the markup was correct and complete, and the paint deleted
+   * it. `.cap` meant three things - a label on a map tile, a floating caption
+   * for a coin, and this column - and the caption's `position:absolute;
+   * opacity:0` won, so BUY UP TO was rendered at zero opacity, out of flow.
+   *
+   * jsdom resolves the cascade, so the board can be asked what it actually
+   * looks like rather than what it contains. */
+  {
+    const gone = [];
+    d.querySelectorAll('.tier-row > *').forEach((cell) => {
+      const s = w.getComputedStyle(cell);
+      const why = s.display === 'none' ? 'display:none'
+        : s.visibility === 'hidden' ? 'visibility:hidden'
+        : parseFloat(s.opacity || '1') < 0.1 ? `opacity:${s.opacity}`
+        : /^(absolute|fixed)$/.test(s.position) ? `position:${s.position}`
+        : null;
+      if (why) gone.push(`.${cell.className.split(' ')[0]} (${why})`);
+    });
+    ok(!gone.length,
+       `these cells are in the DOM but not on the board: ${[...new Set(gone)]}`);
+  }
+
+  /* THE TIER TABLE'S CLASS NAMES MUST BE ITS OWN.
+   *
+   * This is a whole-file app: one <style> block, one namespace. The rank glyph
+   * was first called `.corner` - a name that already belonged to the RIVAL SEAT
+   * PANELS around the map, complete with `grid-area` placements. Five rank
+   * corners were duly laid out as seat panels and disappeared off the board,
+   * while every DOM assertion above kept passing, because the markup was right
+   * and only the paint was wrong.
+   *
+   * So: a class used inside the tier table may not also be worn by anything
+   * outside the player board. The allowlist is for deliberately shared atoms -
+   * a card face is a card face wherever it appears. */
+  {
+    const shared = new Set(['cf', 'mini', 'mid', 'dot', 'coin', 'want', 'sel',
+                            'dead', 'btn', 'muted', 'small', 'here', 'head']);
+    const inside = new Set();
+    d.querySelectorAll('.tiers *').forEach((n) =>
+      n.classList.forEach((c) => inside.add(c)));
+    const outside = new Set();
+    d.querySelectorAll('body *').forEach((n) => {
+      if (n.closest('#player')) return;
+      n.classList.forEach((c) => outside.add(c));
+    });
+    const clash = [...inside].filter((c) => outside.has(c) && !shared.has(c));
+    ok(!clash.length,
+       `the tier table shares class name(s) with the rest of the page: ${clash} `
+       + '- one <style> block means one namespace, and the other rule wins');
+  }
 
   /* ...and the bill in words, for the tier you are on. */
   {
@@ -128,7 +184,7 @@ function check() {
     const mv = txt(body[j] && body[j].querySelector('.mv'));
     ok(digits(mv).includes(moves),
        `${name} gets ${moves} free move(s); its row shows "${mv}"`);
-    const cp = txt(body[j] && body[j].querySelector('.cap'));
+    const cp = txt(body[j] && body[j].querySelector('.capcol'));
     ok(digits(cp).includes(cap),
        `${name} may buy up to rank ${cap}; its row shows "${cp}"`);
   });

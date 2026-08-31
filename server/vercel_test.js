@@ -92,6 +92,19 @@ else {
     let health = null;
     try { health = JSON.parse(h.body); } catch (e) { fail.push('/health is not JSON: ' + h.body.slice(0, 80)); }
     ok(health && health.ok === true, '/health does not report ok');
+    /* Health has to answer "WOULD A REPORT REACH ME?", because that is the
+     * question people actually have, and both halves of the answer live in
+     * environment variables that are invisible until they are missing. Both
+     * were missing. Every visible signal said the service was fine — and it
+     * was; it simply had nowhere to put anything and nobody to tell.
+     * It must never print the webhook itself: that is a credential, and this
+     * endpoint is public. */
+    ok(health && typeof health.notify === 'string',
+       'health does not say whether a report is forwarded anywhere');
+    ok(health && typeof health.reports === 'string',
+       'health does not say whether a report is kept');
+    ok(!/hooks\.|discord\.com|slack\.com/.test(h.body),
+       'health is leaking the notify webhook, which is a credential');
     ok(health && typeof health.store === 'string',
        '/health does not say which store it is using — that is the one thing '
        + 'it is for');

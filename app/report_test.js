@@ -28,6 +28,52 @@ const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 
+/* A PAGE ON A SERVER MUST HAVE SOMEWHERE TO SEND A REPORT.
+ *
+ * The rest of this file runs at about:blank, where there is no server and the
+ * download fallback is correct - which is exactly why it never noticed that
+ * the DEPLOYED page had nowhere to post either. `reportUrl` came from
+ * BLINK_API, an environment variable the release script never set, so every
+ * build shipped with it null and every report a playtester sent landed in
+ * their own Downloads folder. Silently, and for months.
+ *
+ * So the served case is now tested as the served case: same page, an https
+ * origin, and the question asked directly. */
+{
+  const served = new JSDOM(html, { runScripts: 'dangerously',
+    pretendToBeVisual: true, url: 'https://deep-diversions.vercel.app/blink/play.html' });
+  const got = served.window.eval('reportEndpoint()');
+  ok(typeof got === 'string' && /\/report$/.test(got),
+     `a page served over https resolves its report endpoint to ${JSON.stringify(got)} `
+     + '- a report sent from the live site goes nowhere');
+  const local = new JSDOM(html, { runScripts: 'dangerously',
+    pretendToBeVisual: true, url: 'file:///Users/x/play.html' });
+  ok(local.window.eval('reportEndpoint()') === null,
+     'the standalone file thinks it has a server to post to; it must download');
+  served.window.close(); local.window.close();
+}
+
+/* A FLAG SURVIVES THE GAME IT WAS RAISED IN.
+ *
+ * Raised mid-game, then a new game started before the form was ever reached:
+ * the flag used to go with the old report, silently. Tested here on the module
+ * rather than through the page, because it is a fact about reports. */
+{
+  const R = require('./report.js');
+  const B = { version: 'test', commit: 'x' };
+  const A = R.newReport(B, { n: 3, seed: 1, opts: {} }, {});
+  R.reportFlag(A, { round: 4 }, { seat: 0, type: 'play' }, 'the wall made no sense');
+  const Bp = R.carryFlags(A, R.newReport(B, { n: 3, seed: 2, opts: {} }, {}));
+  ok(Bp.flags.length === 1, 'a flag raised in the last game was thrown away');
+  ok(Bp.flags[0] && /wall made no sense/.test(Bp.flags[0].note),
+     'the carried flag lost what the person typed');
+  ok(Bp.flags[0] && Bp.flags[0].carried === true && Bp.flags[0].seed === 1,
+     'a carried flag does not say which game it was about — "round 4" of what?');
+  A.sent = 'post';
+  const C = R.carryFlags(A, R.newReport(B, { n: 3, seed: 3, opts: {} }, {}));
+  ok(C.flags.length === 0, 'flags from an already-sent report are being sent twice');
+}
+
 const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
 const w = dom.window, d = w.document;
 const errs = [];
@@ -219,7 +265,10 @@ setTimeout(() => {
          'the form answers did not reach the report');
       ok(/water advantage/.test(after.feedback.confusing || ''),
          'the free-text answer did not reach the report');
-      if (w.eval('BUILD.reportUrl')) {
+      /* Branch on the decision the page actually makes, not on the setting it
+       * makes it from: BUILD.reportUrl may be a relative path, which is real on
+       * a server and meaningless in this about:blank document. */
+      if (w.eval('reportEndpoint()')) {
         ok(posted.length === 1, 'a build with an endpoint did not post the report');
       } else {
         ok(downloaded === 1, 'with no endpoint the report was not downloaded instead');

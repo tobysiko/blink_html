@@ -526,9 +526,9 @@
   .ghost.hot{fill-opacity:.6; stroke:#111; stroke-width:2.5; cursor:pointer}
   .pip{stroke:#1C1F1D; stroke-width:1.4}
   .coin{fill:#E8C24A; stroke:#7A5C13; stroke-width:1.2}
-  .cap{font-size:10px; fill:#fff; text-anchor:middle; font-family:inherit;
+  .tilecap{font-size:10px; fill:#fff; text-anchor:middle; font-family:inherit;
     pointer-events:none}
-  .cap.halo{fill:none; stroke:#1C1F1D; stroke-width:2.4; stroke-opacity:.5;
+  .tilecap.halo{fill:none; stroke:#1C1F1D; stroke-width:2.4; stroke-opacity:.5;
     stroke-linejoin:round}
   .badge{font-size:10px; font-weight:700; fill:#111; text-anchor:middle;
     font-family:inherit; pointer-events:none}
@@ -570,29 +570,35 @@
      misformatted. A grid template makes every row line up by construction, and
      the whole thing is one declaration to change. */
   .tier-row{display:grid; align-items:center; gap:7px; padding:3px 6px;
-    grid-template-columns:34px 26px 96px 1fr auto 40px;
+    grid-template-columns:34px 26px 84px 1fr auto 40px;
     border-bottom:1px solid #E7E3D8; font-size:11px; color:var(--mut)}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}
   /* MELD, as a fan of that many cards - the same shape the printed board uses,
      shrunk. The number rides the top card, exactly as it does on paper. */
-  .fan{position:relative; display:block; height:20px; width:34px}
-  .fan i{position:absolute; top:0; width:9px; height:14px; border-radius:1.5px;
+  .meldfan{position:relative; display:block; height:20px; width:34px}
+  .meldfan i{position:absolute; top:0; width:9px; height:14px; border-radius:1.5px;
     background:#fff; border:1px solid #2A2E2B; transform-origin:50% 90%}
-  .fan i b{position:absolute; inset:0; display:flex; align-items:center;
+  .meldfan i b{position:absolute; left:0; right:0; top:0; bottom:0;
+    display:flex; align-items:center;
     justify-content:center; font-size:9px; font-weight:700; color:var(--ink)}
-  .tier-row.head .fan, .tier-row.head .corner, .tier-row.head .stride{display:none}
-  /* BUY UP TO, as a card's index corner: an L with the rank inside it. */
-  .corner{position:relative; display:block; width:24px; height:18px;
+  .tier-row.head .meldfan, .tier-row.head .rankix,
+  .tier-row.head .movestride{display:none}
+  /* BUY UP TO, as a card's index corner: an L with the rank inside it.
+     NOT called `.corner` - that name already belongs to the rival seat panels
+     around the map, complete with grid-area placements, so the first version of
+     this put five rank glyphs into the map's corner grid and they vanished. */
+  .rankix{position:relative; display:block; width:24px; height:18px;
     border-left:1.5px solid var(--ink); border-top:1.5px solid var(--ink);
     border-radius:2px 0 0 0}
-  .corner b{position:absolute; inset:0; display:flex; align-items:center;
+  .rankix b{position:absolute; left:0; right:0; top:0; bottom:0;
+    display:flex; align-items:center;
     justify-content:center; font-size:11px; font-weight:700}
   /* MOVES, as a number and a stride. */
-  .stride{display:inline-flex; align-items:center; gap:2px; color:var(--mut)}
-  .stride b{font-size:12px; font-weight:700; color:var(--ink)}
-  .stride svg{width:15px; height:10px}
+  .movestride{display:inline-flex; align-items:center; gap:2px; color:var(--mut)}
+  .movestride b{font-size:12px; font-weight:700; color:var(--ink)}
+  .movestride svg{width:15px; height:10px}
   /* The name reaches across to the reserve it governs, the way the printed
      board's lead line does. */
   .tname{position:relative; padding-right:12px; font-weight:600; color:var(--ink)}
@@ -602,14 +608,20 @@
     border-left:3px solid var(--line); border-top:2.5px solid transparent;
     border-bottom:2.5px solid transparent}
   .tier-row:not(.here) .tname{color:var(--mut)}
-  .tname em{font-style:normal; font-weight:400; font-size:9.5px; color:var(--mut);
-    margin-left:4px}
-  /* ...and one faint arrow down the whole reserve, saying which end you take
-     from. Drawn on the track rather than per row, like the printed board. */
-  .tiers{position:relative}
-  .tiers::after{content:""; position:absolute; left:0; top:26px; bottom:6px;
-    width:0; border-left:1px solid var(--line); margin-left:150px}
-  .uslots{display:flex; gap:3px; min-width:0; position:relative}
+  .tname em{display:block; font-style:normal; font-weight:400; font-size:9px;
+    line-height:1.1; color:var(--mut)}
+  /* ...and one faint spine down the whole reserve, saying which end you take
+     from. Drawn as a border on the reserve CELLS, so it lands on the column by
+     construction - the first version put it at a hand-measured offset from the
+     table's left edge, which is a number that goes wrong the moment any other
+     column changes width. */
+  .uslots{display:flex; gap:3px; min-width:0; position:relative;
+    border-left:1px solid var(--line); padding-left:9px}
+  .tier-row.head .uslots{border-left-color:transparent}
+  /* the arrowhead, once, on the last row */
+  .tier-row:last-child .uslots::before{content:""; position:absolute;
+    left:-4px; bottom:-6px; border-left:3.5px solid transparent;
+    border-right:3.5px solid transparent; border-top:5px solid var(--line)}
   .uslot{flex:none; width:11px; height:11px; border-radius:50%;
     border:1px dashed #B9B4A8; display:inline-block}
   .uslot.full{border:1px solid #1C1F1D; border-style:solid}
@@ -640,9 +652,9 @@
     padding-top:3px; padding-bottom:3px}
   .tier-row.head .mlim{border:none; background:none; font-size:9px; width:17px;
     color:var(--hint); font-weight:600; letter-spacing:0}
-  .tier-row.head .tname, .tier-row.head .mv, .tier-row.head .cap,
+  .tier-row.head .tname, .tier-row.head .mv, .tier-row.head .capcol,
   .tier-row.head .food{color:var(--hint); font-weight:600}
-  .tier-row.head .cap{text-align:right}
+  .tier-row.head .capcol{text-align:right}
   .tier-row.head .food{justify-content:flex-end}
 
   /* The countdown to the end of the game. §11 gives you a whole extra round
@@ -742,21 +754,28 @@
   .ring.bad{border-color:#B33A2E}
   @keyframes ping{from{transform:scale(.5); opacity:.9}
                   to{transform:scale(3.4); opacity:0}}
-  /* The reason a coin moved, floating where it landed. Two or three words, and
+  /* NAMES ARE SCARCE IN A ONE-FILE APP. `.cap` used to mean three things at
+     once: a white label on a map tile, this floating caption, and the RANK CAP
+     column of the player board. Last definition wins, so the board's column
+     inherited `position:absolute` and `opacity:0` and simply was not there —
+     while the DOM held every cell and read correctly. board_test now refuses
+     any name the tier table shares with the rest of the page.
+
+     The reason a coin moved, floating where it landed. Two or three words, and
      it has to be readable in the half second it is on screen — so: opaque
      background, no animation of the text itself beyond the drift up. */
-  .cap{position:absolute; left:0; top:0; margin:-10px 0 0 -50%;
+  .whycap{position:absolute; left:0; top:0; margin:-10px 0 0 -50%;
     padding:.14rem .4rem; border-radius:5px; white-space:nowrap;
     font-size:.72rem; font-weight:600; letter-spacing:.01em;
     background:var(--ink); color:var(--page); pointer-events:none;
     opacity:0; transition:transform .5s ease-out, opacity .5s ease-out;
     z-index:6}
-  .cap.good{background:#2F6B45}
-  .cap.bad{background:#8C3A16}
-  .cap.up{opacity:1}
+  .whycap.good{background:#2F6B45}
+  .whycap.bad{background:#8C3A16}
+  .whycap.up{opacity:1}
   @media (prefers-reduced-motion: reduce){
     .tok{transition:none} .ring{animation:none; display:none}
-    .cap{transition:none; opacity:1}
+    .whycap{transition:none; opacity:1}
   }
 
   /* ---- one card face, three sizes ---- */
@@ -1311,7 +1330,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":null,"reportUrl":null,"commit":"f336535131","branch":"main","dirty":true,"built":"2026-08-29T09:27:49Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"b284997f84","branch":"main","dirty":true,"built":"2026-08-31T16:36:36Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -6702,6 +6721,27 @@ function reportFlag(rep, g, req, note) {
   return f;
 }
 
+/* A FLAG MUST OUTLIVE THE GAME IT WAS RAISED IN.
+ *
+ * A report belongs to one game, and starting another builds a fresh one — so
+ * anything flagged and then not carried through to the feedback form was
+ * dropped on the floor, without a word. That is the worst possible thing to do
+ * with it: a flag is a sentence a person stopped playing to type, and it is
+ * worth more than the game state around it. A report arrived with a full
+ * feedback form and `flags: []`, which is exactly this.
+ *
+ * So unsent flags move to the next report. They keep the id and seed of the
+ * game they were raised in, because "round 3" means nothing without knowing
+ * which game's round 3 — and `carried` marks them so nobody reads them as
+ * observations about the game they arrive attached to. */
+function carryFlags(from, to) {
+  if (!from || !to || from.sent) return to;
+  for (const f of from.flags || [])
+    to.flags.push(Object.assign({}, f, { carried: true,
+      game: from.id, seed: from.setup && from.setup.seed }));
+  return to;
+}
+
 /* --- when it is over --------------------------------------------------- */
 
 function reportFinish(rep, g) {
@@ -6783,8 +6823,30 @@ function netToken(code, set) {
  * entirely. A relative setting is resolved against the page, which is what you
  * want when the two ship together: no domain baked into the build, and preview
  * deployments talk to their own copy rather than to production. */
-function netApi() {
+/* IS THERE A SERVER WE CAN ACTUALLY REACH? One answer, used by both the table
+ * panel and the report endpoint, because they are the same question.
+ *
+ * An ABSOLUTE setting names a host and works from anywhere, including a page
+ * opened from a file. A RELATIVE one means "the site that served this page",
+ * which a file:// page cannot resolve — it has no origin to join it to. So a
+ * standalone download has no table and no endpoint, which is correct: it must
+ * work with no network at all, and it falls back to handing the player their
+ * report as a file.
+ *
+ * The default matters. A page served over http with nothing configured still
+ * knows where its API is, because vercel.json rewrites /api/blink/:path* to
+ * the function on the same origin. That is what stops this from being a
+ * build-time setting anybody can forget — and it was forgotten, for months. */
+function apiBase() {
   const raw = (BUILD.api || "").replace(/\/$/, "");
+  if (/^https?:\/\//.test(raw)) return raw;
+  const served = typeof location !== "undefined"
+    && /^https?:$/.test(location.protocol);
+  return served ? (raw || "/api/blink") : "";
+}
+
+function netApi() {
+  const raw = apiBase();
   if (!raw) return "";
   if (/^https?:\/\//.test(raw)) return raw;
   try { return new URL(raw, location.href).href.replace(/\/$/, ""); }
@@ -7170,7 +7232,8 @@ function startGame(force) {
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
-  REP = newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) });
+  REP = carryFlags(REP,
+    newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
   IT = null; REQ = null; SEL = blankSel();
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
@@ -7644,7 +7707,7 @@ function caption(at, text, good, delay) {
   const layer = $("#fx");
   if (!layer || !at || !text) return;
   setTimeout(() => {
-    const n = el("div", "cap" + (good ? " good" : " bad"));
+    const n = el("div", "whycap" + (good ? " good" : " bad"));
     n.textContent = text;
     n.style.transform = `translate(${at.x}px, ${at.y}px)`;
     layer.appendChild(n);
@@ -7996,7 +8059,7 @@ function renderMap() {
     }
     if (t.gold) s += `<circle class="coin" cx="${d.cx + 15}" cy="${d.cy - 14}" r="5"/>`;
     const cap = t.capacityFor(t.owner === null ? ME : t.owner);
-    s += haloText(d.cx, d.cy - 12, "cap", `${n}/${cap}`);
+    s += haloText(d.cx, d.cy - 12, "tilecap", `${n}/${cap}`);
     if (a) s += haloText(d.cx, d.cy + 19, "badge", cellBadge(a));
   }
 
@@ -8349,7 +8412,7 @@ const CROWN = `<svg class="crown" viewBox="0 0 24 16" aria-hidden="true">
  * a meld is a fan of cards, a rank cap is a card's index corner, and moves are
  * a number with a stride. */
 const meldFan = (n) => {
-  let out = '<span class="fan" aria-hidden="true">';
+  let out = '<span class="meldfan" aria-hidden="true">';
   for (let k = 0; k < n; k++) {
     const lean = n > 1 ? -14 + k * (28 / (n - 1)) : 0;
     const last = k === n - 1;
@@ -8359,9 +8422,9 @@ const meldFan = (n) => {
   return out + "</span>";
 };
 const rankCorner = (n) =>
-  `<span class="corner" aria-hidden="true"><b>${n}</b></span>`;
+  `<span class="rankix" aria-hidden="true"><b>${n}</b></span>`;
 const stride = (n) =>
-  `<span class="stride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
+  `<span class="movestride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
   + '<path d="M1 5 h11 M9 1.6 L12.6 5 L9 8.4" fill="none" stroke="currentColor"'
   + ' stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>'
   + "</svg></span>";
@@ -8608,7 +8671,7 @@ function renderPlayer() {
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
-        <span class="cap" title="${t("board.rankCap")}">${t("board.colCap")}</span>
+        <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
         <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
@@ -8657,7 +8720,7 @@ function renderPlayer() {
 
     s += `<div class="tier-row${here ? " here" : ""}${claimed ? "" : " unclaimed"}">
       <span class="mlim" title="${t("board.meldLimit")}">${meldFan(meld)}</span>
-      <span class="cap" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
+      <span class="capcol" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
@@ -9389,9 +9452,31 @@ function renderFeedback(bar) {
 /* Post it if there is somewhere to post it, and fall back to a file if not —
  * a playtester who has just written three sentences must never lose them to a
  * network error. */
+/* WHERE A REPORT GOES, decided at run time rather than at build time.
+ *
+ * This was `BUILD.reportUrl` alone, which is set only when BLINK_API is in the
+ * environment of whoever ran the build. Nobody's was: every deployed page went
+ * out with `reportUrl: null`, took the fallback below, and DOWNLOADED the
+ * report to the playtester's own machine instead of sending it. The page said
+ * nothing was wrong, because nothing was wrong from its side. Reports were
+ * quietly piling up in Downloads folders for as long as the site has been up.
+ *
+ * A page served over http already knows where its API is - it is the same
+ * origin, and vercel.json rewrites /api/blink/:path* to the function. So no
+ * configuration is needed for the ordinary case, and there is nothing left to
+ * forget. BLINK_API still wins, for pointing a build at a different host, and
+ * a page opened from a file:// URL still has no server and still downloads. */
+function reportEndpoint() {
+  const u = BUILD.reportUrl;
+  if (u && /^https?:\/\//.test(u)) return u;      // a named host: reachable anywhere
+  const base = apiBase();
+  if (!base) return null;                         // a file has nowhere to post
+  return u || base + "/report";
+}
+
 function finishFeedback() {
   reportFeedback(REP, FB);
-  const url = BUILD.reportUrl;
+  const url = reportEndpoint();
   if (!url) { downloadReport(REP); return Promise.resolve("download"); }
   return fetch(url, { method: "POST", headers: { "content-type": "application/json" },
                       body: JSON.stringify(REP) })
@@ -9710,11 +9795,11 @@ function startNetGame(st) {
   HUMANS = st.humans.slice();
   ME = netMySeat();
   PASSED = ME;                                  // no device is being handed over
-  REP = newReport(BUILD, GARGS, {
+  REP = carryFlags(REP, newReport(BUILD, GARGS, {
     lang: getLang(), session: st.code,
     players: st.seats.map((x) => ({ seat: x.seat, kind: x.taken ? "human" : "bot",
                                     style: null, name: x.name })),
-  });
+  }));
   NETQ = [];
   ZOOM = null; PAN = { x: 0, y: 0 };
   hidePass();
@@ -9831,7 +9916,7 @@ let NET_WIRED = false;
 function netSetup() {
   const box = $("#remote");
   if (!box) return;
-  if (!BUILD.api) { box.hidden = true; return; }   // a local file has no table
+  if (!apiBase()) { box.hidden = true; return; }   // a local file has no table
   box.hidden = false;
   const nameBox = $("#net-name");
   if (!nameBox.value) nameBox.value = defaultName();

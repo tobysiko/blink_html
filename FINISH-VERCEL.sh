@@ -19,7 +19,11 @@ BLINK_API=/api/blink node "$HERE/app/build.js"
 # A plain `node app/build.js` leaves BUILD.api null and the page loses its
 # "Play with friends" panel — silently, because a build with no table service
 # is a perfectly valid thing. Refuse to hand over one of those by accident.
-grep -q '"api":"/api/blink"' "$HERE/Blink-play-v0.22.html" || {
+# The version used to be written into this line by hand, so the guard went on
+# checking a v0.22 file that no longer exists — and a missing file makes grep
+# fail, which made the guard fire on every run for the wrong reason.
+VTAG="v$(cat "$HERE/VERSION")"
+grep -q '"api":"/api/blink"' "$HERE/Blink-play-$VTAG.html" || {
   echo "the built page has no table service in it — did BLINK_API get lost?" >&2
   exit 1
 }
