@@ -101,35 +101,36 @@
 <path d="M116.0 33.2 L116.0 113.7" fill="none" stroke="#B9B4A8" stroke-width="0.5"/>
 <path d="M114.2 112.8 L116.0 116.2 L117.8 112.8" fill="none" stroke="#B9B4A8" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>
 <line x1="209.0" y1="34.25" x2="209.0" y2="117.75" stroke="#CDC7B8" stroke-width="0.4"/>
-<text x="14.00" y="130.00" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">MELD = cards you may play in a round · BUY UP TO = highest rank you may take · MOVES = free moves each turn</text>
-<text x="14.00" y="134.40" font-family="IBM Plex Mono" font-size="3.3" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.15" style="">FOOD slots hold that tier's ASCENSION coins — take them on arrival, then feed the same slots each recycle · RESERVE empties top down</text>
-<text x="14.00" y="140.50" font-family="IBM Plex Mono" font-size="3.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.4" style="">ROUND</text>
-<text x="36.00" y="140.50" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  Declare A effects, blind   →   2  Leader plays a meld, then clockwise   →   3  Highest TOTAL wins the trick</text>
-<text x="36.00" y="144.80" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">4  Spend melds in initiative order — on your turn, see right   →   5  Trick winner leads the next round</text>
-<line x1="14.0" y1="148.5" x2="283.0" y2="148.5" stroke="#CDC7B8" stroke-width="0.4"/>
-<text x="14.00" y="154.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">GOLD</text>
-<text x="14.00" y="159.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">1 per cashed card · research, fortify, attacks, food</text>
-<rect x="14.0" y="163.5" width="82" height="17" rx="3" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
-<circle cx="24.50" cy="170.00" r="5.5" fill="#FBFAF6" stroke="#EBD9A6" stroke-width="0.6"/>
-<circle cx="31.50" cy="174.00" r="5.5" fill="#FBFAF6" stroke="#EBD9A6" stroke-width="0.6"/>
-<circle cx="28.00" cy="172.00" r="5.5" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.9"/>
-<circle cx="28.00" cy="172.00" r="3.6" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
-<text x="39.00" y="171.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0" style="">keep your coins here</text>
-<text x="39.00" y="175.60" font-family="IBM Plex Mono" font-size="2.9" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">no limit — pile them up</text>
-<text x="106.00" y="154.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">SCORING</text>
-<text x="106.00" y="160.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per unit on the map</text>
-<text x="106.00" y="165.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per card in your victory row</text>
-<text x="106.00" y="169.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">+  the rank of its CENTRE card (3+ cards)</text>
-<text x="106.00" y="173.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">3  per terrain: biggest connected stretch</text>
-<text x="106.00" y="177.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">gold breaks ties</text>
-<text x="196.00" y="154.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">YOUR TURN</text>
-<text x="230.00" y="154.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">— in any order</text>
-<text x="196.00" y="160.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Each card: settle · explore · attack · cash</text>
-<text x="196.00" y="165.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Move: up to your MOVES, by land or by sea</text>
-<text x="196.00" y="169.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Research: twice — 1 gold, then 2</text>
-<text x="196.00" y="173.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Fortify: 1 gold on one of your units</text>
-<text x="196.00" y="177.30" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Colony (B): one victory card · C: any time</text>
-<text x="196.00" y="181.40" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">Hand empty → feed, refill to 10, carry on</text>
+<line x1="14.0" y1="134.5" x2="283.0" y2="134.5" stroke="#CDC7B8" stroke-width="0.4"/>
+<text x="14.00" y="140.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">GOLD</text>
+<rect x="14.0" y="149.5" width="82" height="17" rx="3" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.8"/>
+<circle cx="24.50" cy="156.00" r="5.5" fill="#FBFAF6" stroke="#EBD9A6" stroke-width="0.6"/>
+<circle cx="31.50" cy="160.00" r="5.5" fill="#FBFAF6" stroke="#EBD9A6" stroke-width="0.6"/>
+<circle cx="28.00" cy="158.00" r="5.5" fill="#FBFAF6" stroke="#C9992B" stroke-width="0.9"/>
+<circle cx="28.00" cy="158.00" r="3.6" fill="none" stroke="#EBD9A6" stroke-width="0.6"/>
+<text x="39.00" y="157.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0" style="">keep your coins here</text>
+<text x="39.00" y="161.60" font-family="IBM Plex Mono" font-size="2.9" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">no limit — pile them up</text>
+<text x="106.00" y="140.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">SCORING</text>
+<text x="106.00" y="146.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per unit on the map</text>
+<text x="106.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">1  per card in your victory row</text>
+<text x="106.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">+  the rank of its CENTRE card (3+ cards)</text>
+<text x="106.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">3  per terrain: biggest connected stretch</text>
+<text x="106.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">gold breaks ties</text>
+<text x="196.00" y="140.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">ON THE BOARD</text>
+<text x="196.00" y="146.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MELD</text>
+<text x="222.00" y="146.90" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">cards you may play in a round</text>
+<text x="196.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">BUY UP TO</text>
+<text x="222.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">highest rank you may take</text>
+<text x="196.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MOVES</text>
+<text x="222.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">free moves each turn</text>
+<text x="196.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">FOOD</text>
+<text x="222.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">pay these slots each recycle</text>
+<text x="196.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">ASCENSION</text>
+<text x="222.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">coins printed there, taken once</text>
+<text x="196.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">RESERVE</text>
+<text x="222.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">empties from the top band down</text>
+<text x="196.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">VICTORY ROW</text>
+<text x="222.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">retired cards, fills rightwards</text>
 <text x="14.00" y="189.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">VICTORY ROW</text>
 <text x="72.00" y="189.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">— slide cards in from below; the centre slot scores</text>
 <line x1="164.0" y1="188.2" x2="279.6" y2="188.2" stroke="#6B6F68" stroke-width="0.5"/>

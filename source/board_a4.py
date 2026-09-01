@@ -320,50 +320,23 @@ def build():
              f'y2="{y-1.5-BAND_H/2:.2f}" '
              f'stroke="{LINE}" stroke-width="0.4"/>')
 
-    # upkeep note under the whole track, full width
-    # Every column named, in the order they are read. MELD and MV had no
-    # gloss at all, so the two numbers a player uses every single round were
-    # the two the board never explained.
-    s.append(T(band_x-2, y+3.0,
-               "MELD = cards you may play in a round \u00b7 "
-               "BUY UP TO = highest rank you may take \u00b7 "
-               "MOVES = free moves each turn", 3.3,
-               anchor="start", col=SOFT, mono=True, spacing="0.15"))
-    # ONE line, and it has to stay one: a third line lands on top of ROUND,
-    # and the first attempt at two lines ran 51 mm off the right margin. The
-    # prose check at the end of build() guards the width; the height is guarded
-    # by there being room for exactly two lines here.
-    s.append(T(band_x-2, y+7.4,
-               "FOOD slots hold that tier's ASCENSION coins \u2014 take them on "
-               "arrival, then feed the same slots each recycle \u00b7 "
-               "RESERVE empties top down", 3.3,
-               anchor="start", col=SOFT, mono=True, spacing="0.15"))
+    # The column glosses used to be squeezed in here as two 3.3 mm lines that
+    # could not take a third without landing on the round order. They are a
+    # proper column in the lower zone now — see ON THE BOARD — which is what
+    # the board is for: naming its own parts. Everything about the ORDER of a
+    # turn has gone to the player aid.
 
-    # ============ lower zone: the round, then gold / scoring / your turn ====
+    # ============ lower zone: gold, scoring, and the board's own words =====
     #
-    # The round order went on the board as five steps, and five steps turned
-    # out to describe only the card phase: it said "spend melds in initiative
-    # order" and stopped, with nothing about when you may move, research,
-    # fortify, recycle a hand or spend a victory card — which is all of the
-    # map phase, and the part people actually forget.
+    # WHAT IS NOT HERE ANY MORE. The round order and the menu of a turn both
+    # used to sit on this board, and both are now on the player aid, which is
+    # in the player's hand rather than under their units and can be read
+    # without leaning over the table. A board that repeats the aid is two
+    # sources for one rule, and the pair drifted apart once already.
     #
-    # So it is two blocks now. The ROUND ribbon runs full width because it is
-    # a sequence and reads as one; YOUR TURN is a column because it is a menu,
-    # not an order — section 07: "you may weave them between your card plays
-    # in any order".
-    ribbon = y + 13.5
-    s.append(T(band_x-2, ribbon, "ROUND", 3.6, anchor="start", col=INK,
-               mono=True, weight="600", spacing="0.4"))
-    s.append(T(band_x + 20, ribbon,
-               "1  Declare A effects, blind   \u2192   2  Leader plays a meld, then "
-               "clockwise   \u2192   3  Highest TOTAL wins the trick", 3.0,
-               anchor="start", col=INK, mono=True, spacing="0.1"))
-    s.append(T(band_x + 20, ribbon + 4.3,
-               "4  Spend melds in initiative order \u2014 on your turn, see right   "
-               "\u2192   5  Trick winner leads the next round", 3.0,
-               anchor="start", col=INK, mono=True, spacing="0.1"))
-
-    low = ribbon + 14
+    # What is left is exactly what only this board can say: what its own
+    # printed words mean, and how the game is scored.
+    low = y + 13.5
     s.append(f'<line x1="{M}" y1="{low-6}" x2="{PW-M}" y2="{low-6}" '
              f'stroke="{LINE}" stroke-width="0.4"/>')
 
@@ -374,8 +347,7 @@ def build():
     rx = 196.0
 
     s.append(T(gx, low, "GOLD", 4.6, anchor="start", weight="600"))
-    s.append(T(gx, low+5, "1 per cashed card \u00b7 research, fortify, attacks, food",
-               3.0, anchor="start", col=SOFT, mono=True))
+
     gv_y = low + 9
     s.append(f'<rect x="{gx}" y="{gv_y}" width="{gvw}" height="{gvh}" rx="3" '
              f'fill="{PAPER}" stroke="{GOLD}" stroke-width="0.8"/>')
@@ -409,19 +381,25 @@ def build():
         s.append(T(sx, low+6.4+j*4.1, line, 3.0, anchor="start",
                    col=SOFT if j == 4 else INK, mono=True, spacing="0.1"))
 
-    s.append(T(rx, low, "YOUR TURN", 4.6, anchor="start", weight="600"))
-    s.append(T(rx + 34, low, "\u2014 in any order", 3.0, anchor="start",
-               col=SOFT, mono=True))
-    for j, line in enumerate([
-            "Each card: settle \u00b7 explore \u00b7 attack \u00b7 cash",
-            "Move: up to your MOVES, by land or by sea",
-            "Research: twice \u2014 1 gold, then 2",
-            "Fortify: 1 gold on one of your units",
-            "Colony (B): one victory card \u00b7 C: any time",
-            "Hand empty \u2192 feed, refill to 10, carry on"]):
-        s.append(T(rx, low+6.4+j*4.1, line, 3.0, anchor="start", col=INK,
+    # The board naming its own parts. Every word here is printed somewhere on
+    # this sheet; nothing here is about the order of play.
+    s.append(T(rx, low, "ON THE BOARD", 4.6, anchor="start", weight="600"))
+    TERMS = [
+        ("MELD",        "cards you may play in a round"),
+        ("BUY UP TO",   "highest rank you may take"),
+        ("MOVES",       "free moves each turn"),
+        ("FOOD",        "pay these slots each recycle"),
+        ("ASCENSION",   "coins printed there, taken once"),
+        ("RESERVE",     "empties from the top band down"),
+        ("VICTORY ROW", "retired cards, fills rightwards"),
+    ]
+    for j, (term, gloss) in enumerate(TERMS):
+        ty = low + 6.4 + j*4.1
+        s.append(T(rx, ty, term, 3.0, anchor="start", col=INK, mono=True,
+                   weight="600", spacing="0.1"))
+        s.append(T(rx + 26, ty, gloss, 3.0, anchor="start", col=SOFT,
                    mono=True, spacing="0.1"))
-    score_last = low + 6.4 + 5*4.1
+    score_last = low + 6.4 + (len(TERMS) - 1)*4.1
 
     # --- VICTORY ROW: real cards, tucked under the bottom edge ---
     # Five standard 63.5 mm cards side by side need 317 mm; the printable width
