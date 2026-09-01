@@ -1,5 +1,13 @@
+# Builds the Hippodice one-page game description.
+#
+#   python3 build_description.py [figure-width-mm] [body-pt]     e.g. 170 8.8
+#
+# The figure is table-figure.svg, produced by tighten_figure.py from the
+# rulebook's own "table from your seat" diagram. It is printed at nearly the
+# full text width because at column width its market ranks and board labels
+# could not be read, which is the one thing a juror looks at.
 import re, sys
-fig = open('figs/0.svg', encoding='utf-8').read()
+fig = open('table-figure.svg', encoding='utf-8').read()
 HERO_MM = sys.argv[1] if len(sys.argv) > 1 else "150"
 FS      = sys.argv[2] if len(sys.argv) > 2 else "9.2"
 
@@ -36,7 +44,7 @@ h1{{font-family:Fraunces,Georgia,serif;font-size:33pt;line-height:.9;margin:0;le
 .rulebar i:nth-child(3){{background:var(--forest)}}.rulebar i:nth-child(4){{background:var(--ocean)}}
 .lede{{font-family:Fraunces,Georgia,serif;font-size:10.6pt;line-height:1.3;margin:0 0 3mm}}
 .lede b{{font-weight:600}}
-.wide{{max-width:{HERO_MM}mm;margin:0 auto 3mm}}
+.wide{{max-width:{HERO_MM}mm;margin:0 auto 2.5mm}}
 .wide svg{{width:100%;height:auto;display:block}}
 .wide figcaption{{font-family:"IBM Plex Mono",monospace;font-size:6.8pt;line-height:1.5;
  color:var(--ink-soft);margin-top:1.5mm;text-align:center}}
@@ -78,30 +86,27 @@ area until it is spent.</figcaption></figure>
 <div class="cols">
   <section>
     <h2>The round</h2>
-    <p>Everyone plays a meld at the same time — <strong>any cards whose ranks form an unbroken
-       run</strong>. Duplicates are free and suits are irrelevant, so one rule replaces straights,
-       sets and full houses. The highest total wins the trick and acts first; matching the winner's
-       card count and losing costs you a card; the meld that ranks last takes a coin.</p>
-    <p>Then, in that order, every player spends the very cards they just played. Each one settles a
-       unit, explores a new tile, attacks a neighbour, or is cashed for gold — always on terrain
-       matching the card's suit, always beside ground you already hold. You never choose a move
-       separately from the cards: <strong>the meld is the budget</strong>.</p>
+    <p>Everyone plays a meld at once — <strong>any cards whose ranks form an unbroken
+       run</strong>, duplicates free, suits irrelevant. One rule replaces straights, sets and full
+       houses. Highest total wins the trick and acts first.</p>
+    <p>Then, in that order, every player spends the very cards they just played: each one settles a
+       unit, explores a tile, attacks a neighbour, or is cashed for gold — always on terrain
+       matching its suit, beside ground you already hold. <strong>The meld is the budget.</strong></p>
     <h2>Growth is the clock, and the bill</h2>
     <p>Your twenty units sit in five tiers and leave from the top. Each tier you empty raises your
-       meld size, your free movement and the rank you may buy — and raises the food your people cost
-       every time your hand recycles.</p>
+       meld size, your movement and the rank you may buy — and the food your people cost at every
+       recycle.</p>
   </section>
   <section>
     <h2>Combat is a duel</h2>
-    <p>An attack <em>is</em> the card you spent. The defender answers with a card from hand plus the
-       terrain's defence — forest one, mountain two — and the higher rank wins. Clear the last
-       defender and the ground changes hands on the spot. It is the only moment you act on somebody
-       else's turn, and it makes the cards you hold back worth holding.</p>
+    <p>An attack <em>is</em> the card you spent. The defender answers from hand, plus the terrain's
+       defence — forest one, mountain two. Higher rank wins; clear the last defender and the ground
+       changes hands. It is the only moment you act on somebody else's turn, and it makes the cards
+       you hold back worth holding.</p>
     <h2>How it ends</h2>
-    <p>The game ends when a player places their last unit, or the market thins to its last layer.
-       Finish the round, play one more, then score: a point per unit on the map; one per card in
-       your victory row, plus the rank in its centre slot; three for each terrain where you hold the
-       largest connected stretch.</p>
+    <p>It ends when a player places their last unit, or the market thins to its last layer. Score a
+       point per unit on the map; one per card in your victory row, plus the rank in its centre
+       slot; three for each terrain where you hold the largest connected stretch.</p>
     <h2>Why it plays differently</h2>
     <p>Trick-taking asks one question — can I win this? Blink asks it twice, in opposite
        directions: the meld that takes the trick is the meld you must now spend.</p>
