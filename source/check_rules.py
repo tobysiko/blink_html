@@ -268,15 +268,20 @@ if vrow_rule and vrow_rule.group(1) == "card+centre":
     check(re.search(r"1 point per card in the row", rules),
           "the rulebook does not print the victory row's point per card")
 
-# The board now carries the order of play, so it can contradict the engine
-# about how a trick is won just as easily as the rulebook could.
+# THE ROUND AND THE TURN LEFT THE BOARD FOR THE PLAYER AID, so the checks
+# follow them. What has to be true is that the printed set says these things
+# ONCE, in the document a player can pick up — not that the board repeats them
+# under everybody's units.
 board_txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", board))
-check("ROUND" in board_txt, "the player board has no order of play")
-for step in ["Declare A effects", "Leader plays a meld", "Spend melds in initiative order",
-             "leads the next round"]:
-    check(step in board_txt, f"the board's round order is missing: {step}")
-check(re.search(r"Highest TOTAL wins", board_txt),
-      "the board's round order does not say the highest TOTAL wins the trick")
+aid_file = HERE / "Blink-player-aid.html"
+aid_txt = (re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", aid_file.read_text(encoding="utf8")))
+           if aid_file.exists() else "")
+check(bool(aid_txt), "the player aid has not been built — run build_aid.py")
+for step in ["Declare A", "highest total wins", "spend in that order"]:
+    check(step.lower() in aid_txt.lower(),
+          f"the aid's round order is missing: {step}")
+check("ROUND" not in board_txt,
+      "the round order is back on the player board — it belongs on the aid")
 
 # The map phase is the half a player forgets, and every item in it is a rule
 # the engine enforces — so the board's turn menu is checked against the
@@ -361,19 +366,23 @@ check("SPEND" in perk_sec and "STANDING" in perk_sec,
 check("switches off" in perk_sec,
       "section 13 does not say that spending a card can switch a perk off")
 
-check("YOUR TURN" in board_txt, "the player board does not say what a turn may contain")
-check(re.search(r"Research: twice", board_txt),
-      f"the board does not print research twice a turn (engine default "
+# the aid sets it in small caps with CSS, so the markup reads "Your turn"
+check("your turn" in aid_txt.lower(),
+      "the player aid does not say what a turn may contain")
+check(re.search(r"twice · 1 then 2 gold|twice \u00b7 1 then 2 gold", aid_txt),
+      f"the aid does not print the 1-then-2 research price (engine default "
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
-check(re.search(r"Research: twice \u2014 1 gold, then 2|Research: twice — 1 gold, then 2", board_txt),
-      "the board does not print the 1-then-2 research price")
+# The board's job is now to name its own parts, so THAT is what is pinned.
+for term in ["MELD", "BUY UP TO", "MOVES", "FOOD", "ASCENSION", "RESERVE", "VICTORY ROW"]:
+    check(term in board_txt, f"the board no longer glosses its own term: {term}")
 # "MV" and the meld chip looked like the same small numbered box from across a
 # table, which is a poor way to draw the two numbers a player uses most. MOVES
 # is spelled out now, and MELD is a fan of that many cards.
 check("MV" not in board_txt,
       "the board is abbreviating MOVES again — it reads as another chip")
-for item in ["Fortify: 1 gold", "Move: up to your MOVES", "refill to 10"]:
-    check(item in board_txt, f"the board's turn menu is missing: {item}")
+for item in ["SETTLE", "EXPLORE", "ATTACK", "CASH", "MOVE", "RESEARCH",
+             "FORTIFY", "COLONY"]:
+    check(item in aid_txt, f"the aid's turn menu is missing: {item}")
 # the unit slots, counted per row: this is the component players actually load
 import collections
 rows = collections.Counter()
