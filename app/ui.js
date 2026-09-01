@@ -235,6 +235,9 @@ function startGame(force) {
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
+                             fortify: $("#fortify") ? $("#fortify").value : undefined,
+                             attacksPerTurn:
+                               $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -2037,7 +2040,8 @@ function renderPrompt() {
        * All of it is a picture: whose attack, the card itself, the ground it is
        * being fought over with its bonus as shields, and the rank that holds —
        * on a card outline, because that is what you are being asked for. */
-      ask(t("ask.duel.defend.short"));
+      ask(REQ.wall ? t("ask.duel.defend.wall", { wall: REQ.wall })
+                   : t("ask.duel.defend.short"));
       if (REQ.against) {
         const need = Math.max(1, REQ.need);
         const chip = REQ.by === null || REQ.by === undefined ? ""
@@ -2995,6 +2999,8 @@ function netRules() {
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
+    fortify: $("#fortify") ? $("#fortify").value : undefined,
+    attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

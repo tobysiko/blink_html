@@ -473,7 +473,7 @@ if rank:
 # well as the meld card they had already spent, which is not what anybody
 # expects and left the rank of the spent card doing nothing at all. Both halves
 # are pinned, because the engine and the book drifted apart here once already.
-check(re.search(r"\*_duelCard\(q, role, tile, against(?:, by)?\)", js),
+check(re.search(r"\*_duelCard\(q, role, tile, against(?:, by)?(?:, floor)?\)", js),
       "the defender is no longer told what they are answering")
 check("_duelCard(p, \"attack\"" not in js,
       "the attacker is being asked for a card from hand again")
@@ -482,9 +482,19 @@ check(re.search(r"attack is the card you spent", rules, re.I),
 
 # THE FORTIFICATION is the rule most recently rewritten, and the old version of
 # it survived in print for a version while the engine had moved on. Both halves
-# are pinned: the engine must refuse a lone card, and the book must say so.
-check(re.search(r"if \(t\.gold && this\.combat === \"duel\" && spare < 1\) return \[\];", js),
+# are pinned: while the PRINTED rule is the assault, the engine must refuse a
+# lone card, and the book must say so.
+#
+# The engine now carries three unprinted alternatives behind `fortify` (see
+# COMBAT-SIMPLIFY.md), so the refusal is conditional on that option being the
+# printed one. If `fortify` ever defaults to something other than "assault",
+# this check and section 07 have to move together.
+check(re.search(r"if \(t\.gold && this\.combat === \"duel\"\s*\n?\s*"
+                r"&& \(this\.fortMode \|\| \"assault\"\) === \"assault\" && spare < 1\)"
+                r" return \[\];", js),
       "the engine no longer refuses a single-card attack on a fortified tile")
+check(re.search(r'opts\.fortify\s*:\s*"assault"', js),
+      "fortify no longer defaults to the printed assault rule")
 check(re.search(r"Math\.min\(card\.r, second\.r\)", js),
       "the assault no longer takes the LOWER of the two cards")
 for phrase, why in [

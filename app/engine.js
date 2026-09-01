@@ -2424,6 +2424,14 @@ class Game {
   *_duelCard(q, role, tile, against, by, floor) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
+    /* A WALL IS ANSWERED BEFORE THE HAND IS. Two cases never reach the player
+     * at all: the coin already holds the ground, and nothing in hand tops the
+     * coin. Asking in either case offers a choice that changes nothing. */
+    if (floor) {
+      const need0 = against ? against.r - bonus - this.GARRISON : 0;
+      if (need0 <= floor) return null;
+      if (!q.hand.some((c) => c.r > floor)) return null;
+    }
     if (this.isHuman(q.i)) {
       /* WHERE IT IS COMING FROM. A duel lands on somebody else's turn, so the
        * first question is not "how much" but "who, and from where" — and the
@@ -2433,13 +2441,18 @@ class Game {
       const from = by === undefined ? [] : tile.neighbours()
         .filter((u) => u.owner === by && u.units.length)
         .map((u) => u.key);
+      /* Only cards that beat the wall are offered — a lower one would be
+       * spent for nothing, because the coin would fight in its place. */
+      const options = floor ? q.hand.filter((c) => c.r > floor) : q.hand.slice();
       const pick = yield { type: "duel", seat: q.i, role,
                            cell: tile.key, terrain: tile.terrain, bonus,
                            by: by === undefined ? null : by, from,
                            against: against || null,
-                           need: against ? Math.max(0, against.r - bonus) : 0,
-                           options: q.hand.slice() };
-      return q.hand.includes(pick) ? pick : null;   // declining is legal
+                           wall: floor || 0,
+                           need: against
+                             ? Math.max(0, against.r - bonus - this.GARRISON) : 0,
+                           options };
+      return options.includes(pick) ? pick : null;   // declining is legal
     }
     /* SPEND THE CHEAPEST CARD THAT HOLDS THE GROUND, and decline when nothing
      * does. Spending a card you know will lose is worse than losing for free:

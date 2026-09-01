@@ -1152,6 +1152,21 @@
       </select>
     </div>
     <div class="field">
+      <label for="fortify" data-i18n="setup.fortify">Fortifications</label>
+      <select id="fortify">
+        <option value="assault" selected data-i18n="setup.fortify.assault"></option>
+        <option value="wall" data-i18n="setup.fortify.wall"></option>
+      </select>
+      <p class="hint" id="fortify-hint" data-i18n="setup.fortify.note"></p>
+    </div>
+    <div class="field">
+      <label for="attacks" data-i18n="setup.attacks">Attacks per turn</label>
+      <select id="attacks">
+        <option value="any" selected data-i18n="setup.attacks.any"></option>
+        <option value="one" data-i18n="setup.attacks.one"></option>
+      </select>
+    </div>
+    <div class="field">
       <label for="perks" data-i18n="setup.perks">Victory row perks</label>
       <select id="perks">
         <option value="off" selected data-i18n="setup.perks.off"></option>
@@ -1330,7 +1345,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"b284997f84","branch":"main","dirty":true,"built":"2026-08-31T16:36:36Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"8e193d2ba0","branch":"main","dirty":true,"built":"2026-09-01T15:31:38Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1410,6 +1425,13 @@ en: {
   "setup.meldRules.combo": "Combination melds — play two or more melds of 2+ cards as one",
   "setup.meldRules.friends": "Friends of 10s — any two cards summing to 10, 20 or 30",
   "setup.meldRules.both": "Both",
+  "setup.fortify": "Fortifications",
+  "setup.fortify.assault": "Assault \u2014 two cards from your meld, the lower rank fights",
+  "setup.fortify.wall": "Wall 10 \u2014 the coin defends at 10, or a better card from hand",
+  "setup.fortify.note": "(proposal \u00b7 a wall is a floor, not a substitute: no card from the starting deck can break one)",
+  "setup.attacks": "Attacks per turn",
+  "setup.attacks.any": "Any \u2014 every card in your meld may attack",
+  "setup.attacks.one": "One \u2014 at most one attack each map phase",
   "setup.perks": "Victory row perks",
   "setup.perks.off": "Off",
   "setup.perks.on": "On — one perk per row slot, drawn from the seed",
@@ -1696,6 +1718,8 @@ en: {
   "ask.duel.decline": "Don't fight",
   "ask.duel.need": "to hold it — the ground already gives you +{bonus}",
   "ask.duel.defend.short": "<b>Defend</b> <span class=\"muted\">— commit a card, or don't</span>",
+  "ask.duel.defend.wall": "<b>Defend</b> <span class=\"muted\">— your wall holds at {wall}; a higher card fights instead</span>",
+  "fx.duel.wall": "the wall",
   "fx.why.lost_trick": "last place",
   "fx.why.docked": "set aside",
   "fx.why.bonus_gold": "no bonus card",
@@ -1967,6 +1991,13 @@ de: {
   "setup.meldRules.combo": "Mehrfach-Kombinationen — zwei oder mehr Kombinationen aus je 2+ Karten zusammen ausspielen",
   "setup.meldRules.friends": "Zehnerfreunde — zwei Karten, deren Werte 10, 20 oder 30 ergeben",
   "setup.meldRules.both": "Beide",
+  "setup.fortify": "Befestigungen",
+  "setup.fortify.assault": "Sturmangriff \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft",
+  "setup.fortify.wall": "Mauer 10 \u2014 die M\u00fcnze verteidigt mit 10, oder eine bessere Karte aus der Hand",
+  "setup.fortify.note": "(Vorschlag \u00b7 die Mauer ist ein Mindestwert, kein Ersatz: keine Karte des Startdecks bricht sie)",
+  "setup.attacks": "Angriffe pro Zug",
+  "setup.attacks.any": "Beliebig \u2014 jede Karte der Kombination darf angreifen",
+  "setup.attacks.one": "Einer \u2014 h\u00f6chstens ein Angriff je Kartenphase",
   "setup.perks": "Boni der Siegesreihe",
   "setup.perks.off": "Aus",
   "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
@@ -2240,6 +2271,8 @@ de: {
   "ask.duel.decline": "Nicht kämpfen",
   "ask.duel.need": "zum Halten — das Gelände gibt dir schon +{bonus}",
   "ask.duel.defend.short": "<b>Verteidigen</b> <span class=\"muted\">— eine Karte festlegen, oder nicht</span>",
+  "ask.duel.defend.wall": "<b>Verteidigen</b> <span class=\"muted\">— deine Mauer h\u00e4lt mit {wall}; eine h\u00f6here Karte k\u00e4mpft stattdessen</span>",
+  "fx.duel.wall": "die Mauer",
   "fx.why.lost_trick": "letzter Platz",
   "fx.why.docked": "beiseitegelegt",
   "fx.why.bonus_gold": "keine Extrakarte",
@@ -2594,9 +2627,9 @@ function setTerrainDefence(d) { TERRAIN_DEFENCE = d; }
  * A missing card counts as rank 0, so declining is legal and simply loses —
  * except that a defender who declines on a Mountain still has two ranks of
  * ground under them, and an attacker who declines can never win. */
-function duelWinner(aCard, dCard, terrain) {
+function duelWinner(aCard, dCard, terrain, extra) {
   const a = aCard ? aCard.r : 0;
-  const b = (dCard ? dCard.r : 0) + TERRAIN_DEFENCE[terrain];
+  const b = (dCard ? dCard.r : 0) + TERRAIN_DEFENCE[terrain] + (extra || 0);
   if (a !== b) return a > b;
   const am = !!aCard && aCard.s === terrain;
   const dm = !!dCard && dCard.s === terrain;
@@ -3082,12 +3115,15 @@ class GameMap {
    * all. Defaults to 0, which is the safe answer — a caller that has not
    * thought about it gets the stricter rule rather than an illegal move. */
   cellActions(k, suit, p, spaces, budget, spare = 0) {
+    if (this.atkLeft === undefined) this.atkLeft = Infinity;
     const t = this.tiles.get(k);
     if (t) {
       if (t.terrain !== suit) return [];
       if (t.owner === null || t.owner === p) return t.hasRoom(p) ? ["settle"] : [];
       if (budget < this.attackGold(t.terrain)) return [];
-      if (t.gold && this.combat === "duel" && spare < 1) return [];
+      if (this.atkLeft <= 0) return [];
+      if (t.gold && this.combat === "duel"
+          && (this.fortMode || "assault") === "assault" && spare < 1) return [];
       return ["attack"];
     }
     if (spaces.has(k) && this.tileAvailable(suit)) return ["explore"];
@@ -3621,22 +3657,42 @@ function duelValue(game, p, t, w, card) {
   const hand = p.hand.length ? p.hand : [{ r: 10 }];
   let value = card.r, cards = 1;
 
+  let wallAt = null;
   if (t.gold) {
-    /* AN ASSAULT (§07): two cards, and the LOWER of the two ranks fights, so
-     * bringing a weak second card throws the fight away. The meld is the only
-     * sample of "my other cards" available here, and the bot will bring its
-     * best one, so that is what is assumed. */
-    const others = (p.played || []).filter((c) => c !== card);
-    if (!others.length) return -1;             // nothing to back it with
-    value = Math.min(card.r, Math.max(...others.map((c) => c.r)));
-    cards = 2;
+    const mode = game.FORTIFY || "assault";
+    if (mode === "absorb") return -1;          // nothing dies; pure loss
+    if (mode === "wall") wallAt = game.WALL_RANK;
+    else if (mode === "bonus") wallAt = null;  // priced through `bonus` below
+    else {
+      /* AN ASSAULT (§07): two cards, and the LOWER of the two ranks fights, so
+       * bringing a weak second card throws the fight away. The meld is the only
+       * sample of "my other cards" available here, and the bot will bring its
+       * best one, so that is what is assumed. */
+      const others = (p.played || []).filter((c) => c !== card);
+      if (!others.length) return -1;           // nothing to back it with
+      value = Math.min(card.r, Math.max(...others.map((c) => c.r)));
+      cards = 2;
+    }
   }
 
   /* The attack value is known before the defender answers — it is the card
    * being spent — so the odds are one sum rather than a guess about what we
    * might commit later. What is still unknown is the defender's HAND, and our
    * own is the only sample of a comparable hand we have. */
-  const odds = hand.filter((c) => value > c.r + bonus).length / hand.length;
+  /* A wall is not a hand: its rank is known, so the odds are 1 or 0 rather
+   * than a sample. A bonus raises the bar the sampled hand has to clear. */
+  const wallExtra = (t.gold && (game.FORTIFY || "assault") === "bonus")
+    ? game.FORT_BONUS : 0;
+  const garrison = game.GARRISON || 0;
+  /* Against a wall the attacker must clear the coin AND whatever the hand can
+   * add on top of it — except under "wallonly", where the coin is the whole
+   * defence and the hand never appears. */
+  const odds = wallAt !== null
+    ? (value > wallAt + bonus + garrison
+        ? ((game.FORTIFY === "wallonly") ? 1
+           : hand.filter((c) => value > c.r + bonus + garrison).length / hand.length)
+        : 0)
+    : hand.filter((c) => value > c.r + bonus + wallExtra + garrison).length / hand.length;
 
   let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * (cards - 1);
   /* Emptying a tile is worth more than a kill when the winner settles it: you
@@ -3783,6 +3839,54 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* HOW A FORTIFICATION DEFENDS — all four measurable, "assault" is v0.24 as
+     * printed. Measured 31 Aug: 40% of duels are against a defender holding NO
+     * card, and the attacker wins 100% of those; when a card IS committed the
+     * attacker wins 13.6%. So a wall that ADDS to a card the defender does not
+     * have defends nothing, which is what "bonus" exists to demonstrate.
+     *   assault — two cards from the meld, the LOWER rank fights (§07)
+     *   wall    — the coin defends AT LEAST WALL_RANK: the defender may still
+     *              answer with a card, and the higher of the two fights. A
+     *              wall must never LOWER a defence, which "wallonly" does.
+     *   wallonly— the coin defends alone, the hand is not asked (measured
+     *              first, and kept only so those numbers reproduce)
+     *   absorb  — the attack is refused outright, the coin is spent
+     *   bonus   — the defender commits a card as usual, +FORT_BONUS
+     * The coin goes to the supply in every mode. */
+    this.FORTIFY = ["assault", "wall", "wallonly", "absorb", "bonus"]
+      .includes(opts.fortify) ? opts.fortify : "assault";
+    /* WHAT THE COIN IS WORTH. Measured across 9/11/13/15 the number barely
+     * moves the game (52.0 / 51.4 / 50.8 / 52.0 fighter win), so it is chosen
+     * for the sentence it makes rather than the balance: 10 is the top of the
+     * starting deck, and a level fight goes to the defender, so NO CARD YOU
+     * WERE DEALT CAN BREAK A WALL — you need something researched. */
+    this.WALL_RANK = opts.wallRank === undefined ? 10 : opts.wallRank;
+    this.FORT_BONUS = opts.fortBonus === undefined ? 5 : opts.fortBonus;
+    /* Attacks allowed in one map phase. 0 = uncapped, which is v0.24 as
+     * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
+     * contain 3+, which is where "combat feels overwhelming" comes from. */
+    this.ATTACKS_PER_TURN = opts.attacksPerTurn || 0;
+    /* HOW A BOT DEFENDS a duel. "min" is the engine's own policy: the cheapest
+     * card that holds the ground, decline when nothing does. The others exist
+     * because that policy is the one thing in the duel a person will NOT
+     * reproduce — see COMBAT-SIMPLIFY.md §5.
+     *   min      — cheapest card that holds (default)
+     *   hoard    — as min, but decline rather than spend above DEFEND_CEIL:
+     *              a hand is for winning tricks, not for saving one unit
+     *   panic    — the highest card that holds; over-defending, which people do
+     *   lastditch— defend only when this is the tile's last unit */
+    this.DEFEND = ["min", "hoard", "panic", "lastditch"].includes(opts.defend)
+      ? opts.defend : "min";
+    this.DEFEND_CEIL = opts.defendCeil === undefined ? 12 : opts.defendCeil;
+    /* A GARRISON is defence the ground has whether or not a card is committed:
+     * every duel is against terrain + garrison + whatever the defender adds.
+     * 0 is v0.24 as printed, where an empty hand defends with nothing and the
+     * attacker wins 100% of those duels. Off by default; measured because the
+     * bot's DEFENCE POLICY is worth +-20 points of win rate, which is more than
+     * any combat rule tested, and a garrison is the only lever that reaches it. */
+    this.GARRISON = opts.garrison || 0;
+    this.m.fortMode = this.FORTIFY;   // NB: m.fortify() is a method
+    this.m.atkLeft = Infinity;
     /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
      * so the measurements that chose it can be reproduced. */
     this.FRONTIER = ["always", "seams", "off"].includes(opts.frontier)
@@ -4681,6 +4785,7 @@ class Game {
    * ordering constraint; the map is re-read between cards, so an explore can
    * deliberately open ground that a later card settles. */
   *_place(p, cards) {
+    this.m.atkLeft = this.ATTACKS_PER_TURN || Infinity;
     if (!cards.length) return;
     const todo = cards.slice();
     while (todo.length) {
@@ -4772,8 +4877,20 @@ class Game {
     } else if (act === "attack") {
       const tile = this.m.tiles.get(cell);
       if (this.COMBAT === "duel") {
-        if (tile.gold) yield* this._assault(p, cell, tile, card, pool || []);
-        else yield* this._duel(p, cell, tile, card);
+        this.m.atkLeft -= 1;
+        if (tile.gold && this.FORTIFY === "assault") {
+          yield* this._assault(p, cell, tile, card, pool || []);
+        } else if (tile.gold && this.FORTIFY === "absorb") {
+          /* The wall eats the blow. The card is spent, the coin is spent, and
+           * nothing on the tile is touched. */
+          tile.gold -= 1;
+          this.inc("duel_absorbed"); this.inc("wall_broken");
+          this.fx("shield", { seat: p.i, at: cell });
+        } else if (tile.gold) {
+          yield* this._duel(p, cell, tile, card, this.FORTIFY);
+        } else {
+          yield* this._duel(p, cell, tile, card);
+        }
         return;
       }
       const cost = attackGold(this.COMBAT, tile.terrain);
@@ -4822,9 +4939,17 @@ class Game {
    * so this is a priced decision, not a guess: beat `against.r - bonus` and
    * the tile holds. Humans are asked; bots follow the policy below.
    */
-  *_duelCard(q, role, tile, against, by) {
+  *_duelCard(q, role, tile, against, by, floor) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
+    /* A WALL IS ANSWERED BEFORE THE HAND IS. Two cases never reach the player
+     * at all: the coin already holds the ground, and nothing in hand tops the
+     * coin. Asking in either case offers a choice that changes nothing. */
+    if (floor) {
+      const need0 = against ? against.r - bonus - this.GARRISON : 0;
+      if (need0 <= floor) return null;
+      if (!q.hand.some((c) => c.r > floor)) return null;
+    }
     if (this.isHuman(q.i)) {
       /* WHERE IT IS COMING FROM. A duel lands on somebody else's turn, so the
        * first question is not "how much" but "who, and from where" — and the
@@ -4834,13 +4959,18 @@ class Game {
       const from = by === undefined ? [] : tile.neighbours()
         .filter((u) => u.owner === by && u.units.length)
         .map((u) => u.key);
+      /* Only cards that beat the wall are offered — a lower one would be
+       * spent for nothing, because the coin would fight in its place. */
+      const options = floor ? q.hand.filter((c) => c.r > floor) : q.hand.slice();
       const pick = yield { type: "duel", seat: q.i, role,
                            cell: tile.key, terrain: tile.terrain, bonus,
                            by: by === undefined ? null : by, from,
                            against: against || null,
-                           need: against ? Math.max(0, against.r - bonus) : 0,
-                           options: q.hand.slice() };
-      return q.hand.includes(pick) ? pick : null;   // declining is legal
+                           wall: floor || 0,
+                           need: against
+                             ? Math.max(0, against.r - bonus - this.GARRISON) : 0,
+                           options };
+      return options.includes(pick) ? pick : null;   // declining is legal
     }
     /* SPEND THE CHEAPEST CARD THAT HOLDS THE GROUND, and decline when nothing
      * does. Spending a card you know will lose is worse than losing for free:
@@ -4849,16 +4979,25 @@ class Game {
      * The defender can see the attack, so unlike the earlier version of this
      * there is nothing to estimate — `need` is exact. */
     const sorted = q.hand.slice().sort((a, b) => a.r - b.r);
-    const need = against ? against.r - bonus : 0;
+    const need = against ? against.r - bonus - this.GARRISON : 0;
+    /* The ground already holds it: keep the card. */
+    if (this.GARRISON && need <= 0) return null;
+    /* A wall already holds this one, or nothing in hand beats the wall: keep
+     * the card. The coin fights instead and costs no hand. */
+    if (floor && (need <= floor || Math.max(...q.hand.map((c) => c.r)) <= floor))
+      return null;
     /* Ground nearly lost is worth stretching for; ground you can retake is not.
      * A level fight goes to the defender, so meeting `need` exactly is enough. */
-    const able = sorted.filter((c) => c.r >= need);
+    const able = sorted.filter((c) => c.r >= need && (!floor || c.r > floor));
     if (!able.length) return null;
     if (tile.units.length > 1 && !able.length) return null;
+    if (this.DEFEND === "lastditch" && tile.units.length > 1) return null;
+    if (this.DEFEND === "hoard" && able[0].r > this.DEFEND_CEIL) return null;
+    if (this.DEFEND === "panic") return able[able.length - 1];
     /* Among cards that hold, the ground's own suit also wins a level fight, so
      * prefer it — but never at the price of a higher rank. */
-    const floor = able[0].r;
-    return able.find((c) => c.r === floor && c.s === tile.terrain) || able[0];
+    const cheapest = able[0].r;
+    return able.find((c) => c.r === cheapest && c.s === tile.terrain) || able[0];
   }
 
   /* ASSAULTING A FORTIFICATION (§07).
@@ -4941,7 +5080,7 @@ class Game {
    * becomes a priced decision — is this tile worth a card that beats an 11? —
    * which is a better question than the one it replaces, and the terrain
    * bonus is now something the defender can count on rather than hope for. */
-  *_duel(p, cell, tile, attack) {
+  *_duel(p, cell, tile, attack, fort) {
     if (!tile.units.length) {
       this.inc("cards_to_gold");
       this.purse(p, 1, "unplaceable", cell);
@@ -4951,18 +5090,40 @@ class Game {
     const d = this.P[tile.owner];
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     const aCard = attack;
-    const dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
+    /* A WALL fights on its own: the coin is a defender of fixed rank and the
+     * hand is never asked. That is the whole point of it — the 40% of duels a
+     * defender answers with nothing are exactly the ones a wall is bought for.
+     * A BONUS asks for a card as usual and adds to it. */
+    const wall = fort === "wall" || fort === "wallonly";
+    const extra = (fort === "bonus" ? this.FORT_BONUS : 0) + this.GARRISON;
+    if (fort) { tile.gold -= 1; this.inc("wall_broken"); }
+    /* THE COIN IS A FLOOR, NOT A SUBSTITUTE. A defender holding a 19 must not
+     * be made weaker by the wall they paid for, so the hand is still asked and
+     * the higher of coin and card fights. The card is spent only if it was the
+     * one that fought. */
+    const coin = { r: this.WALL_RANK, s: tile.terrain, wall: true };
+    let dCard, spent = null;
+    if (fort === "wallonly") dCard = coin;
+    else if (wall) {
+      const c = yield* this._duelCard(d, "defend", tile, aCard, p.i,
+                                      this.WALL_RANK);
+      dCard = (c && c.r > this.WALL_RANK) ? c : coin;
+      spent = dCard.wall ? null : dCard;
+    } else {
+      dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
+      spent = dCard;
+    }
     const spend = (q, c) => {
       if (!c) return;
       const i = q.hand.indexOf(c);
       if (i >= 0) { q.hand.splice(i, 1); q.discard.push(c); }
     };
     const a = aCard ? aCard.r : 0;
-    const b = (dCard ? dCard.r : 0) + bonus;
-    const attackerWins = duelWinner(aCard, dCard, tile.terrain);
+    const b = (dCard ? dCard.r : 0) + bonus + extra;
+    const attackerWins = duelWinner(aCard, dCard, tile.terrain, extra);
     /* The attacker's card was spent on the map before we got here; only the
-     * defender pays out of hand. */
-    if (!this.DUEL_KEEP || attackerWins) spend(d, dCard);
+     * defender pays out of hand — and a wall has no hand to pay from. */
+    if (spent && (!this.DUEL_KEEP || attackerWins)) spend(d, spent);
     this.inc("duels");
     this.inc("duel_on_" + tile.terrain);
     if (attackerWins) this.inc("duel_won_on_" + tile.terrain);
@@ -7225,6 +7386,9 @@ function startGame(force) {
                              friendsOf10: mv === "friends" || mv === "both",
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
+                             fortify: $("#fortify") ? $("#fortify").value : undefined,
+                             attacksPerTurn:
+                               $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -9027,7 +9191,8 @@ function renderPrompt() {
        * All of it is a picture: whose attack, the card itself, the ground it is
        * being fought over with its bonus as shields, and the rank that holds —
        * on a card outline, because that is what you are being asked for. */
-      ask(t("ask.duel.defend.short"));
+      ask(REQ.wall ? t("ask.duel.defend.wall", { wall: REQ.wall })
+                   : t("ask.duel.defend.short"));
       if (REQ.against) {
         const need = Math.max(1, REQ.need);
         const chip = REQ.by === null || REQ.by === undefined ? ""
@@ -9985,6 +10150,8 @@ function netRules() {
     friendsOf10: mv === "friends" || mv === "both",
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
+    fortify: $("#fortify") ? $("#fortify").value : undefined,
+    attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,
