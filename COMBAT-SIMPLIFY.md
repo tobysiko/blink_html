@@ -99,3 +99,89 @@ Same shape, slightly stronger.
   which is roughly what a civilization game wants: worth doing, not compulsory.
 - Nothing here is in the rulebook. `fortify` and `attacksPerTurn` default to
   v0.24 as printed.
+
+## 6 · The defender's policy is worth more than any rule (added after §1–5)
+
+Every number above assumes the engine's own defender: spend the CHEAPEST card
+that holds the ground, decline when nothing does. That is the one thing in the
+duel a person will not reproduce, so it was made an option — `defend` —
+and the whole comparison re-run against three more policies.
+
+    min       cheapest card that holds, decline when nothing does  (default)
+    hoard     as min, but decline rather than spend above rank 12 —
+              a hand is for winning tricks, not for saving one unit
+    panic     the highest card that holds; over-defending, which people do
+    lastditch defend only when this is the tile's last unit
+
+Fighter win %, 2000 games, 4 players, 50% is chance:
+
+| defender | assault (v0.24) | wall 13 + cap | change |
+|---|---|---|---|
+| min | 53.4 | 53.5 | +0.1 |
+| **hoard** | **69.0** | **66.3** | −2.7 |
+| panic | 47.6 | 47.5 | −0.1 |
+| lastditch | 53.5 | 53.8 | +0.3 |
+
+**Two conclusions, and the second one matters more.**
+
+1. The recommendation survives every policy: wall 13 + cap tracks the printed
+   game within three points whatever the defenders do. The simplification is
+   free. Take it.
+
+2. **The rules are not what balances combat — the defenders are.** A table that
+   hoards its high cards for tricks makes attacking worth 69%, and doubles the
+   ground that changes hands (46.8 tiles a game against 24.1). A table that
+   over-defends makes attacking a mistake at 47.6%. That is a 21-point spread,
+   larger than every rule change measured here put together.
+
+   And hoarding is the *rational* trick-taking instinct: your hand wins tricks,
+   which buys your whole turn, while a defence card saves one unit on somebody
+   else's turn. A person who plays Blink well will hoard. So the honest reading
+   of every number in this document is that it is a floor: at a real table
+   combat is probably stronger and the map churns harder.
+
+### Two attempts to close that gap, both rejected
+
+**"The winner keeps their card"** (`duelKeep`, already in the engine). Spread
+across the three policies: 26.7 points, worse than doing nothing. It cannot
+reach a hoarding defender, because they decline *before* the fight — the rule
+only refunds a card that was committed.
+
+**A garrison** — defence the ground has whether or not a card is committed
+(`garrison: N`, added for this test). It does compress the spread, and it does
+it by making combat a trap again:
+
+| garrison | min | hoard | panic | spread | tiles taken/game |
+|---|---|---|---|---|---|
+| 0 | 53.5 | 66.3 | 47.5 | 18.8 | 11.3 |
+| 3 | 44.6 | 62.0 | 42.0 | 20.0 | 7.7 |
+| 5 | 45.6 | 57.4 | 42.5 | 14.9 | 5.7 |
+| 7 | 45.7 | 53.2 | 42.1 | 11.1 | 4.0 |
+
+A garrison of 7 nearly halves the spread and puts fighters at 45.7% — below
+chance, which is where DUEL-SPOILS.md found the game before the duel existed.
+Robustness bought by making the fight not worth having is not robustness.
+
+**So this one goes to a table, not to the simulator.** The thing to watch in
+the first human game of v0.25 is not who wins the duels. It is whether people
+spend cards defending at all.
+
+## 7 · A fortification is mostly not a purchase
+
+Measured alongside the rest, 4 players, all seats attacking:
+
+- coins **bought** as fortifications: ~5.5 a game
+- coins placed **free by colonies** (effect B): ~11.5 a game
+- coins still standing on the map at final scoring: ~8
+
+Two thirds of the walls on the board were never chosen by the player they
+protect, and a third of all coins are never tested by anybody. The rule that
+governs them is therefore read far more often than it is used — which is an
+argument for the simplest wording that works, not the best-balanced one.
+
+It is also the fault the engine already recorded against the pre-v0.24 "a coin
+absorbs the attack" rule: bots learned walls were not worth hitting and stopped
+hitting them, leaving 8.5 coins untouched at scoring. Under the assault rule
+that symptom never went away — 8 coins still stand at the end. Under wall 13 it
+is 8.8 coins but 3.8 walls broken a game against the assault's 3.1, so the coin
+is fractionally more alive, not less.

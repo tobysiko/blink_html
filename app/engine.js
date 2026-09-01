@@ -1165,9 +1165,10 @@ function duelValue(game, p, t, w, card) {
    * than a sample. A bonus raises the bar the sampled hand has to clear. */
   const wallExtra = (t.gold && (game.FORTIFY || "assault") === "bonus")
     ? game.FORT_BONUS : 0;
+  const garrison = game.GARRISON || 0;
   const odds = wallAt !== null
-    ? (value > wallAt + bonus ? 1 : 0)
-    : hand.filter((c) => value > c.r + bonus + wallExtra).length / hand.length;
+    ? (value > wallAt + bonus + garrison ? 1 : 0)
+    : hand.filter((c) => value > c.r + bonus + wallExtra + garrison).length / hand.length;
 
   let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * (cards - 1);
   /* Emptying a tile is worth more than a kill when the winner settles it: you
@@ -1332,6 +1333,25 @@ class Game {
      * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
      * contain 3+, which is where "combat feels overwhelming" comes from. */
     this.ATTACKS_PER_TURN = opts.attacksPerTurn || 0;
+    /* HOW A BOT DEFENDS a duel. "min" is the engine's own policy: the cheapest
+     * card that holds the ground, decline when nothing does. The others exist
+     * because that policy is the one thing in the duel a person will NOT
+     * reproduce — see COMBAT-SIMPLIFY.md §5.
+     *   min      — cheapest card that holds (default)
+     *   hoard    — as min, but decline rather than spend above DEFEND_CEIL:
+     *              a hand is for winning tricks, not for saving one unit
+     *   panic    — the highest card that holds; over-defending, which people do
+     *   lastditch— defend only when this is the tile's last unit */
+    this.DEFEND = ["min", "hoard", "panic", "lastditch"].includes(opts.defend)
+      ? opts.defend : "min";
+    this.DEFEND_CEIL = opts.defendCeil === undefined ? 12 : opts.defendCeil;
+    /* A GARRISON is defence the ground has whether or not a card is committed:
+     * every duel is against terrain + garrison + whatever the defender adds.
+     * 0 is v0.24 as printed, where an empty hand defends with nothing and the
+     * attacker wins 100% of those duels. Off by default; measured because the
+     * bot's DEFENCE POLICY is worth +-20 points of win rate, which is more than
+     * any combat rule tested, and a garrison is the only lever that reaches it. */
+    this.GARRISON = opts.garrison || 0;
     this.m.fortMode = this.FORTIFY;   // NB: m.fortify() is a method
     this.m.atkLeft = Infinity;
     /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
@@ -2413,12 +2433,17 @@ class Game {
      * The defender can see the attack, so unlike the earlier version of this
      * there is nothing to estimate — `need` is exact. */
     const sorted = q.hand.slice().sort((a, b) => a.r - b.r);
-    const need = against ? against.r - bonus : 0;
+    const need = against ? against.r - bonus - this.GARRISON : 0;
+    /* The ground already holds it: keep the card. */
+    if (this.GARRISON && need <= 0) return null;
     /* Ground nearly lost is worth stretching for; ground you can retake is not.
      * A level fight goes to the defender, so meeting `need` exactly is enough. */
     const able = sorted.filter((c) => c.r >= need);
     if (!able.length) return null;
     if (tile.units.length > 1 && !able.length) return null;
+    if (this.DEFEND === "lastditch" && tile.units.length > 1) return null;
+    if (this.DEFEND === "hoard" && able[0].r > this.DEFEND_CEIL) return null;
+    if (this.DEFEND === "panic") return able[able.length - 1];
     /* Among cards that hold, the ground's own suit also wins a level fight, so
      * prefer it — but never at the price of a higher rank. */
     const floor = able[0].r;
@@ -2520,7 +2545,7 @@ class Game {
      * defender answers with nothing are exactly the ones a wall is bought for.
      * A BONUS asks for a card as usual and adds to it. */
     const wall = fort === "wall";
-    const extra = fort === "bonus" ? this.FORT_BONUS : 0;
+    const extra = (fort === "bonus" ? this.FORT_BONUS : 0) + this.GARRISON;
     if (fort) { tile.gold -= 1; this.inc("wall_broken"); }
     const dCard = wall ? { r: this.WALL_RANK, s: tile.terrain, wall: true }
                        : yield* this._duelCard(d, "defend", tile, aCard, p.i);
