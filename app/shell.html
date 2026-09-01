@@ -854,6 +854,14 @@
   /* ---- prompt + actions ---- */
   #prompt{margin-bottom:6px}
   .ask{margin-bottom:5px}
+  /* One line, the first time a thing happens, and never again. */
+  .coach{margin:5px 0 6px; padding:6px 9px; border-left:3px solid var(--gold);
+         background:#F4F1E9; font-size:12.5px; line-height:1.45; color:var(--ink);
+         display:flex; gap:8px; align-items:flex-start}
+  .coach span{flex:1}
+  .coach button{border:0; background:none; padding:0; cursor:pointer;
+                font:inherit; font-size:11.5px; color:var(--stone);
+                text-decoration:underline; white-space:nowrap}
   .ask b{color:var(--deep)}
   .ok{color:var(--green); font-weight:600}
   .bad{color:#B33A2E; font-weight:600}
@@ -1149,6 +1157,13 @@
         <option value="combo" data-i18n="setup.meldRules.combo"></option>
         <option value="friends" data-i18n="setup.meldRules.friends"></option>
         <option value="both" data-i18n="setup.meldRules.both"></option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="coach" data-i18n="setup.coach">Learn as I play</label>
+      <select id="coach">
+        <option value="on" selected data-i18n="setup.coach.on"></option>
+        <option value="off" data-i18n="setup.coach.off"></option>
       </select>
     </div>
     <div class="field">

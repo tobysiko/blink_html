@@ -854,6 +854,14 @@
   /* ---- prompt + actions ---- */
   #prompt{margin-bottom:6px}
   .ask{margin-bottom:5px}
+  /* One line, the first time a thing happens, and never again. */
+  .coach{margin:5px 0 6px; padding:6px 9px; border-left:3px solid var(--gold);
+         background:#F4F1E9; font-size:12.5px; line-height:1.45; color:var(--ink);
+         display:flex; gap:8px; align-items:flex-start}
+  .coach span{flex:1}
+  .coach button{border:0; background:none; padding:0; cursor:pointer;
+                font:inherit; font-size:11.5px; color:var(--stone);
+                text-decoration:underline; white-space:nowrap}
   .ask b{color:var(--deep)}
   .ok{color:var(--green); font-weight:600}
   .bad{color:#B33A2E; font-weight:600}
@@ -1152,6 +1160,13 @@
       </select>
     </div>
     <div class="field">
+      <label for="coach" data-i18n="setup.coach">Learn as I play</label>
+      <select id="coach">
+        <option value="on" selected data-i18n="setup.coach.on"></option>
+        <option value="off" data-i18n="setup.coach.off"></option>
+      </select>
+    </div>
+    <div class="field">
       <label for="fortify" data-i18n="setup.fortify">Fortifications</label>
       <select id="fortify">
         <option value="assault" selected data-i18n="setup.fortify.assault"></option>
@@ -1345,7 +1360,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"8e193d2ba0","branch":"main","dirty":true,"built":"2026-09-01T15:31:38Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"487767be9d","branch":"main","dirty":true,"built":"2026-09-01T18:47:44Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1425,6 +1440,18 @@ en: {
   "setup.meldRules.combo": "Combination melds — play two or more melds of 2+ cards as one",
   "setup.meldRules.friends": "Friends of 10s — any two cards summing to 10, 20 or 30",
   "setup.meldRules.both": "Both",
+  "setup.coach": "Learn as I play",
+  "setup.coach.on": "On \u2014 one line the first time something happens",
+  "setup.coach.off": "Off",
+  "coach.got": "Got it",
+  "coach.meld": "Every card you play now, you spend on the map in a moment. A big meld wins the trick and empties your hand.",
+  "coach.trick": "The winner acts first. Match their card count and lose, and one of yours is set aside \u2014 come last and you take a coin.",
+  "coach.settle": "That card just became a person on the map: a point at the end, and one unit closer to ending the game.",
+  "coach.explore": "New ground has to touch two tiles already there, so the world stays one body you can reach across.",
+  "coach.gold": "Gold is the fourth thing a card can be. It feeds your people, walls them in, and buys research.",
+  "coach.tier": "Your board stepped up \u2014 bigger melds, further moves, better cards to buy, and a bigger food bill. That is the engine.",
+  "coach.food": "Your people eat every time your hand recycles. The coins on your tier\u2019s slots are the meal; short slots starve units off the map.",
+  "coach.duel": "Someone attacked on their own turn. You answer with one card plus the ground under it \u2014 which is why a hand played out is dangerous.",
   "setup.fortify": "Fortifications",
   "setup.fortify.assault": "Assault \u2014 two cards from your meld, the lower rank fights",
   "setup.fortify.wall": "Wall 10 \u2014 the coin defends at 10, or a better card from hand",
@@ -1991,6 +2018,18 @@ de: {
   "setup.meldRules.combo": "Mehrfach-Kombinationen — zwei oder mehr Kombinationen aus je 2+ Karten zusammen ausspielen",
   "setup.meldRules.friends": "Zehnerfreunde — zwei Karten, deren Werte 10, 20 oder 30 ergeben",
   "setup.meldRules.both": "Beide",
+  "setup.coach": "Beim Spielen lernen",
+  "setup.coach.on": "An \u2014 eine Zeile, wenn etwas zum ersten Mal passiert",
+  "setup.coach.off": "Aus",
+  "coach.got": "Verstanden",
+  "coach.meld": "Jede Karte, die du jetzt spielst, gibst du gleich auf der Karte aus. Eine gro\u00dfe Kombination gewinnt den Stich \u2014 und leert deine Hand.",
+  "coach.trick": "Der Gewinner handelt zuerst. Wer gleich viele Karten legt und verliert, gibt eine ab; die letzte Kombination nimmt eine M\u00fcnze.",
+  "coach.settle": "Aus dieser Karte wurde ein Mensch auf der Karte: am Ende ein Punkt \u2014 und eine Einheit n\u00e4her am Spielende.",
+  "coach.explore": "Neues Land muss zwei bereits liegende Felder ber\u00fchren. So bleibt die Welt ein zusammenh\u00e4ngender K\u00f6rper.",
+  "coach.gold": "Gold ist die vierte M\u00f6glichkeit f\u00fcr eine Karte. Es ern\u00e4hrt dein Volk, befestigt es und bezahlt die Forschung.",
+  "coach.tier": "Deine Stufe ist gestiegen \u2014 gr\u00f6\u00dfere Kombinationen, weitere Wege, bessere Karten und eine h\u00f6here Nahrungsrechnung. Das ist der Motor.",
+  "coach.food": "Dein Volk isst bei jedem Handwechsel. Die M\u00fcnzen auf den Feldern deiner Stufe sind die Mahlzeit; fehlt sie, verhungern Einheiten.",
+  "coach.duel": "Jemand greift in seinem eigenen Zug an. Du antwortest mit einer Karte plus dem Gel\u00e4nde \u2014 darum ist eine leergespielte Hand gef\u00e4hrlich.",
   "setup.fortify": "Befestigungen",
   "setup.fortify.assault": "Sturmangriff \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft",
   "setup.fortify.wall": "Mauer 10 \u2014 die M\u00fcnze verteidigt mit 10, oder eine bessere Karte aus der Hand",
@@ -7395,6 +7434,7 @@ function startGame(force) {
                              aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
+  COACH = null; COACH_BAND = null;
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
   REP = carryFlags(REP,
     newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
@@ -7891,6 +7931,50 @@ function ring(at, bad, delay) {
   }, Math.max(0, delay));
 }
 
+/* ONE LINE, THE FIRST TIME A THING HAPPENS.
+ *
+ * The prompt bar already says what you must do — 92 of those strings — and the
+ * board already lights the cells a card may act on. What neither says is WHY,
+ * and why is the whole of Blink: the cards that win the trick are the cards you
+ * then spend. So the teaching is eight sentences, each fired at the only moment
+ * it is obvious, each shown once ever and then never again.
+ *
+ * Seen-state is per browser and best effort. A private window, cleared data or
+ * a browser that refuses storage simply means a player is taught twice, which
+ * is a far smaller fault than a tutorial that will not go away. */
+let COACH = null;                                  // the line waiting to be shown
+let COACH_BAND = null;                             // to notice a tier stepping up
+/* NB: no dots. i18n_test treats every dotted literal in this file as a key
+ * that must exist in both languages, and a storage key is not a string a
+ * player ever reads. */
+const COACH_KEY = "blink_coach_seen";
+let COACH_SEEN = null;
+
+function coachSeen() {
+  if (COACH_SEEN) return COACH_SEEN;
+  COACH_SEEN = new Set();
+  try {
+    const raw = window.localStorage.getItem(COACH_KEY);
+    if (raw) for (const k of raw.split(",")) COACH_SEEN.add(k);
+  } catch (e) { /* storage refused: teach again next time */ }
+  return COACH_SEEN;
+}
+function coachOn() {
+  const sel = $("#coach");
+  return !sel || sel.value === "on";
+}
+/* Fires once. Returns true if a line was armed, so callers can re-render. */
+function coach(key) {
+  if (!coachOn() || COACH) return false;
+  const seen = coachSeen();
+  if (seen.has(key)) return false;
+  seen.add(key);
+  try { window.localStorage.setItem(COACH_KEY, [...seen].join(",")); } catch (e) {}
+  COACH = key;
+  return true;
+}
+function coachDismiss() { COACH = null; renderPrompt(); }
+
 /* Drain whatever the engine recorded since the last step and play it. */
 function playEvents() {
   if (!G || !G.events || !G.events.length) return 0;
@@ -7902,6 +7986,15 @@ function playEvents() {
   let d = 0;
   for (const e of q) {
     const col = SEAT_C[e.seat] || "#888";
+    /* The trick is explained to everyone; the rest only when it is your own
+     * card doing it, because a lesson about somebody else's turn teaches
+     * nothing you can act on. */
+    if (e.type === "trick") coach("coach.trick");
+    else if (e.seat === ME) {
+      if (e.type === "unit-in") coach("coach.settle");
+      else if (e.type === "tile") coach("coach.explore");
+      else if (e.type === "gold") coach("coach.gold");
+    }
     switch (e.type) {
       case "unit-in":
         token("unit", uiPoint("board") || uiPoint("hand"), cellPoint(e.to),
@@ -9100,6 +9193,16 @@ function renderPrompt() {
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
+  /* Prompt-driven lessons: the moment you are ASKED is the moment to explain
+   * what you are being asked for. The tier line is a state change rather than
+   * a question, so it is noticed here too — the band only ever goes up. */
+  if (REQ.type === "meld") coach("coach.meld");
+  else if (REQ.type === "duel" && REQ.role === "defend") coach("coach.duel");
+  else if (REQ.type === "feed") coach("coach.food");
+  const myBand = G.P[ME] ? G.P[ME].band() : 0;
+  if (COACH_BAND === null) COACH_BAND = myBand;
+  else if (myBand > COACH_BAND) { COACH_BAND = myBand; coach("coach.tier"); }
+
   const ask = (html) => bar.appendChild(el("div", "ask", html));
   const btn = (label, fn, cls, dis) => {
     const b = el("button", "go " + (cls || ""), label);
@@ -9287,6 +9390,17 @@ function renderPrompt() {
       break;
     }
   }
+
+  /* The lesson goes UNDER the instruction: what to do first, why second. */
+  if (COACH) {
+    const box = el("div", "coach");
+    box.appendChild(el("span", "", t(COACH)));
+    const gotIt = el("button", "", t("coach.got"));
+    gotIt.addEventListener("click", coachDismiss);
+    box.appendChild(gotIt);
+    bar.appendChild(box);
+  }
+
 }
 
 /* Which card leaves your hand. Under the "lowest" rule the engine offers only

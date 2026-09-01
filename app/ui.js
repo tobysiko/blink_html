@@ -244,6 +244,7 @@ function startGame(force) {
                              aSumLadder: $("#a-ladder") ? $("#a-ladder").value : undefined,
                              layout: chosenLayout() } };
   G = new Game(GARGS.n, GARGS.seed, GARGS.opts);
+  COACH = null; COACH_BAND = null;
   LOG = []; MARK = 0; BLOCK = null; RESUMING = false; TRICK = null;
   REP = carryFlags(REP,
     newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
@@ -740,6 +741,50 @@ function ring(at, bad, delay) {
   }, Math.max(0, delay));
 }
 
+/* ONE LINE, THE FIRST TIME A THING HAPPENS.
+ *
+ * The prompt bar already says what you must do — 92 of those strings — and the
+ * board already lights the cells a card may act on. What neither says is WHY,
+ * and why is the whole of Blink: the cards that win the trick are the cards you
+ * then spend. So the teaching is eight sentences, each fired at the only moment
+ * it is obvious, each shown once ever and then never again.
+ *
+ * Seen-state is per browser and best effort. A private window, cleared data or
+ * a browser that refuses storage simply means a player is taught twice, which
+ * is a far smaller fault than a tutorial that will not go away. */
+let COACH = null;                                  // the line waiting to be shown
+let COACH_BAND = null;                             // to notice a tier stepping up
+/* NB: no dots. i18n_test treats every dotted literal in this file as a key
+ * that must exist in both languages, and a storage key is not a string a
+ * player ever reads. */
+const COACH_KEY = "blink_coach_seen";
+let COACH_SEEN = null;
+
+function coachSeen() {
+  if (COACH_SEEN) return COACH_SEEN;
+  COACH_SEEN = new Set();
+  try {
+    const raw = window.localStorage.getItem(COACH_KEY);
+    if (raw) for (const k of raw.split(",")) COACH_SEEN.add(k);
+  } catch (e) { /* storage refused: teach again next time */ }
+  return COACH_SEEN;
+}
+function coachOn() {
+  const sel = $("#coach");
+  return !sel || sel.value === "on";
+}
+/* Fires once. Returns true if a line was armed, so callers can re-render. */
+function coach(key) {
+  if (!coachOn() || COACH) return false;
+  const seen = coachSeen();
+  if (seen.has(key)) return false;
+  seen.add(key);
+  try { window.localStorage.setItem(COACH_KEY, [...seen].join(",")); } catch (e) {}
+  COACH = key;
+  return true;
+}
+function coachDismiss() { COACH = null; renderPrompt(); }
+
 /* Drain whatever the engine recorded since the last step and play it. */
 function playEvents() {
   if (!G || !G.events || !G.events.length) return 0;
@@ -751,6 +796,15 @@ function playEvents() {
   let d = 0;
   for (const e of q) {
     const col = SEAT_C[e.seat] || "#888";
+    /* The trick is explained to everyone; the rest only when it is your own
+     * card doing it, because a lesson about somebody else's turn teaches
+     * nothing you can act on. */
+    if (e.type === "trick") coach("coach.trick");
+    else if (e.seat === ME) {
+      if (e.type === "unit-in") coach("coach.settle");
+      else if (e.type === "tile") coach("coach.explore");
+      else if (e.type === "gold") coach("coach.gold");
+    }
     switch (e.type) {
       case "unit-in":
         token("unit", uiPoint("board") || uiPoint("hand"), cellPoint(e.to),
@@ -1949,6 +2003,16 @@ function renderPrompt() {
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
+  /* Prompt-driven lessons: the moment you are ASKED is the moment to explain
+   * what you are being asked for. The tier line is a state change rather than
+   * a question, so it is noticed here too — the band only ever goes up. */
+  if (REQ.type === "meld") coach("coach.meld");
+  else if (REQ.type === "duel" && REQ.role === "defend") coach("coach.duel");
+  else if (REQ.type === "feed") coach("coach.food");
+  const myBand = G.P[ME] ? G.P[ME].band() : 0;
+  if (COACH_BAND === null) COACH_BAND = myBand;
+  else if (myBand > COACH_BAND) { COACH_BAND = myBand; coach("coach.tier"); }
+
   const ask = (html) => bar.appendChild(el("div", "ask", html));
   const btn = (label, fn, cls, dis) => {
     const b = el("button", "go " + (cls || ""), label);
@@ -2136,6 +2200,17 @@ function renderPrompt() {
       break;
     }
   }
+
+  /* The lesson goes UNDER the instruction: what to do first, why second. */
+  if (COACH) {
+    const box = el("div", "coach");
+    box.appendChild(el("span", "", t(COACH)));
+    const gotIt = el("button", "", t("coach.got"));
+    gotIt.addEventListener("click", coachDismiss);
+    box.appendChild(gotIt);
+    bar.appendChild(box);
+  }
+
 }
 
 /* Which card leaves your hand. Under the "lowest" rule the engine offers only
