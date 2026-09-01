@@ -19,6 +19,7 @@ each pair; the content is identical.
 | `Blink-card-effects.pdf` / `-bw` | victory-card effects reference |
 | `Blink-map-objectives.pdf` / `-bw` | the objectives module — **not re-tuned for v0.21**, leave it out of a first game |
 | `Blink-player-board-A4.pdf` / `-bw` | player board, one per player |
+| `Blink-player-aid.pdf` / `-bw` | the turn on one face, the numbers on the other. One page is a four-player set: cut the four cards out and fold each one backwards along the dotted line, so it comes out double thickness at 88×63mm with no duplex printing to register |
 | `Blink-playtest-sheet.pdf` | one page to fill in while you play |
 | `Blink-variants.pdf` | variants and shelved rules — none are part of the base game |
 

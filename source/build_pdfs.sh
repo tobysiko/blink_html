@@ -36,6 +36,8 @@ python3 build_module.py
 python3 build_playtest.py
 python3 build_variants.py
 python3 build_perks.py          # proposal: victory row perk tokens
+python3 build_aid.py            # the player aid, four to a page
+python3 build_aid.py --bw
 python3 board_a4.py
 python3 board_blank.py
 
@@ -111,6 +113,9 @@ topdf "Blink-variants.html"              "Blink-variants.pdf"
 # A proposal, not a component — see VROW-PERKS.md. Printed so it can be cut
 # out and played with, which is the only way to find out if it is any good.
 topdf "Blink-perk-tokens.html"           "Blink-perk-tokens.pdf"
+# One page is a four-player set. Fold-over, so nothing has to register duplex.
+topdf "Blink-player-aid.html"            "Blink-player-aid.pdf"
+topdf "Blink-player-aid-bw.html"         "Blink-player-aid-bw.pdf"
 topdf "Blink-rules-$RULES-bw.html"       "Blink-rules-$RULES-bw.pdf"
 topdf "Blink-first-game-bw.html"         "Blink-first-game-bw.pdf"
 topdf "Blink-card-effects-bw.html"       "Blink-card-effects-bw.pdf"
