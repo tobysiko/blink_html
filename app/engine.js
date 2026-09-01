@@ -1166,8 +1166,14 @@ function duelValue(game, p, t, w, card) {
   const wallExtra = (t.gold && (game.FORTIFY || "assault") === "bonus")
     ? game.FORT_BONUS : 0;
   const garrison = game.GARRISON || 0;
+  /* Against a wall the attacker must clear the coin AND whatever the hand can
+   * add on top of it — except under "wallonly", where the coin is the whole
+   * defence and the hand never appears. */
   const odds = wallAt !== null
-    ? (value > wallAt + bonus + garrison ? 1 : 0)
+    ? (value > wallAt + bonus + garrison
+        ? ((game.FORTIFY === "wallonly") ? 1
+           : hand.filter((c) => value > c.r + bonus + garrison).length / hand.length)
+        : 0)
     : hand.filter((c) => value > c.r + bonus + wallExtra + garrison).length / hand.length;
 
   let v = w.ATTACK_V - w.ATTACK_COST_W * bonus - w.DUEL_CARD_W * (cards - 1);
@@ -1321,13 +1327,22 @@ class Game {
      * attacker wins 13.6%. So a wall that ADDS to a card the defender does not
      * have defends nothing, which is what "bonus" exists to demonstrate.
      *   assault — two cards from the meld, the LOWER rank fights (§07)
-     *   wall    — the coin defends alone at WALL_RANK + terrain, no card asked
+     *   wall    — the coin defends AT LEAST WALL_RANK: the defender may still
+     *              answer with a card, and the higher of the two fights. A
+     *              wall must never LOWER a defence, which "wallonly" does.
+     *   wallonly— the coin defends alone, the hand is not asked (measured
+     *              first, and kept only so those numbers reproduce)
      *   absorb  — the attack is refused outright, the coin is spent
      *   bonus   — the defender commits a card as usual, +FORT_BONUS
      * The coin goes to the supply in every mode. */
-    this.FORTIFY = ["assault", "wall", "absorb", "bonus"].includes(opts.fortify)
-      ? opts.fortify : "assault";
-    this.WALL_RANK = opts.wallRank === undefined ? 13 : opts.wallRank;
+    this.FORTIFY = ["assault", "wall", "wallonly", "absorb", "bonus"]
+      .includes(opts.fortify) ? opts.fortify : "assault";
+    /* WHAT THE COIN IS WORTH. Measured across 9/11/13/15 the number barely
+     * moves the game (52.0 / 51.4 / 50.8 / 52.0 fighter win), so it is chosen
+     * for the sentence it makes rather than the balance: 10 is the top of the
+     * starting deck, and a level fight goes to the defender, so NO CARD YOU
+     * WERE DEALT CAN BREAK A WALL — you need something researched. */
+    this.WALL_RANK = opts.wallRank === undefined ? 10 : opts.wallRank;
     this.FORT_BONUS = opts.fortBonus === undefined ? 5 : opts.fortBonus;
     /* Attacks allowed in one map phase. 0 = uncapped, which is v0.24 as
      * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
@@ -2406,7 +2421,7 @@ class Game {
    * so this is a priced decision, not a guess: beat `against.r - bonus` and
    * the tile holds. Humans are asked; bots follow the policy below.
    */
-  *_duelCard(q, role, tile, against, by) {
+  *_duelCard(q, role, tile, against, by, floor) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
     if (this.isHuman(q.i)) {
@@ -2436,9 +2451,13 @@ class Game {
     const need = against ? against.r - bonus - this.GARRISON : 0;
     /* The ground already holds it: keep the card. */
     if (this.GARRISON && need <= 0) return null;
+    /* A wall already holds this one, or nothing in hand beats the wall: keep
+     * the card. The coin fights instead and costs no hand. */
+    if (floor && (need <= floor || Math.max(...q.hand.map((c) => c.r)) <= floor))
+      return null;
     /* Ground nearly lost is worth stretching for; ground you can retake is not.
      * A level fight goes to the defender, so meeting `need` exactly is enough. */
-    const able = sorted.filter((c) => c.r >= need);
+    const able = sorted.filter((c) => c.r >= need && (!floor || c.r > floor));
     if (!able.length) return null;
     if (tile.units.length > 1 && !able.length) return null;
     if (this.DEFEND === "lastditch" && tile.units.length > 1) return null;
@@ -2446,8 +2465,8 @@ class Game {
     if (this.DEFEND === "panic") return able[able.length - 1];
     /* Among cards that hold, the ground's own suit also wins a level fight, so
      * prefer it — but never at the price of a higher rank. */
-    const floor = able[0].r;
-    return able.find((c) => c.r === floor && c.s === tile.terrain) || able[0];
+    const cheapest = able[0].r;
+    return able.find((c) => c.r === cheapest && c.s === tile.terrain) || able[0];
   }
 
   /* ASSAULTING A FORTIFICATION (§07).
@@ -2544,11 +2563,25 @@ class Game {
      * hand is never asked. That is the whole point of it — the 40% of duels a
      * defender answers with nothing are exactly the ones a wall is bought for.
      * A BONUS asks for a card as usual and adds to it. */
-    const wall = fort === "wall";
+    const wall = fort === "wall" || fort === "wallonly";
     const extra = (fort === "bonus" ? this.FORT_BONUS : 0) + this.GARRISON;
     if (fort) { tile.gold -= 1; this.inc("wall_broken"); }
-    const dCard = wall ? { r: this.WALL_RANK, s: tile.terrain, wall: true }
-                       : yield* this._duelCard(d, "defend", tile, aCard, p.i);
+    /* THE COIN IS A FLOOR, NOT A SUBSTITUTE. A defender holding a 19 must not
+     * be made weaker by the wall they paid for, so the hand is still asked and
+     * the higher of coin and card fights. The card is spent only if it was the
+     * one that fought. */
+    const coin = { r: this.WALL_RANK, s: tile.terrain, wall: true };
+    let dCard, spent = null;
+    if (fort === "wallonly") dCard = coin;
+    else if (wall) {
+      const c = yield* this._duelCard(d, "defend", tile, aCard, p.i,
+                                      this.WALL_RANK);
+      dCard = (c && c.r > this.WALL_RANK) ? c : coin;
+      spent = dCard.wall ? null : dCard;
+    } else {
+      dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
+      spent = dCard;
+    }
     const spend = (q, c) => {
       if (!c) return;
       const i = q.hand.indexOf(c);
@@ -2559,7 +2592,7 @@ class Game {
     const attackerWins = duelWinner(aCard, dCard, tile.terrain, extra);
     /* The attacker's card was spent on the map before we got here; only the
      * defender pays out of hand — and a wall has no hand to pay from. */
-    if (!wall && (!this.DUEL_KEEP || attackerWins)) spend(d, dCard);
+    if (spent && (!this.DUEL_KEEP || attackerWins)) spend(d, spent);
     this.inc("duels");
     this.inc("duel_on_" + tile.terrain);
     if (attackerWins) this.inc("duel_won_on_" + tile.terrain);

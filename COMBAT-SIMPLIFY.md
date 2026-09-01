@@ -185,3 +185,46 @@ hitting them, leaving 8.5 coins untouched at scoring. Under the assault rule
 that symptom never went away — 8 coins still stand at the end. Under wall 13 it
 is 8.8 coins but 3.8 walls broken a game against the assault's 3.1, so the coin
 is fractionally more alive, not less.
+
+## 8 · A wall must never lower a defence (corrected)
+
+The first wiring had the coin REPLACE the defender's card: fortified tiles
+defended at WALL_RANK and the hand was never asked. That is a bug in rule
+shape, not in code — a defender holding a 19 was made *weaker* by the wall they
+paid for, and any card over the wall both broke it and took the ground.
+
+**The coin is a floor, not a substitute.** The defender still answers; the
+higher of coin and card fights; the card is spent only if it was the one that
+fought, so a wall that holds costs the defender nothing but the coin. Breaking
+the wall and winning the fight remain one event — an attack is still one card.
+
+Both are in the engine: `fortify: "wall"` (floor) and `"wallonly"` (substitute,
+kept so the first numbers reproduce).
+
+| defender | assault (v0.24) | wall as substitute | wall as floor |
+|---|---|---|---|
+| min | 53.4 | 52.2 | 50.8 |
+| hoard | 69.0 | 65.4 | 65.5 |
+| panic | 47.6 | 45.2 | 45.3 |
+
+The floor costs the attacker about two and a half points against the printed
+game — walls are genuinely stronger when the hand can top them — and it gets
+the coin tested about as often as the assault does (3.3 walls broken a game
+against 3.1), so it is not the dead rule the pre-v0.24 absorb was.
+
+### What the coin should be worth: 10
+
+| coin | fighter win % (min) | (hoard) | walls broken/game | coins left at end |
+|---|---|---|---|---|
+| 9 | 52.0 | 67.1 | 4.0 | 8.6 |
+| 11 | 51.4 | 67.3 | 3.7 | 8.8 |
+| 13 | 50.8 | 65.5 | 3.3 | 9.0 |
+| 15 | 52.0 | 65.3 | 2.7 | 9.5 |
+
+The number does not matter to the balance — one standard error covers the whole
+column. So choose it for the sentence it makes. **10 is the top of the starting
+deck, and a level fight goes to the defender: no card you were dealt can break
+a wall.** Walls are broken by researched cards, which gives the coin a meaning
+a player can state without looking it up, and gives research one more job.
+
+`wallRank` now defaults to 10.
