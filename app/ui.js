@@ -757,7 +757,12 @@ let COACH_BAND = null;                             // to notice a tier stepping 
 /* NB: no dots. i18n_test treats every dotted literal in this file as a key
  * that must exist in both languages, and a storage key is not a string a
  * player ever reads. */
-const COACH_KEY = "blink_coach_seen";
+/* v2, and the reason is worth keeping: the first build marked a lesson seen
+ * the moment it was ARMED, then dropped it on every path that left
+ * renderPromptBody early — which was the whole map phase. Anyone who opened
+ * that build has lessons burned without ever having read them, so the key
+ * changes name once to give them back. */
+const COACH_KEY = "blink_coach_seen2";
 let COACH_SEEN = null;
 
 function coachSeen() {
@@ -1994,7 +1999,26 @@ function meldOk() {
          && isLegalMeld(SEL.meld);
 }
 
+/* THE LINE IS APPENDED BY A WRAPPER, NOT BY THE BODY.
+ *
+ * renderPromptBody has several return paths — the map phase hands off with
+ * `return renderTurn(...)`, which is most of a turn — and a lesson attached to
+ * the end of the body simply never appeared for any of them. Settle, explore,
+ * cash and the tier step-up were all armed and then silently dropped. */
 function renderPrompt() {
+  renderPromptBody();
+  if (!COACH || gameOver()) return;
+  const bar = $("#prompt");
+  if (!bar) return;
+  const box = el("div", "coach");
+  box.appendChild(el("span", "", t(COACH)));
+  const gotIt = el("button", "", t("coach.got"));
+  gotIt.addEventListener("click", coachDismiss);
+  box.appendChild(gotIt);
+  bar.appendChild(box);
+}
+
+function renderPromptBody() {
   const bar = $("#prompt");
   bar.innerHTML = "";
   /* gameOver(), not finished(): during the extra round §11 grants, finished()
@@ -2199,16 +2223,6 @@ function renderPrompt() {
       }
       break;
     }
-  }
-
-  /* The lesson goes UNDER the instruction: what to do first, why second. */
-  if (COACH) {
-    const box = el("div", "coach");
-    box.appendChild(el("span", "", t(COACH)));
-    const gotIt = el("button", "", t("coach.got"));
-    gotIt.addEventListener("click", coachDismiss);
-    box.appendChild(gotIt);
-    bar.appendChild(box);
   }
 
 }
