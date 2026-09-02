@@ -99,6 +99,45 @@ function fight(s, rank, fort) {
   }
 }
 
+// ------------------------------------------- the ladder: 10/12/14/16/18
+/* The app's wall is the tier ladder — the rank cap of the tier you are on,
+ * less two. It starts at 10 so a Tribe's wall is still exactly the top of the
+ * starting deck, and it climbs with the civilization behind it. */
+{
+  const LADDER = { fortify: 'wall', wallRank: 'cap', wallOffset: -2 };
+  const s = scene(LADDER, [3], 'plains');
+  const d = s.g.P[s.owner];
+  ok(d.band() === 0, 'the defender did not start at Tribe');
+  ok(d.rankCap() === 12, `Tribe's rank cap is ${d.rankCap()}, not 12`);
+  fight(s, 10);
+  ok(s.tile.owner === s.owner, "a 10 broke a Tribe's wall — the ladder should start at 10");
+}
+{
+  const LADDER = { fortify: 'wall', wallRank: 'cap', wallOffset: -2 };
+  const s = scene(LADDER, [3], 'plains');
+  fight(s, 11);
+  ok(s.tile.owner !== s.owner, "an 11 did not break a Tribe's wall of 10");
+}
+{
+  /* Empty the top two bands and the defender is a Kingdom: cap 16, wall 14. */
+  const LADDER = { fortify: 'wall', wallRank: 'cap', wallOffset: -2 };
+  const s = scene(LADDER, [3], 'plains');
+  const d = s.g.P[s.owner];
+  d.reserve[0] = 0; d.reserve[1] = 0;
+  ok(d.band() === 2 && d.rankCap() === 16,
+     `emptying two bands gave band ${d.band()} cap ${d.rankCap()}, expected 2 / 16`);
+  fight(s, 13);
+  ok(s.tile.owner === s.owner, "a 13 broke a Kingdom's wall — it should hold at 14");
+}
+{
+  const LADDER = { fortify: 'wall', wallRank: 'cap', wallOffset: -2 };
+  const s = scene(LADDER, [3], 'plains');
+  const d = s.g.P[s.owner];
+  d.reserve[0] = 0; d.reserve[1] = 0;
+  fight(s, 15);
+  ok(s.tile.owner !== s.owner, "a 15 did not break a Kingdom's wall of 14");
+}
+
 // ------------------------------------------------- one attack per map phase
 {
   const g = new E.Game(3, 77, { humans: [], attacksPerTurn: 1 });
