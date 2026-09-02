@@ -1324,8 +1324,17 @@ function initPan() {
       try { svg.setPointerCapture(e.pointerId); } catch (err) {}
       DRAG = { pinch: true, from: spread(), zoom: scaleNow(), moved: 99 };
     } else if (PTRS.size === 1 && svg.classList.contains("pannable")) {
-      try { svg.setPointerCapture(e.pointerId); } catch (err) {}
-      DRAG = { from: at(e), pan: { x: PAN.x, y: PAN.y }, scale: scaleNow(), moved: 0 };
+      /* NO CAPTURE YET, and that is the whole point. A captured pointer
+       * retargets its events to the capture element, so the browser fires the
+       * resulting `click` on the <svg> rather than on the <polygon> under the
+       * finger — and the per-tile click handlers never see it. The map is only
+       * `pannable` when it is zoomed in, which is why tiles could be selected
+       * when zoomed out and not otherwise.
+       *
+       * Capture is taken on the first move that is actually a drag (below), so
+       * a tap stays an ordinary click on the tile it landed on. */
+      DRAG = { from: at(e), pan: { x: PAN.x, y: PAN.y }, scale: scaleNow(),
+               moved: 0, id: e.pointerId, held: false };
     }
   });
   svg.addEventListener("pointermove", (e) => {
@@ -1341,13 +1350,22 @@ function initPan() {
     const p = at(e);
     const dx = p.x - DRAG.from.x, dy = p.y - DRAG.from.y;
     DRAG.moved = Math.max(DRAG.moved, Math.abs(dx) + Math.abs(dy));
+    /* A finger that has not moved 6 px is still a tap: do not pan, and do not
+     * take the pointer, because taking it costs the click. */
+    if (DRAG.moved <= 6) return;
+    if (!DRAG.held) {
+      DRAG.held = true;
+      try { svg.setPointerCapture(DRAG.id); } catch (err) {}
+    }
     PAN = { x: DRAG.pan.x - dx / DRAG.scale, y: DRAG.pan.y - dy / DRAG.scale };
     applyViewBox();
   });
   const end = (e) => {
     if (!PTRS.has(e.pointerId)) return;   // not one of ours — a touch elsewhere
     PTRS.delete(e.pointerId);
-    try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+    if (!DRAG || DRAG.pinch || DRAG.held) {
+      try { svg.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
     if (!DRAG || PTRS.size) return;
     const wasGesture = DRAG.moved > 6;
     DRAG = null;
