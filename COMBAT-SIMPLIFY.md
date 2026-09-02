@@ -228,3 +228,61 @@ a wall.** Walls are broken by researched cards, which gives the coin a meaning
 a player can state without looking it up, and gives research one more job.
 
 `wallRank` now defaults to 10.
+
+## 9 · Does a wall still matter late? Measured, and the answer reframes it
+
+Toby's worry: by the second half everyone holds market cards, so a wall of 10
+stops nothing — you only meet it if you were going to attack with a 12 anyway.
+
+For every duel on a fortified tile, ask what would have happened WITHOUT the
+coin: the defence would have been the defender's best hand card plus the
+ground. Three outcomes — the coin held a tile the hand would have lost, the
+wall was beaten, or the hand would have held it anyway and the coin was idle.
+600 games, 4 players, one attack per turn.
+
+| wall | rounds | coin held the tile | wall beaten | hand held it anyway |
+|---|---|---|---|---|
+| **10** | 1–6 | 3% | 46% | 51% |
+| **10** | 7+ | 2% | 51% | 46% |
+| **12** | 1–6 | 6% | 41% | 53% |
+| **12** | 7+ | 4% | 51% | 45% |
+| **cap** (12/14/16/18/20) | 1–6 | **18%** | 9% | 73% |
+| **cap** | 7+ | **12%** | 35% | 52% |
+
+**He is right, and it is worse than he thought: it is not only late.** At a flat
+10 the coin changes the result of 3% of the fights it is in, in the FIRST half
+too. Half the time it is beaten, and the other half the defender's own card was
+already above it — the floor is under their hand, so it adds nothing.
+
+**But the metric misses the coin's actual job.** The attacker can see the coin,
+so they only attack a wall when they are holding something that clears it, and
+otherwise they go elsewhere. That is deterrence, and it does not appear as a
+save — it appears as an attack that never happened. The number that shows it is
+the one the pre-v0.24 rule was condemned by: **8.6 of about 17 coins are still
+standing on the map at scoring**. Half the walls are never tested. They are not
+idle; they are working.
+
+So a wall does two jobs, and they want measuring separately: it STOPS an attack
+(rare — 2 to 6%) and it REDIRECTS one (common — half of them). At a flat 10 the
+second job is already being done, and raising the number mostly buys more of
+the first.
+
+**Scaling the wall with the tier** (`wallRank: "cap"` — a wall holds at the rank
+you may buy, a number already printed on the board) is the only version where
+the coin decides fights at a rate you could feel: 18% early, 12% late. The cost
+is visible in the same table — walls are attacked half as often (1.9 duels a
+game against 3.9) and 10 coins stand at the end instead of 8.6. That is
+deterrence turning back into avoidance, which is how the absorb rule died.
+
+**Recommendation.** Leave the printed rule at a flat 10 — it is one number, it
+teaches in a sentence, and its real work is already being done. Put the
+scaling version in the perk deck, where a rate that changes how one player
+plays is exactly the right size:
+
+> **Bastions** (standing) · Your fortifications hold at your tier's rank cap
+> instead of 10.
+
+That is measurably stronger than "+2" (18% against 6%), it reuses a number the
+player already reads off their board every turn, and it sits beside Ramparts in
+the same corner of the design without overlapping it — Ramparts makes a coin
+survive being disturbed, Bastions makes it harder to break.
