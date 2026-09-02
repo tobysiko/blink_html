@@ -493,35 +493,36 @@ check("_duelCard(p, \"attack\"" not in js,
 check(re.search(r"attack is the card you spent", rules, re.I),
       "section 06 does not say the spent card IS the attack")
 
-# THE FORTIFICATION is the rule most recently rewritten, and the old version of
-# it survived in print for a version while the engine had moved on. Both halves
-# are pinned: while the PRINTED rule is the assault, the engine must refuse a
-# lone card, and the book must say so.
+# THE FORTIFICATION is the rule most rewritten in this game — absorb, then the
+# assault, and now the WALL — and each time the book and the engine drifted
+# apart for a version. Every half of it is pinned.
 #
-# The engine now carries three unprinted alternatives behind `fortify` (see
-# COMBAT-SIMPLIFY.md), so the refusal is conditional on that option being the
-# printed one. If `fortify` ever defaults to something other than "assault",
-# this check and section 07 have to move together.
-check(re.search(r"if \(t\.gold && this\.combat === \"duel\"\s*\n?\s*"
-                r"&& \(this\.fortMode \|\| \"assault\"\) === \"assault\" && spare < 1\)"
-                r" return \[\];", js),
-      "the engine no longer refuses a single-card attack on a fortified tile")
-check(re.search(r'opts\.fortify\s*:\s*"assault"', js),
-      "fortify no longer defaults to the printed assault rule")
-check(re.search(r"Math\.min\(card\.r, second\.r\)", js),
-      "the assault no longer takes the LOWER of the two cards")
+# The wall is a LADDER: two under the tier's rank cap, so 10/12/14/16/18. And
+# it is a FLOOR, not a substitute — the defender may still answer with a better
+# card, and a wall must never make its owner weaker than the card they held.
+check(re.search(r'opts\.fortify\s*\?\s*opts\.fortify\s*:\s*"wall"', js)
+      or re.search(r'\.includes\(opts\.fortify\)\s*\?\s*opts\.fortify\s*:\s*"wall"', js),
+      "fortify no longer defaults to the printed wall rule")
+check(re.search(r'opts\.wallRank === undefined \|\| opts\.wallRank === "cap"', js),
+      "a wall no longer climbs with the tier by default")
+check(re.search(r"opts\.wallOffset === undefined \? -2", js),
+      "the wall ladder is no longer two under the rank cap")
+check(re.search(r"c\.r > coin\.r", js),
+      "the wall is no longer a floor — the defender's better card must still fight, "
+      "and it must be compared against the coin's own ladder value")
 for phrase, why in [
-    ("assault", "section 07 never names the assault"),
-    ("two cards", "section 07 does not say an assault costs two cards"),
-    ("lower of the two ranks is the attack",
-     "section 07 does not say the lower rank is the attack"),
-    ("cannot attack that tile at all",
-     "section 07 does not say a lone card is refused outright")]:
+    ("wall", "section 07 never names the wall"),
+    ("10", "section 07 does not print the ladder"),
+    ("floor, not a substitute",
+     "section 07 does not say a wall is a floor rather than a substitute"),
+    ("higher of the two",
+     "section 07 does not say the higher of wall and card fights")]:
     check(phrase.lower() in rules.lower(), why)
-# ...and the figure has to show the refusal beside the fight, not an absorb
+# ...and the figure has to show both halves of it: what bounces, what breaks
 fort_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", figs.get("fortify", "")))
-check("refused" in fort_text, "the fortify figure no longer shows a lone card being refused")
-check("LOWER" in fort_text, "the fortify figure does not show which of the two cards fights")
+check("bounces" in fort_text, "the fortify figure no longer shows a dealt card bouncing")
+check("breaks it" in fort_text, "the fortify figure no longer shows a researched card breaking a wall")
+check("FLOOR" in fort_text, "the fortify figure does not say the wall is a floor")
 check("unit survives" not in fort_text,
       "the fortify figure still promises the unit survives — a coin no longer does that")
 

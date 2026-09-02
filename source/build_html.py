@@ -723,12 +723,10 @@ HTML = f"""<!doctype html>
   <p>An attack is not automatic. It is a <strong>duel</strong> — the card you spent
   against a card from their hand.</p>
   <ol class="seq">
-    <li><b>Is the defender fortified?</b> Then this is an <strong>assault</strong>, and it
-    costs you a second card: spend <strong>two</strong> cards from your meld — the one
-    matching the ground, plus <strong>one more of any suit</strong> — and
-    <strong>the lower of the two ranks is your attack</strong>. You commit nothing from
-    hand; an assault is decided by what you brought. The coin goes to the supply either
-    way. Cannot spare a second card? Then you cannot attack that tile at all (§07).</li>
+    <li><b>Is the defender fortified?</b> Then the coin defends: it holds at
+    <strong>the wall printed on their tier</strong> — 10 at Tribe, rising to 18 — and they
+    may still answer with a card from hand if it beats that. The higher of the two fights.
+    The coin goes to the supply either way (§07).</li>
     <li><b>Your attack is the card you spent.</b> Its rank, face up on the tile — you
     commit nothing further. Which card you send is the whole decision, and it is made
     before you know how they will answer.</li>
@@ -856,25 +854,29 @@ HTML = f"""<!doctype html>
   hand recycles.</p>
 
   <h3>Fortifying</h3>
-  <p>A coin on one of your units means that unit <strong>cannot be attacked by a single
-  card</strong>. Taking it is an <strong>assault</strong>, and an assault costs two:</p>
+  <p>A coin on one of your units is a <strong>wall</strong>, and a wall fights. Your
+  board prints what it holds at, beside the rank you may buy:</p>
   <ul>
-    <li>The attacker spends <strong>two cards</strong> from their meld instead of one —
-    the usual card matching the ground, plus <strong>one more of any suit</strong>.</li>
-    <li><strong>The lower of the two ranks is the attack.</strong> A great card dragged
-    down by a poor one is a poor assault; walls are broken by weight, not by one hero.</li>
-    <li>The defender fights it normally — one card from hand, plus the ground.</li>
-    <li>The <strong>coin goes to the supply</strong> whichever way the fight goes. It
-    bought what it was sold as buying: one attack made much harder, once.</li>
+    <li><strong>Tribe 10 · Settlement 12 · Kingdom 14 · Empire 16 · Civilization 18</strong>
+    — always two under that tier's rank cap, so a wall never quite catches up with the
+    cards its owner can buy.</li>
+    <li>The wall is a <strong>floor, not a substitute</strong>. You may still answer with a
+    card from hand, and the <strong>higher of the two</strong> is your defence — a wall can
+    never make you weaker than the card you were holding.</li>
+    <li>The attacker still spends <strong>one</strong> card. Beat the wall and you have won
+    the duel outright: a defender goes home, and the ground changes hands if that was the
+    last of them.</li>
+    <li>The <strong>coin goes to the supply</strong> whichever way the fight goes. It bought
+    what it was sold as buying: one attack made much harder, once.</li>
   </ul>
-  <p>A rival who cannot spare a second card <strong>cannot attack that tile at all</strong>.
-  That is the whole value of the coin: not that it saves the unit, but that it prices
-  the attack out of most turns.</p>
+  <p>A Tribe's wall is exactly the top of the starting deck, which is the shape of the whole
+  rule: <strong>no card you were dealt can break a wall</strong>. Walls are broken by cards
+  you researched — and by the time you can buy an 18, the walls around you hold at 16.</p>
   <p>One coin per unit, never two. The coin is also lost the moment the unit is disturbed
   any other way — moved, or stacked onto. You cannot fortify in response to an attack —
   attacks happen on someone else's turn, and by then it is too late. A fortification is a
   read on your neighbours, paid for in advance.</p>
-  {fig('fortify', "A coin does not save the unit — it doubles the price of coming for it. One card is refused outright; two cards get a fight, with the LOWER of the pair as the attack.")}
+  {fig('fortify', "A wall does not save the unit — it raises the rank needed to come for it. The coin holds at your tier's number, the defender's own card fights instead if it is higher, and the coin is spent either way.")}
 
   <h3>One victory card</h3>
   <p>Once per map phase you may spend a card from your victory row on its
@@ -1273,8 +1275,8 @@ HTML = f"""<!doctype html>
       goes to the shared pile. Last place takes 1 gold.</p>
       <h3>Combat — a duel</h3>
       <p>Win the last defender and the tile is yours: settle it at once.
-      Fortified? See §07 — an assault costs two cards. Otherwise the card you spent
-      IS the attack: <b>its rank</b> vs <b>the defender's hand card + terrain
+      Fortified? The coin defends at their tier's wall (10/12/14/16/18), or a better card
+      from their hand — see §07. Otherwise the card you spent IS the attack: <b>its rank</b> vs <b>the defender's hand card + terrain
       (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
       card matching the ground, and to the <b>defender</b> if both or neither match.
       Attacker wins, one defender goes home. Both cards to their owners' discards.</p>
@@ -1314,11 +1316,12 @@ HTML = f"""<!doctype html>
       between reserve, food slots and fortifications; research spending is one-way. ·
       <b>One victory card on B</b> per turn.</p>
       <h3>Fortifying</h3>
-      <p>1 gold on one of your units. A single card cannot attack it at all; an
-      <b>assault</b> costs <b>two meld cards</b> (one matching the ground, one any suit)
-      and <b>the lower rank is the attack</b> — the attacker commits nothing from hand,
-      the defender fights as usual, and the coin goes to the supply either way.
-      One per unit, placed on your own turn only, lost when the unit is disturbed.</p>
+      <p>1 gold on one of your units. The coin is a <b>wall</b>: it defends at your tier's
+      printed value — <b>10 / 12 / 14 / 16 / 18</b>, two under that tier's rank cap — and
+      the defender may still answer with a better card from hand, the higher of the two
+      fighting. The attacker spends one card as always, and the coin goes to the supply
+      either way. One per unit, placed on your own turn only, lost when the unit is
+      disturbed.</p>
       <h3>Gold</h3>
       <p>1 per cashed card · <b>1 for exploring with a card of rank 10 or under</b> ·
       ascension coins 1/2/3/4, once each · 1 for ranking last ·

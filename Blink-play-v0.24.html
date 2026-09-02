@@ -1169,8 +1169,8 @@
     <div class="field">
       <label for="fortify" data-i18n="setup.fortify">Fortifications</label>
       <select id="fortify">
-        <option value="assault" selected data-i18n="setup.fortify.assault"></option>
-        <option value="wall" data-i18n="setup.fortify.wall"></option>
+        <option value="wall" selected data-i18n="setup.fortify.wall"></option>
+        <option value="assault" data-i18n="setup.fortify.assault"></option>
       </select>
       <p class="hint" id="fortify-hint" data-i18n="setup.fortify.note"></p>
     </div>
@@ -1360,7 +1360,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"af6c4c1c72","branch":"main","dirty":true,"built":"2026-09-02T20:33:05Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"ae855c49a9","branch":"main","dirty":true,"built":"2026-09-02T20:43:29Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1453,9 +1453,9 @@ en: {
   "coach.food": "Your people eat every time your hand recycles. The coins on your tier\u2019s slots are the meal; short slots starve units off the map.",
   "coach.duel": "Someone attacked on their own turn. You answer with one card plus the ground under it \u2014 which is why a hand played out is dangerous.",
   "setup.fortify": "Fortifications",
-  "setup.fortify.assault": "Assault \u2014 two cards from your meld, the lower rank fights",
-  "setup.fortify.wall": "Wall by tier \u2014 the coin defends at 10/12/14/16/18, or a better card from hand",
-  "setup.fortify.note": "(proposal \u00b7 a wall is a floor, not a substitute, and it climbs with your tier: no card from the starting deck breaks a Tribe\u2019s)",
+  "setup.fortify.assault": "Assault (v0.24) \u2014 two cards from your meld, the lower rank fights",
+  "setup.fortify.wall": "Wall by tier \u2014 the coin defends at 10/12/14/16/18, or a better card from hand (printed rule)",
+  "setup.fortify.note": "(a wall is a floor, not a substitute, and it climbs with your tier: no card from the starting deck breaks a Tribe\u2019s)",
   "setup.attacks": "Attacks per turn",
   "setup.attacks.any": "Any \u2014 every card in your meld may attack",
   "setup.attacks.one": "One \u2014 at most one attack each map phase",
@@ -2035,9 +2035,9 @@ de: {
   "coach.food": "Dein Volk isst bei jedem Handwechsel. Die M\u00fcnzen auf den Feldern deiner Stufe sind die Mahlzeit; fehlt sie, verhungern Einheiten.",
   "coach.duel": "Jemand greift in seinem eigenen Zug an. Du antwortest mit einer Karte plus dem Gel\u00e4nde \u2014 darum ist eine leergespielte Hand gef\u00e4hrlich.",
   "setup.fortify": "Befestigungen",
-  "setup.fortify.assault": "Sturmangriff \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft",
-  "setup.fortify.wall": "Mauer nach Stufe \u2014 die M\u00fcnze verteidigt mit 10/12/14/16/18, oder eine bessere Karte aus der Hand",
-  "setup.fortify.note": "(Vorschlag \u00b7 die Mauer ist ein Mindestwert, kein Ersatz, und sie w\u00e4chst mit der Stufe: keine Karte des Startdecks bricht die eines Stammes)",
+  "setup.fortify.assault": "Sturmangriff (v0.24) \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft",
+  "setup.fortify.wall": "Mauer nach Stufe \u2014 die M\u00fcnze verteidigt mit 10/12/14/16/18, oder eine bessere Karte aus der Hand (gedruckte Regel)",
+  "setup.fortify.note": "(die Mauer ist ein Mindestwert, kein Ersatz, und sie w\u00e4chst mit der Stufe: keine Karte des Startdecks bricht die eines Stammes)",
   "setup.attacks": "Angriffe pro Zug",
   "setup.attacks.any": "Beliebig \u2014 jede Karte der Kombination darf angreifen",
   "setup.attacks.one": "Einer \u2014 h\u00f6chstens ein Angriff je Kartenphase",
@@ -3905,25 +3905,25 @@ class Game {
      *   bonus   — the defender commits a card as usual, +FORT_BONUS
      * The coin goes to the supply in every mode. */
     this.FORTIFY = ["assault", "wall", "wallonly", "absorb", "bonus"]
-      .includes(opts.fortify) ? opts.fortify : "assault";
+      .includes(opts.fortify) ? opts.fortify : "wall";
     /* WHAT THE COIN IS WORTH. Measured across 9/11/13/15 the number barely
      * moves the game (52.0 / 51.4 / 50.8 / 52.0 fighter win), so it is chosen
      * for the sentence it makes rather than the balance: 10 is the top of the
      * starting deck, and a level fight goes to the defender, so NO CARD YOU
      * WERE DEALT CAN BREAK A WALL — you need something researched. */
-    this.WALL_RANK = opts.wallRank === undefined ? 10 : opts.wallRank;
+    this.WALL_RANK = typeof opts.wallRank === "number" ? opts.wallRank : 10;
     /* "cap" makes a wall as strong as the cards its owner can buy — their
      * tier's rank cap, 12/14/16/18/20, a number already printed on the board.
      * It exists because a FIXED wall is worth most in the opening, when every
      * hand is starting-deck ranks, and least at the end, when everyone is
      * holding market cards that clear it without trying. Measured, not
      * assumed: see COMBAT-SIMPLIFY.md. */
-    this.WALL_BY_CAP = opts.wallRank === "cap";
+    this.WALL_BY_CAP = opts.wallRank === undefined || opts.wallRank === "cap";
     /* A ladder that starts where the flat rule does. wallOffset -2 gives
      * 10/12/14/16/18: a Tribe's wall is still the top of the starting deck —
      * "no card you were dealt breaks it" survives — and it climbs from there
      * without ever reaching the cards its owner can buy. */
-    this.WALL_OFFSET = opts.wallOffset || 0;
+    this.WALL_OFFSET = opts.wallOffset === undefined ? -2 : opts.wallOffset;
     this.FORT_BONUS = opts.fortBonus === undefined ? 5 : opts.fortBonus;
     /* Attacks allowed in one map phase. 0 = uncapped, which is v0.24 as
      * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
@@ -5171,7 +5171,10 @@ class Game {
     if (fort === "wallonly") dCard = coin;
     else if (wall) {
       const c = yield* this._duelCard(d, "defend", tile, aCard, p.i, coin.r);
-      dCard = (c && c.r > this.WALL_RANK) ? c : coin;
+      /* AGAINST THE COIN, not against WALL_RANK: the coin is the ladder value
+       * for THIS defender's tier, and WALL_RANK is only the flat fallback.
+       * Comparing to the wrong one silently threw away the defender's card. */
+      dCard = (c && c.r > coin.r) ? c : coin;
       spent = dCard.wall ? null : dCard;
     } else {
       dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);
@@ -7458,10 +7461,6 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
-                             /* the app's wall is the TIER LADDER — see
-                              * COMBAT-SIMPLIFY.md §9. Flat 10 stays reachable
-                              * from a script, not from the panel. */
-                             wallRank: "cap", wallOffset: -2,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              consolation: $("#consolation").value,
@@ -10347,7 +10346,6 @@ function netRules() {
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
-    wallRank: "cap", wallOffset: -2,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,

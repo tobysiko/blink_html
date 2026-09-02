@@ -103,7 +103,7 @@ if __name__ == "__main__":
             print(f"skipped (not built yet): {t}")
 
     # the player boards are standalone SVG, not HTML
-    for svg in ("board_a4.svg", "board_a4_wall.svg", "board_blank.svg"):
+    for svg in ("board_a4.svg", "board_blank.svg"):
         p = pathlib.Path(svg)
         if p.exists():
             o = p.with_name(p.stem + "-bw.svg")

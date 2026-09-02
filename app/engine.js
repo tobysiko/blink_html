@@ -1340,25 +1340,25 @@ class Game {
      *   bonus   — the defender commits a card as usual, +FORT_BONUS
      * The coin goes to the supply in every mode. */
     this.FORTIFY = ["assault", "wall", "wallonly", "absorb", "bonus"]
-      .includes(opts.fortify) ? opts.fortify : "assault";
+      .includes(opts.fortify) ? opts.fortify : "wall";
     /* WHAT THE COIN IS WORTH. Measured across 9/11/13/15 the number barely
      * moves the game (52.0 / 51.4 / 50.8 / 52.0 fighter win), so it is chosen
      * for the sentence it makes rather than the balance: 10 is the top of the
      * starting deck, and a level fight goes to the defender, so NO CARD YOU
      * WERE DEALT CAN BREAK A WALL — you need something researched. */
-    this.WALL_RANK = opts.wallRank === undefined ? 10 : opts.wallRank;
+    this.WALL_RANK = typeof opts.wallRank === "number" ? opts.wallRank : 10;
     /* "cap" makes a wall as strong as the cards its owner can buy — their
      * tier's rank cap, 12/14/16/18/20, a number already printed on the board.
      * It exists because a FIXED wall is worth most in the opening, when every
      * hand is starting-deck ranks, and least at the end, when everyone is
      * holding market cards that clear it without trying. Measured, not
      * assumed: see COMBAT-SIMPLIFY.md. */
-    this.WALL_BY_CAP = opts.wallRank === "cap";
+    this.WALL_BY_CAP = opts.wallRank === undefined || opts.wallRank === "cap";
     /* A ladder that starts where the flat rule does. wallOffset -2 gives
      * 10/12/14/16/18: a Tribe's wall is still the top of the starting deck —
      * "no card you were dealt breaks it" survives — and it climbs from there
      * without ever reaching the cards its owner can buy. */
-    this.WALL_OFFSET = opts.wallOffset || 0;
+    this.WALL_OFFSET = opts.wallOffset === undefined ? -2 : opts.wallOffset;
     this.FORT_BONUS = opts.fortBonus === undefined ? 5 : opts.fortBonus;
     /* Attacks allowed in one map phase. 0 = uncapped, which is v0.24 as
      * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
@@ -2606,7 +2606,10 @@ class Game {
     if (fort === "wallonly") dCard = coin;
     else if (wall) {
       const c = yield* this._duelCard(d, "defend", tile, aCard, p.i, coin.r);
-      dCard = (c && c.r > this.WALL_RANK) ? c : coin;
+      /* AGAINST THE COIN, not against WALL_RANK: the coin is the ladder value
+       * for THIS defender's tier, and WALL_RANK is only the flat fallback.
+       * Comparing to the wrong one silently threw away the defender's card. */
+      dCard = (c && c.r > coin.r) ? c : coin;
       spent = dCard.wall ? null : dCard;
     } else {
       dCard = yield* this._duelCard(d, "defend", tile, aCard, p.i);

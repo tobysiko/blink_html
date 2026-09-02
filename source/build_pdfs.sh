@@ -39,7 +39,6 @@ python3 build_perks.py          # proposal: victory row perk tokens
 python3 build_aid.py            # the player aid, four to a page
 python3 build_aid.py --bw
 python3 board_a4.py
-python3 board_a4.py --wall      # proposal: the tier wall ladder, see COMBAT-SIMPLIFY.md
 python3 board_blank.py
 
 # the printed numbers must still be the numbers the game is played with
@@ -146,9 +145,6 @@ board() {
 }
 board board_a4.svg        Blink-player-board-A4.pdf
 board board_a4-bw.svg     Blink-player-board-A4-bw.pdf
-# The wall sheet is a PROPOSAL, printed so it can be played rather than argued.
-board board_a4_wall.svg     Blink-player-board-A4-wall.pdf
-board board_a4_wall-bw.svg  Blink-player-board-A4-wall-bw.pdf
 board board_blank.svg     Blink-player-board-blank.pdf
 
 # A PDF that is a single blank page is what a renderer produces when it failed

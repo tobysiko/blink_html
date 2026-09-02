@@ -236,10 +236,6 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
-                             /* the app's wall is the TIER LADDER — see
-                              * COMBAT-SIMPLIFY.md §9. Flat 10 stays reachable
-                              * from a script, not from the panel. */
-                             wallRank: "cap", wallOffset: -2,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              consolation: $("#consolation").value,
@@ -3125,7 +3121,6 @@ function netRules() {
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
-    wallRank: "cap", wallOffset: -2,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,

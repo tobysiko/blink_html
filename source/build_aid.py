@@ -65,7 +65,7 @@ FREE = [
      "twice \u00b7 1 gold then 2 \u00b7 draw onto the highest rank \u00b7 retire your lowest \u00b7 "
      "buy at or under your cap."),
     ("FORTIFY", "1 gold",
-     "a coin on a unit \u00b7 a lone card cannot attack it; an assault costs two."),
+     "a coin on a unit \u00b7 it defends at your tier's WALL, or a better card from hand."),
     ("GOLD", "",
      "free \u00b7 shift coins between reserve, food and walls."),
     ("COLONY", "",
@@ -73,11 +73,12 @@ FREE = [
 ]
 
 TIERS = [
-    ("Tribe",        "2", "2", "1", "—", "12", "—"),
-    ("Settlement",   "3", "3", "2", "1", "14", "1"),
-    ("Kingdom",      "5", "4", "3", "2", "16", "2"),
-    ("Empire",       "5", "5", "4", "3", "18", "3"),
-    ("Civilization", "5", "6", "5", "4", "20", "4"),
+    # tier, units, meld, moves, food, rank cap, WALL (= cap - 2), ascension
+    ("Tribe",        "2", "2", "1", "—", "12", "10", "—"),
+    ("Settlement",   "3", "3", "2", "1", "14", "12", "1"),
+    ("Kingdom",      "5", "4", "3", "2", "16", "14", "2"),
+    ("Empire",       "5", "5", "4", "3", "18", "16", "3"),
+    ("Civilization", "5", "6", "5", "4", "20", "18", "4"),
 ]
 
 TERRAIN = [("Plains", GOLD, "holds 3"), ("Forest", FOREST, "2 · +1 defence"),
@@ -175,8 +176,8 @@ def front():
 def back():
     rows = "".join(
         f'<tr><td class="n">{n}</td><td>{u}</td><td>{m}</td><td>{mv}</td>'
-        f'<td>{f}</td><td>{c}</td><td>{a}</td></tr>'
-        for n, u, m, mv, f, c, a in TIERS)
+        f'<td>{f}</td><td>{c}</td><td>{w}</td><td>{a}</td></tr>'
+        for n, u, m, mv, f, c, w, a in TIERS)
     ter = "".join(f'<span><i style="background:{c}"></i>{n} {d}</span>'
                   for n, c, d in TERRAIN)
     return f"""<div class="face back">
@@ -184,7 +185,7 @@ def back():
   <div class="rule"></div>
   <table>
     <tr><th class="n">Tier</th><th>Units</th><th>Meld</th><th>Moves</th>
-        <th>Food</th><th>Cap</th><th>Asc.</th></tr>
+        <th>Food</th><th>Cap</th><th>Wall</th><th>Asc.</th></tr>
     {rows}
   </table>
   <p class="note first">Read your top tier that still holds units. Food is due each

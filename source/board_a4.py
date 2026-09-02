@@ -12,9 +12,9 @@ from version import VTAG
 # assault (§07), so a WALL column here would print a rule the book does not
 # have. `--wall` makes the sheet for the proposal instead — the tier ladder the
 # app plays with, 10/12/14/16/18 — so it can be put on a table and tried.
-#   python3 board_a4.py            ->  board_a4.svg
-#   python3 board_a4.py --wall     ->  board_a4_wall.svg
-WALL = "--wall" in sys.argv
+#   python3 board_a4.py             ->  board_a4.svg, with the WALL column
+#   python3 board_a4.py --no-wall   ->  board_a4_nowall.svg, the pre-wall sheet
+WALL = "--no-wall" not in sys.argv
 WALL_OFFSET = -2                 # a wall holds two under what you may buy
 
 # ---- page ----------------------------------------------------------------
@@ -570,6 +570,6 @@ def build():
 if __name__ == "__main__":
     import pathlib
     svg = build()
-    name = "board_a4_wall.svg" if WALL else "board_a4.svg"
+    name = "board_a4.svg" if WALL else "board_a4_nowall.svg"
     pathlib.Path(name).write_text(svg)
     print(f"wrote {name}", len(svg), "bytes")

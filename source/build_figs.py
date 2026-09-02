@@ -579,66 +579,62 @@ F["combat"] = combat()
 
 # ------------------------------------------------------- fortify
 def fortify():
-    """What a coin on a unit actually buys, in v0.24.
+    """What a coin on a unit buys, now that it is a WALL.
 
-    The old figure showed one attack arriving, the coin being spent and the
-    unit surviving. That is no longer what happens, and worse, it was the rule
-    nobody could ever trigger: once the bots learned a wall absorbed an attack
-    for nothing, walls stopped being attacked at all — zero absorbs in 360
-    games.
-
-    The coin now prices the attack instead of cancelling it, so the figure has
-    to show a REFUSAL and a FIGHT side by side. That contrast is the rule.
+    Three versions of this rule have now been drawn here. The first showed the
+    coin absorbing an attack, which measured terribly — once bots learned that
+    hitting a wall bought nothing, walls stopped being attacked at all. The
+    second showed the assault: one card refused, two cards fighting with the
+    lower of the pair. This one shows the wall, and the contrast that IS the
+    rule — a card you were dealt bounces, a card you researched goes through.
     """
     b = ""
     cw, ch = 34, 48
     INK, SOFT, LINE = "#2A2E2B", "#6B6F68", "#CDC7B8"
 
-    # ---- left: one card is not enough
-    b += label(52, -26, "ONE CARD", 10, cls="fig-step")
-    b += card(0, -8, 14, "plains", w=cw, h=ch)
-    b += (f'<path d="M{cw + 10} {ch / 2 - 8:.0f} l34 0 M{cw + 36} '
+    # ---- left: a starting-deck card bounces off
+    b += label(52, -26, "DEALT", 10, cls="fig-step")
+    b += card(0, -8, 9, "plains", w=cw, h=ch)
+    b += (f'<path d="M{cw + 10} {ch / 2 - 8:.0f} l30 0 M{cw + 32} '
           f'{ch / 2 - 14:.0f} l6 6 l-6 6" fill="none" stroke="{SOFT}" '
           f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')
-    # the refusal, drawn as a barred circle rather than said in words
-    bx, by = cw + 62, ch / 2 - 8
+    bx, by = cw + 60, ch / 2 - 8
     b += (f'<circle cx="{bx}" cy="{by}" r="13" fill="none" stroke="#C0392B" '
           f'stroke-width="2.4"/>'
           f'<line x1="{bx - 9}" y1="{by + 9}" x2="{bx + 9}" y2="{by - 9}" '
           f'stroke="#C0392B" stroke-width="2.4" stroke-linecap="round"/>')
-    b += label(bx, by + 34, "refused", 10, cls="fig-attack")
-    b += label(bx, by + 47, "outright", 10, cls="fig-attack")
+    b += label(bx, by + 34, "bounces", 10, cls="fig-attack")
+    b += label(bx, by + 47, "9 under 10", 10, cls="fig-attack")
 
-    # ---- the fortified tile in the middle
+    # ---- the walled tile in the middle, and what it holds at
     tx, ty = 200, ch / 2 - 6
     b += prism(tx, ty, "plains")
     b += unit(tx, ty, "rival", 1)
     b += gold(tx, ty - 11)
-    b += label(tx, ty + R + TER["plains"]["h"] + 18, "fortified", 11,
+    b += label(tx, ty + R + TER["plains"]["h"] + 18, "wall 10", 12,
                cls="fig-strong")
+    b += label(tx, ty + R + TER["plains"]["h"] + 31, "a Tribe's tier", 9,
+               cls="fig-label")
 
-    # ---- right: two cards, and the LOWER one fights
-    rx = 268
-    b += label(rx + cw + 6, -26, "TWO CARDS", 10, cls="fig-step")
+    # ---- right: a researched card goes through
+    rx = 252
+    b += label(rx + cw / 2, -26, "RESEARCHED", 10, cls="fig-step")
+    b += (f'<path d="M{rx - 40} {ch / 2 - 8:.0f} l30 0 M{rx - 18} '
+          f'{ch / 2 - 14:.0f} l6 6 l-6 6" fill="none" stroke="{SOFT}" '
+          f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')
     b += card(rx, -8, 14, "plains", w=cw, h=ch)
-    b += card(rx + cw + 12, -8, 9, "ocean", w=cw, h=ch)
-    b += label(rx + cw / 2, ch + 8, "matches", 8, cls="fig-label")
-    b += label(rx + cw / 2, ch + 18, "the ground", 8, cls="fig-label")
-    b += label(rx + cw + 12 + cw / 2, ch + 8, "any suit", 8, cls="fig-label")
-    # a brace under the pair, and the number that comes out of it
-    b += (f'<path d="M{rx} {ch + 26} l0 6 l{2 * cw + 12} 0 l0 -6" fill="none" '
-          f'stroke="{LINE}" stroke-width="1.3"/>')
-    b += label(rx + cw + 6, ch + 50, "attack = 9", 13, cls="fig-attack")
-    b += label(rx + cw + 6, ch + 63, "the LOWER of the two", 8.5, cls="fig-label")
+    b += label(rx + cw / 2, ch + 12, "breaks it", 12, cls="fig-attack")
+    b += label(rx + cw / 2, ch + 26, "14 over 10", 9, cls="fig-label")
+    b += label(rx + cw / 2, ch + 39, "takes the ground", 9, cls="fig-label")
 
-    b += label(200, ch + 96,
-               "The coin does not save the unit \u2014 it doubles the price of coming",
+    b += label(160, ch + 96,
+               "A wall holds at your tier's number \u2014 10 / 12 / 14 / 16 / 18,",
                11, cls="fig-strong")
-    b += label(200, ch + 111,
-               "for it. The coin goes to the supply either way; the defender still",
+    b += label(160, ch + 111,
+               "two under the rank you may buy. It is a FLOOR:",
                11, cls="fig-strong")
-    b += label(200, ch + 126,
-               "fights, one card from hand plus the ground.", 11, cls="fig-strong")
+    b += label(160, ch + 126,
+               "a better card from hand fights instead.", 11, cls="fig-strong")
     return svg(0, 0, b, vb="auto")
 
 F["fortify"] = fortify()

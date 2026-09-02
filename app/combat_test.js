@@ -125,19 +125,34 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
   ok(!fight(3), 'a 3 beat a 9 — the spent card is not deciding the fight');
 }
 
-// ------------------------------------ a coin makes it an ASSAULT, not a veto
+// ------------------------------ a coin is a WALL now; the assault is an option
 /* The rule this replaces let a coin absorb an attack outright. It read well and
  * measured terribly: once the bots learned that hitting a wall bought nothing,
  * walls were never hit again — ZERO absorbs in 360 games, with 8.5 coins still
  * sitting on the map at final scoring. A rule no competent player triggers is
  * not a rule.
  *
- * Now a wall is a price. One card cannot attack it at all; two cards can, and
- * the LOWER of the two ranks is the attack.
+ * The assault replaced it — two cards, the lower rank fighting — and the WALL
+ * replaced the assault: the coin defends at the tier ladder and one card may
+ * always try. Both older rules stay reachable as options, and both are still
+ * tested here, because the engine still offers them.
  */
 {
-  // ...one card is refused outright, and the tile is not even offered
+  // the printed rule: a lone card may attack a wall, and beat it or not
   const g = new E.Game(3, 4242, { humans: [] });
+  const tile = [...g.m.tiles.values()].find((t) => t.owner !== null && t.units.length);
+  const me = (tile.owner + 1) % g.P.length;
+  tile.gold = 1;
+  const card = { r: 12, s: tile.terrain };
+  const reachable = new Set(g.m.tiles.keys());
+  const alone = E.cardOptions(g.m, card, me, 9, reachable, g.m.legalSpaces(), 0);
+  ok(alone.some(([k, a]) => k === tile.key && a === 'attack'),
+     'a lone card was refused a fortified tile — the wall is a floor, not a veto');
+}
+
+{
+  // ...and under the assault OPTION, one card is refused outright
+  const g = new E.Game(3, 4242, { humans: [], fortify: 'assault' });
   const tile = [...g.m.tiles.values()].find((t) => t.owner !== null && t.units.length);
   const me = (tile.owner + 1) % g.P.length;
   tile.gold = 1;
@@ -156,8 +171,8 @@ ok(E.playOut(3, 7, { combat: 'gold' }).COMBAT === 'gold',
 }
 
 {
-  // ...two cards break the wall, and the LOWER rank fights
-  const g = new E.Game(3, 4242, { humans: [] });
+  // ...two cards break the wall, and the LOWER rank fights — the assault option
+  const g = new E.Game(3, 4242, { humans: [], fortify: 'assault' });
   const tile = [...g.m.tiles.values()]
     .find((t) => t.owner !== null && t.units.length === 1);
   const me = g.P[(tile.owner + 1) % g.P.length];
@@ -333,8 +348,8 @@ console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
   : 'combat: an attack is a duel — the card you SPEND is the attack, the defender '
     + 'answers from hand, and the ground is added to them (0/0/1/2). The rule is '
     + 'checked card by card rather than by counting bot fights. A coin does not '
-    + 'stop an attack, it prices one: a lone card is refused, two cards get a '
-    + 'fight, and the LOWER of the pair is the attack. Clear the last '
+    + 'stop an attack: it is a WALL, defending at the tier ladder unless a better '
+    + 'card from hand fights instead, and one card may always try. Clear the last '
     + 'defender and the ground changes hands; leave one standing and it does not. '
     + "A hand emptied on somebody else's turn recycles instead of arriving at the "
     + 'card phase with nothing');
