@@ -1144,7 +1144,9 @@ function duelValue(game, p, t, w, card) {
     const mode = game.FORTIFY || "assault";
     if (mode === "absorb") return -1;          // nothing dies; pure loss
     if (mode === "wall") {
-      wallAt = game.WALL_BY_CAP ? game.P[t.owner].rankCap() : game.WALL_RANK;
+      wallAt = game.WALL_BY_CAP
+        ? Math.max(1, game.P[t.owner].rankCap() + game.WALL_OFFSET)
+        : game.WALL_RANK;
     }
     else if (mode === "bonus") wallAt = null;  // priced through `bonus` below
     else {
@@ -1352,6 +1354,11 @@ class Game {
      * holding market cards that clear it without trying. Measured, not
      * assumed: see COMBAT-SIMPLIFY.md. */
     this.WALL_BY_CAP = opts.wallRank === "cap";
+    /* A ladder that starts where the flat rule does. wallOffset -2 gives
+     * 10/12/14/16/18: a Tribe's wall is still the top of the starting deck —
+     * "no card you were dealt breaks it" survives — and it climbs from there
+     * without ever reaching the cards its owner can buy. */
+    this.WALL_OFFSET = opts.wallOffset || 0;
     this.FORT_BONUS = opts.fortBonus === undefined ? 5 : opts.fortBonus;
     /* Attacks allowed in one map phase. 0 = uncapped, which is v0.24 as
      * printed; measured, 27% of bot map phases contain 2+ attacks and 10%
@@ -2592,7 +2599,8 @@ class Game {
      * be made weaker by the wall they paid for, so the hand is still asked and
      * the higher of coin and card fights. The card is spent only if it was the
      * one that fought. */
-    const coin = { r: this.WALL_BY_CAP ? d.rankCap() : this.WALL_RANK,
+    const coin = { r: this.WALL_BY_CAP ? Math.max(1, d.rankCap() + this.WALL_OFFSET)
+                                       : this.WALL_RANK,
                    s: tile.terrain, wall: true };
     let dCard, spent = null;
     if (fort === "wallonly") dCard = coin;

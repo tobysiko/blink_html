@@ -286,3 +286,34 @@ That is measurably stronger than "+2" (18% against 6%), it reuses a number the
 player already reads off their board every turn, and it sits beside Ramparts in
 the same corner of the design without overlapping it — Ramparts makes a coin
 survive being disturbed, Bastions makes it harder to break.
+
+### The ladder in between
+
+Toby: scale it with the tier, but keep it under the rank cap. Measured the same
+way, 600 games each:
+
+| wall | duels on walls / game | coins standing at the end | coin held the tile (early / late) | wall beaten (early / late) |
+|---|---|---|---|---|
+| flat 10 | 3.9 | 8.6 | 3% / 2% | 46% / 51% |
+| cap−4 · 8/10/12/14/16 | 3.2 | 9.2 | 4% / 4% | 60% / 70% |
+| **cap−2 · 10/12/14/16/18** | **2.5** | **9.6** | **10% / 8%** | **38% / 57%** |
+| cap · 12/14/16/18/20 | 1.9 | 10.0 | 18% / 12% | 9% / 35% |
+
+**cap−2 is the one.** The coin decides three to four times as many fights as a
+flat 10 does, walls are still attacked two and a half times a game rather than
+being avoided, and — the part that matters for teaching — **the ladder starts
+at 10**. A Tribe's wall is still the top of the starting deck, so "no card you
+were dealt can break a wall" survives word for word as the opening rule, and
+the number simply grows with the civilization behind it.
+
+It is also not arithmetic at the table: 10/12/14/16/18 is one more number per
+row on the player board, read off the tier you are on like every other number
+there. It happens to equal the rank cap of the tier below yours, which is why
+it never catches up with what you can buy.
+
+Balance is unchanged — fighter win 52.1% against the flat wall's 51.7% over
+2000 games each, and 65.9% against 66.3% with hoarding defenders. cap−4 is
+worse than doing nothing: at 8, a Tribe wall is below the starting deck and is
+beaten 60–70% of the time.
+
+`wallRank: "cap"` with `wallOffset: -2`.
