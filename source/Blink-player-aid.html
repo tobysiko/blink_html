@@ -24,56 +24,60 @@ body { margin: 0; background: #FBFAF6; color: #2A2E2B;
 .fold::before { top: 0; border-top: 1.8mm solid #6B6F68; }
 .fold::after { bottom: 0; border-bottom: 1.8mm solid #6B6F68; }
 
-.hd { font-size: 6.2pt; letter-spacing: .16em; font-weight: 600;
+.hd { font-size: 6.4pt; letter-spacing: .16em; font-weight: 600;
       text-transform: uppercase; color: #6B6F68; }
 .hd b { color: #2A2E2B; }
-.rule { border-top: .3mm solid #CDC7B8; margin: 1mm 0 1.1mm; }
+.rule { border-top: .35mm solid #2A2E2B; margin: 1mm 0 1.4mm; }
 .lead { font-size: 5.4pt; letter-spacing: .12em; text-transform: uppercase;
-        color: #6B6F68; margin: 0 0 .7mm; }
-
-/* the four things a card can be */
-.use { display: flex; gap: 1.6mm; align-items: baseline; margin: 0 0 .65mm; }
-.use .k { font-size: 6.6pt; font-weight: 600; letter-spacing: .04em;
-          width: 13.5mm; flex: none; }
-.use .d { font-size: 5.2pt; line-height: 1.2; color: #2A2E2B; }
-.both { font-size: 5pt; line-height: 1.22; color: #6B6F68;
-        border-top: .3mm solid #CDC7B8; padding-top: .9mm; margin-top: .3mm; }
-.both b { color: #2A2E2B; }
-
-/* the free actions */
-.free { display: flex; gap: 1.6mm; align-items: baseline; margin: 0 0 .4mm; }
-.free .k { font-size: 5.8pt; font-weight: 600; width: 13.5mm; flex: none; }
-.free .k em { display: block; font-style: normal; font-size: 4.5pt;
+        color: #6B6F68; margin: 0 0 1mm; }
+.use { display: flex; gap: 1.8mm; align-items: baseline; margin: 0 0 .95mm; }
+.use .k { font-size: 7.2pt; font-weight: 600; letter-spacing: .03em;
+          width: 14mm; flex: none; }
+.use .d { font-size: 5.8pt; line-height: 1.25; color: #2A2E2B; }
+.both { font-size: 5.4pt; line-height: 1.3; color: #2A2E2B;
+        background: #EFECE3; border-radius: .8mm; padding: 1mm 1.4mm;
+        margin: 1.2mm 0 0; }
+.both b { font-weight: 600; }
+.freebox { background: #EFECE3; border-radius: .8mm; padding: 1mm 1.3mm .3mm;
+           margin: 1.2mm 0 0; }
+.freebox .lead { margin: 0 0 .9mm; }
+.free { display: flex; gap: 1.8mm; align-items: baseline; margin: 0 0 .7mm; }
+.free .k { font-size: 6pt; font-weight: 600; width: 14mm; flex: none;
+           line-height: 1.1; }
+.free .k em { display: block; font-style: normal; font-size: 4.8pt;
               font-weight: 400; color: #6B6F68; letter-spacing: .02em; }
-.free .d { font-size: 5pt; line-height: 1.18; }
-
-/* the numbers */
-table { border-collapse: collapse; width: 100%; font-size: 5.3pt; }
-th { font-weight: 600; font-size: 4.6pt; letter-spacing: .07em;
+.free .d { font-size: 5.5pt; line-height: 1.24; }
+table { border-collapse: collapse; width: 100%; font-size: 5.7pt; }
+th { font-weight: 600; font-size: 4.8pt; letter-spacing: .07em;
      text-transform: uppercase; color: #6B6F68; text-align: right;
-     padding: 0 0 .5mm .8mm; }
+     padding: 0 0 .6mm .8mm; }
 th.n, td.n { text-align: left; }
-td { padding: .38mm 0 .38mm .8mm; text-align: right; border-top: .2mm solid #CDC7B8; }
+td { padding: .5mm 0 .5mm .8mm; text-align: right; border-top: .2mm solid #CDC7B8; }
 td.n { font-weight: 600; }
-.note { font-size: 4.8pt; line-height: 1.3; color: #6B6F68; margin: .8mm 0 0; }
-.ter { display: flex; flex-wrap: wrap; gap: .8mm 2.4mm; font-size: 5pt;
-       margin: 1mm 0 0; }
+tr:nth-child(even) td { background: #EFECE3; }
+.note { font-size: 5.2pt; line-height: 1.3; color: #2A2E2B; margin: .7mm 0 0;
+        padding-top: .6mm; border-top: .2mm solid #CDC7B8; }
+/* the footer is absolutely placed, so the last note has to keep clear of it */
+.note:last-of-type { margin-bottom: 2.6mm; }
+.note b { font-weight: 600; }
+.note.first { border-top: 0; padding-top: 0; }
+.ter { display: flex; flex-wrap: wrap; gap: .8mm 2.4mm; font-size: 5.2pt;
+       margin: 1.2mm 0 0; }
 .ter span { white-space: nowrap; }
-.ter i { display: inline-block; width: 1.6mm; height: 1.6mm; border-radius: .3mm;
-         margin-right: .6mm; }
-.foot { position: absolute; left: 3mm; right: 3mm; bottom: 1.8mm;
-        font-size: 4.4pt; color: #B9B4A8; display: flex;
+.ter i { display: inline-block; width: 1.8mm; height: 1.8mm; border-radius: .3mm;
+         margin-right: .7mm; }
+.foot { position: absolute; left: 2.8mm; right: 2.8mm; bottom: 1.6mm;
+        font-size: 4.6pt; color: #B9B4A8; display: flex;
         justify-content: space-between; }
 </style></head>
 <body><div class="sheet"><div class="aid"><div class="face front">
-  <div class="hd"><b>Your turn</b> · map phase</div>
+  <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
   <div class="rule"></div>
-  <p class="lead">Each card of your meld — one of</p>
-  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">one unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">lay a tile: it must touch TWO already there. Rank 10 or under also pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel — your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">take 1 gold</span></div>
-  <div class="both">Every card: <b>in reach</b> (a tile you hold, or one beside it)
-    and its <b>suit matches the terrain</b>. No units on the map? Act anywhere.</div>
+  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">a unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">a new tile · must touch TWO · rank 10 or under pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel · your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">1 gold</span></div>
+  <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
+    and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>your tier's number</em></span><span class="d">by land across your own units onto a free tile, or by sea across empty Ocean. Never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">explore one free tile of ANY terrain, anywhere. Touch-two applies; reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>twice · 1 then 2 gold</em></span><span class="d">draw onto the highest rank showing, retire your lowest card, buy one at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit. A lone card cannot attack it; an assault costs two cards and the lower rank fights.</span></div><div class="free"><span class="k">GOLD<em>free</em></span><span class="d">shift coins between reserve, food and walls. Research is one way.</span></div><div class="free"><span class="k">COLONY<em>one a turn</em></span><span class="d">spend a card from your victory row on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>your tier</em></span><span class="d">land: across your own units · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">one free tile of ANY terrain, anywhere · touch-two applies, reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>1 gold, then 2</em></span><span class="d">draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · a lone card cannot attack it; an assault costs two.</span></div><div class="free"><span class="k">GOLD<em></em></span><span class="d">free · shift coins between reserve, food and walls.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -82,31 +86,29 @@ td.n { font-weight: 600; }
         <th>Food</th><th>Cap</th><th>Asc.</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>1</td><td>—</td><td>12</td><td>—</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>2</td><td>1</td><td>14</td><td>1</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>3</td><td>2</td><td>16</td><td>2</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>4</td><td>3</td><td>18</td><td>3</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>5</td><td>4</td><td>20</td><td>4</td></tr>
   </table>
-  <p class="note">Read your top tier that still holds units. Food is due each
+  <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note" style="margin-top:1.1mm"><b>Round.</b> Declare A → everyone plays a
-    meld → highest total wins → the winner's die shows their meld size and leads,
-    others 2/3/4 → spend in that order. Matched the winner and lost: set one card
-    aside, take 1 gold. Last: 1 gold.</p>
+  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+    lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card's rank against their hand card plus the
-    ground. Higher wins; level goes to the card matching the ground, and otherwise to
-    the defender. Clear the last unit and the tile is yours — settle it at once.</p>
-  <p class="note"><b>End.</b> A last unit placed, or the market down to one layer:
-    finish the round, play one more. Score 1 per unit · 1 per row card, plus the
-    centre rank at 3+ · 3 per terrain dominated.</p>
+  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
+    wins; level goes to the card matching the ground, else the defender. Clear the last
+    unit and the tile is yours.</p>
+  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
+    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+    terrain.</p>
   <div class="foot"><span>Blink v0.24</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
-  <div class="hd"><b>Your turn</b> · map phase</div>
+  <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
   <div class="rule"></div>
-  <p class="lead">Each card of your meld — one of</p>
-  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">one unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">lay a tile: it must touch TWO already there. Rank 10 or under also pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel — your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">take 1 gold</span></div>
-  <div class="both">Every card: <b>in reach</b> (a tile you hold, or one beside it)
-    and its <b>suit matches the terrain</b>. No units on the map? Act anywhere.</div>
+  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">a unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">a new tile · must touch TWO · rank 10 or under pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel · your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">1 gold</span></div>
+  <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
+    and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>your tier's number</em></span><span class="d">by land across your own units onto a free tile, or by sea across empty Ocean. Never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">explore one free tile of ANY terrain, anywhere. Touch-two applies; reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>twice · 1 then 2 gold</em></span><span class="d">draw onto the highest rank showing, retire your lowest card, buy one at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit. A lone card cannot attack it; an assault costs two cards and the lower rank fights.</span></div><div class="free"><span class="k">GOLD<em>free</em></span><span class="d">shift coins between reserve, food and walls. Research is one way.</span></div><div class="free"><span class="k">COLONY<em>one a turn</em></span><span class="d">spend a card from your victory row on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>your tier</em></span><span class="d">land: across your own units · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">one free tile of ANY terrain, anywhere · touch-two applies, reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>1 gold, then 2</em></span><span class="d">draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · a lone card cannot attack it; an assault costs two.</span></div><div class="free"><span class="k">GOLD<em></em></span><span class="d">free · shift coins between reserve, food and walls.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -115,31 +117,29 @@ td.n { font-weight: 600; }
         <th>Food</th><th>Cap</th><th>Asc.</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>1</td><td>—</td><td>12</td><td>—</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>2</td><td>1</td><td>14</td><td>1</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>3</td><td>2</td><td>16</td><td>2</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>4</td><td>3</td><td>18</td><td>3</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>5</td><td>4</td><td>20</td><td>4</td></tr>
   </table>
-  <p class="note">Read your top tier that still holds units. Food is due each
+  <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note" style="margin-top:1.1mm"><b>Round.</b> Declare A → everyone plays a
-    meld → highest total wins → the winner's die shows their meld size and leads,
-    others 2/3/4 → spend in that order. Matched the winner and lost: set one card
-    aside, take 1 gold. Last: 1 gold.</p>
+  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+    lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card's rank against their hand card plus the
-    ground. Higher wins; level goes to the card matching the ground, and otherwise to
-    the defender. Clear the last unit and the tile is yours — settle it at once.</p>
-  <p class="note"><b>End.</b> A last unit placed, or the market down to one layer:
-    finish the round, play one more. Score 1 per unit · 1 per row card, plus the
-    centre rank at 3+ · 3 per terrain dominated.</p>
+  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
+    wins; level goes to the card matching the ground, else the defender. Clear the last
+    unit and the tile is yours.</p>
+  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
+    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+    terrain.</p>
   <div class="foot"><span>Blink v0.24</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
-  <div class="hd"><b>Your turn</b> · map phase</div>
+  <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
   <div class="rule"></div>
-  <p class="lead">Each card of your meld — one of</p>
-  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">one unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">lay a tile: it must touch TWO already there. Rank 10 or under also pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel — your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">take 1 gold</span></div>
-  <div class="both">Every card: <b>in reach</b> (a tile you hold, or one beside it)
-    and its <b>suit matches the terrain</b>. No units on the map? Act anywhere.</div>
+  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">a unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">a new tile · must touch TWO · rank 10 or under pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel · your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">1 gold</span></div>
+  <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
+    and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>your tier's number</em></span><span class="d">by land across your own units onto a free tile, or by sea across empty Ocean. Never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">explore one free tile of ANY terrain, anywhere. Touch-two applies; reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>twice · 1 then 2 gold</em></span><span class="d">draw onto the highest rank showing, retire your lowest card, buy one at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit. A lone card cannot attack it; an assault costs two cards and the lower rank fights.</span></div><div class="free"><span class="k">GOLD<em>free</em></span><span class="d">shift coins between reserve, food and walls. Research is one way.</span></div><div class="free"><span class="k">COLONY<em>one a turn</em></span><span class="d">spend a card from your victory row on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>your tier</em></span><span class="d">land: across your own units · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">one free tile of ANY terrain, anywhere · touch-two applies, reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>1 gold, then 2</em></span><span class="d">draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · a lone card cannot attack it; an assault costs two.</span></div><div class="free"><span class="k">GOLD<em></em></span><span class="d">free · shift coins between reserve, food and walls.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -148,31 +148,29 @@ td.n { font-weight: 600; }
         <th>Food</th><th>Cap</th><th>Asc.</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>1</td><td>—</td><td>12</td><td>—</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>2</td><td>1</td><td>14</td><td>1</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>3</td><td>2</td><td>16</td><td>2</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>4</td><td>3</td><td>18</td><td>3</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>5</td><td>4</td><td>20</td><td>4</td></tr>
   </table>
-  <p class="note">Read your top tier that still holds units. Food is due each
+  <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note" style="margin-top:1.1mm"><b>Round.</b> Declare A → everyone plays a
-    meld → highest total wins → the winner's die shows their meld size and leads,
-    others 2/3/4 → spend in that order. Matched the winner and lost: set one card
-    aside, take 1 gold. Last: 1 gold.</p>
+  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+    lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card's rank against their hand card plus the
-    ground. Higher wins; level goes to the card matching the ground, and otherwise to
-    the defender. Clear the last unit and the tile is yours — settle it at once.</p>
-  <p class="note"><b>End.</b> A last unit placed, or the market down to one layer:
-    finish the round, play one more. Score 1 per unit · 1 per row card, plus the
-    centre rank at 3+ · 3 per terrain dominated.</p>
+  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
+    wins; level goes to the card matching the ground, else the defender. Clear the last
+    unit and the tile is yours.</p>
+  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
+    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+    terrain.</p>
   <div class="foot"><span>Blink v0.24</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
-  <div class="hd"><b>Your turn</b> · map phase</div>
+  <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
   <div class="rule"></div>
-  <p class="lead">Each card of your meld — one of</p>
-  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">one unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">lay a tile: it must touch TWO already there. Rank 10 or under also pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel — your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">take 1 gold</span></div>
-  <div class="both">Every card: <b>in reach</b> (a tile you hold, or one beside it)
-    and its <b>suit matches the terrain</b>. No units on the map? Act anywhere.</div>
+  <div class="use"><span class="k" style="color:#C9992B">SETTLE</span><span class="d">a unit from your top tier</span></div><div class="use"><span class="k" style="color:#37704A">EXPLORE</span><span class="d">a new tile · must touch TWO · rank 10 or under pays 1 gold</span></div><div class="use"><span class="k" style="color:#C0392B">ATTACK</span><span class="d">a duel · your rank vs their card + the ground</span></div><div class="use"><span class="k" style="color:#8A837A">CASH</span><span class="d">1 gold</span></div>
+  <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
+    and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>your tier's number</em></span><span class="d">by land across your own units onto a free tile, or by sea across empty Ocean. Never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">explore one free tile of ANY terrain, anywhere. Touch-two applies; reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>twice · 1 then 2 gold</em></span><span class="d">draw onto the highest rank showing, retire your lowest card, buy one at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit. A lone card cannot attack it; an assault costs two cards and the lower rank fights.</span></div><div class="free"><span class="k">GOLD<em>free</em></span><span class="d">shift coins between reserve, food and walls. Research is one way.</span></div><div class="free"><span class="k">COLONY<em>one a turn</em></span><span class="d">spend a card from your victory row on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>your tier</em></span><span class="d">land: across your own units · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>first sea move</em></span><span class="d">one free tile of ANY terrain, anywhere · touch-two applies, reach does not.</span></div><div class="free"><span class="k">RESEARCH<em>1 gold, then 2</em></span><span class="d">draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · a lone card cannot attack it; an assault costs two.</span></div><div class="free"><span class="k">GOLD<em></em></span><span class="d">free · shift coins between reserve, food and walls.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -181,20 +179,19 @@ td.n { font-weight: 600; }
         <th>Food</th><th>Cap</th><th>Asc.</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>1</td><td>—</td><td>12</td><td>—</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>2</td><td>1</td><td>14</td><td>1</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>3</td><td>2</td><td>16</td><td>2</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>4</td><td>3</td><td>18</td><td>3</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>5</td><td>4</td><td>20</td><td>4</td></tr>
   </table>
-  <p class="note">Read your top tier that still holds units. Food is due each
+  <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note" style="margin-top:1.1mm"><b>Round.</b> Declare A → everyone plays a
-    meld → highest total wins → the winner's die shows their meld size and leads,
-    others 2/3/4 → spend in that order. Matched the winner and lost: set one card
-    aside, take 1 gold. Last: 1 gold.</p>
+  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+    lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card's rank against their hand card plus the
-    ground. Higher wins; level goes to the card matching the ground, and otherwise to
-    the defender. Clear the last unit and the tile is yours — settle it at once.</p>
-  <p class="note"><b>End.</b> A last unit placed, or the market down to one layer:
-    finish the round, play one more. Score 1 per unit · 1 per row card, plus the
-    centre rank at 3+ · 3 per terrain dominated.</p>
+  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
+    wins; level goes to the card matching the ground, else the defender. Clear the last
+    unit and the tile is yours.</p>
+  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
+    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+    terrain.</p>
   <div class="foot"><span>Blink v0.24</span><span>deep-diversions.com/blink</span></div>
 </div></div></div></body></html>

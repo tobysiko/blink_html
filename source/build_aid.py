@@ -50,30 +50,25 @@ PER_PAGE = 4                      # 4 x 63mm = 252mm, inside an A4 text height
 # ---- the turn, as the table meets it -------------------------------------
 # (key, colour, what, detail)
 CARD_USES = [
-    ("SETTLE",  GOLD,   "one unit from your top tier"),
-    ("EXPLORE", FOREST, "lay a tile: it must touch TWO already there. "
-                        "Rank 10 or under also pays 1 gold"),
-    ("ATTACK",  "#C0392B", "a duel — your rank vs their card + the ground"),
-    ("CASH",    STONE,  "take 1 gold"),
+    ("SETTLE",  GOLD,   "a unit from your top tier"),
+    ("EXPLORE", FOREST, "a new tile \u00b7 must touch TWO \u00b7 rank 10 or under pays 1 gold"),
+    ("ATTACK",  "#C0392B", "a duel \u00b7 your rank vs their card + the ground"),
+    ("CASH",    STONE,  "1 gold"),
 ]
 
 FREE = [
-    ("MOVE", "your tier's number",
-     "by land across your own units onto a free tile, or by sea across empty "
-     "Ocean. Never an attack."),
+    ("MOVE", "your tier",
+     "land: across your own units \u00b7 sea: across empty Ocean \u00b7 never an attack."),
     ("WATER", "first sea move",
-     "explore one free tile of ANY terrain, anywhere. Touch-two applies; "
-     "reach does not."),
-    ("RESEARCH", "twice · 1 then 2 gold",
-     "draw onto the highest rank showing, retire your lowest card, buy one at "
-     "or under your cap."),
+     "one free tile of ANY terrain, anywhere \u00b7 touch-two applies, reach does not."),
+    ("RESEARCH", "1 gold, then 2",
+     "draw onto the highest rank \u00b7 retire your lowest \u00b7 buy at or under your cap."),
     ("FORTIFY", "1 gold",
-     "a coin on a unit. A lone card cannot attack it; an assault costs two "
-     "cards and the lower rank fights."),
-    ("GOLD", "free",
-     "shift coins between reserve, food and walls. Research is one way."),
-    ("COLONY", "one a turn",
-     "spend a card from your victory row on its B effect."),
+     "a coin on a unit \u00b7 a lone card cannot attack it; an assault costs two."),
+    ("GOLD", "",
+     "free \u00b7 shift coins between reserve, food and walls."),
+    ("COLONY", "",
+     "one a turn \u00b7 spend a victory card on its B effect."),
 ]
 
 TIERS = [
@@ -110,45 +105,50 @@ body {{ margin: 0; background: {PAPER}; color: {INK};
 .fold::before {{ top: 0; border-top: 1.8mm solid {SOFT}; }}
 .fold::after {{ bottom: 0; border-bottom: 1.8mm solid {SOFT}; }}
 
-.hd {{ font-size: 6.2pt; letter-spacing: .16em; font-weight: 600;
+.hd {{ font-size: 6.4pt; letter-spacing: .16em; font-weight: 600;
       text-transform: uppercase; color: {SOFT}; }}
 .hd b {{ color: {INK}; }}
-.rule {{ border-top: .3mm solid {LINE}; margin: 1mm 0 1.1mm; }}
+.rule {{ border-top: .35mm solid {INK}; margin: 1mm 0 1.4mm; }}
 .lead {{ font-size: 5.4pt; letter-spacing: .12em; text-transform: uppercase;
-        color: {SOFT}; margin: 0 0 .7mm; }}
-
-/* the four things a card can be */
-.use {{ display: flex; gap: 1.6mm; align-items: baseline; margin: 0 0 .65mm; }}
-.use .k {{ font-size: 6.6pt; font-weight: 600; letter-spacing: .04em;
-          width: 13.5mm; flex: none; }}
-.use .d {{ font-size: 5.2pt; line-height: 1.2; color: {INK}; }}
-.both {{ font-size: 5pt; line-height: 1.22; color: {SOFT};
-        border-top: .3mm solid {LINE}; padding-top: .9mm; margin-top: .3mm; }}
-.both b {{ color: {INK}; }}
-
-/* the free actions */
-.free {{ display: flex; gap: 1.6mm; align-items: baseline; margin: 0 0 .4mm; }}
-.free .k {{ font-size: 5.8pt; font-weight: 600; width: 13.5mm; flex: none; }}
-.free .k em {{ display: block; font-style: normal; font-size: 4.5pt;
+        color: {SOFT}; margin: 0 0 1mm; }}
+.use {{ display: flex; gap: 1.8mm; align-items: baseline; margin: 0 0 .95mm; }}
+.use .k {{ font-size: 7.2pt; font-weight: 600; letter-spacing: .03em;
+          width: 14mm; flex: none; }}
+.use .d {{ font-size: 5.8pt; line-height: 1.25; color: {INK}; }}
+.both {{ font-size: 5.4pt; line-height: 1.3; color: {INK};
+        background: {PANEL}; border-radius: .8mm; padding: 1mm 1.4mm;
+        margin: 1.2mm 0 0; }}
+.both b {{ font-weight: 600; }}
+.freebox {{ background: {PANEL}; border-radius: .8mm; padding: 1mm 1.3mm .3mm;
+           margin: 1.2mm 0 0; }}
+.freebox .lead {{ margin: 0 0 .9mm; }}
+.free {{ display: flex; gap: 1.8mm; align-items: baseline; margin: 0 0 .7mm; }}
+.free .k {{ font-size: 6pt; font-weight: 600; width: 14mm; flex: none;
+           line-height: 1.1; }}
+.free .k em {{ display: block; font-style: normal; font-size: 4.8pt;
               font-weight: 400; color: {SOFT}; letter-spacing: .02em; }}
-.free .d {{ font-size: 5pt; line-height: 1.18; }}
-
-/* the numbers */
-table {{ border-collapse: collapse; width: 100%; font-size: 5.3pt; }}
-th {{ font-weight: 600; font-size: 4.6pt; letter-spacing: .07em;
+.free .d {{ font-size: 5.5pt; line-height: 1.24; }}
+table {{ border-collapse: collapse; width: 100%; font-size: 5.7pt; }}
+th {{ font-weight: 600; font-size: 4.8pt; letter-spacing: .07em;
      text-transform: uppercase; color: {SOFT}; text-align: right;
-     padding: 0 0 .5mm .8mm; }}
+     padding: 0 0 .6mm .8mm; }}
 th.n, td.n {{ text-align: left; }}
-td {{ padding: .38mm 0 .38mm .8mm; text-align: right; border-top: .2mm solid {LINE}; }}
+td {{ padding: .5mm 0 .5mm .8mm; text-align: right; border-top: .2mm solid {LINE}; }}
 td.n {{ font-weight: 600; }}
-.note {{ font-size: 4.8pt; line-height: 1.3; color: {SOFT}; margin: .8mm 0 0; }}
-.ter {{ display: flex; flex-wrap: wrap; gap: .8mm 2.4mm; font-size: 5pt;
-       margin: 1mm 0 0; }}
+tr:nth-child(even) td {{ background: {PANEL}; }}
+.note {{ font-size: 5.2pt; line-height: 1.3; color: {INK}; margin: .7mm 0 0;
+        padding-top: .6mm; border-top: .2mm solid {LINE}; }}
+/* the footer is absolutely placed, so the last note has to keep clear of it */
+.note:last-of-type {{ margin-bottom: 2.6mm; }}
+.note b {{ font-weight: 600; }}
+.note.first {{ border-top: 0; padding-top: 0; }}
+.ter {{ display: flex; flex-wrap: wrap; gap: .8mm 2.4mm; font-size: 5.2pt;
+       margin: 1.2mm 0 0; }}
 .ter span {{ white-space: nowrap; }}
-.ter i {{ display: inline-block; width: 1.6mm; height: 1.6mm; border-radius: .3mm;
-         margin-right: .6mm; }}
-.foot {{ position: absolute; left: 3mm; right: 3mm; bottom: 1.8mm;
-        font-size: 4.4pt; color: {FAINT}; display: flex;
+.ter i {{ display: inline-block; width: 1.8mm; height: 1.8mm; border-radius: .3mm;
+         margin-right: .7mm; }}
+.foot {{ position: absolute; left: 2.8mm; right: 2.8mm; bottom: 1.6mm;
+        font-size: 4.6pt; color: {FAINT}; display: flex;
         justify-content: space-between; }}
 """
 
@@ -161,12 +161,11 @@ def front():
         f'<div class="free"><span class="k">{k}<em>{w}</em></span>'
         f'<span class="d">{d}</span></div>' for k, w, d in FREE)
     return f"""<div class="face front">
-  <div class="hd"><b>Your turn</b> · map phase</div>
+  <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
   <div class="rule"></div>
-  <p class="lead">Each card of your meld — one of</p>
   {uses}
-  <div class="both">Every card: <b>in reach</b> (a tile you hold, or one beside it)
-    and its <b>suit matches the terrain</b>. No units on the map? Act anywhere.</div>
+  <div class="both">Every card: <b>in reach</b> \u2014 a tile you hold or one beside it \u2014
+    and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
   {free}
 </div>"""
@@ -187,21 +186,20 @@ def back():
         <th>Food</th><th>Cap</th><th>Asc.</th></tr>
     {rows}
   </table>
-  <p class="note">Read your top tier that still holds units. Food is due each
+  <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter">{ter}</div>
-  <p class="note" style="margin-top:1.1mm"><b>Round.</b> Declare A → everyone plays a
-    meld → highest total wins → the winner's die shows their meld size and leads,
-    others 2/3/4 → spend in that order. Matched the winner and lost: set one card
-    aside, take 1 gold. Last: 1 gold.</p>
+  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+    lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card's rank against their hand card plus the
-    ground. Higher wins; level goes to the card matching the ground, and otherwise to
-    the defender. Clear the last unit and the tile is yours — settle it at once.</p>
-  <p class="note"><b>End.</b> A last unit placed, or the market down to one layer:
-    finish the round, play one more. Score 1 per unit · 1 per row card, plus the
-    centre rank at 3+ · 3 per terrain dominated.</p>
+  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
+    wins; level goes to the card matching the ground, else the defender. Clear the last
+    unit and the tile is yours.</p>
+  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
+    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+    terrain.</p>
   <div class="foot"><span>Blink {VTAG}</span><span>deep-diversions.com/blink</span></div>
 </div>"""
 
