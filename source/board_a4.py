@@ -4,7 +4,18 @@ All coordinates are millimetres; the SVG declares width/height in mm so the
 PDF prints 1:1. Unit slots are 15 mm; feeding coin slots sit beside each band.
 """
 
+import sys
+
 from version import VTAG
+
+# A VARIANT SHEET, not the printed board. The rulebook still carries the
+# assault (§07), so a WALL column here would print a rule the book does not
+# have. `--wall` makes the sheet for the proposal instead — the tier ladder the
+# app plays with, 10/12/14/16/18 — so it can be put on a table and tried.
+#   python3 board_a4.py            ->  board_a4.svg
+#   python3 board_a4.py --wall     ->  board_a4_wall.svg
+WALL = "--wall" in sys.argv
+WALL_OFFSET = -2                 # a wall holds two under what you may buy
 
 # ---- page ----------------------------------------------------------------
 PW, PH = 297.0, 210.0            # A4 landscape, mm
@@ -133,6 +144,35 @@ def T(x, y, s, size=4.2, anchor="middle", col=INK, weight="400", mono=False,
             f'style="{style}">{s}</text>')
 
 
+def shield(x, y, n):
+    """The WALL value, drawn as the thing it is.
+
+    Every other column on this board has a shape that says what it is before a
+    word is read — a fan of cards for the meld, a card's index corner for the
+    rank cap, circles for units, coins for food. A bare number for the wall
+    would be the one column a reader has to remember the heading for.
+
+    A heater shield: flat across the top, straight down the shoulders, then
+    curving to a point. Drawn at the same 15x12 as the card corner beside it,
+    so the two rank-scale numbers — what you may BUY and what your wall HOLDS —
+    read as a pair, two apart, which is the rule.
+    """
+    w, h = 13.0, 13.5
+    x0, y0 = x, y - h / 2
+    out = (f'<path d="M{x0:.2f} {y0:.2f} '
+           f'h{w:.2f} '
+           f'v{h * 0.42:.2f} '
+           f'q0 {h * 0.40:.2f} {-w / 2:.2f} {h * 0.58:.2f} '
+           f'q{-w / 2:.2f} {-h * 0.18:.2f} {-w / 2:.2f} {-h * 0.58:.2f} '
+           f'Z" fill="{PANEL}" stroke="{INK}" stroke-width="0.7"/>')
+    # a band across the shoulders: it reads as masonry rather than as a crest,
+    # and it keeps the number off the outline at small sizes
+    out += (f'<path d="M{x0:.2f} {y0 + h * 0.26:.2f} h{w:.2f}" '
+            f'stroke="{LINE}" stroke-width="0.4" fill="none"/>')
+    out += T(x0 + w / 2, y + 2.4, str(n), 6.2, weight="600")
+    return out
+
+
 def unit_slot(x, y, filled=False):
     if filled:
         return (f'<circle cx="{x:.2f}" cy="{y+1:.2f}" r="{R:.2f}" fill="{REDdk}"/>'
@@ -195,21 +235,38 @@ def build():
     meld_w  = fan_width(maxmeld)
     meld_x0 = band_x
     cap_x0  = meld_x0 + meld_w + 5
-    name_x0 = cap_x0 + 19
+    # WALL sits beside BUY UP TO on purpose: both are ranks, and the two
+    # numbers on any row are two apart, which is the whole rule without a
+    # sentence. It costs 17 mm, taken from the tier-name gap and the reserve
+    # one below — see the two subtractions there.
+    wall_x0 = cap_x0 + 20 if WALL else cap_x0
+    name_x0 = (wall_x0 + 16) if WALL else (cap_x0 + 19)
     # The row has to end inside the margin with MOVES' heading on it, so the
     # gaps are spent from a budget rather than guessed. Widening the name gap
     # to 48 pushed MOVES 9 mm off the sheet; the food column gives it back,
     # because four coins do not need 12 mm of pitch.
-    slots_x0 = name_x0 + 48
-    food_x0  = slots_x0 + slots_w + 12
+    slots_x0 = name_x0 + (34 if WALL else 48)
+    food_x0  = slots_x0 + slots_w + (9 if WALL else 12)
     food_w   = max(b[3] for b in BANDS)*(CD+1.5)
     moves_x0 = food_x0 + food_w + 10
-    sep_x    = slots_x0 + slots_w + 6       # units | upkeep
+    sep_x    = slots_x0 + slots_w + (4 if WALL else 6)   # units | upkeep
 
     s.append(T(meld_x0, top, "MELD", 3.6, anchor="start", col=SOFT, mono=True,
                spacing="0.4"))
-    s.append(T(cap_x0, top, "BUY UP TO", 3.6, anchor="start", col=SOFT,
-               mono=True, spacing="0.4"))
+    if WALL:
+        # nine characters, start-anchored, ran straight into WALL. Centred over
+        # its own card corner it clears the shield and still sits above what it
+        # names — and the base sheet, which has no neighbour there, is untouched.
+        s.append(T(cap_x0 + 7.5, top, "BUY UP TO", 3.6, col=SOFT, mono=True,
+                   spacing="0.4"))
+    else:
+        s.append(T(cap_x0, top, "BUY UP TO", 3.6, anchor="start", col=SOFT,
+                   mono=True, spacing="0.4"))
+    if WALL:
+        # short, and centred over the shield: "BUY UP TO" is nine characters
+        # and the two headings met in the middle at anything longer.
+        s.append(T(wall_x0 + 6.5, top, "WALL", 3.6, col=SOFT,
+                   mono=True, spacing="0.4"))
     # just the label: the rule about emptying top-down ran into FOOD, and it
     # belongs with the other standing rules under the track anyway
     s.append(T(slots_x0, top, "RESERVE", 4.2,
@@ -247,6 +304,8 @@ def build():
         s.append(card_fan(meld_x0, y, limit, active))
         # the rank cap, beside the meld fan: how HIGH, next to how MANY
         s.append(rank_corner(cap_x0, y, cap))
+        if WALL:
+            s.append(shield(wall_x0, y, max(1, int(cap) + WALL_OFFSET)))
         # band name, and a lead line from it INTO the reserve. A tier is not a
         # label sitting near some circles: it is the name of the row those
         # units come out of, and the two were reading as separate columns.
@@ -384,7 +443,7 @@ def build():
     # The board naming its own parts. Every word here is printed somewhere on
     # this sheet; nothing here is about the order of play.
     s.append(T(rx, low, "ON THE BOARD", 4.6, anchor="start", weight="600"))
-    TERMS = [
+    TERMS = ([("WALL", "a fortified unit defends here")] if WALL else []) + [
         ("MELD",        "cards you may play in a round"),
         ("BUY UP TO",   "highest rank you may take"),
         ("MOVES",       "free moves each turn"),
@@ -511,5 +570,6 @@ def build():
 if __name__ == "__main__":
     import pathlib
     svg = build()
-    pathlib.Path("board_a4.svg").write_text(svg)
-    print("wrote board_a4.svg", len(svg), "bytes")
+    name = "board_a4_wall.svg" if WALL else "board_a4.svg"
+    pathlib.Path(name).write_text(svg)
+    print(f"wrote {name}", len(svg), "bytes")
