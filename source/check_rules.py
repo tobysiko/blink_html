@@ -369,7 +369,11 @@ check("switches off" in perk_sec,
 # the aid sets it in small caps with CSS, so the markup reads "Your turn"
 check("your turn" in aid_txt.lower(),
       "the player aid does not say what a turn may contain")
-check(re.search(r"twice · 1 then 2 gold|twice \u00b7 1 then 2 gold", aid_txt),
+# BOTH halves, and not as one phrase: the wording moved once and the check
+# followed it, which is a check that tests the wording rather than the rule.
+check("twice" in aid_txt,
+      "the aid no longer says research is twice a turn")
+check(re.search(r"1 (gold )?then 2|1 then 2 gold", aid_txt),
       f"the aid does not print the 1-then-2 research price (engine default "
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
 # The board's job is now to name its own parts, so THAT is what is pinned.

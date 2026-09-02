@@ -61,8 +61,9 @@ FREE = [
      "land: across your own units \u00b7 sea: across empty Ocean \u00b7 never an attack."),
     ("WATER", "first sea move",
      "one free tile of ANY terrain, anywhere \u00b7 touch-two applies, reach does not."),
-    ("RESEARCH", "1 gold, then 2",
-     "draw onto the highest rank \u00b7 retire your lowest \u00b7 buy at or under your cap."),
+    ("RESEARCH", "",
+     "twice \u00b7 1 gold then 2 \u00b7 draw onto the highest rank \u00b7 retire your lowest \u00b7 "
+     "buy at or under your cap."),
     ("FORTIFY", "1 gold",
      "a coin on a unit \u00b7 a lone card cannot attack it; an assault costs two."),
     ("GOLD", "",
