@@ -2632,7 +2632,14 @@ class Game {
     this.fx("duel", { seat: p.i, at: cell, a, b, won: attackerWins,
                       terrain: tile.terrain, bonus, defender: d.i,
                       attackCard: aCard || null, defendCard: dCard || null,
+                      wall: dCard && dCard.wall ? dCard.r : 0,
                       assault: !!(attack && attack.assault) });
+    /* AND INTO THE LOG. The fx is a flash on a tile; the log is where a player
+     * looks when they missed it. A duel used to appear in neither — a lost
+     * fight moved nothing on the map, so the whole event was a card silently
+     * leaving your meld. */
+    this.say(attackerWins ? "log.duel.won" : "log.duel.held",
+             { a, b, wall: dCard && dCard.wall ? dCard.r : 0 });
     if (attackerWins) {
       this.inc("duel_won"); this._takeUnit(p, cell);
       /* The ground changes hands — but only if the fight actually emptied it,

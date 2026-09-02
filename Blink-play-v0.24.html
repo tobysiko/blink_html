@@ -1360,7 +1360,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"f9089e4a15","branch":"main","dirty":true,"built":"2026-09-02T18:16:08Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"3eec287084","branch":"main","dirty":true,"built":"2026-09-02T19:30:28Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1883,6 +1883,10 @@ en: {
   "log.trick": "Seat {seat} won the trick.",
   "log.cashed": "You cashed {card} for 1 gold.",
   "log.unusedGold": "{n} unused card(s) → {n} gold.",
+  "log.duel.won": "Duel: {a} beat {b} \u2014 a defender goes home.",
+  "log.duel.held": "Duel: {a} against {b} \u2014 the ground held.",
+  "fx.duel.won": "{a} v {b} \u2014 won",
+  "fx.duel.held": "{a} v {b} \u2014 held",
   "log.researched": "Researched: retired {out}, took {in}.",
   "log.noBuy": "Nothing on the market is at or below your rank cap.",
   "log.water": "Water advantage — a free tile.",
@@ -2445,6 +2449,10 @@ de: {
   "log.trick": "Platz {seat} gewinnt den Stich.",
   "log.cashed": "Du tauschst {card} gegen 1 Gold.",
   "log.unusedGold": "{n} ungenutzte Karte(n) → {n} Gold.",
+  "log.duel.won": "Duell: {a} schl\u00e4gt {b} \u2014 ein Verteidiger geht heim.",
+  "log.duel.held": "Duell: {a} gegen {b} \u2014 der Boden h\u00e4lt.",
+  "fx.duel.won": "{a} v {b} \u2014 gewonnen",
+  "fx.duel.held": "{a} v {b} \u2014 gehalten",
   "log.researched": "Geforscht: {out} abgegeben, {in} genommen.",
   "log.noBuy": "Nichts auf dem Markt liegt bei deiner Wertobergrenze oder darunter.",
   "log.water": "Vorteil zur See — ein Gratisfeld.",
@@ -5189,7 +5197,14 @@ class Game {
     this.fx("duel", { seat: p.i, at: cell, a, b, won: attackerWins,
                       terrain: tile.terrain, bonus, defender: d.i,
                       attackCard: aCard || null, defendCard: dCard || null,
+                      wall: dCard && dCard.wall ? dCard.r : 0,
                       assault: !!(attack && attack.assault) });
+    /* AND INTO THE LOG. The fx is a flash on a tile; the log is where a player
+     * looks when they missed it. A duel used to appear in neither — a lost
+     * fight moved nothing on the map, so the whole event was a card silently
+     * leaving your meld. */
+    this.say(attackerWins ? "log.duel.won" : "log.duel.held",
+             { a, b, wall: dCard && dCard.wall ? dCard.r : 0 });
     if (attackerWins) {
       this.inc("duel_won"); this._takeUnit(p, cell);
       /* The ground changes hands — but only if the fight actually emptied it,
@@ -8042,6 +8057,20 @@ function playEvents() {
       case "shield":
         ring(cellPoint(e.at), true, d);
         break;
+      /* THE DUEL. The engine has always sent this event with both totals in
+       * it; nothing drew it, so a fight the attacker LOST moved nothing on the
+       * map and the whole thing was a card silently leaving the meld. Now the
+       * sum lands on the tile it was fought over, in the winner's favour. */
+      case "duel": {
+        const at = cellPoint(e.at);
+        const mine = e.seat === ME;
+        caption(at, t(e.won ? "fx.duel.won" : "fx.duel.held",
+                      { a: e.a, b: e.b }),
+                mine ? e.won : !e.won, d);
+        ring(at, !e.won, d + 120);
+        d += 380;
+        break;
+      }
       case "gold": {
         const gained = e.amount > 0;
         const src = gained ? point(e.from) : uiPoint("gold");

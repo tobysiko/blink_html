@@ -835,6 +835,20 @@ function playEvents() {
       case "shield":
         ring(cellPoint(e.at), true, d);
         break;
+      /* THE DUEL. The engine has always sent this event with both totals in
+       * it; nothing drew it, so a fight the attacker LOST moved nothing on the
+       * map and the whole thing was a card silently leaving the meld. Now the
+       * sum lands on the tile it was fought over, in the winner's favour. */
+      case "duel": {
+        const at = cellPoint(e.at);
+        const mine = e.seat === ME;
+        caption(at, t(e.won ? "fx.duel.won" : "fx.duel.held",
+                      { a: e.a, b: e.b }),
+                mine ? e.won : !e.won, d);
+        ring(at, !e.won, d + 120);
+        d += 380;
+        break;
+      }
       case "gold": {
         const gained = e.amount > 0;
         const src = gained ? point(e.from) : uiPoint("gold");
