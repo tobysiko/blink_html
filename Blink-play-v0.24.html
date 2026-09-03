@@ -1182,6 +1182,23 @@
       </select>
     </div>
     <div class="field">
+      <label for="economy" data-i18n="setup.economy">Economy</label>
+      <select id="economy">
+        <option value="full" selected data-i18n="setup.economy.full"></option>
+        <option value="lean" data-i18n="setup.economy.lean"></option>
+      </select>
+      <p class="hint" id="economy-hint" data-i18n="setup.economy.note"></p>
+    </div>
+    <div class="field">
+      <label for="spoils" data-i18n="setup.spoils">A won duel pays</label>
+      <select id="spoils">
+        <option value="none" selected data-i18n="setup.spoils.none"></option>
+        <option value="ground" data-i18n="setup.spoils.ground"></option>
+        <option value="gold" data-i18n="setup.spoils.gold"></option>
+      </select>
+      <p class="hint" id="spoils-hint" data-i18n="setup.spoils.note"></p>
+    </div>
+    <div class="field">
       <label for="perks" data-i18n="setup.perks">Victory row perks</label>
       <select id="perks">
         <option value="off" selected data-i18n="setup.perks.off"></option>
@@ -1360,7 +1377,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"ae855c49a9","branch":"main","dirty":true,"built":"2026-09-02T20:43:29Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"f217295893","branch":"main","dirty":true,"built":"2026-09-03T05:39:54Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1459,6 +1476,15 @@ en: {
   "setup.attacks": "Attacks per turn",
   "setup.attacks.any": "Any \u2014 every card in your meld may attack",
   "setup.attacks.one": "One \u2014 at most one attack each map phase",
+  "setup.economy": "Economy",
+  "setup.economy.full": "Full \u2014 ascension rewards and food (printed rule)",
+  "setup.economy.lean": "Lean \u2014 nobody eats and climbing pays nothing",
+  "setup.economy.note": "(measured as very nearly a closed loop: ascension pays 26.6 gold a game and food takes 31.8 back, and a player reached a recycle short of it in 0.1% of them)",
+  "setup.spoils": "A won duel pays",
+  "setup.spoils.none": "Nothing \u2014 the ground only (printed rule)",
+  "setup.spoils.ground": "1 gold \u2014 only when the fight takes the ground",
+  "setup.spoils.gold": "1 gold \u2014 for every duel won",
+  "setup.spoils.note": "(a bot forbidden to attack still outscores one that fights by 2 points; a coin for winning is the smallest rule measured that reverses it)",
   "setup.perks": "Victory row perks",
   "setup.perks.off": "Off",
   "setup.perks.on": "On — one perk per row slot, drawn from the seed",
@@ -1751,6 +1777,7 @@ en: {
   "fx.why.docked": "set aside",
   "fx.why.bonus_gold": "no bonus card",
   "fx.why.ascension": "new tier",
+  "fx.why.spoils": "spoils",
   "fx.why.cashed": "cashed",
   "fx.why.unplaceable": "nowhere to play",
   "fx.why.held_back": "held back",
@@ -1767,6 +1794,7 @@ en: {
   "log.gold.docked": "Seat {seat} matched the winner's {cards} cards and lost — a card set aside: +🪙{n}",
   "log.gold.bonus_gold": "Seat {seat} won with an empty hand — no bonus card, so: +🪙{n}",
   "log.gold.ascension": "Seat {seat} reached tier {tier} — ascension reward: +🪙{n}",
+  "log.gold.spoils": "Seat {seat} won the duel — spoils: +🪙{n}",
   "log.gold.cashed": "Seat {seat} cashed {card}: +🪙{n}",
   "log.gold.unplaceable": "Seat {seat} had nowhere to spend a card: +🪙{n}",
   "log.gold.held_back": "Seat {seat} held back rather than climb a tier it cannot feed: +🪙{n}",
@@ -2041,6 +2069,15 @@ de: {
   "setup.attacks": "Angriffe pro Zug",
   "setup.attacks.any": "Beliebig \u2014 jede Karte der Kombination darf angreifen",
   "setup.attacks.one": "Einer \u2014 h\u00f6chstens ein Angriff je Kartenphase",
+  "setup.economy": "Wirtschaft",
+  "setup.economy.full": "Vollst\u00e4ndig \u2014 Aufstiegspr\u00e4mie und Nahrung (gedruckte Regel)",
+  "setup.economy.lean": "Schlank \u2014 niemand isst, und der Aufstieg zahlt nichts",
+  "setup.economy.note": "(gemessen ein fast geschlossener Kreis: die Aufstiegspr\u00e4mie zahlt 26,6 Gold je Partie, die Nahrung nimmt 31,8 zur\u00fcck \u2014 und nur in 0,1% der Handerneuerungen fehlte einem Spieler das Geld daf\u00fcr)",
+  "setup.spoils": "Ein gewonnenes Duell zahlt",
+  "setup.spoils.none": "Nichts \u2014 nur das Land (gedruckte Regel)",
+  "setup.spoils.ground": "1 Gold \u2014 nur wenn der Kampf das Land einnimmt",
+  "setup.spoils.gold": "1 Gold \u2014 f\u00fcr jedes gewonnene Duell",
+  "setup.spoils.note": "(ein Bot, der nicht angreifen darf, liegt trotzdem 2 Punkte vor einem, der k\u00e4mpft; eine M\u00fcnze f\u00fcrs Gewinnen ist die kleinste gemessene Regel, die das umkehrt)",
   "setup.perks": "Boni der Siegesreihe",
   "setup.perks.off": "Aus",
   "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
@@ -2320,6 +2357,7 @@ de: {
   "fx.why.docked": "beiseitegelegt",
   "fx.why.bonus_gold": "keine Extrakarte",
   "fx.why.ascension": "neue Stufe",
+  "fx.why.spoils": "Beute",
   "fx.why.cashed": "zu Gold",
   "fx.why.unplaceable": "kein Platz dafür",
   "fx.why.held_back": "zurückgehalten",
@@ -2336,6 +2374,7 @@ de: {
   "log.gold.docked": "Platz {seat} hatte ebenso viele Karten wie der Gewinner ({cards}) und verlor — eine Karte beiseite: +🪙{n}",
   "log.gold.bonus_gold": "Platz {seat} gewann mit leerer Hand — keine Extrakarte, dafür: +🪙{n}",
   "log.gold.ascension": "Platz {seat} erreicht Stufe {tier} — Aufstiegsprämie: +🪙{n}",
+  "log.gold.spoils": "Platz {seat} gewinnt das Duell — Beute: +🪙{n}",
   "log.gold.cashed": "Platz {seat} macht {card} zu Gold: +🪙{n}",
   "log.gold.unplaceable": "Platz {seat} konnte eine Karte nirgends einsetzen: +🪙{n}",
   "log.gold.held_back": "Platz {seat} hält sich zurück, statt in eine unbezahlbare Stufe zu steigen: +🪙{n}",
@@ -2638,6 +2677,8 @@ const GOLD_REASONS = [
   "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
   // going out
   "food", "upgrade", "fortify", "attack",
+  // coming in, but only under the SPOILS variant (see Game.SPOILS)
+  "spoils",
 ];
 
 const ATTACK_COST = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
@@ -3315,6 +3356,11 @@ class Player {
       this.dealt = PERK_SLOTS.map((s) => this.perks[s]).filter(Boolean);
     }
     this.perkSpent = {};
+    /* VARIANT SWITCH, set by the Game that owns this player. Kept on the
+     * player rather than read off the game at each call site because food() has
+     * eight consumers - two bot policies, the UI's "you owe" line and the
+     * recycle - and every one of them should stop asking for food together. */
+    this.foodOn = true;
     this.hand = [];
     this.discard = [];
     this.gold = 0;
@@ -3387,6 +3433,7 @@ class Player {
     return owed;
   }
   food() {
+    if (!this.foodOn) return 0;               // LEAN economy: nobody eats
     const f = this.bands[this.band()][3];
     /* Granary is a rate, not a use — the recycle already governs it, so its
      * token never turns over. */
@@ -3672,6 +3719,11 @@ function valueCard(game, p, k, card, act) {
 
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 
+/* What one coin of spoils is worth to the attack valuation. Deliberately a
+ * plain constant and not a tuned weight: the variant exists to be measured, and
+ * a number the tuner can move would make every measurement of it circular. */
+const SPOILS_V = 0.6;
+
 /* What an attack is worth once it is a DUEL rather than a purchase.
  *
  * The gold formula this replaces valued an attack as a certainty with a price:
@@ -3750,6 +3802,12 @@ function duelValue(game, p, t, w, card) {
    * do not merely deny a point, you take one. */
   if (t.units.length === 1)
     v += w.ATTACK_LONE_V + (game.DUEL_TAKE && p.reserveLeft() ? w.SETTLE_V : 0);
+  /* SPOILS are contingent on winning, so they belong INSIDE the odds scaling
+   * below rather than added to the total afterwards. Left at zero under the
+   * printed rule, so a default game values an attack exactly as it did. */
+  if (game.SPOILS === "gold") v += SPOILS_V;
+  else if (game.SPOILS === "ground" && t.units.length === 1 && p.reserveLeft())
+    v += SPOILS_V;
   return v * (0.4 + 1.2 * odds);               // and scaled by the chance of it
 }
 
@@ -3837,7 +3895,9 @@ class Game {
     this.P = [];
     for (let i = 0; i < n; i++) {
       const dealt = this.PERK_DEAL ? this.PERK_DEAL[i] : null;
-      this.P.push(new Player(i, this.BANDS, dealt));
+      const pl = new Player(i, this.BANDS, dealt);
+      pl.foodOn = opts.food !== false;
+      this.P.push(pl);
     }
     this.humans = new Set(opts.humans || []);        // seats a person plays
     /* "dock"  — classic: winner uses every card; a player who matched the
@@ -3890,6 +3950,47 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
+     *
+     * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
+     * rules are very nearly a closed loop: a lump handed to you at the moment
+     * you climb, repaid slowly by the tier you climbed to. Whether that loop is
+     * worth two board columns turns on whether the repayment ever hurts, and it
+     * does not - a player reached a recycle short of the food owed in 0.1% of
+     * 6,913 recycles, and no unit was ever starved off the map.
+     *
+     * Turning both off together is therefore close to rules-neutral in the
+     * purse, and it moves every combat number: duels 50.6 -> 57.3 a game,
+     * gold spent on fortifying 5.3 -> 12.5, and the gap between a bot that
+     * fights and one forbidden to closes from -2.0 points to -0.7.
+     *
+     * They are ONE switch and not two on purpose. Removing ascension alone is
+     * the worst configuration measured - the game runs 13.8 rounds instead of
+     * 12.1, margins widen, and players eat 65% more of their own victory row
+     * to cover a bill nothing pays for any more. */
+    this.FOOD_ON   = opts.food !== false;
+    this.ASCEND_ON = opts.ascension !== false;
+    /* SPOILS - what winning a duel pays, beyond the ground itself.
+     *
+     * Combat is the busiest thing in Blink and the least rewarding: about one
+     * duel per player turn, 17.6 tiles changing hands a game, and a bot
+     * forbidden to attack still scores 2.0 points MORE than one that fights.
+     * DUEL_TAKE above is what makes combat frequent - switch it off and duels
+     * fall from 50.6 a game to 11.7 - but it is not what makes it pay: the gap
+     * is -2.1 without it and -2.0 with it. Volume without reward.
+     *
+     *   none   - printed rule.
+     *   gold   - a won duel pays 1 gold. Measured: fighters go from winning
+     *            48.7% of head-to-heads to 65.7%, which is very probably an
+     *            OVERcorrection - two thirds is too dominant for a variant
+     *            meant to make fighting viable rather than compulsory.
+     *   ground - the narrowed version: 1 gold only when the duel actually
+     *            empties the tile and you settle it. Same idea, fewer payouts,
+     *            and it pays for the fight that changed the map rather than for
+     *            every scratch. This is the one to try first.
+     */
+    this.SPOILS = ["none", "gold", "ground"].includes(opts.spoils)
+      ? opts.spoils : "none";
     /* HOW A FORTIFICATION DEFENDS — all four measurable, "assault" is v0.24 as
      * printed. Measured 31 Aug: 40% of duels are against a defender holding NO
      * card, and the attacker wins 100% of those; when a card IS committed the
@@ -4470,8 +4571,11 @@ class Game {
   }
 
   _payAscension(p) {
+    /* Called for the side effect as well as the coin: ascensionDue() is what
+     * advances `reached`, so it must run even when the variant pays nothing,
+     * or a later tier would pay for every tier below it at once. */
     const owed = p.ascensionDue();
-    if (owed) {
+    if (owed && this.ASCEND_ON) {
       this.inc("ascensions");
       this.purse(p, owed, "ascension", "board", { tier: p.band() + 1 });
     }
@@ -5213,11 +5317,19 @@ class Game {
       /* The ground changes hands — but only if the fight actually emptied it,
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
+      let took = false;
       if (this.DUEL_TAKE && !tile.units.length && !tile.gold && p.takeUnit()) {
         this.m.settle(cell, p.i);
         this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
         this.inc("duel_settle");
+        took = true;
+      }
+      /* SPOILS. Paid after the ground is resolved, because "ground" has to know
+       * whether the tile actually changed hands. */
+      if (this.SPOILS === "gold" || (this.SPOILS === "ground" && took)) {
+        this.inc("spoils_paid");
+        this.purse(p, 1, "spoils", "board", { at: cell });
       }
     } else this.inc("duel_held");
 
@@ -7463,6 +7575,9 @@ function startGame(force) {
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
+                             food: !leanEconomy(),
+                             ascension: !leanEconomy(),
+                             spoils: $("#spoils") ? $("#spoils").value : undefined,
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -9265,6 +9380,11 @@ function meldOk() {
 function renderPrompt() {
   renderPromptBody();
   if (!COACH || gameOver()) return;
+  /* A FORCED PROMPT GETS NO BUTTON BUT ITS OWN. During a set-aside the only
+   * legal move is a card in the meld area, and the bar is left deliberately
+   * empty so that nothing on it looks like a way out. A lone "Got it" sitting
+   * there is exactly what a stuck player presses first. zone_test guards it. */
+  if (REQ && REQ.type === "setaside") return;
   const bar = $("#prompt");
   if (!bar) return;
   const box = el("div", "coach");
@@ -10331,6 +10451,12 @@ function joinCode(raw) {
   catch (e) { netSay(t("net.failed"), true); }
 }
 
+/* Food and the ascension reward are one switch, never two: they are close to a
+ * closed loop, and removing either alone unbalances what is left. */
+function leanEconomy() {
+  return !!($("#economy") && $("#economy").value === "lean");
+}
+
 /* The rules a hosted table is played under: whatever the setup page says. */
 function netRules() {
   const mv = $("#meld-rules").value;
@@ -10347,6 +10473,9 @@ function netRules() {
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
+    food: !leanEconomy(),
+    ascension: !leanEconomy(),
+    spoils: $("#spoils") ? $("#spoils").value : undefined,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

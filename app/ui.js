@@ -238,6 +238,9 @@ function startGame(force) {
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
+                             food: !leanEconomy(),
+                             ascension: !leanEconomy(),
+                             spoils: $("#spoils") ? $("#spoils").value : undefined,
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -2040,6 +2043,11 @@ function meldOk() {
 function renderPrompt() {
   renderPromptBody();
   if (!COACH || gameOver()) return;
+  /* A FORCED PROMPT GETS NO BUTTON BUT ITS OWN. During a set-aside the only
+   * legal move is a card in the meld area, and the bar is left deliberately
+   * empty so that nothing on it looks like a way out. A lone "Got it" sitting
+   * there is exactly what a stuck player presses first. zone_test guards it. */
+  if (REQ && REQ.type === "setaside") return;
   const bar = $("#prompt");
   if (!bar) return;
   const box = el("div", "coach");
@@ -3106,6 +3114,12 @@ function joinCode(raw) {
   catch (e) { netSay(t("net.failed"), true); }
 }
 
+/* Food and the ascension reward are one switch, never two: they are close to a
+ * closed loop, and removing either alone unbalances what is left. */
+function leanEconomy() {
+  return !!($("#economy") && $("#economy").value === "lean");
+}
+
 /* The rules a hosted table is played under: whatever the setup page says. */
 function netRules() {
   const mv = $("#meld-rules").value;
@@ -3122,6 +3136,9 @@ function netRules() {
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
+    food: !leanEconomy(),
+    ascension: !leanEconomy(),
+    spoils: $("#spoils") ? $("#spoils").value : undefined,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

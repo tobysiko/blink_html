@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-02T20:43:30Z
+ * Built 2026-09-03T05:39:55Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -80,6 +80,8 @@ const GOLD_REASONS = [
   "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
   // going out
   "food", "upgrade", "fortify", "attack",
+  // coming in, but only under the SPOILS variant (see Game.SPOILS)
+  "spoils",
 ];
 
 const ATTACK_COST = { plains: 0, ocean: 0, forest: 1, mountain: 2 };
@@ -757,6 +759,11 @@ class Player {
       this.dealt = PERK_SLOTS.map((s) => this.perks[s]).filter(Boolean);
     }
     this.perkSpent = {};
+    /* VARIANT SWITCH, set by the Game that owns this player. Kept on the
+     * player rather than read off the game at each call site because food() has
+     * eight consumers - two bot policies, the UI's "you owe" line and the
+     * recycle - and every one of them should stop asking for food together. */
+    this.foodOn = true;
     this.hand = [];
     this.discard = [];
     this.gold = 0;
@@ -829,6 +836,7 @@ class Player {
     return owed;
   }
   food() {
+    if (!this.foodOn) return 0;               // LEAN economy: nobody eats
     const f = this.bands[this.band()][3];
     /* Granary is a rate, not a use — the recycle already governs it, so its
      * token never turns over. */
@@ -1114,6 +1122,11 @@ function valueCard(game, p, k, card, act) {
 
 const mean = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 
+/* What one coin of spoils is worth to the attack valuation. Deliberately a
+ * plain constant and not a tuned weight: the variant exists to be measured, and
+ * a number the tuner can move would make every measurement of it circular. */
+const SPOILS_V = 0.6;
+
 /* What an attack is worth once it is a DUEL rather than a purchase.
  *
  * The gold formula this replaces valued an attack as a certainty with a price:
@@ -1192,6 +1205,12 @@ function duelValue(game, p, t, w, card) {
    * do not merely deny a point, you take one. */
   if (t.units.length === 1)
     v += w.ATTACK_LONE_V + (game.DUEL_TAKE && p.reserveLeft() ? w.SETTLE_V : 0);
+  /* SPOILS are contingent on winning, so they belong INSIDE the odds scaling
+   * below rather than added to the total afterwards. Left at zero under the
+   * printed rule, so a default game values an attack exactly as it did. */
+  if (game.SPOILS === "gold") v += SPOILS_V;
+  else if (game.SPOILS === "ground" && t.units.length === 1 && p.reserveLeft())
+    v += SPOILS_V;
   return v * (0.4 + 1.2 * odds);               // and scaled by the chance of it
 }
 
@@ -1279,7 +1298,9 @@ class Game {
     this.P = [];
     for (let i = 0; i < n; i++) {
       const dealt = this.PERK_DEAL ? this.PERK_DEAL[i] : null;
-      this.P.push(new Player(i, this.BANDS, dealt));
+      const pl = new Player(i, this.BANDS, dealt);
+      pl.foodOn = opts.food !== false;
+      this.P.push(pl);
     }
     this.humans = new Set(opts.humans || []);        // seats a person plays
     /* "dock"  — classic: winner uses every card; a player who matched the
@@ -1332,6 +1353,47 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
+     *
+     * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
+     * rules are very nearly a closed loop: a lump handed to you at the moment
+     * you climb, repaid slowly by the tier you climbed to. Whether that loop is
+     * worth two board columns turns on whether the repayment ever hurts, and it
+     * does not - a player reached a recycle short of the food owed in 0.1% of
+     * 6,913 recycles, and no unit was ever starved off the map.
+     *
+     * Turning both off together is therefore close to rules-neutral in the
+     * purse, and it moves every combat number: duels 50.6 -> 57.3 a game,
+     * gold spent on fortifying 5.3 -> 12.5, and the gap between a bot that
+     * fights and one forbidden to closes from -2.0 points to -0.7.
+     *
+     * They are ONE switch and not two on purpose. Removing ascension alone is
+     * the worst configuration measured - the game runs 13.8 rounds instead of
+     * 12.1, margins widen, and players eat 65% more of their own victory row
+     * to cover a bill nothing pays for any more. */
+    this.FOOD_ON   = opts.food !== false;
+    this.ASCEND_ON = opts.ascension !== false;
+    /* SPOILS - what winning a duel pays, beyond the ground itself.
+     *
+     * Combat is the busiest thing in Blink and the least rewarding: about one
+     * duel per player turn, 17.6 tiles changing hands a game, and a bot
+     * forbidden to attack still scores 2.0 points MORE than one that fights.
+     * DUEL_TAKE above is what makes combat frequent - switch it off and duels
+     * fall from 50.6 a game to 11.7 - but it is not what makes it pay: the gap
+     * is -2.1 without it and -2.0 with it. Volume without reward.
+     *
+     *   none   - printed rule.
+     *   gold   - a won duel pays 1 gold. Measured: fighters go from winning
+     *            48.7% of head-to-heads to 65.7%, which is very probably an
+     *            OVERcorrection - two thirds is too dominant for a variant
+     *            meant to make fighting viable rather than compulsory.
+     *   ground - the narrowed version: 1 gold only when the duel actually
+     *            empties the tile and you settle it. Same idea, fewer payouts,
+     *            and it pays for the fight that changed the map rather than for
+     *            every scratch. This is the one to try first.
+     */
+    this.SPOILS = ["none", "gold", "ground"].includes(opts.spoils)
+      ? opts.spoils : "none";
     /* HOW A FORTIFICATION DEFENDS — all four measurable, "assault" is v0.24 as
      * printed. Measured 31 Aug: 40% of duels are against a defender holding NO
      * card, and the attacker wins 100% of those; when a card IS committed the
@@ -1912,8 +1974,11 @@ class Game {
   }
 
   _payAscension(p) {
+    /* Called for the side effect as well as the coin: ascensionDue() is what
+     * advances `reached`, so it must run even when the variant pays nothing,
+     * or a later tier would pay for every tier below it at once. */
     const owed = p.ascensionDue();
-    if (owed) {
+    if (owed && this.ASCEND_ON) {
       this.inc("ascensions");
       this.purse(p, owed, "ascension", "board", { tier: p.band() + 1 });
     }
@@ -2655,11 +2720,19 @@ class Game {
       /* The ground changes hands — but only if the fight actually emptied it,
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
+      let took = false;
       if (this.DUEL_TAKE && !tile.units.length && !tile.gold && p.takeUnit()) {
         this.m.settle(cell, p.i);
         this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
         this.inc("duel_settle");
+        took = true;
+      }
+      /* SPOILS. Paid after the ground is resolved, because "ground" has to know
+       * whether the tile actually changed hands. */
+      if (this.SPOILS === "gold" || (this.SPOILS === "ground" && took)) {
+        this.inc("spoils_paid");
+        this.purse(p, 1, "spoils", "board", { at: cell });
       }
     } else this.inc("duel_held");
 

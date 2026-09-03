@@ -85,7 +85,11 @@ const ok = (c, what) => { if (!c) fail.push(what); };
   /* `bonus_gold` needs the winner to hold an empty hand and `called_off` needs
    * a person to decline an assault, so neither can appear in a bot game. They
    * are covered by human_test and combat_test instead. */
-  const cannotHappenWithBots = ['bonus_gold', 'called_off'];
+  /* `spoils` is off unless the variant is on (Game.SPOILS), so a game played
+   * under the printed rules cannot pay it by design. That it fires at all, and
+   * fires exactly as often as ground changes hands, is asserted in
+   * economy_test instead. */
+  const cannotHappenWithBots = ['bonus_gold', 'called_off', 'spoils'];
   const reallyDead = dead.filter((r) => !cannotHappenWithBots.includes(r));
   ok(!reallyDead.length,
      `these reasons never fired in 405 games — dead rule or typo? ${reallyDead}`);
