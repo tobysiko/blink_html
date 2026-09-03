@@ -130,3 +130,35 @@ function duel(opts, defenders) {
 
 if (fail.length) { console.error(fail.join('\n')); process.exit(1); }
 console.log('economy_test ok');
+
+// ------------------------------------------- the frontier: chance, and scarcity
+/* `chance` is the die on the table: some faces pay. It exists because coins
+ * under an OPEN supply — which players take from freely all game — cannot be
+ * handled, and because `seams` measured at 34.5% of explorations paying, which
+ * is two faces of six. */
+{
+  const g = new E.Game(4, 5, { humans: [] });
+  ok(g.FRONTIER === 'low', 'the printed frontier rule is no longer the default');
+  ok(Math.abs(g.FRONTIER_CHANCE - 2 / 6) < 1e-9,
+     'the default chance is not two faces of six');
+
+  const paid = E.playOut(4, 11, { frontier: 'chance', frontierChance: 1 });
+  const ex = paid.stats.explore || 0;
+  ok(ex > 0, 'no exploration happened at all, so the rule is untested');
+  ok((paid.stats.gold_in_frontier || 0) === ex,
+     `chance:1 paid ${paid.stats.gold_in_frontier || 0} for ${ex} explorations`);
+  const never = E.playOut(4, 11, { frontier: 'chance', frontierChance: 0 });
+  ok(!(never.stats.gold_in_frontier || 0), 'chance:0 still paid a coin');
+}
+{
+  /* SCARCITY. At the printed 15 a game ends with a third of every terrain
+   * unused, so terrain can always be manufactured and combat never has to be
+   * the way to get it. The dial is what makes that testable. */
+  const loose = E.playOut(4, 3, {});
+  const tight = E.playOut(4, 3, { tileSupply: 8 });
+  const left = (g) => Object.values(g.m.supply).reduce((a, b) => a + b, 0);
+  ok(left(loose) > 0, 'the printed supply ran out — the measurement changed');
+  ok(left(tight) < left(loose),
+     `a tighter supply left ${left(tight)} tiles against ${left(loose)}`);
+  ok(tight.finished(), 'a game with a scarce supply did not finish');
+}

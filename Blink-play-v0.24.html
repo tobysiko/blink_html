@@ -1207,6 +1207,26 @@
       <p class="hint" id="aside-hint" data-i18n="setup.aside.note"></p>
     </div>
     <div class="field">
+      <label for="frontier" data-i18n="setup.frontier">Exploring pays</label>
+      <select id="frontier">
+        <option value="low" selected data-i18n="setup.frontier.low"></option>
+        <option value="chance" data-i18n="setup.frontier.chance"></option>
+        <option value="seams" data-i18n="setup.frontier.seams"></option>
+        <option value="always" data-i18n="setup.frontier.always"></option>
+        <option value="off" data-i18n="setup.frontier.off"></option>
+      </select>
+      <p class="hint" id="frontier-hint" data-i18n="setup.frontier.note"></p>
+    </div>
+    <div class="field">
+      <label for="supply" data-i18n="setup.supply">Tiles per terrain</label>
+      <select id="supply">
+        <option value="15" selected data-i18n="setup.supply.15"></option>
+        <option value="11" data-i18n="setup.supply.11"></option>
+        <option value="8" data-i18n="setup.supply.8"></option>
+      </select>
+      <p class="hint" id="supply-hint" data-i18n="setup.supply.note"></p>
+    </div>
+    <div class="field">
       <label for="perks" data-i18n="setup.perks">Victory row perks</label>
       <select id="perks">
         <option value="off" selected data-i18n="setup.perks.off"></option>
@@ -1385,7 +1405,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"0ab0f897b7","branch":"main","dirty":false,"built":"2026-09-03T19:24:48Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"70ee186f64","branch":"main","dirty":true,"built":"2026-09-03T21:03:24Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1492,6 +1512,18 @@ en: {
   "setup.spoils.none": "Nothing \u2014 the ground only (printed rule)",
   "setup.spoils.ground": "1 gold \u2014 only when the fight takes the ground",
   "setup.spoils.gold": "1 gold \u2014 for every duel won",
+  "setup.frontier": "Exploring pays",
+  "setup.frontier.low": "1 gold with a card of rank 10 or under \u2014 printed rule",
+  "setup.frontier.chance": "1 gold on a roll of 1 or 2 \u2014 the die version of seams",
+  "setup.frontier.seams": "1 gold from a seam, four per terrain \u2014 the frontier runs out",
+  "setup.frontier.always": "1 gold every time",
+  "setup.frontier.off": "nothing",
+  "setup.frontier.note": "(measured: paying every time is the most anti-combat rule in the game \u2014 it doubles the penalty for fighting without making anyone explore more)",
+  "setup.supply": "Tiles per terrain",
+  "setup.supply.15": "15 \u2014 printed; a game ends with five or six of each unused",
+  "setup.supply.11": "11 \u2014 tighter",
+  "setup.supply.8": "8 \u2014 the ground runs out, and taking it from someone is the only ground left",
+  "setup.supply.note": "(terrain can be manufactured on demand at 15, which is the brake the map has no other way of applying \u2014 there is no edge either)",
   "setup.aside": "Set-aside resolves",
   "setup.aside.turn": "On your map turn \u2014 printed rule",
   "setup.aside.trick": "Right after the trick \u2014 clockwise from the winner, before the map opens",
@@ -2089,6 +2121,18 @@ de: {
   "setup.spoils.none": "Nichts \u2014 nur das Land (gedruckte Regel)",
   "setup.spoils.ground": "1 Gold \u2014 nur wenn der Kampf das Land einnimmt",
   "setup.spoils.gold": "1 Gold \u2014 f\u00fcr jedes gewonnene Duell",
+  "setup.frontier": "Erkunden bringt",
+  "setup.frontier.low": "1 Gold mit einer Karte bis Wert 10 \u2014 gedruckte Regel",
+  "setup.frontier.chance": "1 Gold bei einer 1 oder 2 \u2014 die W\u00fcrfelfassung der Adern",
+  "setup.frontier.seams": "1 Gold aus einer Ader, vier je Gel\u00e4nde \u2014 die Grenze ersch\u00f6pft sich",
+  "setup.frontier.always": "jedes Mal 1 Gold",
+  "setup.frontier.off": "nichts",
+  "setup.frontier.note": "(gemessen: jedes Mal zu zahlen ist die kampffeindlichste Regel im Spiel \u2014 sie verdoppelt den Nachteil des K\u00e4mpfens, ohne dass jemand mehr erkundet)",
+  "setup.supply": "Pl\u00e4ttchen je Gel\u00e4nde",
+  "setup.supply.15": "15 \u2014 gedruckt; am Ende liegen f\u00fcnf bis sechs je Sorte ungenutzt",
+  "setup.supply.11": "11 \u2014 knapper",
+  "setup.supply.8": "8 \u2014 der Boden geht aus, und ihn jemandem zu nehmen ist der einzige, der bleibt",
+  "setup.supply.note": "(bei 15 l\u00e4sst sich Gel\u00e4nde nach Bedarf herstellen \u2014 die Bremse, die der Karte sonst fehlt; einen Rand hat sie auch nicht)",
   "setup.aside": "Beiseitelegen erfolgt",
   "setup.aside.turn": "In deinem Kartenzug \u2014 gedruckte Regel",
   "setup.aside.trick": "Direkt nach dem Stich \u2014 im Uhrzeigersinn ab dem Gewinner, bevor die Karte er\u00f6ffnet wird",
@@ -3148,7 +3192,7 @@ function draftPick(kept, offered, need) {
 
 // --------------------------------------------------------------- map
 class GameMap {
-  constructor(n) {
+  constructor(n, bagEach) {
     const [mts, pls] = STARTS[n];
     /* Which combat rule is in force. The map has to know, because the map is
      * what answers "may I attack here" — and under the duel the answer no
@@ -3163,7 +3207,13 @@ class GameMap {
     pls.forEach((c, i) => this.tiles.get(K(c[0], c[1])).units.push(i));
     // An open supply: every unused tile is visible and may be taken freely
     // until that terrain runs out. No bag, no face-up tile market.
-    this.supply = {}; for (const t of TER) this.supply[t] = BAG_EACH;
+    /* SCARCITY IS A DIAL. At the printed 15 a game ends with five or six of
+     * every terrain still unclaimed, so nothing is ever contested and terrain
+     * can always be manufactured on demand. That is the brake the map does not
+     * currently have — there is no edge either, `legalSpaces` just grows
+     * outward — so the number is an option in order to be measured. */
+    this.supply = {};
+    for (const t of TER) this.supply[t] = bagEach || BAG_EACH;
     for (const t of this.tiles.values()) this.supply[t.terrain] -= 1;
   }
 
@@ -3898,7 +3948,7 @@ class Game {
     opts = opts || {};
     this.rng = makeRng(seed === undefined ? 1 : seed);
     this.n = n;
-    this.m = new GameMap(n);
+    this.m = new GameMap(n, opts.tileSupply);
     /* The player board this table is using. `layout` is a name, a "2-3-5-5-5"
      * string or an array; anything unreadable falls back to the printed board
      * rather than to a half-applied one. Held on the game and handed to each
@@ -4090,8 +4140,14 @@ class Game {
     this.m.atkLeft = Infinity;
     /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
      * so the measurements that chose it can be reproduced. */
-    this.FRONTIER = ["always", "seams", "off"].includes(opts.frontier)
+    this.FRONTIER = ["always", "seams", "chance", "off"].includes(opts.frontier)
       ? opts.frontier : "low";
+    /* "chance" is the table version of "seams": a die is rolled and some faces
+     * pay. Seams measured at 3.9 gold a game over 11.3 explorations — 34.5% of
+     * them — so two faces of six (33.3%) is the same economy with no coins to
+     * hide under an open supply that players take from freely. */
+    this.FRONTIER_CHANCE = opts.frontierChance === undefined
+      ? 2 / 6 : opts.frontierChance;
     this.FRONTIER_RANK = opts.frontierRank || 10;
     /* Coins under the supply piles, if "seams" is in play: four per terrain out
      * of fifteen, so a little over a quarter of the ground pays. */
@@ -5418,6 +5474,10 @@ class Game {
    *             closes by itself as your deck improves. Measured at +4.2 gold
    *             a game, which moved walls built from 2.9 to 3.5 and left the
    *             upgrade race untouched at 34.4.
+   *   "chance"  a flat roll per exploration, FRONTIER_CHANCE of paying. What
+   *             a die on the table actually does: "on a 1 or a 2, the ground
+   *             pays". Unlike "seams" it never runs out, so the drying-up of
+   *             the frontier has to come from the tile supply instead.
    *   "seams"   a coin sits under some tiles in the supply piles. Discovery,
    *             and it works with an OPEN supply because the coins are under
    *             the stack rather than hidden in a bag. A fixed number per
@@ -5428,6 +5488,7 @@ class Game {
     if (rule === "off") return;
     let pay = 0;
     if (rule === "always") pay = 1;
+    else if (rule === "chance") pay = this.rng.random() < this.FRONTIER_CHANCE ? 1 : 0;
     else if (rule === "low") pay = card.r <= this.FRONTIER_RANK ? 1 : 0;
     else if (rule === "seams") {
       const left = this.seams[card.s] || 0;
@@ -7642,6 +7703,8 @@ function startGame(force) {
                              ascension: !leanEconomy(),
                              spoils: $("#spoils") ? $("#spoils").value : undefined,
                              asideTiming: $("#aside") ? $("#aside").value : undefined,
+                             frontier: $("#frontier") ? $("#frontier").value : undefined,
+                             tileSupply: $("#supply") ? Number($("#supply").value) : undefined,
                              consolation: $("#consolation").value,
                              researchRule: $("#research-rule").value,
                              meldScore: $("#meld-score").value,
@@ -10541,6 +10604,8 @@ function netRules() {
     ascension: !leanEconomy(),
     spoils: $("#spoils") ? $("#spoils").value : undefined,
     asideTiming: $("#aside") ? $("#aside").value : undefined,
+    frontier: $("#frontier") ? $("#frontier").value : undefined,
+    tileSupply: $("#supply") ? Number($("#supply").value) : undefined,
     consolation: $("#consolation").value,
     researchRule: $("#research-rule").value,
     meldScore: $("#meld-score").value,

@@ -528,7 +528,7 @@ function draftPick(kept, offered, need) {
 
 // --------------------------------------------------------------- map
 class GameMap {
-  constructor(n) {
+  constructor(n, bagEach) {
     const [mts, pls] = STARTS[n];
     /* Which combat rule is in force. The map has to know, because the map is
      * what answers "may I attack here" — and under the duel the answer no
@@ -543,7 +543,13 @@ class GameMap {
     pls.forEach((c, i) => this.tiles.get(K(c[0], c[1])).units.push(i));
     // An open supply: every unused tile is visible and may be taken freely
     // until that terrain runs out. No bag, no face-up tile market.
-    this.supply = {}; for (const t of TER) this.supply[t] = BAG_EACH;
+    /* SCARCITY IS A DIAL. At the printed 15 a game ends with five or six of
+     * every terrain still unclaimed, so nothing is ever contested and terrain
+     * can always be manufactured on demand. That is the brake the map does not
+     * currently have — there is no edge either, `legalSpaces` just grows
+     * outward — so the number is an option in order to be measured. */
+    this.supply = {};
+    for (const t of TER) this.supply[t] = bagEach || BAG_EACH;
     for (const t of this.tiles.values()) this.supply[t.terrain] -= 1;
   }
 
@@ -1278,7 +1284,7 @@ class Game {
     opts = opts || {};
     this.rng = makeRng(seed === undefined ? 1 : seed);
     this.n = n;
-    this.m = new GameMap(n);
+    this.m = new GameMap(n, opts.tileSupply);
     /* The player board this table is using. `layout` is a name, a "2-3-5-5-5"
      * string or an array; anything unreadable falls back to the printed board
      * rather than to a half-applied one. Held on the game and handed to each
@@ -1470,8 +1476,14 @@ class Game {
     this.m.atkLeft = Infinity;
     /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
      * so the measurements that chose it can be reproduced. */
-    this.FRONTIER = ["always", "seams", "off"].includes(opts.frontier)
+    this.FRONTIER = ["always", "seams", "chance", "off"].includes(opts.frontier)
       ? opts.frontier : "low";
+    /* "chance" is the table version of "seams": a die is rolled and some faces
+     * pay. Seams measured at 3.9 gold a game over 11.3 explorations — 34.5% of
+     * them — so two faces of six (33.3%) is the same economy with no coins to
+     * hide under an open supply that players take from freely. */
+    this.FRONTIER_CHANCE = opts.frontierChance === undefined
+      ? 2 / 6 : opts.frontierChance;
     this.FRONTIER_RANK = opts.frontierRank || 10;
     /* Coins under the supply piles, if "seams" is in play: four per terrain out
      * of fifteen, so a little over a quarter of the ground pays. */
@@ -2798,6 +2810,10 @@ class Game {
    *             closes by itself as your deck improves. Measured at +4.2 gold
    *             a game, which moved walls built from 2.9 to 3.5 and left the
    *             upgrade race untouched at 34.4.
+   *   "chance"  a flat roll per exploration, FRONTIER_CHANCE of paying. What
+   *             a die on the table actually does: "on a 1 or a 2, the ground
+   *             pays". Unlike "seams" it never runs out, so the drying-up of
+   *             the frontier has to come from the tile supply instead.
    *   "seams"   a coin sits under some tiles in the supply piles. Discovery,
    *             and it works with an OPEN supply because the coins are under
    *             the stack rather than hidden in a bag. A fixed number per
@@ -2808,6 +2824,7 @@ class Game {
     if (rule === "off") return;
     let pay = 0;
     if (rule === "always") pay = 1;
+    else if (rule === "chance") pay = this.rng.random() < this.FRONTIER_CHANCE ? 1 : 0;
     else if (rule === "low") pay = card.r <= this.FRONTIER_RANK ? 1 : 0;
     else if (rule === "seams") {
       const left = this.seams[card.s] || 0;
