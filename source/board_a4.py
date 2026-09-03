@@ -182,6 +182,31 @@ def unit_slot(x, y, filled=False):
             f'stroke="{FAINT}" stroke-width="0.6" stroke-dasharray="1.6 1.6"/>')
 
 
+DIE = 15.0                       # printed die slot, mm — suits a 12-16 mm die
+
+
+def die_slot(x, y):
+    """Where your initiative die waits until you spend it.
+
+    Two of these are printed, one at each top corner, and a player uses
+    whichever is nearer the middle of the table — the board is symmetrical
+    because the seating is not. The slot is drawn in the same dashed, faint
+    idiom as an empty unit slot, because it means the same thing: something
+    belongs here and is not here yet. That is the whole mechanism. A die ON the
+    slot is your place in the order, still to come; a die OFF it has been spent
+    on something else, and everyone can see which at a glance without asking.
+    """
+    out = (f'<rect x="{x:.2f}" y="{y:.2f}" width="{DIE}" height="{DIE}" rx="2.6" '
+           f'fill="none" stroke="{FAINT}" stroke-width="0.6" '
+           f'stroke-dasharray="1.6 1.6"/>')
+    # A five-pip face, faint: it says "a die" without being mistaken for an
+    # instruction to set the die to five.
+    for px, py in ((0.28, 0.28), (0.72, 0.28), (0.5, 0.5), (0.28, 0.72), (0.72, 0.72)):
+        out += (f'<circle cx="{x + DIE*px:.2f}" cy="{y + DIE*py:.2f}" r="0.9" '
+                f'fill="{FAINT}"/>')
+    return out
+
+
 def coin_slot(x, y):
     return (f'<circle cx="{x:.2f}" cy="{y:.2f}" r="{CR:.2f}" fill="{PAPER}" '
             f'stroke="{GOLD}" stroke-width="0.7"/>'
@@ -200,15 +225,31 @@ def build():
                  f'stroke-width="0.3"/>')
 
     # ---- masthead -------------------------------------------------------
-    s.append(T(M, M+7, "BLINK", 9, anchor="start", weight="600"))
-    s.append(T(M+34, M+7, "player board", 5, anchor="start", col=SOFT,
+    # THE TOP EDGE IS THE ONE FACING THE TABLE, so it is where the die goes.
+    # Both corners carry a slot and a player uses one: someone sitting to the
+    # left of the play area wants their die on their right, and vice versa.
+    # Printing both costs nothing and saves every left-hand seat from reaching
+    # across their own board all game.
+    dy = M + 2
+    s.append(die_slot(M + 2, dy))
+    s.append(die_slot(PW - M - 2 - DIE, dy))
+    inner_l, inner_r = M + 2 + DIE + 6, PW - M - 2 - DIE - 6
+
+    s.append(T(inner_l, M+8, "BLINK", 9, anchor="start", weight="600"))
+    s.append(T(inner_l+34, M+8, "player board", 5, anchor="start", col=SOFT,
                style="font-style:italic"))
-    s.append(T(PW-M, M+6, f"playtest \u00b7 {VTAG} \u00b7 units 13 mm", 3.4,
+    s.append(T(inner_r, M+7, f"playtest \u00b7 {VTAG} \u00b7 units 13 mm", 3.4,
                anchor="end", col=SOFT, mono=True, spacing="0.3"))
-    s.append(f'<line x1="{M}" y1="{M+11}" x2="{PW-M}" y2="{M+11}" '
+    # The board names its own parts. One line does the whole rule, including
+    # why there are two of them.
+    s.append(T((inner_l + inner_r) / 2, M+15.5,
+               "your initiative die waits in either corner \u2014 whichever is "
+               "nearer the table; off the slot means it has been spent", 3.0,
+               col=SOFT, mono=True))
+    s.append(f'<line x1="{M}" y1="{M+19}" x2="{PW-M}" y2="{M+19}" '
              f'stroke="{INK}" stroke-width="0.5"/>')
 
-    top = M + 16
+    top = M + 24
 
     # ================= RESERVE / PROGRESS TRACK =========================
     # one continuous track, split into the four bands, laid as stacked rows.
@@ -395,7 +436,9 @@ def build():
     #
     # What is left is exactly what only this board can say: what its own
     # printed words mean, and how the game is scored.
-    low = y + 13.5
+    # The masthead grew by 8 mm to hold the die slots; the lower zone gives
+    # exactly that back, so the victory row at the foot has not moved.
+    low = y + 5.5
     s.append(f'<line x1="{M}" y1="{low-6}" x2="{PW-M}" y2="{low-6}" '
              f'stroke="{LINE}" stroke-width="0.4"/>')
 
