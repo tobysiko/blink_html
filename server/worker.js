@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-03T05:39:55Z
+ * Built 2026-09-03T19:18:19Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1394,6 +1394,27 @@ class Game {
      */
     this.SPOILS = ["none", "gold", "ground"].includes(opts.spoils)
       ? opts.spoils : "none";
+    /* WHEN THE SET-ASIDE IS RESOLVED.
+     *
+     *   "turn"  - printed: at the top of each player's own map turn.
+     *   "trick" - right after the trick, clockwise from the winner, before
+     *             anybody touches the map.
+     *
+     * The ORDER is mechanically irrelevant either way: one player's choice
+     * never changes another's options, so clockwise and initiative order
+     * produce the same cards in the same piles. What changes is INFORMATION.
+     * Under "turn" the last player in the order chooses their set-aside having
+     * watched three map turns happen; the winner chooses having seen nothing.
+     * Under "trick" everyone chooses blind and symmetrically.
+     *
+     * What it buys is a component: the coloured die stops having to carry the
+     * winner's meld size into the map phase, because the only rule that reads
+     * that number has already been settled. The rulebook's own "two things
+     * have to be remembered between the card phase and the map phase" becomes
+     * one thing, and all four dice become interchangeable - which is what an
+     * exploration roll would need, since the winner cannot roll away a number
+     * three other players still have to read. */
+    this.ASIDE_AT_TRICK = opts.asideTiming === "trick";
     /* HOW A FORTIFICATION DEFENDS — all four measurable, "assault" is v0.24 as
      * printed. Measured 31 Aug: 40% of duels are against a defender holding NO
      * card, and the attacker wins 100% of those; when a card IS committed the
@@ -1862,6 +1883,8 @@ class Game {
     // ---------------- map phase ----------------
     this.trickOrder = ranked.slice();
     this.fx("trick", { seat: winner, order: ranked.slice(), last: loser });
+    /* Settle what the trick costs BEFORE the map opens, if that is the rule. */
+    if (this.ASIDE_AT_TRICK) yield* this._resolveAsides(winner, winSize);
     let place = -1;
     for (const i of ranked) {
       place += 1;
@@ -1869,8 +1892,8 @@ class Game {
       this.acting = i;
       this.fx("turnstart", { seat: i });
       const cards = p.played.slice();
-      const spent = cards.slice();
-      const use = cards.slice();
+      const spent = this.ASIDE_AT_TRICK ? p.mapSpent : cards.slice();
+      const use   = this.ASIDE_AT_TRICK ? p.mapUse   : cards.slice();
 
       /* The catch-up coin, without docking anyone a card. Paid by PLACE rather
        * than by "was this the loser", so the ladder schemes can pay the middle
@@ -1890,53 +1913,8 @@ class Game {
         this.purse(p, coins, "lost_trick", "board");
       }
 
-      if (this.TRICK_RULE === "bonus") {
-        /* v0.22 as printed: the winner spends one extra card, and a player who
-         * matched the winner's count and lost gives a card from hand, face
-         * down, to the shared pile. Nobody is docked a played card. */
-        if (i === winner) {
-          const bonus = yield* this._pickBonus(p);
-          if (bonus !== null) {
-            p.hand.splice(p.hand.indexOf(bonus), 1);
-            use.push(bonus); spent.push(bonus);
-            p.tableauBonus = bonus;
-            this.inc("bonus_card");
-          } else {                       // hand empty: take the consolation coin
-            this.purse(p, 1, "bonus_gold", "pile");
-          }
-        }
-        if (i !== winner && cards.length === winSize && p.hand.length) {
-          const drop = yield* this._pickDiscard(p);
-          p.hand.splice(p.hand.indexOf(drop), 1);
-          this.pile.push(drop);
-          this.inc("match_discard");
-        }
-      } else {
-        /* Classic: only the trick winner uses every card of their meld. A
-         * player who matched the winner's count sets one of their played cards
-         * aside unused — it earns 1 gold instead (§06). Playing FEWER than the
-         * winner costs nothing, because you are already below the cap. */
-        if (i !== winner && cards.length === winSize && cards.length) {
-          /* Forced, not offered: matching the winner's count costs you a card,
-           * and the only decision is which one. A null answer (a client that
-           * shows no way to comply) still gives one up — the bot's choice. */
-          const aside = (yield* this._pickSetAside(p, use)) || use[0];
-          use.splice(use.indexOf(aside), 1);
-          spent.splice(spent.indexOf(aside), 1);
-          p.asideCard = aside;
-          /* §09: the card leaves your economy for the SHARED pile — this is the
-           * tap that feeds everyone's refill. Under the old routing it went to
-           * the player's own discard and came straight back, so the shared pile
-           * was never fed and nobody ever drew from it. */
-          this.pile.push(aside);
-          this.inc("docked_card"); this.inc("cards_to_gold");
-          this.inc("to_shared_pile");
-          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "pile" });
-          this.purse(p, 1, "docked", "pile", { cards: cards.length });
-        } else {
-          p.asideCard = null;
-        }
-      }
+      if (!this.ASIDE_AT_TRICK)
+        yield* this._trickDues(p, i, winner, winSize, cards, use, spent);
       this.inc("cards_played", cards.length);
 
       if (this.isHuman(i)) {
@@ -2294,6 +2272,75 @@ class Game {
       this.say("log.unusedGold", { n: st.cards.length });
     st.cards = [];
     yield* refill(this);
+  }
+
+  /* WHAT THE TRICK COSTS YOU, in one place so the two timings cannot drift.
+   * Mutates `use` and `spent` in step: a card set aside is not spent on the
+   * map and does not reach your discard. */
+  *_trickDues(p, i, winner, winSize, cards, use, spent) {
+    if (this.TRICK_RULE === "bonus") {
+        if (i === winner) {
+          const bonus = yield* this._pickBonus(p);
+          if (bonus !== null) {
+            p.hand.splice(p.hand.indexOf(bonus), 1);
+            use.push(bonus); spent.push(bonus);
+            p.tableauBonus = bonus;
+            this.inc("bonus_card");
+          } else {                       // hand empty: take the consolation coin
+            this.purse(p, 1, "bonus_gold", "pile");
+          }
+        }
+        if (i !== winner && cards.length === winSize && p.hand.length) {
+          const drop = yield* this._pickDiscard(p);
+          p.hand.splice(p.hand.indexOf(drop), 1);
+          this.pile.push(drop);
+          this.inc("match_discard");
+        }
+      } else {
+        /* Classic: only the trick winner uses every card of their meld. A
+         * player who matched the winner's count sets one of their played cards
+         * aside unused — it earns 1 gold instead (§06). Playing FEWER than the
+         * winner costs nothing, because you are already below the cap. */
+        if (i !== winner && cards.length === winSize && cards.length) {
+          /* Forced, not offered: matching the winner's count costs you a card,
+           * and the only decision is which one. A null answer (a client that
+           * shows no way to comply) still gives one up — the bot's choice. */
+          const aside = (yield* this._pickSetAside(p, use)) || use[0];
+          use.splice(use.indexOf(aside), 1);
+          spent.splice(spent.indexOf(aside), 1);
+          p.asideCard = aside;
+          /* §09: the card leaves your economy for the SHARED pile — this is the
+           * tap that feeds everyone's refill. Under the old routing it went to
+           * the player's own discard and came straight back, so the shared pile
+           * was never fed and nobody ever drew from it. */
+          this.pile.push(aside);
+          this.inc("docked_card"); this.inc("cards_to_gold");
+          this.inc("to_shared_pile");
+          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "pile" });
+          this.purse(p, 1, "docked", "pile", { cards: cards.length });
+        } else {
+          p.asideCard = null;
+        }
+      }
+  }
+
+  /* "trick" timing: settle every player's dues clockwise from the winner,
+   * before a single unit moves. Each player's surviving meld is parked on them
+   * for the map turn that follows. `acting` is set so a client knows whose
+   * prompt it is drawing; no turnstart fires, because no turn has begun. */
+  *_resolveAsides(winner, winSize) {
+    const n = this.P.length;
+    for (let k = 0; k < n; k++) {
+      const i = (winner + k) % n;
+      const p = this.P[i];
+      this.acting = i;
+      const cards = p.played.slice();
+      const spent = cards.slice();
+      const use = cards.slice();
+      yield* this._trickDues(p, i, winner, winSize, cards, use, spent);
+      p.mapUse = use; p.mapSpent = spent;
+    }
+    this.acting = null;
   }
 
   /* Which card to give up when you matched the winner and lost: the one whose
