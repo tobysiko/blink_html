@@ -9,7 +9,7 @@
 <text x="37.00" y="22.00" font-family="IBM Plex Sans" font-size="9" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">BLINK</text>
 <text x="71.00" y="22.00" font-family="IBM Plex Sans" font-size="5" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
 <text x="260.00" y="21.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6B6F68" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.24 · units 13 mm</text>
-<text x="148.50" y="29.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">your initiative die waits in either corner — whichever is nearer the table; off the slot means it has been spent</text>
+<text x="148.50" y="29.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0" style="">your initiative die waits in either corner — whichever is nearer the table — and comes out when your turn ends</text>
 <line x1="14.0" y1="33.0" x2="283.0" y2="33.0" stroke="#2A2E2B" stroke-width="0.5"/>
 <text x="16.00" y="38.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">MELD</text>
 <text x="62.50" y="38.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6B6F68" text-anchor="middle" font-weight="400" letter-spacing="0.4" style="">BUY UP TO</text>
@@ -128,20 +128,22 @@
 <text x="196.00" y="140.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">ON THE BOARD</text>
 <text x="196.00" y="146.90" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">WALL</text>
 <text x="222.00" y="146.90" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">a fortified unit defends here</text>
-<text x="196.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MELD</text>
-<text x="222.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">cards you may play in a round</text>
-<text x="196.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">BUY UP TO</text>
-<text x="222.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">highest rank you may take</text>
-<text x="196.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MOVES</text>
-<text x="222.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">free moves each turn</text>
-<text x="196.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">FOOD</text>
-<text x="222.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">pay these slots each recycle</text>
-<text x="196.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">ASCENSION</text>
-<text x="222.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">coins printed there, taken once</text>
-<text x="196.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">RESERVE</text>
-<text x="222.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">empties from the top band down</text>
-<text x="196.00" y="175.60" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">VICTORY ROW</text>
-<text x="222.00" y="175.60" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">retired cards, fills rightwards</text>
+<text x="196.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">INITIATIVE</text>
+<text x="222.00" y="151.00" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">a die in its corner: still to act</text>
+<text x="196.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MELD</text>
+<text x="222.00" y="155.10" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">cards you may play in a round</text>
+<text x="196.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">BUY UP TO</text>
+<text x="222.00" y="159.20" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">highest rank you may take</text>
+<text x="196.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">MOVES</text>
+<text x="222.00" y="163.30" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">free moves each turn</text>
+<text x="196.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">FOOD</text>
+<text x="222.00" y="167.40" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">pay these slots each recycle</text>
+<text x="196.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">ASCENSION</text>
+<text x="222.00" y="171.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">coins printed there, taken once</text>
+<text x="196.00" y="175.60" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">RESERVE</text>
+<text x="222.00" y="175.60" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">empties from the top band down</text>
+<text x="196.00" y="179.70" font-family="IBM Plex Mono" font-size="3.0" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0.1" style="">VICTORY ROW</text>
+<text x="222.00" y="179.70" font-family="IBM Plex Mono" font-size="3.0" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0.1" style="">retired cards, fills rightwards</text>
 <text x="14.00" y="189.50" font-family="IBM Plex Sans" font-size="4.6" fill="#2A2E2B" text-anchor="start" font-weight="600" letter-spacing="0" style="">VICTORY ROW</text>
 <text x="72.00" y="189.50" font-family="IBM Plex Mono" font-size="3.2" fill="#6B6F68" text-anchor="start" font-weight="400" letter-spacing="0" style="">— slide cards in from below; the centre slot scores</text>
 <line x1="164.0" y1="188.2" x2="279.6" y2="188.2" stroke="#6B6F68" stroke-width="0.5"/>

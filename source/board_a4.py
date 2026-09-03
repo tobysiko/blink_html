@@ -186,15 +186,25 @@ DIE = 15.0                       # printed die slot, mm — suits a 12-16 mm die
 
 
 def die_slot(x, y):
-    """Where your initiative die waits until you spend it.
+    """Where your initiative die waits until your turn is over.
+
+    A die IN its slot means that player has still to act this round; a die out
+    of it means they are done. That is the whole of it, and it holds however
+    the die left - rolled for something, or simply lifted out because the turn
+    ended. One state, no exceptions, and the table can read who is left at a
+    glance instead of comparing four numbers.
 
     Two of these are printed, one at each top corner, and a player uses
     whichever is nearer the middle of the table — the board is symmetrical
     because the seating is not. The slot is drawn in the same dashed, faint
     idiom as an empty unit slot, because it means the same thing: something
-    belongs here and is not here yet. That is the whole mechanism. A die ON the
-    slot is your place in the order, still to come; a die OFF it has been spent
-    on something else, and everyone can see which at a glance without asking.
+    belongs here and is not here yet.
+
+    OUT OF THE SLOT IS NOT OFF THE TABLE. The coloured die still carries the
+    winner's meld size, and the player who matched it gives a card up at the
+    start of their OWN map turn - so the last player in the order is still
+    reading that number when the winner has long finished. A finished die goes
+    beside its slot, face up, not back in the box.
     """
     out = (f'<rect x="{x:.2f}" y="{y:.2f}" width="{DIE}" height="{DIE}" rx="2.6" '
            f'fill="none" stroke="{FAINT}" stroke-width="0.6" '
@@ -244,7 +254,7 @@ def build():
     # why there are two of them.
     s.append(T((inner_l + inner_r) / 2, M+15.5,
                "your initiative die waits in either corner \u2014 whichever is "
-               "nearer the table; off the slot means it has been spent", 3.0,
+               "nearer the table \u2014 and comes out when your turn ends", 3.0,
                col=SOFT, mono=True))
     s.append(f'<line x1="{M}" y1="{M+19}" x2="{PW-M}" y2="{M+19}" '
              f'stroke="{INK}" stroke-width="0.5"/>')
@@ -487,6 +497,7 @@ def build():
     # this sheet; nothing here is about the order of play.
     s.append(T(rx, low, "ON THE BOARD", 4.6, anchor="start", weight="600"))
     TERMS = ([("WALL", "a fortified unit defends here")] if WALL else []) + [
+        ("INITIATIVE",  "a die in its corner: still to act"),
         ("MELD",        "cards you may play in a round"),
         ("BUY UP TO",   "highest rank you may take"),
         ("MOVES",       "free moves each turn"),
