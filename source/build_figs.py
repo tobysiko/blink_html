@@ -110,37 +110,37 @@ def table():
     def die(x, y, n, winner=False):
         f = "#C0392B" if winner else "#FBFAF6"
         t = "#FBFAF6" if winner else INK
-        return (f'<rect x="{x}" y="{y}" width="17" height="17" rx="3.5" fill="{f}" '
-                f'stroke="{"#7B2018" if winner else INK}" stroke-width="1.3"/>'
-                f'<text x="{x + 8.5:.1f}" y="{y + 12.5:.1f}" text-anchor="middle" '
-                f'font-size="10.5" fill="{t}" class="fig-strong">{n}</text>')
+        return (f'<rect x="{x}" y="{y}" width="22" height="22" rx="4" fill="{f}" '
+                f'stroke="{"#7B2018" if winner else INK}" stroke-width="1.4"/>'
+                f'<text x="{x + 11:.1f}" y="{y + 16:.1f}" text-anchor="middle" '
+                f'font-size="13" fill="{t}" class="fig-strong">{n}</text>')
 
     def seat(x, y, w, who, name, row_filled, hidden):
         """A rival across the table: colour, victory row, a hidden hand."""
         p = PLAYER[who]
-        out = (f'<rect x="{x}" y="{y}" width="{w}" height="34" rx="5" '
+        out = (f'<rect x="{x}" y="{y}" width="{w}" height="42" rx="5" '
                f'fill="#F4F1E9" stroke="{LINE}" stroke-width="1"/>')
-        out += (f'<circle cx="{x + 13:.1f}" cy="{y + 17:.1f}" r="7" fill="{p["fill"]}" '
+        out += (f'<circle cx="{x + 15:.1f}" cy="{y + 21:.1f}" r="9" fill="{p["fill"]}" '
                 f'stroke="{p["edge"]}" stroke-width="1.2"/>')
-        out += label(x + 26, y + 20, name, 9.5, anchor="start", cls="fig-step")
-        sx = x + 60
+        out += label(x + 30, y + 25, name, 9.5, anchor="start", cls="fig-step")
+        sx = x + 68
         for i in range(5):
             fill = "#FBFAF6" if i >= 5 - row_filled else "#FBFAF6"
-            out += (f'<rect x="{sx + i * 14}" y="{y + 7}" width="12" height="20" rx="2" '
+            out += (f'<rect x="{sx + i * 19}" y="{y + 8}" width="17" height="26" rx="2.5" '
                     f'fill="{fill}" stroke="{LINE}" stroke-width="1"'
                     + ('' if i >= 5 - row_filled else ' stroke-dasharray="2 2"') + '/>')
             if i >= 5 - row_filled:
-                out += (f'<rect x="{sx + i * 14}" y="{y + 7}" width="12" height="3.5" '
-                        f'rx="1.5" fill="{TER["plains"]["top"]}"/>')
+                out += (f'<rect x="{sx + i * 19}" y="{y + 8}" width="17" height="4.5" '
+                        f'rx="2" fill="{TER["plains"]["top"]}"/>')
         # BELOW the strip, not inside it: at 9.5 the caption reached the slot
         # boxes it names. The strip is 34 tall, so this clears it by 8.
-        out += label(sx + 35, y + 42, "victory row", 9.5, cls="fig-label")
-        out += facedown(x + w - 46, y + 5, 15, 22, hidden)
+        out += label(sx + 47, y + 50, "victory row", 9.5, cls="fig-label")
+        out += facedown(x + w - 56, y + 6, 20, 29, hidden)
         return out
 
     # ---------------------------------------------------------- rivals, far
-    b += seat(60, 0, 210, "rival", "Bex", 2, 3)
-    b += seat(330, 0, 210, "third", "Cy", 1, 3)
+    b += seat(40, 0, 258, "rival", "Bex", 2, 3)
+    b += seat(322, 0, 258, "third", "Cy", 1, 3)
 
     # ---------------------------------------------------------- the middle
     # the map: a small grown cluster, three colours on it
@@ -164,18 +164,18 @@ def table():
 
     # the market: deck plus 3x3, to the left of the map
     mk_x, mk_y = 40, 92
-    b += panel(mk_x - 10, mk_y - 10, 120, 108, "MARKET",
+    b += panel(mk_x - 10, mk_y - 10, 150, 132, "MARKET",
                "nine face up \u00b7 buy at or under your rank cap")
-    b += facedown(mk_x, mk_y + 34, 22, 30, 3)
-    b += label(mk_x + 15, mk_y + 78, "upgrade", 9.5, cls="fig-label")
-    b += label(mk_x + 15, mk_y + 87, "deck", 9.5, cls="fig-label")
+    b += facedown(mk_x, mk_y + 40, 28, 38, 3)
+    b += label(mk_x + 18, mk_y + 96, "upgrade", 9.5, cls="fig-label")
+    b += label(mk_x + 18, mk_y + 106, "deck", 9.5, cls="fig-label")
     grid = [(11, "plains"), (16, "ocean"), (12, "forest"),
             (18, "mountain"), (13, "plains"), (17, "ocean"),
             (15, "forest"), (14, "mountain"), (20, "plains")]
     for i, (rank, suit) in enumerate(grid):
-        gx = mk_x + 40 + (i % 3) * 22
-        gy = mk_y + (i // 3) * 30
-        b += faceup(gx, gy, rank, suit, 19, 26)
+        gx = mk_x + 50 + (i % 3) * 28
+        gy = mk_y + (i // 3) * 38
+        b += faceup(gx, gy, rank, suit, 24, 33)
 
     # the tile supply: four open piles, right of the map
     sp_x, sp_y = 468, 92
@@ -192,7 +192,7 @@ def table():
 
     # the play area: the melds and the dice, below the map
     pa_x, pa_y = 178, 268
-    b += panel(pa_x - 12, pa_y - 12, 300, 74, "PLAY AREA",
+    b += panel(pa_x - 12, pa_y - 12, 336, 88, "PLAY AREA",
                "every meld stays here until it is spent")
     melds = [("you", [(5, "plains"), (6, "plains")]),
              ("rival", [(8, "mountain"), (8, "ocean")]),
@@ -203,58 +203,58 @@ def table():
         b += (f'<circle cx="{mx + 8:.1f}" cy="{pa_y + 6:.1f}" r="5" fill="{p["fill"]}" '
               f'stroke="{p["edge"]}" stroke-width="1.1"/>')
         for j, (rank, suit) in enumerate(cards):
-            b += faceup(mx + j * 20, pa_y + 14, rank, suit, 18, 26)
-        mx += max(2, len(cards)) * 20 + 26
-    b += die(pa_x + 214, pa_y + 16, 2, winner=True)
-    b += die(pa_x + 234, pa_y + 16, 2)
-    b += die(pa_x + 254, pa_y + 16, 3)
+            b += faceup(mx + j * 26, pa_y + 16, rank, suit, 24, 33)
+        mx += max(2, len(cards)) * 26 + 28
+    b += die(pa_x + 236, pa_y + 20, 2, winner=True)
+    b += die(pa_x + 262, pa_y + 20, 2)
+    b += die(pa_x + 288, pa_y + 20, 3)
     # Centred on the dice would push the right end of this caption through the
     # PLAY AREA border, which sits at pa_x + 288. Centred to fit instead.
-    b += label(pa_x + 218, pa_y + 46, "dice \u2014 the coloured one led", 9.5, cls="fig-label")
+    b += label(pa_x + 250, pa_y + 64, "dice \u2014 the coloured one led", 9.5, cls="fig-label")
 
     # the shared pile and the coin supply
     b += facedown(96, 296, 22, 30, 2)
     b += label(110, 338, "shared pile", 9.5, cls="fig-label")
-    b += gold(492, 300)
-    b += gold(510, 306)
-    b += gold(500, 316)
-    b += label(502, 338, "gold supply", 9.5, cls="fig-label")
+    b += gold(544, 296)
+    b += gold(562, 302)
+    b += gold(552, 312)
+    b += label(554, 336, "gold supply", 9.5, cls="fig-label")
 
     # ---------------------------------------------------------- your seat
-    yx, yy, yw = 96, 372, 420
-    b += (f'<rect x="{yx}" y="{yy}" width="{yw}" height="62" rx="7" fill="#F4F1E9" '
+    yx, yy, yw = 96, 376, 476
+    b += (f'<rect x="{yx}" y="{yy}" width="{yw}" height="72" rx="7" fill="#F4F1E9" '
           f'stroke="{LINE}" stroke-width="1.2"/>')
-    b += (f'<circle cx="{yx + 20:.1f}" cy="{yy + 20:.1f}" r="8" '
+    b += (f'<circle cx="{yx + 22:.1f}" cy="{yy + 24:.1f}" r="9" '
           f'fill="{PLAYER["you"]["fill"]}" stroke="{PLAYER["you"]["edge"]}" '
           f'stroke-width="1.3"/>')
-    b += label(yx + 36, yy + 26, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
-    b += label(yx + 192, yy + 9, "RESERVE", 9.5, cls="fig-step")
-    b += label(yx + 296, yy + 9, "VICTORY ROW", 9.5, cls="fig-step")
-    b += label(yx + 372, yy + 9, "GOLD", 9.5, cls="fig-step")
+    b += label(yx + 40, yy + 30, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
+    b += label(yx + 205, yy + 9, "RESERVE", 9.5, cls="fig-step")
+    b += label(yx + 337, yy + 9, "VICTORY ROW", 9.5, cls="fig-step")
+    b += label(yx + 436, yy + 9, "GOLD", 9.5, cls="fig-step")
     # The reserve: five tiers of EQUAL size, the emptied ones hollow. Drawn with
     # growing heights at first, which read as a bar chart of something and made
     # the leftmost tiers look small rather than spent.
     for i in range(5):
-        rx = yx + 150 + i * 17
+        rx = yx + 152 + i * 22
         spent = i < 2
-        b += (f'<rect x="{rx}" y="{yy + 15}" width="14" height="22" rx="2" '
+        b += (f'<rect x="{rx}" y="{yy + 17}" width="18" height="28" rx="2.5" '
               f'fill="{"#FBFAF6" if spent else PLAYER["you"]["fill"]}" '
               f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.1"'
               + (' stroke-dasharray="2 2"' if spent else '') + '/>')
 
     for i in range(5):
-        vx = yx + 258 + i * 16
+        vx = yx + 294 + i * 22
         filled = i >= 2
-        b += (f'<rect x="{vx}" y="{yy + 12}" width="14" height="22" rx="2" '
+        b += (f'<rect x="{vx}" y="{yy + 14}" width="18" height="28" rx="2.5" '
               f'fill="#FBFAF6" stroke="{LINE}" stroke-width="1"'
               + ('' if filled else ' stroke-dasharray="2 2"') + '/>')
         if filled:
-            b += (f'<rect x="{vx}" y="{yy + 15}" width="14" height="4" rx="2" '
+            b += (f'<rect x="{vx}" y="{yy + 17}" width="18" height="5" rx="2" '
                   f'fill="{TER["forest"]["top"]}"/>')
-    b += label(yx + 258, yy + 55,
+    b += label(yx + 294, yy + 64,
                "tiers empty from the top \u00b7 the row fills from the right",
                9.5, cls="fig-label")
-    b += gold(yx + 372, yy + 28)
+    b += gold(yx + 436, yy + 32)
 
     # your hand, face up, nearest of all
     # EIGHT cards, not ten: the 5 and 6 of Plains are sitting in the play area
@@ -263,11 +263,11 @@ def table():
     hand = [(2, "ocean"), (3, "mountain"), (7, "plains"), (9, "forest"),
             (9, "ocean"), (11, "mountain"), (14, "ocean"), (17, "forest")]
     for i, (rank, suit) in enumerate(hand):
-        b += faceup(yx + 30 + i * 45, yy + 74, rank, suit, 38, 52)
-    b += label(yx + 210, yy + 142,
+        b += faceup(yx + 32 + i * 52, yy + 88, rank, suit, 45, 62)
+    b += label(yx + 240, yy + 170,
                "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
                9.5, cls="fig-step")
-    b += label(yx + 210, yy + 155,
+    b += label(yx + 240, yy + 184,
                "ten between your turns, and nobody else ever sees it",
                9.5, cls="fig-label")
     return svg(0, 0, b, vb="auto")
