@@ -60,7 +60,13 @@ if not pdfs:
 for pdf in pdfs:
     raw = pdf.read_bytes()
     fonts = {m.decode("latin1").split("+")[-1]
-             for m in re.findall(rb"/BaseFont\s*/([A-Za-z0-9+\-]+)", raw)}
+             for m in re.findall(rb"/(?:BaseFont|FontName)\s*/([A-Za-z0-9+\-]+)", raw)}
+    # /FontName as well as /BaseFont, and the comma: a VARIABLE font is embedded
+    # as a CID font whose Type0 /BaseFont is a synthetic name, while the real
+    # family only appears in the descriptor's /FontName - and Fraunces arrives
+    # as "Fraunces-9ptBlack". Reading /BaseFont alone, this check reported "no
+    # Fraunces" about a PDF with Fraunces correctly embedded seven times over,
+    # which is the same class of silent failure it was written to catch.
     families = {re.split(r"[-,]", f)[0] for f in fonts}
     if not current(pdf.name):
         continue

@@ -68,7 +68,7 @@ footer b{{color:var(--ink);font-weight:500}}
   </div>
   <div class="specs">
     <b>2–4 players</b> · age 10+<br>
-    <b>60–90 minutes</b> · competitive<br>
+    <b>45–90 minutes</b> · competitive<br>
     Toby Siko · Deep Diversions<br>
     deep-diversions.com/blink
   </div>

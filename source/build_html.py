@@ -291,7 +291,7 @@ HTML = f"""<!doctype html>
   <p class="eyebrow">A meld-building civilization game</p>
   <h1>Blink</h1>
   <p class="sub">Climbing the ladder of civilization</p>
-  <p class="meta"><span>2–4 players</span><span>60–120 minutes</span><span>Toby Siko</span></p>
+  <p class="meta"><span>2–4 players</span><span>45–90 minutes</span><span>Toby Siko</span></p>
   <div class="herowrap">{F['hero']}</div>
 </header>
 <div class="steprule"><i></i><i></i><i></i><i></i></div>

@@ -54,6 +54,15 @@ python3 build_objcards.py --bw
 # lag behind the colour ones
 python3 build_bw.py
 
+# THE TYPEFACES GO INSIDE THE DOCUMENT before anything is printed. Every builder
+# above links Fraunces and IBM Plex from Google Fonts, so without this step the
+# typography of a printed rulebook depends on a network fetch succeeding at the
+# moment of rendering — and when it silently fails, every other check here still
+# passes. On 4 Sep 2026 that had happened to ALL of them: the rulebook bound for
+# the Hippodice entry was set in DejaVu Sans and Liberation Serif. `topdf` below
+# renders the print copy this makes, never the web HTML.
+#   check_fonts.py at the end of the build is what proves it worked.
+
 # ---- pick a renderer ------------------------------------------------------
 CHROME=""
 for c in \
@@ -89,6 +98,16 @@ topdf() {
   # file outside this folder.
   case "$1" in /*) IN="$1" ;; *) IN="$HERE/$1" ;; esac
   OUT="$HERE/../$2"
+  # THE TYPEFACES GO IN FIRST. Whatever is rendered below is a print copy with
+  # Fraunces and IBM Plex inlined, never the web HTML that links them from
+  # Google Fonts — see embed_fonts.py for why that link cannot be trusted at
+  # render time. A file with no </head> (a bare SVG wrapper) is rendered as-is.
+  PRINT="$(mktemp "${TMPDIR:-/tmp}/blink-print-XXXXXX.html")"
+  if python3 embed_fonts.py "$IN" "$PRINT" >/dev/null 2>&1; then
+    IN="$PRINT"
+  else
+    rm -f "$PRINT" || true
+  fi
   if [ "$RENDERER" = "chrome" ]; then
     # --no-pdf-header-footer is the current flag; --print-to-pdf-no-header is
     # the older spelling. Chrome ignores switches it does not know, so passing
@@ -101,6 +120,7 @@ topdf() {
   else
     weasyprint "$IN" "$OUT"
   fi
+  rm -f "$PRINT" || true
   echo "  $2"
 }
 
