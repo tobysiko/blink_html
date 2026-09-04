@@ -55,6 +55,39 @@ for k, v in sorted(F.items()):
         fails.append(k)
 
 print()
+
+# ---- and is it big enough to READ on paper? -------------------------------
+# A figure that fits the column can still be illegible. Every figure is drawn
+# at some viewBox width and printed across the A4 text block, so the scale is
+# known exactly and so is the printed size of every piece of text in it.
+#
+# A4 is 210 mm and the rulebook's @page margins are 16 mm each side, so the
+# text block is 178 mm. Body copy prints at 10.3 pt. SEVEN POINT is the floor
+# here: below that a caption stops being something a player reads at a table
+# and becomes something they decide not to bother with.
+#
+# Checked 4 Sep 2026 and three figures were under it — `table` at 5.9 pt,
+# `board` at 6.2, `terrain` at 6.6 — which is the sort of thing that survives
+# every other check in this folder and is only ever caught by looking.
+TEXT_MM = 178.0
+FLOOR_PT = 7.0
+small = []
+for k, svg in F.items():
+    m = re.search(r'viewBox="([^"]+)"', svg)
+    sizes = [float(x) for x in re.findall(r'font-size[:=]"?\s*([0-9.]+)', svg)]
+    if not m or not sizes:
+        continue
+    vw = float(m.group(1).split()[2])
+    pt = min(sizes) * (TEXT_MM / vw) * 72 / 25.4
+    if pt < FLOOR_PT:
+        small.append(f"{k}: smallest text prints at {pt:.1f} pt")
+if small:
+    print("TEXT TOO SMALL TO READ ON PAPER (floor is %.0f pt):" % FLOOR_PT)
+    for line in small:
+        print("  " + line)
+    fails.extend(s.split(":")[0] for s in small)
+    print()
+
 if fails:
-    print("FAIL:", ", ".join(fails)); sys.exit(1)
-print(f"all {len(F)} figures pass")
+    print("FAIL:", ", ".join(sorted(set(fails)))); sys.exit(1)
+print(f"all {len(F)} figures pass, none printing text under {FLOOR_PT:.0f} pt")

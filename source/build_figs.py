@@ -89,7 +89,7 @@ def table():
                f'stroke-dasharray="4 3"/>')
         out += label(x + w / 2, y - 6, title, 10, cls="fig-step")
         if sub:
-            out += label(x + w / 2, y + h + 13, sub, 8.5, cls="fig-label")
+            out += label(x + w / 2, y + h + 13, sub, 9.5, cls="fig-label")
         return out
 
     def facedown(x, y, w=17, h=24, n=1):
@@ -105,7 +105,7 @@ def table():
         return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="2.5" '
                 f'fill="#FBFAF6" stroke="{INK}" stroke-width="1"/>'
                 f'<rect x="{x}" y="{y}" width="{w}" height="4" rx="2" fill="{c}"/>'
-                + label(x + w / 2, y + h / 2 + 5, str(rank), 9, cls="fig-strong"))
+                + label(x + w / 2, y + h / 2 + 5, str(rank), 9.5, cls="fig-strong"))
 
     def die(x, y, n, winner=False):
         f = "#C0392B" if winner else "#FBFAF6"
@@ -132,7 +132,9 @@ def table():
             if i >= 5 - row_filled:
                 out += (f'<rect x="{sx + i * 14}" y="{y + 7}" width="12" height="3.5" '
                         f'rx="1.5" fill="{TER["plains"]["top"]}"/>')
-        out += label(sx + 35, y + 34, "victory row", 7.5, cls="fig-label")
+        # BELOW the strip, not inside it: at 9.5 the caption reached the slot
+        # boxes it names. The strip is 34 tall, so this clears it by 8.
+        out += label(sx + 35, y + 42, "victory row", 9.5, cls="fig-label")
         out += facedown(x + w - 46, y + 5, 15, 22, hidden)
         return out
 
@@ -158,15 +160,15 @@ def table():
     x, y = axial(3, 1)
     b += prism(map_x + x, map_y + y, None, empty=True, dashed=True)
     b += label(map_x + 55, map_y - 42, "THE MAP", 11, cls="fig-strong")
-    b += label(map_x + 55, map_y - 29, "shared, and it grows", 8.5, cls="fig-label")
+    b += label(map_x + 55, map_y - 29, "shared, and it grows", 9.5, cls="fig-label")
 
     # the market: deck plus 3x3, to the left of the map
     mk_x, mk_y = 40, 92
     b += panel(mk_x - 10, mk_y - 10, 120, 108, "MARKET",
                "nine face up \u00b7 buy at or under your rank cap")
     b += facedown(mk_x, mk_y + 34, 22, 30, 3)
-    b += label(mk_x + 15, mk_y + 78, "upgrade", 7.5, cls="fig-label")
-    b += label(mk_x + 15, mk_y + 87, "deck", 7.5, cls="fig-label")
+    b += label(mk_x + 15, mk_y + 78, "upgrade", 9.5, cls="fig-label")
+    b += label(mk_x + 15, mk_y + 87, "deck", 9.5, cls="fig-label")
     grid = [(11, "plains"), (16, "ocean"), (12, "forest"),
             (18, "mountain"), (13, "plains"), (17, "ocean"),
             (15, "forest"), (14, "mountain"), (20, "plains")]
@@ -206,15 +208,17 @@ def table():
     b += die(pa_x + 214, pa_y + 16, 2, winner=True)
     b += die(pa_x + 234, pa_y + 16, 2)
     b += die(pa_x + 254, pa_y + 16, 3)
-    b += label(pa_x + 244, pa_y + 46, "dice \u2014 the coloured one led", 8, cls="fig-label")
+    # Centred on the dice would push the right end of this caption through the
+    # PLAY AREA border, which sits at pa_x + 288. Centred to fit instead.
+    b += label(pa_x + 218, pa_y + 46, "dice \u2014 the coloured one led", 9.5, cls="fig-label")
 
     # the shared pile and the coin supply
     b += facedown(96, 296, 22, 30, 2)
-    b += label(110, 338, "shared pile", 8.5, cls="fig-label")
+    b += label(110, 338, "shared pile", 9.5, cls="fig-label")
     b += gold(492, 300)
     b += gold(510, 306)
     b += gold(500, 316)
-    b += label(502, 338, "gold supply", 8.5, cls="fig-label")
+    b += label(502, 338, "gold supply", 9.5, cls="fig-label")
 
     # ---------------------------------------------------------- your seat
     yx, yy, yw = 96, 372, 420
@@ -224,9 +228,9 @@ def table():
           f'fill="{PLAYER["you"]["fill"]}" stroke="{PLAYER["you"]["edge"]}" '
           f'stroke-width="1.3"/>')
     b += label(yx + 36, yy + 26, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
-    b += label(yx + 192, yy + 9, "RESERVE", 8, cls="fig-step")
-    b += label(yx + 296, yy + 9, "VICTORY ROW", 8, cls="fig-step")
-    b += label(yx + 372, yy + 9, "GOLD", 8, cls="fig-step")
+    b += label(yx + 192, yy + 9, "RESERVE", 9.5, cls="fig-step")
+    b += label(yx + 296, yy + 9, "VICTORY ROW", 9.5, cls="fig-step")
+    b += label(yx + 372, yy + 9, "GOLD", 9.5, cls="fig-step")
     # The reserve: five tiers of EQUAL size, the emptied ones hollow. Drawn with
     # growing heights at first, which read as a bar chart of something and made
     # the leftmost tiers look small rather than spent.
@@ -249,7 +253,7 @@ def table():
                   f'fill="{TER["forest"]["top"]}"/>')
     b += label(yx + 258, yy + 55,
                "tiers empty from the top \u00b7 the row fills from the right",
-               8, cls="fig-label")
+               9.5, cls="fig-label")
     b += gold(yx + 372, yy + 28)
 
     # your hand, face up, nearest of all
@@ -265,7 +269,7 @@ def table():
                9.5, cls="fig-step")
     b += label(yx + 210, yy + 155,
                "ten between your turns, and nobody else ever sees it",
-               8.5, cls="fig-label")
+               9.5, cls="fig-label")
     return svg(0, 0, b, vb="auto")
 
 
@@ -426,7 +430,7 @@ def terrains():
 
         # HOLDS, drawn as the units themselves: a number you can count is a
         # number nobody has to trust
-        b += label(cx, top + 136, "HOLDS", 8, cls="fig-step")
+        b += label(cx, top + 136, "HOLDS", 9, cls="fig-step")
         span = (holds - 1) * 24
         for k in range(holds):
             b += unit(cx - span / 2 + k * 24, top + 152, "rival", 1)
@@ -436,17 +440,17 @@ def terrains():
         # DEFENCE, both ways round
         b += (f'<line x1="{x + 14}" y1="{top + 182}" x2="{x + COL - 14}" '
               f'y2="{top + 182}" stroke="{LINE}" stroke-width="1"/>')
-        b += label(cx, top + 196, "DEFENCE", 8, cls="fig-step")
+        b += label(cx, top + 196, "DEFENCE", 9, cls="fig-step")
         b += label(cx, top + 216, f"+{bonus}", 17,
                    cls="fig-attack" if bonus else "fig-label")
-        b += label(cx, top + 230, f"beat them by {bonus + 1}", 8.5, cls="fig-label")
+        b += label(cx, top + 230, f"beat them by {bonus + 1}", 9, cls="fig-label")
 
         # what it is FOR
         b += (f'<line x1="{x + 14}" y1="{top + 240}" x2="{x + COL - 14}" '
               f'y2="{top + 240}" stroke="{LINE}" stroke-width="1"/>')
         b += label(cx, top + 254, head, 9.5, cls="fig-strong")
-        b += label(cx, top + 266, l1, 8, cls="fig-label")
-        b += label(cx, top + 276, l2, 8, cls="fig-label")
+        b += label(cx, top + 266, l1, 9, cls="fig-label")
+        b += label(cx, top + 276, l2, 9, cls="fig-label")
 
     # ---- the sea gets a band, because it is the one rule no other terrain has
     W = 4 * COL + 3 * GAP
@@ -471,7 +475,7 @@ def terrains():
           f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
           f'stroke-linejoin="round"/>')
     b += label(ox + DX, oy + R + 20, "sail as far as the open water reaches",
-               8.5, cls="fig-label")
+               9, cls="fig-label")
 
     nx = ox + 2 * (DX + 2) + 168
     b += (f'<path d="M{ox + 2 * DX + SQ + 14:.1f} {ay:.1f} L{nx - SQ - 10:.1f} '
@@ -482,11 +486,11 @@ def terrains():
     # the terrain, and drawing a Forest there says Forest.
     b += prism(nx, oy, None, empty=True, dashed=True)
     b += label(nx, oy + 4, "ANY", 11, cls="fig-attack")
-    b += label(nx, oy + R + 20, "then lay a tile of ANY terrain,", 8.5,
+    b += label(nx, oy + R + 20, "then lay a tile of ANY terrain,", 9,
                cls="fig-label")
-    b += label(nx, oy + R + 31, "anywhere the map legally takes it", 8.5,
+    b += label(nx, oy + R + 31, "anywhere the map legally takes it", 9,
                cls="fig-label")
-    b += label(nx, oy + R + 42, "\u2014 no card needed, once a turn", 8.5,
+    b += label(nx, oy + R + 42, "\u2014 no card needed, once a turn", 9,
                cls="fig-label")
     return svg(0, 0, b, vb="auto")
 
@@ -750,7 +754,7 @@ def board():
         b += (f'<rect x="{chip_x}" y="{by-14}" width="26" height="28" rx="3.5" '
               f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.4"/>')
         b += label(chip_x + 13, by + 2, str(limit), 15, cls="fig-strong")
-        b += label(chip_x + 13, by + 12, "cards", 6.5, cls="fig-label")
+        b += label(chip_x + 13, by + 12, "cards", 8, cls="fig-label")
         # name + unit count, stacked, left of the slots
         b += label(name_x, by - 3, name, 11, anchor="start", cls="fig-step")
         b += label(name_x, by + 9, f"{n} units", 8, anchor="start", cls="fig-label")

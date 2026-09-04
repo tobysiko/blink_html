@@ -7,14 +7,21 @@
 # between rows is removed, and the viewBox is re-fitted to what is left.
 import re, sys
 
-# The source is the rulebook's first figure — "the table from your seat".
-RULEBOOK = '../rulebook.html'
+# The source is the rulebook's "table" figure — the table seen from your seat.
+#
+# This used to take the FIRST <svg> out of ../rulebook.html and call it the
+# table. That was true once and is not any more: the first figure there is the
+# hero map, so a run of this script silently replaced the one-pager's diagram
+# with a picture of the opening map, and nothing downstream noticed because a
+# valid SVG came out. Read the figure by NAME instead — figs.json is a dict, so
+# there is nothing to get wrong.
+import json
 import os
 if os.path.exists('table-figure-source.svg'):
     src = open('table-figure-source.svg', encoding='utf-8').read()
 else:
-    html = open(RULEBOOK, encoding='utf-8').read()
-    src = re.search(r'<svg.*?</svg>', html, re.S).group(0)
+    FIGS = '../source/figs.json'
+    src = json.loads(open(FIGS, encoding='utf-8').read())['table']
 head_end = src.index('>') + 1
 head, inner = src[:head_end], src[head_end:src.rindex('</svg>')]
 
