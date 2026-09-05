@@ -1616,7 +1616,8 @@ function renderCorners() {
            won ? " — " + t("board.wonTrick") : ""}">
       <span class="ohead">
         <span class="pin" style="background:${SEAT_C[i]}"><b>${uiPos(i) + 1}</b></span>
-        ${sty ? `<span class="sty">${styleName(sty)}</span>` : ""}
+        <span class="oname">${seatName(i)}</span>${
+          sty ? `<span class="sty">${styleName(sty)}</span>` : ""}
         ${won ? CROWN : ""}
         <span class="ometa"><span class="sc">${d.total}</span>
           <span>🪙${q.gold}</span>${dots}</span>

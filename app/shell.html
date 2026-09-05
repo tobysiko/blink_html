@@ -476,8 +476,16 @@
                      100%{box-shadow:0 0 0 14px rgba(232,194,74,0)}}
   .ohead{display:flex; align-items:center; gap:4px}
   /* which bot this is — identity, not rules text, so it stays small and quiet */
-  .sty{font-size:9px; text-transform:uppercase; letter-spacing:.5px; color:var(--mut);
-    font-weight:700}
+  /* WHO THEY ARE, THEN WHAT THEY ARE. This panel used to headline the bot's
+     STYLE — SETTLER, RAIDER — which is a property of the opponent software and
+     not a thing in the game at all; a new player reads it as a faction the
+     rulebook forgot to mention. The seat's colour is its name, so that leads,
+     and the style follows in a lighter weight as what it is: a note about how
+     this particular bot plays. */
+  .oname{font-size:10px; text-transform:uppercase; letter-spacing:.5px;
+    color:var(--ink); font-weight:700}
+  .sty{font-size:9px; text-transform:none; letter-spacing:0; color:var(--mut);
+    font-weight:400; font-style:italic; margin-left:5px}
   /* the seat's colour is its name; the number is its place in the order */
   .pin{width:17px; height:17px; border-radius:50%; flex:none; color:#fff;
     border:1.5px solid rgba(0,0,0,.35); display:flex; align-items:center;
