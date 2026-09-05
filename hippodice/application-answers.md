@@ -34,12 +34,26 @@ later (24 Oct – 7 Nov) from the games that get through.
 | Telephone number | *yours to fill in* |
 | Other comments (500 char limit) | see below |
 
-### Other comments — draft (312 characters)
+### Other comments — to paste (305 characters)
 
-> Blink can be played in the browser at deep-diversions.com/blink — 2–4 players, against bots
-> or through a shared table link — if that is useful before prototypes are requested. The
-> rulebook, a card-effects reference and the print-and-play files are on the same page. A
-> physical prototype can be sent at any point.
+> A print-and-play kit — deck, player boards, aids — is at deep-diversions.com/blink, and a
+> physical prototype can be sent at any point. The same page has a browser version, 2–4
+> players against bots or on a shared table link, playing the printed rules exactly, if that
+> is easier than reading them first.
+
+**The physical comes first on purpose.** This is a board game competition; leading with the
+browser version makes the app read as the product rather than as a convenience. Leading with
+the print-and-play and the offer of a prototype makes it read the right way round.
+
+**"Playing the printed rules exactly" is a claim worth making and it is true.** Every variant
+on the app's setup page — the lean economy, spoils, the set-aside timing, the frontier payout,
+the tile supply — defaults OFF, and check_rules.py enforces that the engine and the rulebook
+agree on the numbers. They are also behind a collapsed "advanced" fold, so a juror opening the
+page sees player count, bot level and Start.
+
+**Only include this if the site is actually current.** The link is the one thing in the whole
+package that can misrepresent the game: an old build behind it is worse than no link at all.
+Push both repos before submitting, or cut the sentence.
 
 ## Playing time — settled 4 Sep
 
