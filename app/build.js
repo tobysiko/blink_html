@@ -61,7 +61,19 @@ const ui  = fs.readFileSync(here('ui.js'), 'utf8');
 /* __VTAG__ appears in the page title, the strapline and every translation of
  * it. Substituted here rather than typed, so a bump cannot leave the header
  * claiming one version while the rules PDF says another. */
-const stamp = (s) => s.split('__VTAG__').join(VTAG);
+/* THE HERO MAP, read from source/figs.json at build time — the same figure the
+ * rulebook opens with, not a copy pasted into shell.html. A second copy of a
+ * generated thing is exactly how this project has shipped the wrong picture
+ * before. If figs.json is not there the placeholder collapses to nothing and
+ * the page still builds; it is decoration, not a dependency. */
+let HERO = "";
+try {
+  HERO = JSON.parse(fs.readFileSync(here("../source/figs.json"), "utf8")).hero || "";
+} catch (e) {
+  console.warn("  no source/figs.json — the setup page ships without its hero map");
+}
+
+const stamp = (s) => s.split('__VTAG__').join(VTAG).split('__HERO__').join(HERO);
 const out = stamp(fs.readFileSync(here('shell.html'), 'utf8'))
   .replace('/*__ENGINE__*/',
     "document.documentElement.className += ' js';   // scripts run: hide the no-JS notice\n"

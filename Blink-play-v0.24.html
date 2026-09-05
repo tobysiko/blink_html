@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Blink — play v0.24</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#F4F1EA; --ink:#2B2620; --mut:#8A8378; --line:#C9C2B4;
@@ -197,6 +200,46 @@
      finger. */
   #setup{max-width:600px; margin:32px auto 60px; background:var(--panel);
     border:1px solid var(--line); border-radius:12px; padding:24px 24px 28px}
+  /* NOT a <header>, and not called .mast: the bare `header` rule near the top
+     of this sheet is the app's 36 px top bar — green, flex, fixed height — so a
+     <header> anywhere else silently becomes one, which is what happened here.
+     THE MASTHEAD. The setup page opened on <h2>Set up a game</h2> and a form —
+     correct, and an odd first thing to show someone you are asking to play a
+     game. Title, one line about what the game is, and the same hero map the
+     rulebook opens with. It collapses to one column on a narrow screen. */
+  .setup-mast{display:grid; grid-template-columns:1fr minmax(140px,38%); gap:18px;
+    align-items:center; margin:0 0 22px; padding:0 0 20px;
+    border-bottom:1px solid var(--line)}
+  .setup-mast h1{font-family:Fraunces,Georgia,serif; font-weight:600;
+    font-variation-settings:"SOFT" 20,"WONK" 1; font-size:46px; line-height:.98;
+    margin:0 0 4px; color:var(--deep); letter-spacing:-.5px}
+  #setup > .eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:10.5px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--mut); margin:0 0 10px}
+  .setup-mast .mastsub{font-family:Fraunces,Georgia,serif; font-style:italic;
+    font-size:16px; color:var(--hint); margin:0 0 10px}
+  .setup-mast .mastpitch{font-size:13.5px; line-height:1.55; color:var(--hint); margin:0}
+  .masthero svg{display:block; width:100%; height:auto}
+  @media (max-width:560px){
+    .setup-mast{grid-template-columns:1fr; gap:10px}
+    .setup-mast h1{font-size:38px}
+    .masthero{max-width:280px}
+  }
+  /* THE ONLY TWO DECISIONS ON THE PAGE, side by side and large: how many
+     players, and start. Language is a small chip under them because a visitor
+     who needs it finds it instantly and everyone else should not have to
+     read past it. */
+  .quickstart{border:0; padding:0; margin:0 0 10px; display:grid; grid-template-columns:1fr; gap:14px; margin:0 0 10px}
+  .quickstart .sub{display:grid; grid-template-columns:auto 1fr; gap:14px;
+    align-items:center; margin:0}
+  .quickstart #n-players label{padding:16px 0; font-size:19px; font-weight:600}
+  .quickstart #start{margin:0; font-size:18px; padding:16px}
+  .langrow{border:0; padding:0; display:flex; justify-content:flex-end; margin:0 0 22px}
+  .langrow .seg{width:auto; font-size:11.5px; border-radius:7px}
+  .langrow .seg label{padding:4px 10px !important; font-size:11.5px !important;
+    gap:5px; font-weight:600}
+  .langrow .seg img,.langrow .seg svg{width:13px !important; height:auto}
+  #table-more{margin:0 0 12px}
   #setup h2{margin:0 0 6px; color:var(--deep); font-size:22px}
   #setup .lede{color:var(--hint); margin:0 0 20px; font-size:13.5px; line-height:1.5}
   #setup.hide{display:none}
@@ -264,21 +307,21 @@
   .seatrow.human{background:#EAF2E6; border-radius:8px; padding-left:8px;
     padding-right:8px; margin:2px -8px}
 
-  #advanced{border:1px solid var(--line); border-radius:9px; padding:0 14px;
+  #advanced, #table-more{border:1px solid var(--line); border-radius:9px; padding:0 14px;
     margin:22px 0 20px; background:#FDFCF7}
-  #advanced[open]{padding-bottom:6px}
-  #advanced > summary{cursor:pointer; padding:13px 0; font-weight:700;
+  #advanced[open], #table-more[open]{padding-bottom:6px}
+  #advanced > summary, #table-more > summary{cursor:pointer; padding:13px 0; font-weight:700;
     color:var(--deep); min-height:44px; display:flex; align-items:center; gap:9px;
     list-style:none}
-  #advanced > summary::-webkit-details-marker{display:none}
+  #advanced > summary::-webkit-details-marker, #table-more > summary::-webkit-details-marker{display:none}
   /* the disclosure needs to LOOK like one — a chevron that turns when it opens */
   .chev{flex:none; width:0; height:0; border:6px solid transparent;
     border-left-color:var(--deep); transition:transform .18s ease;
     transform-origin:30% 50%}
-  #advanced[open] > summary .chev{transform:rotate(90deg)}
-  #advanced > summary:hover{color:#123019}
-  #advanced > summary:focus-visible{outline:3px solid var(--deep); outline-offset:2px}
-  #advanced .field{margin-bottom:14px}
+  #advanced[open] > summary .chev, #table-more[open] > summary .chev{transform:rotate(90deg)}
+  #advanced > summary:hover, #table-more > summary:hover{color:#123019}
+  #advanced > summary:focus-visible, #table-more > summary:focus-visible{outline:3px solid var(--deep); outline-offset:2px}
+  #advanced .field, #table-more .field{margin-bottom:14px}
   @media (prefers-reduced-motion: reduce){ .chev{transition:none} }
 
   /* where to read the actual rules */
@@ -1062,20 +1105,33 @@
   </div>
 </div>
 <div id="setup">
-  <h2 data-i18n="setup.title">Set up a game</h2>
-  <p class="lede" data-i18n="setup.lede"></p>
+  <p class="eyebrow" data-i18n="mast.eyebrow"></p>
+  <div class="setup-mast">
+    <div>
+      <h1>Blink</h1>
+      <p class="mastsub" data-i18n="mast.sub"></p>
+      <p class="mastpitch" data-i18n="mast.pitch"></p>
+    </div>
+    <div class="masthero" aria-hidden="true"><svg class="fig" viewBox="-82 -40 321 202" xmlns="http://www.w3.org/2000/svg" role="img"><polygon points="22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,18.00 0.00,31.00 22.52,18.00 22.52,-8.00" fill="#9B7A16"/><polygon points="0.00,-26.00 22.52,-13.00 22.52,13.00 0.00,26.00 -22.52,13.00 -22.52,-13.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><polygon points="67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,18.00 45.03,31.00 67.55,18.00 67.55,-8.00" fill="#9B7A16"/><polygon points="45.03,-26.00 67.55,-13.00 67.55,13.00 45.03,26.00 22.52,13.00 22.52,-13.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><polygon points="112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,26.00 90.07,39.00 112.58,26.00 112.58,0.00" fill="#1E4229"/><polygon points="90.07,-26.00 112.58,-13.00 112.58,13.00 90.07,26.00 67.55,13.00 67.55,-13.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><polygon points="157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,34.00 135.10,47.00 157.62,34.00 157.62,8.00" fill="#5A544C"/><polygon points="135.10,-26.00 157.62,-13.00 157.62,13.00 135.10,26.00 112.58,13.00 112.58,-13.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><polygon points="0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,57.00 -22.52,70.00 0.00,57.00 0.00,31.00" fill="#123D53"/><polygon points="-22.52,13.00 0.00,26.00 0.00,52.00 -22.52,65.00 -45.03,52.00 -45.03,26.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><polygon points="45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,57.00 22.52,70.00 45.03,57.00 45.03,31.00" fill="#9B7A16"/><polygon points="22.52,13.00 45.03,26.00 45.03,52.00 22.52,65.00 0.00,52.00 0.00,26.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="22.52" cy="45.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="22.52" cy="42.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><ellipse cx="22.52" cy="38.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="22.52" cy="35.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,65.00 67.55,78.00 90.07,65.00 90.07,39.00" fill="#1E4229"/><polygon points="67.55,13.00 90.07,26.00 90.07,52.00 67.55,65.00 45.03,52.00 45.03,26.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><ellipse cx="67.55" cy="45.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="67.55" cy="42.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,65.00 112.58,78.00 135.10,65.00 135.10,39.00" fill="#1E4229"/><polygon points="112.58,13.00 135.10,26.00 135.10,52.00 112.58,65.00 90.07,52.00 90.07,26.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><ellipse cx="112.58" cy="45.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="112.58" cy="42.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><ellipse cx="112.58" cy="38.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="112.58" cy="35.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><polygon points="180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,73.00 157.62,86.00 180.13,73.00 180.13,47.00" fill="#5A544C"/><polygon points="157.62,13.00 180.13,26.00 180.13,52.00 157.62,65.00 135.10,52.00 135.10,26.00" fill="#8A837A" stroke="#5A544C" stroke-width="1.2"/><ellipse cx="157.62" cy="45.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="157.62" cy="42.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><polygon points="-22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,96.00 -45.03,109.00 -22.52,96.00 -22.52,70.00" fill="#123D53"/><polygon points="-45.03,52.00 -22.52,65.00 -22.52,91.00 -45.03,104.00 -67.55,91.00 -67.55,65.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><polygon points="22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,96.00 0.00,109.00 22.52,96.00 22.52,70.00" fill="#123D53"/><polygon points="0.00,52.00 22.52,65.00 22.52,91.00 0.00,104.00 -22.52,91.00 -22.52,65.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><ellipse cx="0.00" cy="84.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="0.00" cy="81.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,96.00 45.03,109.00 67.55,96.00 67.55,70.00" fill="#9B7A16"/><polygon points="45.03,52.00 67.55,65.00 67.55,91.00 45.03,104.00 22.52,91.00 22.52,65.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="45.03" cy="84.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="45.03" cy="81.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><ellipse cx="45.03" cy="77.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="45.03" cy="74.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><ellipse cx="45.03" cy="70.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="45.03" cy="67.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,96.00 90.07,109.00 112.58,96.00 112.58,70.00" fill="#9B7A16"/><polygon points="90.07,52.00 112.58,65.00 112.58,91.00 90.07,104.00 67.55,91.00 67.55,65.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><ellipse cx="90.07" cy="84.00" rx="11" ry="5.5" fill="#7B2018"/><ellipse cx="90.07" cy="81.00" rx="11" ry="5.5" fill="#C0392B" stroke="#7B2018" stroke-width="1.2"/><polygon points="157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,104.00 135.10,117.00 157.62,104.00 157.62,78.00" fill="#1E4229"/><polygon points="135.10,52.00 157.62,65.00 157.62,91.00 135.10,104.00 112.58,91.00 112.58,65.00" fill="#37704A" stroke="#1E4229" stroke-width="1.2"/><polygon points="45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,135.00 22.52,148.00 45.03,135.00 45.03,109.00" fill="#123D53"/><polygon points="22.52,91.00 45.03,104.00 45.03,130.00 22.52,143.00 0.00,130.00 0.00,104.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><polygon points="90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,135.00 67.55,148.00 90.07,135.00 90.07,109.00" fill="#123D53"/><polygon points="67.55,91.00 90.07,104.00 90.07,130.00 67.55,143.00 45.03,130.00 45.03,104.00" fill="#256A8C" stroke="#123D53" stroke-width="1.2"/><ellipse cx="67.55" cy="123.00" rx="11" ry="5.5" fill="#5A544C"/><ellipse cx="67.55" cy="120.00" rx="11" ry="5.5" fill="#EDEAE1" stroke="#5A544C" stroke-width="1.2"/><polygon points="135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,135.00 112.58,148.00 135.10,135.00 135.10,109.00" fill="#9B7A16"/><polygon points="112.58,91.00 135.10,104.00 135.10,130.00 112.58,143.00 90.07,130.00 90.07,104.00" fill="#D2A93A" stroke="#9B7A16" stroke-width="1.2"/><polygon points="202.65,13.00 225.17,26.00 225.17,52.00 202.65,65.00 180.13,52.00 180.13,26.00" fill="none" stroke="#B4AFA3" stroke-width="1.6" stroke-dasharray="5 4"/></svg></div>
+  </div>
 
-  <fieldset class="field">
-    <legend data-i18n="setup.lang">Language</legend>
-    <div class="seg flags" id="lang"></div>
-  </fieldset>
+
+
 
   <!-- Players, who sits where, and how sharp they are: one decision, so one
        panel. The seat rows are the middle of it because that is the part a
        person actually thinks about. -->
-  <fieldset class="field table-panel">
-    <legend data-i18n="setup.table">The table</legend>
 
+
+
+
+  <!-- WHAT A VISITOR ACTUALLY HAS TO DECIDE: how many players, and go.
+       Everything else — who sits where, how sharp the bots are, the seed, the
+       rule variants, and playing with people who are not in the room — is real
+       and stays one click away. None of it is a question anyone should have to
+       answer before they have seen the game. -->
+  <fieldset class="quickstart">
+    <legend class="sr" data-i18n="setup.table">The table</legend>
     <div class="sub">
       <span class="sublab" id="np-label" data-i18n="setup.players.lab">Players</span>
       <div class="seg" id="n-players" role="group" aria-labelledby="np-label">
@@ -1084,6 +1140,18 @@
         <input type="radio" name="np" id="np-4" value="4"><label for="np-4">4</label>
       </div>
     </div>
+      <button class="go big" id="start" data-i18n="setup.start">Start</button>
+  </fieldset>
+  <fieldset class="langrow">
+    <legend class="sr" data-i18n="setup.lang">Language</legend><div class="seg flags" id="lang"></div></fieldset>
+
+  <details id="table-more">
+    <summary><span class="chev" aria-hidden="true"></span><span
+      data-i18n="setup.title">Set up a game</span></summary>
+    <p class="lede" data-i18n="setup.lede"></p>
+    <fieldset class="field table-panel">
+      <legend data-i18n="setup.seats">Who sits where</legend>
+
 
     <div id="seats"></div>
     <p class="hint" id="seats-note"></p>
@@ -1100,8 +1168,7 @@
       </div>
     </div>
     <p class="hint" id="level-note"></p>
-  </fieldset>
-
+    </fieldset>
   <div class="field">
     <label for="seed" data-i18n="setup.seed">Seed</label>
     <div class="seedrow">
@@ -1111,6 +1178,24 @@
     </div>
     <p class="hint" id="seed-note" data-i18n="setup.seed.note"></p>
   </div>
+  <fieldset class="field remote" id="remote" hidden>
+    <legend data-i18n="net.title">Play with friends</legend>
+    <p class="hint" data-i18n="net.lede"></p>
+    <div class="field">
+      <label for="net-name" data-i18n="net.name">Your name</label>
+      <input id="net-name" type="text" maxlength="24" autocomplete="nickname">
+    </div>
+    <div class="remoterow">
+      <button type="button" class="go" id="net-host" data-i18n="net.host"></button>
+      <span class="or" data-i18n="net.or">or</span>
+      <label class="sr" for="net-code" data-i18n="net.code.ph">table code</label>
+      <input id="net-code" type="text" maxlength="9" autocapitalize="characters"
+        spellcheck="false" placeholder="table code">
+      <button type="button" class="go alt" id="net-join" data-i18n="net.join"></button>
+    </div>
+    <p class="hint" id="net-msg"></p>
+  </fieldset>
+  </details>
 
   <details id="advanced">
     <summary><span class="chev" aria-hidden="true"></span><span
@@ -1295,25 +1380,9 @@
 
   <!-- Playing with people who are not in the room. Only offered when the
        build knows where the session service is. -->
-  <fieldset class="field remote" id="remote" hidden>
-    <legend data-i18n="net.title">Play with friends</legend>
-    <p class="hint" data-i18n="net.lede"></p>
-    <div class="field">
-      <label for="net-name" data-i18n="net.name">Your name</label>
-      <input id="net-name" type="text" maxlength="24" autocomplete="nickname">
-    </div>
-    <div class="remoterow">
-      <button type="button" class="go" id="net-host" data-i18n="net.host"></button>
-      <span class="or" data-i18n="net.or">or</span>
-      <label class="sr" for="net-code" data-i18n="net.code.ph">table code</label>
-      <input id="net-code" type="text" maxlength="9" autocapitalize="characters"
-        spellcheck="false" placeholder="table code">
-      <button type="button" class="go alt" id="net-join" data-i18n="net.join"></button>
-    </div>
-    <p class="hint" id="net-msg"></p>
-  </fieldset>
 
-  <button class="go big" id="start" data-i18n="setup.start">Start</button>
+
+
 
   <!-- Two groups, because they are two different promises. The first is the
        game as it stands; the second is only in play if somebody switched it
@@ -1405,7 +1474,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"86a8f96bc3","branch":"main","dirty":false,"built":"2026-09-05T15:59:10Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"3dcb1bb655","branch":"main","dirty":true,"built":"2026-09-05T16:34:04Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1512,6 +1581,9 @@ en: {
   "setup.spoils.none": "Nothing \u2014 the ground only (printed rule)",
   "setup.spoils.ground": "1 gold \u2014 only when the fight takes the ground",
   "setup.spoils.gold": "1 gold \u2014 for every duel won",
+  "mast.eyebrow": "A meld-building civilization game \u00b7 2\u20134\u00a0players \u00b7 45\u201390\u00a0min",
+  "mast.sub": "Climbing the ladder of civilization",
+  "mast.pitch": "The cards you play do two things at once: they compete for the trick, and they are the budget your civilization spends. Win the trick and you act first \u2014 but every card you played still reaches the map.",
   "setup.frontier": "Exploring pays",
   "setup.frontier.low": "1 gold with a card of rank 10 or under \u2014 printed rule",
   "setup.frontier.chance": "1 gold on a roll of 1 or 2 \u2014 the die version of seams",
@@ -2121,6 +2193,9 @@ de: {
   "setup.spoils.none": "Nichts \u2014 nur das Land (gedruckte Regel)",
   "setup.spoils.ground": "1 Gold \u2014 nur wenn der Kampf das Land einnimmt",
   "setup.spoils.gold": "1 Gold \u2014 f\u00fcr jedes gewonnene Duell",
+  "mast.eyebrow": "Ein Kombinations-Aufbauspiel \u00b7 2\u20134\u00a0Spieler \u00b7 45\u201390\u00a0Min.",
+  "mast.sub": "Die Leiter der Zivilisation hinauf",
+  "mast.pitch": "Deine Karten tun zweierlei zugleich: Sie k\u00e4mpfen um den Stich, und sie sind das Budget deiner Zivilisation. Wer den Stich gewinnt, handelt zuerst \u2014 doch jede gespielte Karte erreicht trotzdem die Karte.",
   "setup.frontier": "Erkunden bringt",
   "setup.frontier.low": "1 Gold mit einer Karte bis Wert 10 \u2014 gedruckte Regel",
   "setup.frontier.chance": "1 Gold bei einer 1 oder 2 \u2014 die W\u00fcrfelfassung der Adern",
