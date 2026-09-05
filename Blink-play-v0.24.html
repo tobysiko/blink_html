@@ -396,7 +396,15 @@
   #marketside{flex:none; display:flex; flex-direction:column; gap:3px;
     padding:4px 7px 6px; background:#EFEBE1;
     border-right:1px solid var(--line); overflow-y:auto}
-  #market{display:flex; flex-direction:column; gap:5px}
+  /* The printed figure puts the face-down upgrade deck to the LEFT of the
+     grid and the shared pile lower down the table, and both of them are
+     stacks of cards - so both are drawn as cards here, flanking the grid,
+     rather than as the two wide bars they became when this was a column. */
+  #market{display:grid; grid-template-columns:auto auto;
+    grid-template-rows:auto 1fr; gap:6px; justify-content:center}
+  #market > .deckpile{grid-area:1/1; align-self:start}
+  #market > .deckpile.shared{grid-area:2/1; align-self:end}
+  #market > .grid{grid-area:1/2/3/3}
   /* Fixed columns rather than fractions: the grid then stays a 3x3 block of
      cards at any width instead of stretching into three tall lanes. */
   #market .grid{display:grid; grid-template-columns:repeat(3,58px); gap:5px;
@@ -1048,12 +1056,13 @@
   /* The shared discard, at the far end of the market. Every player who matches
      the trick winner's count feeds it a played card, and every hand refills
      from it — so it is a stack in play, not a bin. */
-  /* In the sidebar both piles run the width of the grid: the deck reads as
-     the row the market is dealt from, the shared pile as the one under it. */
-  #market .deckpile{width:auto; min-height:0; flex-direction:row; gap:6px;
-    padding:4px 6px; justify-content:center; align-items:baseline}
-  #market .deckpile em{font-size:8.5px}
-  #market .deckpile.shared{margin-left:0}
+  /* Both piles are decks of cards, so both are card-shaped - the same 52x73
+     portrait the market's own faces use, wearing the stacked-edge shadow they
+     already had. */
+  #market .deckpile{width:52px; height:73px; min-height:0; border-radius:6px;
+    gap:1px; margin-left:0}
+  #market .deckpile b{font-size:17px}
+  #market .deckpile em{font-size:8px; letter-spacing:.5px}
   .deckpile.shared{margin-left:auto; border-color:#7A5C13;
     background:repeating-linear-gradient(135deg,#6B4E12 0 5px,#8A6A22 5px 10px);
     box-shadow:1px 1px 0 rgba(122,92,19,.45), 2px 2px 0 rgba(122,92,19,.25)}
@@ -1599,7 +1608,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"984412ae08","branch":"main","dirty":true,"built":"2026-09-05T17:52:57Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"f7e7b4f782","branch":"main","dirty":true,"built":"2026-09-05T17:58:54Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so

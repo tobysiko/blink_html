@@ -106,6 +106,11 @@ setTimeout(() => {
   if (d.querySelectorAll('#hand .cf[data-r]').length !== 10)
     fail.push('hand cards do not carry their identity, so a hold cannot open one');
   if (!d.querySelector('#cardsheet')) fail.push('no card detail sheet in the page');
+  /* The deck and the shared pile are stacks of cards, and were drawn as two
+     wide bars. Both are card-shaped now, flanking the grid as the printed
+     figure has them - the deck to its left, the shared pile lower down. */
+  if (!/#market \.deckpile\{[^}]*width:52px; height:73px/.test(html))
+    fail.push('the deck and shared pile are not card-shaped');
   /* Initiative is dice on the table; the strip has to be dice on screen. */
   if (d.querySelectorAll('#turnbar .tchip .die').length !== 3)
     fail.push('the order strip is not showing the initiative dice');
