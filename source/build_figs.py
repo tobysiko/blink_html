@@ -302,9 +302,22 @@ def table():
     # EIGHT cards, not ten: the 5 and 6 of Plains are sitting in the play area
     # above, and a figure that says ten while showing a meld already played
     # teaches the one thing about the hand that matters wrongly.
-    hand = [(2, "ocean"), (3, "mountain"), (7, "plains"), (9, "forest"),
-            (9, "ocean"), (11, "mountain"), (14, "ocean"), (17, "forest")]
-    b += fan(yx + yw / 2, yy + 92, hand, 52, 72, 7.5)
+    # A HAND WITH SOMETHING IN IT. The old eight were 2,3,7,9,9,11,14,17, whose
+    # longest legal meld is TWO — checked against enumerateMelds, not guessed. A
+    # setup figure showing a hand you could do nothing with teaches the meld rule
+    # backwards. These eight hold, in the engine's own enumeration:
+    #
+    #   four   1-2-3-4
+    #   three  1-2-3 · 2-3-4 · 9-9-10
+    #   two    1-2 · 2-3 · 3-4 · 9-9 · 9-10
+    #   and 17 alone, which is what a high card is for — cash it, or attack.
+    #
+    # The run of four deliberately spans all four suits: melds do not care about
+    # suit, and a reader who sees a run in one colour will assume they do. The
+    # 9-9-10 is there because duplicates are free and nothing else says so.
+    hand = [(1, "ocean"), (2, "mountain"), (3, "plains"), (4, "forest"),
+            (9, "ocean"), (9, "plains"), (10, "mountain"), (17, "forest")]
+    b += fan(yx + yw / 2, yy + 92, hand, 52, 72, 8.6)
     b += label(yx + yw / 2, yy + 214,
                "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
                9.5, cls="fig-step")
