@@ -276,13 +276,29 @@ def table():
     # The reserve: five tiers of EQUAL size, the emptied ones hollow. Drawn with
     # growing heights at first, which read as a bar chart of something and made
     # the leftmost tiers look small rather than spent.
+    # THE RESERVE HOLDS PEOPLE, NOT CARDS. This was drawn as five rounded
+    # rectangles standing beside the victory row's card slots — the same shape,
+    # the same size, two entirely different things — so the figure said your
+    # reserve was a row of cards. It is five TIERS of population units, so it is
+    # drawn with the unit disc used on the map and on the player-board figure,
+    # Same disc, same hollow-dashed empty, as the player-board figure draws a
+    # reserve: a reader looking at both should meet one idiom, not two. Spent
+    # tiers are hollow, which is what the caption under this strip describes.
+    # How many units a tier holds is the board figure's job, not this strip's.
     for i in range(5):
-        rx = yx + 152 + i * 22
+        cx = yx + 158 + i * 22
         spent = i < 2
-        b += (f'<rect x="{rx}" y="{yy + 17}" width="18" height="28" rx="2.5" '
-              f'fill="{"#FBFAF6" if spent else PLAYER["you"]["fill"]}" '
-              f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.1"'
-              + (' stroke-dasharray="2 2"' if spent else '') + '/>')
+        cy = yy + 30
+        if spent:
+            b += (f'<ellipse cx="{cx}" cy="{cy}" rx="10" ry="5" fill="none" '
+                  f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.2" '
+                  f'stroke-dasharray="3 3"/>')
+        else:
+            b += (f'<ellipse cx="{cx}" cy="{cy + 2}" rx="10" ry="5" '
+                  f'fill="{PLAYER["you"]["edge"]}"/>'
+                  f'<ellipse cx="{cx}" cy="{cy}" rx="10" ry="5" '
+                  f'fill="{PLAYER["you"]["fill"]}" '
+                  f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.2"/>')
 
     for i in range(5):
         vx = yx + 294 + i * 22
