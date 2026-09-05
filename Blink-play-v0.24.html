@@ -414,9 +414,6 @@
   /* the fit button only means something once the view has been moved */
   #zfit{opacity:.35; transition:opacity .2s ease}
   #zfit.live{opacity:1; border-color:var(--deep); color:var(--deep)}
-  /* Both strips under the market were bare chips: coloured discs with numbers
-     and coloured squares with numbers, side by side, saying nothing about what
-     either number counted. One word each. */
   /* NAMING THE REGIONS. The play screen had a market, a hand, a board and a
      victory row, and only the victory row said what it was. These are 9 px and
      cost about 13 px of height each, which is a cheap price for a stranger
@@ -426,10 +423,11 @@
   .striplab{font-size:9px; letter-spacing:.13em; text-transform:uppercase;
     color:var(--mut); font-weight:600; margin:0 4px 0 10px; white-space:nowrap}
   .striplab:first-of-type{margin-left:0}
-  #legend{display:flex; align-items:center; gap:3px; font-size:9px; color:var(--mut);
-    background:rgba(255,253,248,.7); border-radius:5px; padding:1px 4px}
-  #legend i{display:block; width:12px; height:12px; border-radius:3px;
-    text-align:center; line-height:12px; color:#fff; font-size:8px; font-weight:700}
+  /* THE TERRAIN KEY IS GONE. It listed how many units each terrain holds —
+     which every hex on the map already prints on its own face as occupied/
+     capacity, and prints more accurately, because the key had to describe one
+     global number while a tile knows its own. Two rows of chips under the
+     market, and one of them was saying something the board had already said. */
 
   /* ---- the order strip: who acts, in what order, what is left ---- */
   #turnbar{display:flex; align-items:center; gap:12px;
@@ -1084,7 +1082,7 @@
     #market{flex-wrap:wrap; overflow-x:visible}
     .grid{flex-wrap:wrap}
     .deckpile.shared{margin-left:0}           /* no gap once the row has wrapped */
-    #legend, .striplab{display:none}
+    .striplab{display:none}
   }
 </style>
 </head>
@@ -1467,13 +1465,6 @@
       <div id="maptop">
         <span class="striplab" data-i18n="hud.order">Order</span>
         <div id="turnbar"></div>
-        <span class="striplab" data-i18n="hud.holds">Holds</span>
-        <div id="legend">
-          <i style="background:#C9992B" title="Plains — holds 3"></i>3
-          <i style="background:#37704A" title="Forest — holds 2"></i>2
-          <i style="background:#256A8C" title="Ocean — holds 1"></i>1
-          <i style="background:#8A837A" title="Mountain — holds 1"></i>1
-        </div>
         <div id="zoom"><button id="zout" title="zoom out">−</button
           ><button id="zin" title="zoom in">+</button
           ><button id="zfit" title="show the whole board · press again for playing size"
@@ -1511,7 +1502,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"eb91182319","branch":"main","dirty":true,"built":"2026-09-05T17:03:31Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"edd0a17baa","branch":"main","dirty":true,"built":"2026-09-05T17:11:45Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1839,12 +1830,9 @@ en: {
   "board.slotRank": "rank {r}",
   "board.slotEmpty": "empty",
   "hud.order": "Order",
-  "hud.holds": "Holds",
   "sec.market": "Market",
   "sec.hand": "Your hand",
   "sec.board": "Your board",
-  "board.legend": "{terrain} — you hold {cap}",
-  "board.legendGrow": "{terrain} — you hold {cap} at {tier}, up to {top} at Empire",
   "board.you": "(you)",
   "board.acts": "acts",
   "board.plays": "plays",
@@ -2452,12 +2440,9 @@ de: {
   "board.slotRank": "Wert {r}",
   "board.slotEmpty": "leer",
   "hud.order": "Reihenfolge",
-  "hud.holds": "Fasst",
   "sec.market": "Markt",
   "sec.hand": "Deine Hand",
   "sec.board": "Dein Tableau",
-  "board.legend": "{terrain} — du hältst {cap}",
-  "board.legendGrow": "{terrain} — du hältst {cap} als {tier}, bis zu {top} als Imperium",
   "board.you": "(du)",
   "board.acts": "handelt als",
   "board.plays": "spielt als",
@@ -8522,7 +8507,6 @@ function render() {
   FX_OK = null;                                  // the map may have just appeared
   if (!TRICK || TRICK.round !== G.round) TRICK = newTrick(G.round);
   renderMap();
-  renderLegend();
   renderTable();
   renderPlayer();
   renderMarket();
@@ -8770,24 +8754,6 @@ function renderMap() {
   /* If there is somewhere legal to click and none of it is on screen, go there.
    * A highlight you cannot see is worse than no highlight. */
   if (act.size) ensureVisible([...act.keys()]);
-}
-
-/* The terrain key shows what YOU may stack, which is not a constant when
- * population limits grow with your band — and a key that says "Plains 3" while
- * your Tribe may only hold 2 is worse than no key at all. */
-function renderLegend() {
-  const n = $("#legend");
-  if (!n || !G) return;
-  const p = G.P[ME];
-  const grow = !!G.m.limits;
-  n.innerHTML = TER.map((terr) => {
-    const cap = grow ? G.m.limits[p.band()][terr] : HOLDS[terr];
-    const top = grow ? G.m.limits[G.m.limits.length - 1][terr] : cap;
-    const tip = grow
-      ? t("board.legendGrow", { terrain: TL[terr], cap, tier: tierName(p.band()), top })
-      : t("board.legend", { terrain: TL[terr], cap });
-    return `<i style="background:${TC[terr]}" title="${tip}"></i>${cap}`;
-  }).join("");
 }
 
 // --------------------------------------------------------------- map view

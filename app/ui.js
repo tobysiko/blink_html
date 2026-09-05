@@ -939,7 +939,6 @@ function render() {
   FX_OK = null;                                  // the map may have just appeared
   if (!TRICK || TRICK.round !== G.round) TRICK = newTrick(G.round);
   renderMap();
-  renderLegend();
   renderTable();
   renderPlayer();
   renderMarket();
@@ -1187,24 +1186,6 @@ function renderMap() {
   /* If there is somewhere legal to click and none of it is on screen, go there.
    * A highlight you cannot see is worse than no highlight. */
   if (act.size) ensureVisible([...act.keys()]);
-}
-
-/* The terrain key shows what YOU may stack, which is not a constant when
- * population limits grow with your band — and a key that says "Plains 3" while
- * your Tribe may only hold 2 is worse than no key at all. */
-function renderLegend() {
-  const n = $("#legend");
-  if (!n || !G) return;
-  const p = G.P[ME];
-  const grow = !!G.m.limits;
-  n.innerHTML = TER.map((terr) => {
-    const cap = grow ? G.m.limits[p.band()][terr] : HOLDS[terr];
-    const top = grow ? G.m.limits[G.m.limits.length - 1][terr] : cap;
-    const tip = grow
-      ? t("board.legendGrow", { terrain: TL[terr], cap, tier: tierName(p.band()), top })
-      : t("board.legend", { terrain: TL[terr], cap });
-    return `<i style="background:${TC[terr]}" title="${tip}"></i>${cap}`;
-  }).join("");
 }
 
 // --------------------------------------------------------------- map view
