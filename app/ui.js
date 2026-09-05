@@ -1470,23 +1470,100 @@ function faceInner(c, size) {
     return `<span class="band">${TL[c.s]}</span>
       <span class="rank">${c.r}</span>
       <span class="fx">${e.aShort} · ${third.short}</span>`;
+  /* A, B and C are not names, they are TIMES: the card phase, the map phase,
+   * and whenever you like. A letter alone told a new player which of the three
+   * lines to read out and nothing about when any of them could be used. */
   return `<span class="band">${TL[c.s]}</span>
     <span class="rank">${c.r}<em>${SUIT_LETTER[c.s]}</em></span>
     <ul class="fx3">
-      <li><span class="ab">A</span>${e.a}</li>
-      <li><span class="ab">B</span>${e.b}</li>
-      <li><span class="ab">${third.key}</span>${third.long}</li>
+      <li><span class="ab">A</span>${e.a}<em class="when">${t("fx.when.a")}</em></li>
+      <li><span class="ab">B</span>${e.b}<em class="when">${t("fx.when.b")}</em></li>
+      <li><span class="ab">${third.key}</span>${third.long}<em class="when">${
+        t("fx.when." + third.key.toLowerCase())}</em></li>
     </ul>`;
 }
+/* Every face carries the card it is, so a hold anywhere on the table can open
+ * it without the caller having to remember to pass it along. */
+const cardData = (c) => `data-r="${c.r}" data-s="${c.s}"`;
 function cardChip(c, cls, attr, size) {
   size = size || "mini";
-  return `<span class="cf ${size} ${cls || ""}" ${attr || ""}
+  return `<span class="cf ${size} ${cls || ""}" ${attr || ""} ${cardData(c)}
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</span>`;
 }
 function cardBtn(c, cls, attr, size) {
   size = size || "mini";
-  return `<button class="cf btn ${size} ${cls || ""}" ${attr || ""}
+  return `<button class="cf btn ${size} ${cls || ""}" ${attr || ""} ${cardData(c)}
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</button>`;
+}
+
+/* ---- reading a card ----------------------------------------------------
+ * The face on the table is 60 px wide: a rank, a terrain and one line saying
+ * what the card is worth. The three printed effects and the moment each of
+ * them can be used do not fit there, and they are the first thing anybody
+ * asks. Hold any card - in your hand, in the market, on the table, in a
+ * victory row - and the whole card opens. Right-click does the same, because
+ * a long press is a phone gesture and a mouse has a better one. */
+/* HELD is the moment a hold fired, not a flag: on touch the release may
+ * land on the sheet that just opened and never deliver a click at all, and
+ * a flag left standing would then swallow the next real one - the close
+ * button, most likely. It expires by itself. */
+let HELD = 0, HOLD_T = null, HOLD_AT = null;
+function cardAt(node) {
+  const el = node && node.closest ? node.closest(".cf[data-r]") : null;
+  return el ? { r: Number(el.dataset.r), s: el.dataset.s } : null;
+}
+function closeCardSheet() {
+  const box = $("#cardsheet");
+  if (box) { box.hidden = true; box.innerHTML = ""; }
+}
+function openCardSheet(c) {
+  const box = $("#cardsheet");
+  if (!box || !c || !TC[c.s]) return;
+  box.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"
+      aria-label="${t("card.sheet.title", { r: c.r, terrain: TL[c.s] })}">
+    <button class="sheetx" aria-label="${t("card.sheet.close")}">\u00d7</button>
+    ${cardChip(c, "", "", "full")}
+    <p class="sheetnote">${t("card.sheet.note")}</p>
+  </div>`;
+  box.hidden = false;
+  box.querySelector(".sheetx").addEventListener("click", closeCardSheet);
+}
+function wireCardHold() {
+  const cancel = () => { clearTimeout(HOLD_T); HOLD_T = null; };
+  document.addEventListener("pointerdown", (ev) => {
+    const c = cardAt(ev.target);
+    HELD = 0;
+    if (!c) return;
+    HOLD_AT = { x: ev.clientX, y: ev.clientY };
+    cancel();
+    HOLD_T = setTimeout(() => { HELD = Date.now(); openCardSheet(c); }, 420);
+  });
+  /* A drag is a scroll, not a hold - otherwise flicking a hand of cards up the
+   * page on a phone opens one of them. */
+  document.addEventListener("pointermove", (ev) => {
+    if (!HOLD_T || !HOLD_AT) return;
+    if (Math.abs(ev.clientX - HOLD_AT.x) + Math.abs(ev.clientY - HOLD_AT.y) > 9) cancel();
+  });
+  ["pointerup", "pointercancel", "pointerleave", "scroll"].forEach((k) =>
+    document.addEventListener(k, cancel, true));
+  /* Swallow the click the release would otherwise deliver: a hold must never
+   * also play the card it was opening. */
+  document.addEventListener("click", (ev) => {
+    if (!HELD) return;
+    const fresh = Date.now() - HELD < 700;
+    HELD = 0;
+    if (!fresh) return;
+    ev.preventDefault(); ev.stopPropagation();
+  }, true);
+  document.addEventListener("contextmenu", (ev) => {
+    const c = cardAt(ev.target);
+    if (!c) return;
+    ev.preventDefault();
+    openCardSheet(c);
+  });
+  $("#cardsheet").addEventListener("click", (ev) => {
+    if (ev.target.id === "cardsheet") closeCardSheet();
+  });
 }
 
 // --------------------------------------------------------------- play area
@@ -1648,12 +1725,22 @@ function renderTurnbar() {
       : !played && seq.slice(0, k).every((j) => G.P[j].tableau && laid(j));
     const cls = ["tchip", done ? "done" : "", now ? "now" : "",
                  win === i ? "won" : "", i === ME ? "me" : ""].filter(Boolean).join(" ");
+    /* The face the die shows. A plain die shows the finishing place, which is
+     * also the position in this list. The winner’s die shows the SIZE of the
+     * winning meld instead — it is first because of its colour, not its
+     * number — and that size is what everyone has to carry into the map
+     * phase, so it is the number the strip has to show. */
+    const meld = (p.tableau && p.tableau.length) || 0;
+    const face = win === i && meld ? meld : k + 1;
     s += `<span class="${cls}" style="--c:${SEAT_C[i]}"
       title="${seatName(i)}${i === ME ? " " + t("board.you") : ""} — ${
         t(ord ? "board.acts" : "board.plays")} ${
         t("board.ofN", { k: k + 1, n: seq.length })}${
-        win === i ? ", " + t("board.wonTrick") : ""}">
-      <i></i><b>${k + 1}</b>${win === i ? CROWN : ""}</span>`;
+        win === i ? ", " + t("board.wonTrick") : ""}${
+        win === i && meld ? ". " + t("board.dieWin", { n: meld }) : ""}${
+        done ? ". " + t("board.dieOut") : ""}">
+      <i></i><span class="die${win === i ? " win" : ""}"><b>${face}</b></span>${
+        win === i ? CROWN : ""}</span>`;
   });
   box.innerHTML = s;
 }
@@ -2748,8 +2835,11 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#flag-cancel").addEventListener("click", closeFlag);
   $("#flag-save").addEventListener("click", saveFlag);
   $("#flagbox").addEventListener("click", (e) => { if (e.target.id === "flagbox") closeFlag(); });
+  wireCardHold();
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !$("#flagbox").hidden) closeFlag();
+    if (e.key !== "Escape") return;
+    if (!$("#cardsheet").hidden) return closeCardSheet();
+    if (!$("#flagbox").hidden) closeFlag();
   });
   $("#reseed").addEventListener("click", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);

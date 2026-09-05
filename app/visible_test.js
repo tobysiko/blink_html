@@ -91,6 +91,24 @@ setTimeout(() => {
     fail.push('hand cards are missing the terrain band or effect strip');
   if (d.querySelectorAll('#market .slot').length !== 9)
     fail.push('market is not on the card table');
+  /* A CARD MUST LOOK LIKE A CARD, AND A MARKET MUST NOT LOOK LIKE A HAND.
+     The face was 66px wide and about 70 tall - a square - and the market was a
+     single row of nine, which is the one shape a hand also has. jsdom has no
+     layout, so the shape is asserted where it is decided: in the stylesheet. */
+  if (!/\.cf\.mid\{[^}]*height:calc\(var\(--cw\) \* 1\.4\)/.test(html))
+    fail.push('card faces are not portrait');
+  if (!d.querySelector('#marketside') || !d.querySelector('#market .grid'))
+    fail.push('the market is not a grid of its own beside the map');
+  if (!/#market \.grid\{[^}]*grid-template-columns:repeat\(3,/.test(html))
+    fail.push('the market is not laid out three across, as it is on the table');
+  /* Holding a card opens it: every face has to say which card it is, and there
+     has to be somewhere for it to open into. */
+  if (d.querySelectorAll('#hand .cf[data-r]').length !== 10)
+    fail.push('hand cards do not carry their identity, so a hold cannot open one');
+  if (!d.querySelector('#cardsheet')) fail.push('no card detail sheet in the page');
+  /* Initiative is dice on the table; the strip has to be dice on screen. */
+  if (d.querySelectorAll('#turnbar .tchip .die').length !== 3)
+    fail.push('the order strip is not showing the initiative dice');
   // the face-down upgrade deck is where every research card comes from
   const pile = d.querySelector('#deckpile');
   if (!pile) fail.push('no face-down deck at the head of the market');

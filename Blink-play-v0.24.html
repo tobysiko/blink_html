@@ -70,6 +70,29 @@
   #flagbox .row{display:flex; gap:8px; margin-top:14px}
   #flagbox .row .go{flex:1}
 
+  /* ---- one card, opened ---- */
+  #cardsheet{position:fixed; inset:0; z-index:70; background:rgba(30,40,32,.55);
+    display:flex; align-items:center; justify-content:center; padding:18px}
+  #cardsheet[hidden]{display:none}
+  #cardsheet .sheet{position:relative; background:var(--panel); border-radius:12px;
+    padding:16px 18px 14px; max-width:300px; width:100%;
+    box-shadow:0 12px 40px rgba(0,0,0,.3); display:flex; flex-direction:column;
+    align-items:center; gap:9px}
+  #cardsheet .cf.full{width:100%; max-width:230px}
+  #cardsheet .sheetnote{margin:0; font-size:11px; line-height:1.4; color:var(--mut);
+    text-align:center}
+  #cardsheet .sheetx{position:absolute; top:5px; right:7px; width:26px; height:26px;
+    border:0; background:none; font:inherit; font-size:19px; line-height:1;
+    color:var(--mut); cursor:pointer; border-radius:50%}
+  #cardsheet .sheetx:hover{background:#E7E2D6; color:var(--ink)}
+  /* the timing of each effect, which is most of what the letter means */
+  .cf.full .fx3 li{flex-wrap:wrap}
+  .cf.full .when{flex-basis:100%; margin-left:20px; font-style:normal;
+    font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--mut)}
+  /* how to open it, said once, where the cards are */
+  .sechead{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  .holdhint{font-size:9.5px; color:var(--mut); text-transform:none; letter-spacing:0}
+
   /* the end-of-game form */
   .fb{margin:14px 0 6px; padding:14px 0 0; border-top:1px solid var(--line)}
   .fb h3{margin:0 0 4px; color:var(--deep); font-size:15px}
@@ -362,8 +385,30 @@
   .wrap{display:flex; flex-direction:column; height:100%; min-height:0;
     width:100%; max-width:1280px; margin:0 auto}
 
-  #market{flex:none; padding:5px 8px 4px; border-bottom:1px solid var(--line);
-    background:#EFEBE1; display:flex; gap:4px; align-items:center; overflow-x:auto}
+  /* ---- the market, in the shape it has on the table ----
+     Nine face-up stacks in a 3x3 grid, the face-down deck above it and the
+     shared pile below, all of it beside the map rather than across the top of
+     the screen. It used to be a single row of nine, which is the one shape a
+     hand also has: two rows of cards one above the other and nothing but
+     position to say which was which. A grid is not a hand, and on the table
+     nobody has ever confused them. */
+  .tablearea{flex:1 1 auto; min-height:0; display:flex; align-items:stretch}
+  #marketside{flex:none; display:flex; flex-direction:column; gap:3px;
+    padding:4px 7px 6px; background:#EFEBE1;
+    border-right:1px solid var(--line); overflow-y:auto}
+  #market{display:flex; flex-direction:column; gap:5px}
+  /* Fixed columns rather than fractions: the grid then stays a 3x3 block of
+     cards at any width instead of stretching into three tall lanes. */
+  #market .grid{display:grid; grid-template-columns:repeat(3,58px); gap:5px;
+    justify-content:center}
+  /* In the market a card is an OFFER: its rank is the tier it needs and its
+     terrain is what it settles. The one-line effect strip is 7.5px at this
+     size - unreadable, and unnecessary now that holding a card opens it - so
+     the rank takes the room instead and is legible across a room. */
+  #market .cf.mid{--cw:52px}
+  #market .cf.mid .fx{display:none}
+  #market .cf.mid .rank{font-size:calc(var(--cw) * .62); padding-top:0;
+    margin:auto 0; padding-bottom:4px}
 
   /* ---- the table, as a grid ----
      Melds used to be absolutely positioned OVER the map, which is fine until
@@ -378,7 +423,7 @@
         row 4   your own meld, against the map's near edge          */
   /* The board keeps a floor of the window whatever the melds do: the play area
      below it scrolls, the map does not get squeezed out of existence. */
-  #mapbox{flex:1 1 auto; min-height:44vh; padding:4px; display:grid;
+  #mapbox{flex:1 1 auto; min-width:0; min-height:44vh; padding:4px; display:grid;
     /* The middle column was 1fr, so it swallowed every spare pixel and pushed
        the two rival panels out to the screen edges — about 1700px apart at
        1920, with the board small between them. Bounded, and the row centred,
@@ -433,16 +478,31 @@
   #turnbar{display:flex; align-items:center; gap:12px;
     background:rgba(255,253,248,.9); border:1px solid var(--line);
     border-radius:20px; padding:3px 8px}
-  .tchip{position:relative; display:flex; align-items:center; gap:3px;
+  /* THE DICE, NOT A LIST OF NUMBERS. Initiative on the table is four dice:
+     the winner's die in its own colour, set to the size of the winning meld,
+     and plain dice showing 2/3/4 in finishing order. Each waits in a slot at
+     the top of its owner's board and is lifted out when that player's turn is
+     over. Drawing coloured pins with ordinals instead taught none of that, and
+     a player who then sat down at the physical game met the dice cold. */
+  .tchip{position:relative; display:flex; align-items:center; gap:4px;
     line-height:1; transition:opacity .3s ease}
   .tchip i{width:13px; height:13px; border-radius:50%; background:var(--c);
     border:1.5px solid rgba(0,0,0,.35); display:block}
-  .tchip b{font-size:10px; color:var(--mut); font-weight:700}
+  .tchip .die{width:18px; height:18px; border-radius:4px; flex:none;
+    background:#FBFAF6; border:1.4px solid var(--ink);
+    display:flex; align-items:center; justify-content:center}
+  .tchip b{font-size:11px; color:var(--ink); font-weight:700}
+  /* the winner's die: the one die of its own colour, and always first */
+  .tchip .die.win{background:#C0392B; border-color:#7B2018}
+  .tchip .die.win b{color:#FBFAF6}
+  /* A die OUT of its slot is a player who has finished - the same dashed,
+     empty idiom the printed board uses for the slot it came from. */
+  .tchip.done{opacity:.6}
+  .tchip.done .die{background:none; border-style:dashed; border-color:var(--mut)}
+  .tchip.done .die b{visibility:hidden}
   .tchip.me i{box-shadow:0 0 0 2px var(--panel), 0 0 0 3.5px var(--deep)}
-  .tchip.me b{color:var(--deep)}
-  .tchip.done{opacity:.32}
   .tchip.now i{animation:beat 1.1s ease-in-out infinite}
-  .tchip.won b{color:#7A5C13}
+  .tchip.now .die{box-shadow:0 0 0 2px rgba(30,66,41,.35)}
   /* the direction of play, drawn once between each pair */
   .tchip+.tchip::before{content:""; position:absolute; left:-9px; top:50%;
     width:0; height:0; border:3.5px solid transparent; border-left-color:var(--line);
@@ -862,20 +922,28 @@
 
   /* ---- one card face, three sizes ---- */
   .cf{display:inline-flex; background:#FBFAF6; border:1.5px solid var(--suit);
-    border-radius:6px; font-family:inherit; color:var(--ink); text-align:left}
+    border-radius:6px; font-family:inherit; color:var(--ink); text-align:left;
+    /* a hold opens the card, so it must not also start a text selection or
+       raise iOS's copy callout over the top of it */
+    -webkit-user-select:none; user-select:none; -webkit-touch-callout:none}
   button.cf{cursor:pointer}
 
   .cf.mini{align-items:center; gap:2px; padding:3px 6px; font-size:13px; line-height:1}
   .cf.mini b{color:var(--suit)}
   .cf.mini i{font-style:normal; font-size:10px; color:var(--mut)}
 
-  .cf.mid{flex-direction:column; width:66px; padding:0; overflow:hidden}
-  .cf.mid .band{background:var(--suit); color:#fff; font-size:7.5px; font-weight:700;
-    letter-spacing:.5px; padding:2px 4px; text-align:center}
-  .cf.mid .rank{font-size:20px; font-weight:700; color:var(--suit); text-align:center;
-    line-height:1.1; padding-top:2px}
-  .cf.mid .fx{font-size:7.5px; color:var(--mut); text-align:center; padding:1px 2px 3px;
-    line-height:1.15}
+  /* PORTRAIT, LIKE A CARD. This was 66px wide and about 70 tall - square, and
+     a square with a coloured stripe on it does not read as a playing card at
+     any size. One width variable drives the whole face, so the market can hold
+     a smaller card without a second set of rules. */
+  .cf.mid{--cw:60px; flex-direction:column; width:var(--cw);
+    height:calc(var(--cw) * 1.4); padding:0; overflow:hidden}
+  .cf.mid .band{background:var(--suit); color:#fff; font-size:8px; font-weight:700;
+    letter-spacing:.4px; padding:2px 3px; text-align:center; line-height:1.25}
+  .cf.mid .rank{font-size:calc(var(--cw) * .46); font-weight:700; color:var(--suit);
+    text-align:center; line-height:1; padding-top:5px}
+  .cf.mid .fx{font-size:7.5px; color:var(--mut); text-align:center;
+    padding:1px 2px 3px; line-height:1.15; margin-top:auto}
 
   .cf.full{flex-direction:column; width:186px; padding:0; overflow:hidden;
     border-width:2px; box-shadow:0 2px 6px rgba(0,0,0,.12)}
@@ -980,6 +1048,12 @@
   /* The shared discard, at the far end of the market. Every player who matches
      the trick winner's count feeds it a played card, and every hand refills
      from it — so it is a stack in play, not a bin. */
+  /* In the sidebar both piles run the width of the grid: the deck reads as
+     the row the market is dealt from, the shared pile as the one under it. */
+  #market .deckpile{width:auto; min-height:0; flex-direction:row; gap:6px;
+    padding:4px 6px; justify-content:center; align-items:baseline}
+  #market .deckpile em{font-size:8.5px}
+  #market .deckpile.shared{margin-left:0}
   .deckpile.shared{margin-left:auto; border-color:#7A5C13;
     background:repeating-linear-gradient(135deg,#6B4E12 0 5px,#8A6A22 5px 10px);
     box-shadow:1px 1px 0 rgba(122,92,19,.45), 2px 2px 0 rgba(122,92,19,.25)}
@@ -1006,7 +1080,7 @@
     .needs{box-shadow:0 0 0 3px rgba(30,66,41,.25)}
   }
   .slot{position:relative; padding:2px; border:1px solid var(--line);
-    border-radius:7px; background:#fff; cursor:default; min-width:70px; min-height:58px;
+    border-radius:7px; background:#fff; cursor:default; min-width:0; min-height:0;
     display:flex; align-items:center; justify-content:center}
   .slot.hot{border-color:#111; border-width:2px; cursor:pointer; background:#FFF9E4}
   .slot.over{opacity:.55; border-style:dashed; background:#F4F1EA}
@@ -1048,6 +1122,10 @@
     #game{height:auto}
     .wrap{height:auto}
     .lower{max-height:none; overflow:visible}
+    /* No room for a column beside the map, so the market goes back above it -
+       still a 3x3 grid, which is what has to survive the move. */
+    .tablearea{flex-direction:column}
+    #marketside{border-right:0; border-bottom:1px solid var(--line)}
     #mapbox{min-height:0; grid-template-columns:minmax(0,1fr);
       grid-template-rows:auto auto minmax(180px,42vh) auto}
     #maptop{grid-area:1/1/2/2}
@@ -1078,7 +1156,7 @@
     .mv em{display:none}
     .tier-row{gap:5px}
     .tier-row.head{font-size:8px; letter-spacing:0}
-    .cf.mid{width:56px}
+    .cf.mid{--cw:56px}
     .vrowbox{--vslot-w:56px}
     .vslot{min-width:56px}
     .slot{min-width:58px}
@@ -1086,11 +1164,11 @@
     .go.end{margin-left:0; width:100%}
     .corner{padding:2px 3px; gap:2px; flex-basis:47%}
     .ometa span:not(.sc){display:none}
-    /* nothing scrolls sideways out of reach: the whole market wraps instead */
-    #market{flex-wrap:wrap; overflow-x:visible}
-    .grid{flex-wrap:wrap}
-    .deckpile.shared{margin-left:0}           /* no gap once the row has wrapped */
-    .striplab{display:none}
+    .deckpile.shared{margin-left:0}
+    /* Kept on a phone now that the strip is dice: "INITIATIVE" is the word the
+       printed board uses for the slot they sit in, and three dice with nothing
+       said about them is exactly the cryptic strip this replaced. */
+    .striplab{font-size:8px; letter-spacing:.08em}
   }
 </style>
 </head>
@@ -1133,6 +1211,10 @@
     </div>
   </div>
 </div>
+<!-- One card, opened. A card face on the table is 60px wide and can only ever
+     carry its rank and one line; the three printed effects, and WHEN each may
+     be used, are the first thing anybody asks about and had nowhere to be. -->
+<div id="cardsheet" hidden></div>
 <!-- Hot seat: with more than one person at the table the board must not be
      visible while the device changes hands. -->
 <div id="pass" hidden>
@@ -1467,8 +1549,11 @@
 
 <div id="game">
   <div class="wrap">
-    <span class="seclab" data-i18n="sec.market">Market</span>
-    <div id="market"></div>
+    <div class="tablearea">
+    <aside id="marketside">
+      <span class="seclab" data-i18n="sec.market">Market</span>
+      <div id="market"></div>
+    </aside>
     <div id="mapbox">
       <div id="maptop">
         <span class="striplab" data-i18n="hud.order">Order</span>
@@ -1482,12 +1567,16 @@
       <svg id="map"></svg>
       <div id="mymeld"></div>
     </div>
+    </div>
     <div class="lower">
       <!-- The end of the game must not arrive as a surprise. Shown from the
            moment a trigger fires until the last round is over. -->
       <div id="endbanner" hidden></div>
       <div id="prompt"></div>
-      <span class="seclab" data-i18n="sec.hand">Your hand</span>
+      <div class="sechead">
+        <span class="seclab" data-i18n="sec.hand">Your hand</span>
+        <span class="holdhint" data-i18n="sec.hold">hold a card to read it</span>
+      </div>
       <div id="hand"></div>
       <div id="player"></div>
       <div id="log"></div>
@@ -1510,7 +1599,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"cd03459de0","branch":"main","dirty":true,"built":"2026-09-05T17:22:58Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"984412ae08","branch":"main","dirty":true,"built":"2026-09-05T17:52:57Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1825,7 +1914,7 @@ en: {
      more: four of them are ahead of the rulebook while they are playtested,
      and a setup screen that misdescribes itself is worse than no note. Every
      published choice is still labelled "as printed". */
-  "setup.advanced.note": "The defaults are the game as printed in the v0.23 rulebook. Everything below is a rules experiment — including the four v0.22 rules, kept so the two versions can be compared.",
+  "setup.advanced.note": "The defaults are the game as printed in the v0.24 rulebook. Everything below is a rules experiment — including the four v0.22 rules, kept so the two versions can be compared.",
   "pass.ready": "I have it",
   "pass.note": "Hand the device over. The board is hidden until you are holding it.",
 
@@ -1837,9 +1926,19 @@ en: {
   "board.slotOver": "rank {r} — above your cap of {cap}",
   "board.slotRank": "rank {r}",
   "board.slotEmpty": "empty",
-  "hud.order": "Order",
+  "hud.order": "Initiative",
+  "board.dieWin": "the winner's die \u2014 set to the {n} cards in the winning meld",
+  "board.dieOut": "die lifted out of its slot \u2014 this player is finished",
   "sec.market": "Market",
   "sec.hand": "Your hand",
+  "sec.hold": "hold a card to read it",
+  "fx.when.a": "card phase \u00b7 declared before any meld",
+  "fx.when.b": "map phase",
+  "fx.when.c": "any time",
+  "fx.when.d": "map phase",
+  "card.sheet.title": "{terrain} {r}",
+  "card.sheet.close": "close",
+  "card.sheet.note": "A card in your victory row may be spent on exactly ONE of these. It then leaves the game, and your row \u2014 and your score \u2014 shrinks by one.",
   "sec.board": "Your board",
   "board.you": "(you)",
   "board.acts": "acts",
@@ -2151,7 +2250,7 @@ en: {
 
 de: {
   // ---- Rahmen / Kopfzeile ---------------------------------------------
-  "app.sub": "Aufstieg der Zivilisation · Regeln v0.23",
+  "app.sub": "Aufstieg der Zivilisation · Regeln v0.24",
   "app.round": "Runde",
   "app.lastRound": "· LETZTE RUNDE",
   "app.endTriggered": "· noch eine Runde",
@@ -2435,7 +2534,7 @@ de: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Schwer",
   "setup.advanced": "Erweiterte Regeln und Varianten",
-  "setup.advanced.note": "Die Voreinstellungen sind das Spiel wie im Regelheft v0.23 gedruckt. Alles hier unten ist ein Regelexperiment — auch die vier Regeln aus v0.22, die zum Vergleich erhalten bleiben.",
+  "setup.advanced.note": "Die Voreinstellungen sind das Spiel wie im Regelheft v0.24 gedruckt. Alles hier unten ist ein Regelexperiment — auch die vier Regeln aus v0.22, die zum Vergleich erhalten bleiben.",
   "pass.ready": "Ich habe es",
   "pass.note": "Gib das Gerät weiter. Der Spielplan bleibt verdeckt, bis du es in der Hand hast.",
 
@@ -2447,9 +2546,19 @@ de: {
   "board.slotOver": "Wert {r} — über deiner Obergrenze von {cap}",
   "board.slotRank": "Wert {r}",
   "board.slotEmpty": "leer",
-  "hud.order": "Reihenfolge",
+  "hud.order": "Initiative",
+  "board.dieWin": "der Siegerw\u00fcrfel \u2014 zeigt die {n} Karten des Sieger-Melds",
+  "board.dieOut": "W\u00fcrfel aus dem Feld genommen \u2014 dieser Spieler ist fertig",
   "sec.market": "Markt",
   "sec.hand": "Deine Hand",
+  "sec.hold": "Karte gedr\u00fcckt halten zum Lesen",
+  "fx.when.a": "Kartenphase \u00b7 vor allen Kombinationen angesagt",
+  "fx.when.b": "Spielplanphase",
+  "fx.when.c": "jederzeit",
+  "fx.when.d": "Spielplanphase",
+  "card.sheet.title": "{terrain} {r}",
+  "card.sheet.close": "schlie\u00dfen",
+  "card.sheet.note": "Eine Karte in deiner Siegreihe kann f\u00fcr GENAU EINEN dieser Effekte ausgegeben werden. Danach verl\u00e4sst sie das Spiel \u2014 deine Reihe und deine Punkte schrumpfen um eins.",
   "sec.board": "Dein Tableau",
   "board.you": "(du)",
   "board.acts": "handelt als",
@@ -9046,23 +9155,100 @@ function faceInner(c, size) {
     return `<span class="band">${TL[c.s]}</span>
       <span class="rank">${c.r}</span>
       <span class="fx">${e.aShort} · ${third.short}</span>`;
+  /* A, B and C are not names, they are TIMES: the card phase, the map phase,
+   * and whenever you like. A letter alone told a new player which of the three
+   * lines to read out and nothing about when any of them could be used. */
   return `<span class="band">${TL[c.s]}</span>
     <span class="rank">${c.r}<em>${SUIT_LETTER[c.s]}</em></span>
     <ul class="fx3">
-      <li><span class="ab">A</span>${e.a}</li>
-      <li><span class="ab">B</span>${e.b}</li>
-      <li><span class="ab">${third.key}</span>${third.long}</li>
+      <li><span class="ab">A</span>${e.a}<em class="when">${t("fx.when.a")}</em></li>
+      <li><span class="ab">B</span>${e.b}<em class="when">${t("fx.when.b")}</em></li>
+      <li><span class="ab">${third.key}</span>${third.long}<em class="when">${
+        t("fx.when." + third.key.toLowerCase())}</em></li>
     </ul>`;
 }
+/* Every face carries the card it is, so a hold anywhere on the table can open
+ * it without the caller having to remember to pass it along. */
+const cardData = (c) => `data-r="${c.r}" data-s="${c.s}"`;
 function cardChip(c, cls, attr, size) {
   size = size || "mini";
-  return `<span class="cf ${size} ${cls || ""}" ${attr || ""}
+  return `<span class="cf ${size} ${cls || ""}" ${attr || ""} ${cardData(c)}
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</span>`;
 }
 function cardBtn(c, cls, attr, size) {
   size = size || "mini";
-  return `<button class="cf btn ${size} ${cls || ""}" ${attr || ""}
+  return `<button class="cf btn ${size} ${cls || ""}" ${attr || ""} ${cardData(c)}
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</button>`;
+}
+
+/* ---- reading a card ----------------------------------------------------
+ * The face on the table is 60 px wide: a rank, a terrain and one line saying
+ * what the card is worth. The three printed effects and the moment each of
+ * them can be used do not fit there, and they are the first thing anybody
+ * asks. Hold any card - in your hand, in the market, on the table, in a
+ * victory row - and the whole card opens. Right-click does the same, because
+ * a long press is a phone gesture and a mouse has a better one. */
+/* HELD is the moment a hold fired, not a flag: on touch the release may
+ * land on the sheet that just opened and never deliver a click at all, and
+ * a flag left standing would then swallow the next real one - the close
+ * button, most likely. It expires by itself. */
+let HELD = 0, HOLD_T = null, HOLD_AT = null;
+function cardAt(node) {
+  const el = node && node.closest ? node.closest(".cf[data-r]") : null;
+  return el ? { r: Number(el.dataset.r), s: el.dataset.s } : null;
+}
+function closeCardSheet() {
+  const box = $("#cardsheet");
+  if (box) { box.hidden = true; box.innerHTML = ""; }
+}
+function openCardSheet(c) {
+  const box = $("#cardsheet");
+  if (!box || !c || !TC[c.s]) return;
+  box.innerHTML = `<div class="sheet" role="dialog" aria-modal="true"
+      aria-label="${t("card.sheet.title", { r: c.r, terrain: TL[c.s] })}">
+    <button class="sheetx" aria-label="${t("card.sheet.close")}">\u00d7</button>
+    ${cardChip(c, "", "", "full")}
+    <p class="sheetnote">${t("card.sheet.note")}</p>
+  </div>`;
+  box.hidden = false;
+  box.querySelector(".sheetx").addEventListener("click", closeCardSheet);
+}
+function wireCardHold() {
+  const cancel = () => { clearTimeout(HOLD_T); HOLD_T = null; };
+  document.addEventListener("pointerdown", (ev) => {
+    const c = cardAt(ev.target);
+    HELD = 0;
+    if (!c) return;
+    HOLD_AT = { x: ev.clientX, y: ev.clientY };
+    cancel();
+    HOLD_T = setTimeout(() => { HELD = Date.now(); openCardSheet(c); }, 420);
+  });
+  /* A drag is a scroll, not a hold - otherwise flicking a hand of cards up the
+   * page on a phone opens one of them. */
+  document.addEventListener("pointermove", (ev) => {
+    if (!HOLD_T || !HOLD_AT) return;
+    if (Math.abs(ev.clientX - HOLD_AT.x) + Math.abs(ev.clientY - HOLD_AT.y) > 9) cancel();
+  });
+  ["pointerup", "pointercancel", "pointerleave", "scroll"].forEach((k) =>
+    document.addEventListener(k, cancel, true));
+  /* Swallow the click the release would otherwise deliver: a hold must never
+   * also play the card it was opening. */
+  document.addEventListener("click", (ev) => {
+    if (!HELD) return;
+    const fresh = Date.now() - HELD < 700;
+    HELD = 0;
+    if (!fresh) return;
+    ev.preventDefault(); ev.stopPropagation();
+  }, true);
+  document.addEventListener("contextmenu", (ev) => {
+    const c = cardAt(ev.target);
+    if (!c) return;
+    ev.preventDefault();
+    openCardSheet(c);
+  });
+  $("#cardsheet").addEventListener("click", (ev) => {
+    if (ev.target.id === "cardsheet") closeCardSheet();
+  });
 }
 
 // --------------------------------------------------------------- play area
@@ -9224,12 +9410,22 @@ function renderTurnbar() {
       : !played && seq.slice(0, k).every((j) => G.P[j].tableau && laid(j));
     const cls = ["tchip", done ? "done" : "", now ? "now" : "",
                  win === i ? "won" : "", i === ME ? "me" : ""].filter(Boolean).join(" ");
+    /* The face the die shows. A plain die shows the finishing place, which is
+     * also the position in this list. The winner’s die shows the SIZE of the
+     * winning meld instead — it is first because of its colour, not its
+     * number — and that size is what everyone has to carry into the map
+     * phase, so it is the number the strip has to show. */
+    const meld = (p.tableau && p.tableau.length) || 0;
+    const face = win === i && meld ? meld : k + 1;
     s += `<span class="${cls}" style="--c:${SEAT_C[i]}"
       title="${seatName(i)}${i === ME ? " " + t("board.you") : ""} — ${
         t(ord ? "board.acts" : "board.plays")} ${
         t("board.ofN", { k: k + 1, n: seq.length })}${
-        win === i ? ", " + t("board.wonTrick") : ""}">
-      <i></i><b>${k + 1}</b>${win === i ? CROWN : ""}</span>`;
+        win === i ? ", " + t("board.wonTrick") : ""}${
+        win === i && meld ? ". " + t("board.dieWin", { n: meld }) : ""}${
+        done ? ". " + t("board.dieOut") : ""}">
+      <i></i><span class="die${win === i ? " win" : ""}"><b>${face}</b></span>${
+        win === i ? CROWN : ""}</span>`;
   });
   box.innerHTML = s;
 }
@@ -10324,8 +10520,11 @@ window.addEventListener("DOMContentLoaded", () => {
   $("#flag-cancel").addEventListener("click", closeFlag);
   $("#flag-save").addEventListener("click", saveFlag);
   $("#flagbox").addEventListener("click", (e) => { if (e.target.id === "flagbox") closeFlag(); });
+  wireCardHold();
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !$("#flagbox").hidden) closeFlag();
+    if (e.key !== "Escape") return;
+    if (!$("#cardsheet").hidden) return closeCardSheet();
+    if (!$("#flagbox").hidden) closeFlag();
   });
   $("#reseed").addEventListener("click", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);

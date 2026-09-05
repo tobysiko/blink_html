@@ -21,6 +21,14 @@ const EN = I.STRINGS.en, DE = I.STRINGS.de;
 const langs = Object.keys(I.STRINGS);
 ok(langs.length >= 2, 'fewer than two languages');
 
+/* The version in the title bar is stamped at build time from the repo, in
+   every language. German had it typed out instead, and sat a whole version
+   behind - the app told an English player it was v0.24 and a German player
+   v0.23, on the same page of the same build. */
+for (const lang of langs)
+  ok(String(I.STRINGS[lang]['app.sub'] || '').includes('__VTAG__'),
+     `${lang} app.sub names a version instead of taking the build's`);
+
 /* ---------------------------------------- 0. one key, one place
  *
  * The quietest failure of all, and it shipped: three GERMAN strings were
