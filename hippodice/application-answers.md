@@ -51,6 +51,20 @@ the tile supply — defaults OFF, and check_rules.py enforces that the engine an
 agree on the numbers. They are also behind a collapsed "advanced" fold, so a juror opening the
 page sees player count, bot level and Start.
 
+**The kit is real now — it was not when this was written.** For a while this paragraph
+promised a print-and-play kit while the site carried a rulebook PDF, a July sell sheet and
+nothing else. As of 5 Sep the Blink page has a "Print and play" section holding the deck (80
+cards, 10 sheets), the map objective cards, the player board, the player aid, the first-game
+walkthrough and the card-effects reference — each in colour, most with a black-and-white
+twin — plus the v0.24 rulebook. The sentence names deck, boards and aids, and every one of
+those is now there.
+
+**What is NOT printable, and the page says so.** There is no tile sheet, and no units, coins or
+dice. A printer supplies 60 hex tiles in four colours (15 each), 80 small units in four player
+colours, about 40 coins, and 4 dice with one of them odd-coloured. That is stated on the page
+directly under the file list, so nobody downloads the kit expecting a box. A tile sheet would
+be a new component builder, not an export — worth doing, not done.
+
 **Only include this if the site is actually current.** The link is the one thing in the whole
 package that can misrepresent the game: an old build behind it is worse than no link at all.
 Push both repos before submitting, or cut the sentence.
