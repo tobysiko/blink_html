@@ -414,6 +414,18 @@
   /* the fit button only means something once the view has been moved */
   #zfit{opacity:.35; transition:opacity .2s ease}
   #zfit.live{opacity:1; border-color:var(--deep); color:var(--deep)}
+  /* Both strips under the market were bare chips: coloured discs with numbers
+     and coloured squares with numbers, side by side, saying nothing about what
+     either number counted. One word each. */
+  /* NAMING THE REGIONS. The play screen had a market, a hand, a board and a
+     victory row, and only the victory row said what it was. These are 9 px and
+     cost about 13 px of height each, which is a cheap price for a stranger
+     knowing what they are looking at. */
+  .seclab{display:block; font-size:9px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--mut); font-weight:600; padding:4px 10px 1px; background:var(--panel)}
+  .striplab{font-size:9px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--mut); font-weight:600; margin:0 4px 0 10px; white-space:nowrap}
+  .striplab:first-of-type{margin-left:0}
   #legend{display:flex; align-items:center; gap:3px; font-size:9px; color:var(--mut);
     background:rgba(255,253,248,.7); border-radius:5px; padding:1px 4px}
   #legend i{display:block; width:12px; height:12px; border-radius:3px;
@@ -622,7 +634,13 @@
   .pb-head .score em{display:block; font-style:normal; font-weight:400; font-size:10px;
     color:var(--mut)}
 
-  .tiers{border:1px solid var(--line); border-radius:5px; overflow:hidden}
+  /* A CEILING OF ITS OWN. Capping .wrap stopped the bands spanning the
+     viewport, but this one still took all 1280 of it: the five red population
+     dots floated in a column hundreds of pixels wide, and FEEDS and MOVES sat
+     a thousand pixels from the tier names they belong to. It needs about 820. */
+  .tiers{border:1px solid var(--line); border-radius:5px; overflow:hidden;
+    max-width:860px}
+  #you .vrow, #you .headline, .lower > .board{max-width:860px}
   /* GRID, NOT FLEX. Six columns of per-item widths drifted out of alignment
      the moment any of them wrapped, which is what made this table look
      misformatted. A grid template makes every row line up by construction, and
@@ -1066,7 +1084,7 @@
     #market{flex-wrap:wrap; overflow-x:visible}
     .grid{flex-wrap:wrap}
     .deckpile.shared{margin-left:0}           /* no gap once the row has wrapped */
-    #legend{display:none}
+    #legend, .striplab{display:none}
   }
 </style>
 </head>
@@ -1443,10 +1461,13 @@
 
 <div id="game">
   <div class="wrap">
+    <span class="seclab" data-i18n="sec.market">Market</span>
     <div id="market"></div>
     <div id="mapbox">
       <div id="maptop">
+        <span class="striplab" data-i18n="hud.order">Order</span>
         <div id="turnbar"></div>
+        <span class="striplab" data-i18n="hud.holds">Holds</span>
         <div id="legend">
           <i style="background:#C9992B" title="Plains — holds 3"></i>3
           <i style="background:#37704A" title="Forest — holds 2"></i>2
@@ -1467,6 +1488,7 @@
            moment a trigger fires until the last round is over. -->
       <div id="endbanner" hidden></div>
       <div id="prompt"></div>
+      <span class="seclab" data-i18n="sec.hand">Your hand</span>
       <div id="hand"></div>
       <div id="player"></div>
       <div id="log"></div>

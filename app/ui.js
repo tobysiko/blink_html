@@ -1778,6 +1778,7 @@ function renderPlayer() {
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
+    <span class="seclab">${t("sec.board")}</span>
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
