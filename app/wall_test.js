@@ -157,5 +157,33 @@ function fight(s, rank, fort) {
   ok((g.stats.duels || 0) > 0, 'a full game with the cap contained no duels at all');
 }
 
+/* AN ASSAULT WITH NOTHING BEHIND IT IS NOT AN ASSAULT.
+ *
+ * cellActions refuses to offer one, so this state should be unreachable —
+ * but it was reachable, and what it did was worse than the real move: it
+ * broke the wall and took a unit with no duel at all, silently. From the
+ * table a card vanished and a rival unit vanished with it, with nothing in
+ * the log to say why. The wall must stand, and the card must come back as
+ * the coin every unusable card comes back as (\u00a706).
+ */
+{
+  const s = scene({ fortify: 'assault' }, [4]);
+  const gold0 = s.me.gold;
+  const units0 = [...s.tile.units].length;
+  const said = [];
+  s.g.say = (k, v) => said.push(k);
+  const it = s.g._assault(s.me, s.tile.key, s.tile,
+                          { r: 9, s: s.tile.terrain }, []);
+  let r = it.next();
+  while (!r.done) r = it.next(null);
+  ok(s.tile.gold === 1, 'an assault with no second card broke the wall anyway');
+  ok([...s.tile.units].length === units0,
+     'an assault with no second card took a unit, with no duel fought');
+  ok(s.me.gold === gold0 + 1,
+     'the card that declared an impossible assault was swallowed, not cashed');
+  ok(said.includes('log.gold.called_off'),
+     `nothing was said about it: ${JSON.stringify(said)}`);
+}
+
 if (fail.length) { console.error(fail.join('\n')); process.exit(1); }
 console.log('wall_test ok');

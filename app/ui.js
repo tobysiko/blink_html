@@ -2420,7 +2420,9 @@ function researchPanel(bar, stage, p) {
     </ol>
     <div class="rfoot">${stage === "preview" ? t("res.cost", { gold: p.gold })
       : stage === "over" ? (R.blocked ? t("res.blocked", { cap }) : t("res.done"))
-      : t("res.running")}</div>`;
+      : t("res.running")}</div>
+    ${stage === "preview" && REQ.type === "turn" && REQ.opts.researchNothingInReach
+      ? `<div class="rwarn">${t("res.blind", { cap })}</div>` : ""}`;
   bar.appendChild(box);
   return box;
 }

@@ -52,13 +52,26 @@ def faces():
     return out
 
 
+# THE PRINT COPY DOES NOT ANIMATE. Chrome's `--print-to-pdf` snapshots the page
+# the instant it loads, before any animation has advanced a frame, so an
+# entrance animation that starts at opacity:0 prints as a blank page - the
+# right number of them, correctly paginated, with no text on any of them. That
+# is what happened to every document built from build_html.py's stylesheet on
+# 5 Sep 2026. The stylesheet is fixed at source; this is here because this file
+# is the last thing to touch a document before it is printed, and a rule like
+# that must not be able to reach paper again.
+PRINT_SAFE = ("@media print{*,*::before,*::after{animation:none!important;"
+              "transition:none!important}}")
+
+
 def convert(src, dst):
     html = pathlib.Path(src).read_text(encoding="utf-8")
     n = len(re.findall(r"<link[^>]*fonts\.g[^>]*>", html))
     html = re.sub(r"<link[^>]*fonts\.g[^>]*>\s*", "", html)
     if "</head>" not in html:
         raise SystemExit("embed_fonts: no </head> in " + src)
-    style = '<style id="embedded-fonts">' + "".join(faces()) + "</style>"
+    style = ('<style id="embedded-fonts">' + "".join(faces()) + PRINT_SAFE
+             + "</style>")
     html = html.replace("</head>", style + "</head>", 1)
     pathlib.Path(dst).write_text(html, encoding="utf-8")
     return n

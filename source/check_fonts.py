@@ -45,6 +45,33 @@ WANT = {
 CHECKED = (f"Blink-rules-{VTAG}", "Blink-first-game", "Blink-variants",
            "Blink-map-objectives", "Blink-player-board")
 
+# ...but a document is only asked for the faces IT USES. The boards are set
+# entirely in IBM Plex - there is not one word of Fraunces on them - so
+# demanding Fraunces of them made this check fail every single run, for a
+# document that was correct. A check that always fails is a check nobody reads,
+# and on 5 Sep 2026 a genuine failure was buried in its noise and shipped. So
+# the wanted faces are read out of the document the PDF was made from.
+SOURCES = {"Blink-player-board-A4": "board_a4.svg",
+           "Blink-player-board-A4-bw": "board_a4-bw.svg",
+           "Blink-player-board-blank": "board_blank.svg"}
+
+
+def wanted(name):
+    """The design faces this document actually sets text in."""
+    src = HERE / SOURCES.get(name, name + ".html")
+    if not src.exists():
+        return dict(WANT)
+    text = src.read_text(encoding="utf-8", errors="replace")
+    # Only what the DOCUMENT asks for, never the @font-face rules embed_fonts.py
+    # adds - those name every family whether the page uses it or not.
+    text = re.sub(r"<style id=\"embedded-fonts\">.*?</style>", "", text, flags=re.S)
+    use = {}
+    for face, why in WANT.items():
+        if re.search(re.escape(face[:3]) + r"[a-zA-Z ]*", text) and \
+           re.search(r"font-family[^;}\n]*" + face[:3], text, re.I):
+            use[face] = why
+    return use or dict(WANT)
+
 # Only this version. Older rulebooks are kept in the folder on purpose and
 # there is nothing to be done about how they were printed.
 def current(name):
@@ -71,7 +98,7 @@ for pdf in pdfs:
     if not current(pdf.name):
         continue
     prose = any(pdf.name.startswith(p) for p in CHECKED)
-    missing = [w for w in WANT if w not in families]
+    missing = [w for w in wanted(pdf.stem) if w not in families]
     if prose and missing:
         fails.append(f"{pdf.name}: no {', '.join(missing)} — "
                      f"it embedded {', '.join(sorted(families)) or 'nothing'}")
@@ -83,8 +110,11 @@ for n in notes:
     print("  note: " + n)
 if fails:
     print("\n".join("FAIL: " + f for f in fails))
-    print("\n  The fonts did not load. Install them once and every builder here\n"
-          "  works offline:\n"
+    print("\n  \"it embedded nothing\" is not a font problem: a PDF with no fonts\n"
+          "  in it has no TEXT in it. Look for blank pages first - build_pdfs.sh\n"
+          "  measures the ink on every page and will say so.\n"
+          "\n  Otherwise the fonts did not load. Install them once and every\n"
+          "  builder here works offline:\n"
           "    brew install --cask font-fraunces font-ibm-plex-sans font-ibm-plex-mono\n"
           "  then re-run build_pdfs.sh.")
     sys.exit(1)

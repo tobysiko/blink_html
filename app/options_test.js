@@ -248,7 +248,12 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'sum',
 
   /* The price ladder, and that it is the SAME number the client is shown and
    * the engine charges — the whole reason researchCost() exists in one place. */
-  const st = (n) => ({ researches: n });
+  /* TWO COUNTERS, AND THEY MEAN DIFFERENT THINGS. `researches` is attempts
+     and governs the LIMIT; `researchesPaid` is purchases and governs the
+     PRICE. An attempt that drew a card and then found nothing at or below
+     the player's cap is one of their two, because it moved the deck —
+     but it bought nothing, so it must not make the next one dearer. */
+  const st = (n) => ({ researches: n, researchesPaid: n });
   ok(g1.researchCost(st(0)) === 1, 'the first research is not 1 gold');
   ok(g3.researchCost(st(0)) === 1 && g3.researchCost(st(1)) === 2
      && g3.researchCost(st(2)) === 3,
@@ -267,6 +272,14 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'sum',
      'the once rule does not explain itself');
   ok(g2.researchBlocked(rich, st(2)) === 'why.research.max',
      `the twice rule blocked with ${g2.researchBlocked(rich, st(2))}`);
+
+  const tried = (tries, paid) => ({ researches: tries, researchesPaid: paid });
+  ok(g3.researchCost(tried(1, 0)) === 1,
+     `an attempt that bought nothing put the price up to ${g3.researchCost(tried(1, 0))}`);
+  ok(g2.researchCost(tried(1, 0)) === 1,
+     'a blocked first research made the second one cost more');
+  ok(!g2.canResearch(rich, tried(2, 0)),
+     'two blocked attempts still left a third research on the table');
 
   /* Poverty, not the cap, is what stops the escalating rule — and the reason
    * given has to be the true one or the button lies. */

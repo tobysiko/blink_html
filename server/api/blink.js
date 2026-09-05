@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-05T18:53:26Z
+ * Built 2026-09-05T20:31:36Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2069,6 +2069,12 @@ class Game {
        * nobody commits to a cost they could not see. */
       researchCost: this.researchCost(st),
       researchesUsed: st.researches,
+      /* Nothing on the grid is within reach RIGHT NOW. Not a reason to refuse
+       * the action - the draw covers the highest-ranked position and may well
+       * land something you can take - but a player must be able to see the
+       * gamble before they take it, because a research that finds nothing is
+       * still one of their two. */
+      researchNothingInReach: this.buyable(p).length === 0,
       canResearch: this.canResearch(p, st),
       researchBlocked: this.researchBlocked(p, st),
       colonyCards, colonyBlocked: colonyBlocked || colonyNoRoom,
@@ -2093,7 +2099,8 @@ class Game {
      * could not have paid for — not merely for holding the perk. */
     const st = { cards: use.slice(), moves: p.freeMoves(),
                  moveBase: p.bands[p.band()][4],
-                 researches: 0, bUsed: false, waterUsed: false };
+                 researches: 0, researchesPaid: 0,
+                 bUsed: false, waterUsed: false };
     /* Refill only once the meld is fully resolved. Recycling while cards are
      * still on the table would swap the discard into hand and then take those
      * cards back on top of it — over the ten-card ceiling. The bot cannot hit
@@ -2215,7 +2222,7 @@ class Game {
           if (!this.canResearch(p, st)) break;
           const price = this.researchCost(st);
           st.researches += 1;
-          yield* this._researchHuman(p, price);
+          if (yield* this._researchHuman(p, price)) st.researchesPaid += 1;
           break;
         }
         case "colony": {
@@ -2652,9 +2659,22 @@ class Game {
    * always sold as buying: one attack made much harder, once.
    */
   *_assault(p, cell, tile, card, pool) {
-    if (!pool.length) {                     // legality should have stopped this
+    if (!pool.length) {
+      /* Legality should have stopped this (cellActions refuses an assault with
+       * no spare card), and if it ever gets here it must not become a BETTER
+       * attack than a real one. It used to break the wall and take a unit with
+       * no duel at all, and said nothing while it did it - so from the table
+       * the card simply vanished and a rival unit vanished with it, with no
+       * line in the log and no coin on screen to explain either.
+       *
+       * An assault with nothing behind it is not an assault. It is called off
+       * exactly as a declined one is: the wall still stands, and the card that
+       * declared it has already left the meld, so it takes the way out every
+       * unusable card takes (§06) and is cashed for a coin - which the purse
+       * announces, in the log and as a coin with a caption on it. */
       this.inc("assault_without_a_second_card");
-      tile.gold -= 1; this._takeUnit(p, cell); this.inc("duel_absorbed");
+      this.inc("cards_to_gold");
+      this.purse(p, 1, "called_off", cell);
       return;
     }
     let second;
@@ -3026,9 +3046,16 @@ class Game {
    * One place, asked by the turn options, by the action itself and by the bot,
    * so a button that says "2 gold" and an engine that charges 3 cannot happen.
    * `st.researches` is how many have already been taken THIS turn. */
+  /* THE PRICE COUNTS PURCHASES, THE LIMIT COUNTS ATTEMPTS. An attempt that
+   * drew a card and then found nothing at or below your cap has taken one of
+   * your two researches - it moved the deck, which is the game's clock, and
+   * letting it be retried for free would let a player thin the deck at no cost
+   * - but it bought nothing, so it does not make the next one dearer. The
+   * printed rule is that the first research of a turn costs 1 and the second
+   * costs 2; a research is one you actually made. */
   researchCost(st) {
-    const used = (st && st.researches) || 0;
-    return this.RESEARCH_RULE === "once" ? 1 : used + 1;
+    const paid = (st && st.researchesPaid) || 0;
+    return this.RESEARCH_RULE === "once" ? 1 : paid + 1;
   }
   canResearch(p, st) {
     if (((st && st.researches) || 0) >= this.RESEARCH_MAX) return false;

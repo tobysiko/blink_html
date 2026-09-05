@@ -195,10 +195,20 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   .h2{gap:.7rem}
   .h2 .num{min-width:1.8rem}
 }
-@media (prefers-reduced-motion:no-preference){
+/* SCREEN ONLY, and the word `screen` is load-bearing. This is the entrance
+   animation for a sheet, and it starts at opacity:0. Chrome's
+   `--print-to-pdf` takes its snapshot the moment the page loads, before an
+   animation has advanced a frame - so with this rule live in print, every
+   document built from this stylesheet rendered as the right number of
+   correctly paginated, completely EMPTY pages. The 28-page rulebook came out
+   at 13 kB, and the only visible symptom was check_fonts.py reporting that it
+   had embedded no fonts, because there was no text to set. */
+@media screen and (prefers-reduced-motion:no-preference){
   .sheet{animation:rise .5s ease-out}
   @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 }
+/* And nothing else animates on paper either, whatever gets added later. */
+@media print{*,*::before,*::after{animation:none!important;transition:none!important}}
 """
 
 
@@ -996,6 +1006,16 @@ HTML = f"""<!doctype html>
   </ol>
 
   <div class="note">
+    <span class="tag">When there is nothing you may take</span>
+    <p>Draw first, then look. If after the draw <strong>nothing</strong> on the grid is at
+    or below your rank cap, the research ends there: the drawn card stays where it landed,
+    you retire nothing and pay nothing. It still counts as <strong>one of your two</strong>
+    — the deck has moved, and the deck is the clock — but because you bought nothing, the
+    <strong>next research this turn still costs 1</strong>. The price rises with cards
+    taken, not with attempts made.</p>
+  </div>
+
+  <div class="note">
     <span class="tag">The cap is a buying rule, not a holding rule</span>
     <p>Your rank cap only applies at the moment you take a card from the market. A card
     already in your hand, your discard or your victory row is yours to keep and use however
@@ -1332,8 +1352,9 @@ HTML = f"""<!doctype html>
       covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
       card in your hand</b> to your victory row → pay → take any visible card
       <b>at or below your tier's rank cap</b> (12/14/16/18/20, +2 a tier) → refill empty positions.
-      The <b>first research of your turn costs 1 gold, the second costs 2</b>. No cards in
-      hand, no research this turn.</p>
+      The <b>first research of your turn costs 1 gold, the second costs 2</b> — a research
+      that finds nothing at or below your cap buys nothing, so it does not put the price up.
+      No cards in hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — feed, take back your discard, then draw from
       the <b>shared pile</b> up to ten. Carry on with the turn.</p>

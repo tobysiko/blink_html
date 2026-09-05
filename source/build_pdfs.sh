@@ -167,19 +167,36 @@ board board_a4.svg        Blink-player-board-A4.pdf
 board board_a4-bw.svg     Blink-player-board-A4-bw.pdf
 board board_blank.svg     Blink-player-board-blank.pdf
 
-# A PDF that is a single blank page is what a renderer produces when it failed
-# quietly — worth catching here rather than at the printer.
+# A PDF THAT LOOKS RIGHT AND IS EMPTY. This used to compare file sizes against
+# 8 kB, which is the shape of only one failure - a renderer that quit before
+# writing anything. On 5 Sep 2026 a different one got past it: every document
+# built from build_html.py's stylesheet printed the RIGHT NUMBER of correctly
+# paginated pages with nothing drawn on any of them, because an entrance
+# animation starting at opacity:0 was still at frame zero when Chrome took its
+# snapshot. The 28-page rulebook came out at 13 kB and sailed straight through.
+#
+# So the measure is ink, not bytes: how much drawing there is per page. A blank
+# page carries about 250 bytes of page furniture; a real one carries tens of
+# thousands.
 python3 - "$HERE/.." <<'PY'
-import pathlib, sys
+import pathlib, re, sys, zlib
 bad = []
 for p in sorted(pathlib.Path(sys.argv[1]).glob("Blink-*.pdf")):
-    n = p.stat().st_size
-    # A renderer that fails quietly still writes a valid one-page PDF, and that
-    # comes out at a couple of kB. Anything this small never contains a booklet
-    # or a board.
-    if n < 8000:
-        bad.append(f"{p.name} is only {n // 1024} kB — probably a blank page")
-print("\n".join("  suspicious: " + b for b in bad) if bad
-      else "every PDF looks a plausible size")
+    b = p.read_bytes()
+    pages = max(1, len(re.findall(rb"/Type\s*/Page[^s]", b)))
+    ink = 0
+    for m in re.finditer(rb"stream\r?\n(.*?)endstream", b, re.S):
+        try:
+            ink += len(zlib.decompress(m.group(1)))
+        except Exception:
+            pass
+    per = ink // pages
+    if per < 2000:
+        bad.append("%s: %d pages carrying %d bytes of drawing each - they are blank"
+                   % (p.name, pages, per))
+print("\n".join("  BLANK: " + b for b in bad) if bad
+      else "every PDF has ink on every page")
+sys.exit(1 if bad else 0)
 PY
+
 echo "done - PDFs written to the parent folder"
