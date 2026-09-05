@@ -91,6 +91,21 @@
     font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--mut)}
   /* how to open it, said once, where the cards are */
   .sechead{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  /* ---- foldable reference ----
+     The market and the tier table are things you consult, not things you act
+     on every turn, and on a phone they were most of the scroll between the
+     prompt and the map. Both fold. They start open on a screen with room and
+     closed on one without, and a fold that is closed keeps the one line of it
+     you actually need in the summary - so nothing is hidden, only stacked. */
+  .fold > summary{cursor:pointer; list-style:none; display:flex;
+    align-items:baseline; gap:7px}
+  .fold > summary::-webkit-details-marker{display:none}
+  .fold > summary::after{content:"\25be"; margin-left:auto; font-size:9px;
+    color:var(--mut); letter-spacing:0}
+  .fold:not([open]) > summary::after{content:"\25b8"}
+  .foldnow{font-size:9.5px; text-transform:none; letter-spacing:0;
+    color:var(--mut); font-weight:400}
+  .fold[open] > summary .foldnow{display:none}
   .holdhint{font-size:9.5px; color:var(--mut); text-transform:none; letter-spacing:0}
 
   /* the end-of-game form */
@@ -409,14 +424,7 @@
      cards at any width instead of stretching into three tall lanes. */
   #market .grid{display:grid; grid-template-columns:repeat(3,58px); gap:5px;
     justify-content:center}
-  /* In the market a card is an OFFER: its rank is the tier it needs and its
-     terrain is what it settles. The one-line effect strip is 7.5px at this
-     size - unreadable, and unnecessary now that holding a card opens it - so
-     the rank takes the room instead and is legible across a room. */
   #market .cf.mid{--cw:52px}
-  #market .cf.mid .fx{display:none}
-  #market .cf.mid .rank{font-size:calc(var(--cw) * .62); padding-top:0;
-    margin:auto 0; padding-bottom:4px}
 
   /* ---- the table, as a grid ----
      Melds used to be absolutely positioned OVER the map, which is fine until
@@ -948,10 +956,9 @@
     height:calc(var(--cw) * 1.4); padding:0; overflow:hidden}
   .cf.mid .band{background:var(--suit); color:#fff; font-size:8px; font-weight:700;
     letter-spacing:.4px; padding:2px 3px; text-align:center; line-height:1.25}
-  .cf.mid .rank{font-size:calc(var(--cw) * .46); font-weight:700; color:var(--suit);
-    text-align:center; line-height:1; padding-top:5px}
-  .cf.mid .fx{font-size:7.5px; color:var(--mut); text-align:center;
-    padding:1px 2px 3px; line-height:1.15; margin-top:auto}
+  .cf.mid .rank{flex:1; display:flex; align-items:center; justify-content:center;
+    font-size:calc(var(--cw) * .62); font-weight:700; color:var(--suit);
+    line-height:1; padding:0 2px 3px}
 
   .cf.full{flex-direction:column; width:186px; padding:0; overflow:hidden;
     border-width:2px; box-shadow:0 2px 6px rgba(0,0,0,.12)}
@@ -1560,8 +1567,11 @@
   <div class="wrap">
     <div class="tablearea">
     <aside id="marketside">
-      <span class="seclab" data-i18n="sec.market">Market</span>
-      <div id="market"></div>
+      <details class="fold" id="marketfold" open>
+        <summary class="seclab"><span data-i18n="sec.market">Market</span
+          ><span class="foldnow"></span></summary>
+        <div id="market"></div>
+      </details>
     </aside>
     <div id="mapbox">
       <div id="maptop">
@@ -1608,7 +1618,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"f7e7b4f782","branch":"main","dirty":true,"built":"2026-09-05T17:58:54Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"90a052ab9d","branch":"main","dirty":true,"built":"2026-09-05T18:38:10Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1941,6 +1951,8 @@ en: {
   "sec.market": "Market",
   "sec.hand": "Your hand",
   "sec.hold": "hold a card to read it",
+  "board.foldNow": "{tier} \u00b7 {units} units \u00b7 feeds {food} \u00b7 {moves} moves",
+  "board.foldMarket": "{n} on offer \u00b7 {deck} in the deck",
   "fx.when.a": "card phase \u00b7 declared before any meld",
   "fx.when.b": "map phase",
   "fx.when.c": "any time",
@@ -2561,6 +2573,8 @@ de: {
   "sec.market": "Markt",
   "sec.hand": "Deine Hand",
   "sec.hold": "Karte gedr\u00fcckt halten zum Lesen",
+  "board.foldNow": "{tier} \u00b7 {units} Einheiten \u00b7 Nahrung {food} \u00b7 {moves} Z\u00fcge",
+  "board.foldMarket": "{n} im Angebot \u00b7 {deck} im Stapel",
   "fx.when.a": "Kartenphase \u00b7 vor allen Kombinationen angesagt",
   "fx.when.b": "Spielplanphase",
   "fx.when.c": "jederzeit",
@@ -9160,10 +9174,16 @@ function faceInner(c, size) {
   const third = thirdEffect(c);
   if (size === "mini")
     return `<b>${c.r}</b><i>${SUIT_LETTER[c.s]}</i>`;
+  /* NO FINE PRINT ON THE FACE. This carried "+8 total · ties · 3g": three
+   * compressed things at 7.5px, ten of them across a hand, none of them
+   * labelled - and the gold figure was wrong wherever the card was not in a
+   * victory row, because cashing a card off your meld pays 1 whatever its
+   * rank. Every one of those effects is a VICTORY-ROW effect. So the face
+   * shows what a card across a table shows, its terrain and its rank, big
+   * enough to read from a seat away, and holding it says the rest. */
   if (size === "mid")
     return `<span class="band">${TL[c.s]}</span>
-      <span class="rank">${c.r}</span>
-      <span class="fx">${e.aShort} · ${third.short}</span>`;
+      <span class="rank">${c.r}</span>`;
   /* A, B and C are not names, they are TIMES: the card phase, the map phase,
    * and whenever you like. A letter alone told a new player which of the three
    * lines to read out and nothing about when any of them could be used. */
@@ -9202,6 +9222,26 @@ function cardBtn(c, cls, attr, size) {
  * a flag left standing would then swallow the next real one - the close
  * button, most likely. It expires by itself. */
 let HELD = 0, HOLD_T = null, HOLD_AT = null;
+
+/* ---- what is folded away --------------------------------------------------
+ * null means "whatever this screen has room for", which is the state until
+ * somebody says otherwise; once they open or close one it stays where they
+ * put it for the rest of the session. */
+const FOLD = { market: null, board: null };
+const narrowScreen = () => !!(window.matchMedia
+  && window.matchMedia("(max-width: 900px)").matches);
+const foldOpen = (k) => (FOLD[k] === null ? !narrowScreen() : FOLD[k]);
+/* The USER's clicks are what set a preference - not the `toggle` event, which
+ * also fires when the app opens the market itself for a step that needs it,
+ * and would quietly record that as a choice they never made. */
+function wireFold(node, k) {
+  if (!node || node.dataset.wired) return;
+  node.dataset.wired = "1";
+  const sum = node.querySelector("summary");
+  if (sum) sum.addEventListener("click", () => {
+    setTimeout(() => { FOLD[k] = node.open; }, 0);
+  });
+}
 function cardAt(node) {
   const el = node && node.closest ? node.closest(".cf[data-r]") : null;
   return el ? { r: Number(el.dataset.r), s: el.dataset.s } : null;
@@ -9530,6 +9570,11 @@ function renderPlayer() {
   const p = G.P[ME];
   const sc = G.score().find((x) => x.seat === ME);
   const res = p.reserve.reduce((a, b) => a + b, 0);
+  /* THIS game's tier table, not the module default - a table playing a custom
+   * layout must show the board it is actually using. Read once here because
+   * the folded summary needs the current row before the table is drawn. */
+  const bands = (G && G.BANDS) || BANDS;
+  const now = bands[p.band()] || [];
 
   /* Laid out like the printed player board: one row per tier, unit slots that
    * empty as you settle, and the five victory-row slots pushed right with the
@@ -9541,7 +9586,10 @@ function renderPlayer() {
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
-    <span class="seclab">${t("sec.board")}</span>
+    <details class="fold boardfold"${foldOpen("board") ? " open" : ""}>
+    <summary class="seclab">${t("sec.board")}<span class="foldnow">${
+      t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
+                           food: p.food(), moves: now[4] })}</span></summary>
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
@@ -9552,9 +9600,6 @@ function renderPlayer() {
         <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
       </div>`;
 
-  /* THIS game's tier table, not the module default — a table playing a custom
-   * layout must show the board it is actually using. */
-  const bands = (G && G.BANDS) || BANDS;
   for (let j = 0; j < bands.length; j++) {
     const [name, units, meld, food, moves, ascend, cap] = bands[j];
     const here = j === p.band();
@@ -9602,7 +9647,9 @@ function renderPlayer() {
       <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
     </div>`;
   }
-  s += `</div>`;
+  /* The fold closes here and not lower: the feeding note below it is the one
+     warning on this board and must never be behind a fold. */
+  s += `</div></details>`;
 
   /* And say the bill out loud, for the tier you are actually on. A table of
    * numbers is a reference; this is the warning — the feeding cost is the one
@@ -9729,6 +9776,7 @@ function renderPlayer() {
   }
 
   $("#player").innerHTML = s;
+  wireFold($("#player .boardfold"), "board");
 
   /* The hand sits directly under the map, in its own strip. When a step wants a
    * card FROM the hand, the ones you may take are lifted (`want`) and the rest
@@ -10438,6 +10486,17 @@ function renderMarket() {
     s += `<em>${G.grid[k].length > 1 ? "×" + G.grid[k].length : ""}</em></button>`;
   }
   $("#market").innerHTML = s + `</div>` + pileTail;
+  /* Folded, the market still has to say what is in it - and it opens itself
+   * the moment a step actually needs it, because a lit area nobody can see is
+   * worse than no lit area at all. */
+  const fold = $("#marketfold");
+  if (fold) {
+    const on = fold.querySelector(".foldnow");
+    if (on) on.textContent = t("board.foldMarket", {
+      n: G.grid.filter((st) => st.length).length, deck: G.deck.length });
+    fold.open = lit ? true : foldOpen("market");
+    wireFold(fold, "market");
+  }
   $("#market").querySelectorAll("[data-slot]").forEach((n) =>
     n.addEventListener("click", () => {
       const k = Number(n.dataset.slot);

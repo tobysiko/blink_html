@@ -1466,10 +1466,16 @@ function faceInner(c, size) {
   const third = thirdEffect(c);
   if (size === "mini")
     return `<b>${c.r}</b><i>${SUIT_LETTER[c.s]}</i>`;
+  /* NO FINE PRINT ON THE FACE. This carried "+8 total · ties · 3g": three
+   * compressed things at 7.5px, ten of them across a hand, none of them
+   * labelled - and the gold figure was wrong wherever the card was not in a
+   * victory row, because cashing a card off your meld pays 1 whatever its
+   * rank. Every one of those effects is a VICTORY-ROW effect. So the face
+   * shows what a card across a table shows, its terrain and its rank, big
+   * enough to read from a seat away, and holding it says the rest. */
   if (size === "mid")
     return `<span class="band">${TL[c.s]}</span>
-      <span class="rank">${c.r}</span>
-      <span class="fx">${e.aShort} · ${third.short}</span>`;
+      <span class="rank">${c.r}</span>`;
   /* A, B and C are not names, they are TIMES: the card phase, the map phase,
    * and whenever you like. A letter alone told a new player which of the three
    * lines to read out and nothing about when any of them could be used. */
@@ -1508,6 +1514,26 @@ function cardBtn(c, cls, attr, size) {
  * a flag left standing would then swallow the next real one - the close
  * button, most likely. It expires by itself. */
 let HELD = 0, HOLD_T = null, HOLD_AT = null;
+
+/* ---- what is folded away --------------------------------------------------
+ * null means "whatever this screen has room for", which is the state until
+ * somebody says otherwise; once they open or close one it stays where they
+ * put it for the rest of the session. */
+const FOLD = { market: null, board: null };
+const narrowScreen = () => !!(window.matchMedia
+  && window.matchMedia("(max-width: 900px)").matches);
+const foldOpen = (k) => (FOLD[k] === null ? !narrowScreen() : FOLD[k]);
+/* The USER's clicks are what set a preference - not the `toggle` event, which
+ * also fires when the app opens the market itself for a step that needs it,
+ * and would quietly record that as a choice they never made. */
+function wireFold(node, k) {
+  if (!node || node.dataset.wired) return;
+  node.dataset.wired = "1";
+  const sum = node.querySelector("summary");
+  if (sum) sum.addEventListener("click", () => {
+    setTimeout(() => { FOLD[k] = node.open; }, 0);
+  });
+}
 function cardAt(node) {
   const el = node && node.closest ? node.closest(".cf[data-r]") : null;
   return el ? { r: Number(el.dataset.r), s: el.dataset.s } : null;
@@ -1836,6 +1862,11 @@ function renderPlayer() {
   const p = G.P[ME];
   const sc = G.score().find((x) => x.seat === ME);
   const res = p.reserve.reduce((a, b) => a + b, 0);
+  /* THIS game's tier table, not the module default - a table playing a custom
+   * layout must show the board it is actually using. Read once here because
+   * the folded summary needs the current row before the table is drawn. */
+  const bands = (G && G.BANDS) || BANDS;
+  const now = bands[p.band()] || [];
 
   /* Laid out like the printed player board: one row per tier, unit slots that
    * empty as you settle, and the five victory-row slots pushed right with the
@@ -1847,7 +1878,10 @@ function renderPlayer() {
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
-    <span class="seclab">${t("sec.board")}</span>
+    <details class="fold boardfold"${foldOpen("board") ? " open" : ""}>
+    <summary class="seclab">${t("sec.board")}<span class="foldnow">${
+      t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
+                           food: p.food(), moves: now[4] })}</span></summary>
     <div class="tiers">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
@@ -1858,9 +1892,6 @@ function renderPlayer() {
         <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
       </div>`;
 
-  /* THIS game's tier table, not the module default — a table playing a custom
-   * layout must show the board it is actually using. */
-  const bands = (G && G.BANDS) || BANDS;
   for (let j = 0; j < bands.length; j++) {
     const [name, units, meld, food, moves, ascend, cap] = bands[j];
     const here = j === p.band();
@@ -1908,7 +1939,9 @@ function renderPlayer() {
       <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
     </div>`;
   }
-  s += `</div>`;
+  /* The fold closes here and not lower: the feeding note below it is the one
+     warning on this board and must never be behind a fold. */
+  s += `</div></details>`;
 
   /* And say the bill out loud, for the tier you are actually on. A table of
    * numbers is a reference; this is the warning — the feeding cost is the one
@@ -2035,6 +2068,7 @@ function renderPlayer() {
   }
 
   $("#player").innerHTML = s;
+  wireFold($("#player .boardfold"), "board");
 
   /* The hand sits directly under the map, in its own strip. When a step wants a
    * card FROM the hand, the ones you may take are lifted (`want`) and the rest
@@ -2744,6 +2778,17 @@ function renderMarket() {
     s += `<em>${G.grid[k].length > 1 ? "×" + G.grid[k].length : ""}</em></button>`;
   }
   $("#market").innerHTML = s + `</div>` + pileTail;
+  /* Folded, the market still has to say what is in it - and it opens itself
+   * the moment a step actually needs it, because a lit area nobody can see is
+   * worse than no lit area at all. */
+  const fold = $("#marketfold");
+  if (fold) {
+    const on = fold.querySelector(".foldnow");
+    if (on) on.textContent = t("board.foldMarket", {
+      n: G.grid.filter((st) => st.length).length, deck: G.deck.length });
+    fold.open = lit ? true : foldOpen("market");
+    wireFold(fold, "market");
+  }
   $("#market").querySelectorAll("[data-slot]").forEach((n) =>
     n.addEventListener("click", () => {
       const k = Number(n.dataset.slot);

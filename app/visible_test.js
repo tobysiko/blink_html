@@ -87,8 +87,12 @@ setTimeout(() => {
   // cards must read as cards: hand and market on the card table, with faces
   if (d.querySelectorAll('#hand .cf.mid').length !== 10)
     fail.push('hand is not showing ten card faces');
-  if (!d.querySelector('#hand .cf.mid .band') || !d.querySelector('#hand .cf.mid .fx'))
-    fail.push('hand cards are missing the terrain band or effect strip');
+  if (!d.querySelector('#hand .cf.mid .band') || !d.querySelector('#hand .cf.mid .rank'))
+    fail.push('hand cards are missing the terrain band or the rank');
+  /* And carry NOTHING else. The face had a line of 7.5px abbreviations on it
+     whose gold figure was wrong everywhere but a victory row. */
+  if (d.querySelector('#hand .cf.mid .fx'))
+    fail.push('the card face is printing fine print again');
   if (d.querySelectorAll('#market .slot').length !== 9)
     fail.push('market is not on the card table');
   /* A CARD MUST LOOK LIKE A CARD, AND A MARKET MUST NOT LOOK LIKE A HAND.
@@ -106,6 +110,14 @@ setTimeout(() => {
   if (d.querySelectorAll('#hand .cf[data-r]').length !== 10)
     fail.push('hand cards do not carry their identity, so a hold cannot open one');
   if (!d.querySelector('#cardsheet')) fail.push('no card detail sheet in the page');
+  /* Reference folds away on a small screen and says its one useful line while
+     folded. Both folds must exist, and both must have that line. */
+  for (const [sel, what] of [['#marketfold', 'market'], ['#player .boardfold', 'tier table']]) {
+    const f = d.querySelector(sel);
+    if (!f) { fail.push(`the ${what} cannot be folded away on a phone`); continue; }
+    if (!f.querySelector('summary .foldnow'))
+      fail.push(`the folded ${what} would say nothing about itself`);
+  }
   /* The deck and the shared pile are stacks of cards, and were drawn as two
      wide bars. Both are card-shaped now, flanking the grid as the printed
      figure has them - the deck to its left, the shared pile lower down. */
@@ -146,10 +158,27 @@ setTimeout(() => {
      "+1 card" when the most cards wins, "+12 total" when the highest total
      rank does. Matching only the first quietly asserted a default rather than
      the rule, and started failing the day the default moved to total-rank
-     scoring. Either wording is correct; neither being there is not. */
-  const strip = d.querySelector('#hand .cf.mid .fx').textContent;
-  if (!/[+]\d+ (card|total)/.test(strip))
-    fail.push(`effect strip does not show the A effect: "${strip.slice(0, 60)}"`);
+     scoring. Either wording is correct; neither being there is not.
+
+     This used to read the one-line strip on the card face. That strip is
+     gone — it was 7.5px of unlabelled abbreviations, and its gold figure was
+     simply wrong anywhere but a victory row — so the same guarantee is asked
+     of the place the text lives now: the card a hold opens. */
+  w.eval('openCardSheet(G.P[ME].hand[0])');
+  const sheet = d.querySelector('#cardsheet');
+  if (!sheet || sheet.hidden) fail.push('holding a card does not open it');
+  else {
+    const lines = [...sheet.querySelectorAll('.fx3 li')].map((n) => n.textContent);
+    if (lines.length !== 3)
+      fail.push(`the opened card prints ${lines.length} effects, not three`);
+    if (!/[+]\d+ (card|to your meld's total)/.test(lines[0] || ''))
+      fail.push(`the opened card does not show the A effect: "${(lines[0] || '').slice(0, 60)}"`);
+    /* A letter is not a name, it is a TIME, and that is most of what the
+       letter means to somebody meeting it for the first time. */
+    if (!lines.every((l) => /phase|any time|jederzeit/i.test(l)))
+      fail.push('the opened card does not say WHEN each effect can be used');
+  }
+  w.eval('closeCardSheet()');
 
   /* A famine, staged deterministically — it is rare in play, so the scripted
    * games almost never reach it, and it broke unnoticed: the victory row was
