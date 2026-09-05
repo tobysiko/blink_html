@@ -352,7 +352,15 @@
   #setup.hide{display:none}
   #game{display:none; height:calc(100vh - 36px)}
   #game.show{display:block}
-  .wrap{display:flex; flex-direction:column; height:100%; min-height:0}
+  /* A CEILING ON THE WIDTH. The setup page has always been capped at 600px;
+     the play screen never was, so at 1920 every band took the whole viewport —
+     the market row 1920 wide for nine cards, the prompt and the hand 1900, and
+     the two rival panels pushed to opposite screen edges about 1700px apart.
+     The three things a player compares — their hand, the other melds, the map —
+     ended up as far from each other as the screen allowed. The cap never binds
+     below 1280, so nothing about the phone layout changes. */
+  .wrap{display:flex; flex-direction:column; height:100%; min-height:0;
+    width:100%; max-width:1280px; margin:0 auto}
 
   #market{flex:none; padding:5px 8px 4px; border-bottom:1px solid var(--line);
     background:#EFEBE1; display:flex; gap:4px; align-items:center; overflow-x:auto}
@@ -371,7 +379,14 @@
   /* The board keeps a floor of the window whatever the melds do: the play area
      below it scrolls, the map does not get squeezed out of existence. */
   #mapbox{flex:1 1 auto; min-height:44vh; padding:4px; display:grid;
-    grid-template-columns:auto minmax(0,1fr) auto;
+    /* The middle column was 1fr, so it swallowed every spare pixel and pushed
+       the two rival panels out to the screen edges — about 1700px apart at
+       1920, with the board small between them. Bounded, and the row centred,
+       they sit beside the board where they can be compared with it. Giving the
+       column more than this never made the board bigger: ZOOM_MAX in ui.js
+       caps a hex at the size of a real tile on purpose, so the extra width
+       only ever bought empty space. */
+    grid-template-columns:auto minmax(0,760px) auto; justify-content:center;
     grid-template-rows:auto auto minmax(140px,1fr) auto;
     gap:4px; align-items:center; justify-items:center}
   #maptop{grid-area:1/1/2/4; justify-self:stretch; display:flex; gap:8px;
@@ -1474,7 +1489,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"3dcb1bb655","branch":"main","dirty":true,"built":"2026-09-05T16:34:04Z"};
+const BUILD = {"version":"v0.24","api":"/api/blink","reportUrl":"/api/blink/report","commit":"1e3cc8b7a0","branch":"main","dirty":true,"built":"2026-09-05T16:56:41Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
