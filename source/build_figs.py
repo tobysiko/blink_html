@@ -105,7 +105,47 @@ def table():
         return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="2.5" '
                 f'fill="#FBFAF6" stroke="{INK}" stroke-width="1"/>'
                 f'<rect x="{x}" y="{y}" width="{w}" height="4" rx="2" fill="{c}"/>'
-                + label(x + w / 2, y + h / 2 + 5, str(rank), 9.5, cls="fig-strong"))
+                + label(x + w / 2, y + h / 2 + h * 0.13,
+                        str(rank), max(10.0, h * 0.36), cls="fig-strong"))
+
+    def fancard(x, y, rank, suit, w, h):
+        """A card whose rank sits where a fanned card still shows it.
+
+        A hand in a figure had been drawn as a row of separate upright cards,
+        which is how cards look on a table and not how they look in a hand. In a
+        fan the middle of every card but the last is covered, so the rank moves
+        off the centre and into the upper left, exactly where a real card puts
+        its index and for the same reason.
+        """
+        c = TER[suit]["top"]
+        out = (f'<rect x="{x:.1f}" y="{y:.1f}" width="{w}" height="{h}" rx="4" '
+               f'fill="#FBFAF6" stroke="{INK}" stroke-width="1.3"/>')
+        out += (f'<rect x="{x:.1f}" y="{y:.1f}" width="{w}" height="7" rx="3.5" '
+                f'fill="{c}"/>')
+        out += f'<rect x="{x:.1f}" y="{y + 4:.1f}" width="{w}" height="3" fill="{c}"/>'
+        out += label(x + w * 0.30, y + h * 0.44, str(rank), h * 0.30, cls="fig-strong")
+        return out
+
+    def fan(cx, y, items, w, h, spread, hidden=False):
+        """Cards on an arc, rotated about a pivot below the hand.
+
+        Every card is drawn at the same place and only the rotation separates
+        them, so the spacing is an angle rather than a number to keep in step
+        with the card width."""
+        out = ""
+        n = len(items)
+        piv_y = y + h * 3.0
+        for i, it in enumerate(items):
+            a = (i - (n - 1) / 2) * spread
+            out += f'<g transform="rotate({a:.2f} {cx:.1f} {piv_y:.1f})">'
+            if hidden:
+                out += (f'<rect x="{cx - w / 2:.1f}" y="{y:.1f}" width="{w}" '
+                        f'height="{h}" rx="4" fill="#8A837A" stroke="#5A544C" '
+                        f'stroke-width="1.2"/>')
+            else:
+                out += fancard(cx - w / 2, y, it[0], it[1], w, h)
+            out += "</g>"
+        return out
 
     def die(x, y, n, winner=False):
         f = "#C0392B" if winner else "#FBFAF6"
@@ -135,7 +175,9 @@ def table():
         # BELOW the strip, not inside it: at 9.5 the caption reached the slot
         # boxes it names. The strip is 34 tall, so this clears it by 8.
         out += label(sx + 47, y + 50, "victory row", 9.5, cls="fig-label")
-        out += facedown(x + w - 56, y + 6, 20, 29, hidden)
+        # Their hand is held too, and hidden: a fan of backs says both at once,
+        # where a neat stack read as a draw pile sitting on the table.
+        out += fan(x + w - 34, y + 5, [None] * hidden, 20, 30, 13, hidden=True)
         return out
 
     # ---------------------------------------------------------- rivals, far
@@ -262,12 +304,11 @@ def table():
     # teaches the one thing about the hand that matters wrongly.
     hand = [(2, "ocean"), (3, "mountain"), (7, "plains"), (9, "forest"),
             (9, "ocean"), (11, "mountain"), (14, "ocean"), (17, "forest")]
-    for i, (rank, suit) in enumerate(hand):
-        b += faceup(yx + 32 + i * 52, yy + 88, rank, suit, 45, 62)
-    b += label(yx + 240, yy + 170,
+    b += fan(yx + yw / 2, yy + 92, hand, 52, 72, 7.5)
+    b += label(yx + yw / 2, yy + 214,
                "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
                9.5, cls="fig-step")
-    b += label(yx + 240, yy + 184,
+    b += label(yx + yw / 2, yy + 228,
                "ten between your turns, and nobody else ever sees it",
                9.5, cls="fig-label")
     return svg(0, 0, b, vb="auto")
@@ -717,12 +758,28 @@ def board():
     chip_x = PAD + 6
     name_x = chip_x + 34
     slots_x0 = name_x + 74          # unit slots start here
+    wall_x = slots_x0 + 172         # the tier's wall, two under its rank cap
     feed_x = W - PAD - 116          # feed coin column
     moves_x = W - PAD - 52          # free-move column
+
+    def shield(cx, cy, n):
+        """A heater shield with the rank it holds at. Same glyph as the printed
+        board, so a player who has seen one recognises the other."""
+        w, h = 22.0, 24.0
+        x0, y0 = cx - w / 2, cy - h / 2
+        out = (f'<path d="M{x0:.1f} {y0:.1f} h{w:.1f} v{h*0.42:.1f} '
+               f'q0 {h*0.40:.1f} {-w/2:.1f} {h*0.58:.1f} '
+               f'q{-w/2:.1f} {-h*0.18:.1f} {-w/2:.1f} {-h*0.58:.1f} Z" '
+               f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.2"/>')
+        out += (f'<path d="M{x0:.1f} {y0 + h*0.26:.1f} h{w:.1f}" '
+                f'stroke="#CDC7B8" stroke-width="0.8" fill="none"/>')
+        out += label(cx, cy + 3, str(n), 12, cls="fig-strong")
+        return out
 
     # ---- header ----
     y = PAD + 4
     b += label(PAD, y, "RESERVE", 12, anchor="start", cls="fig-step")
+    b += label(wall_x, y, "WALL", 11, cls="fig-step")
     b += label(feed_x, y, "FOOD", 11, anchor="start", cls="fig-step")
     b += label(moves_x, y, "MOVES", 11, anchor="start", cls="fig-step")
     b += label(slots_x0, y, "empty from the top band down",
@@ -732,11 +789,15 @@ def board():
     # as of v0.23. This figure had its own copy of the column and kept the v0.22
     # numbers when the table beside it changed, so the caption contradicted the
     # rulebook it illustrates. check_rules now reads the figure too.
-    bands = [("Tribe", 2, 2, 0, 1),
-             ("Settlement", 3, 3, 1, 2),
-             ("Kingdom", 4, 5, 2, 3),
-             ("Empire", 5, 5, 3, 4),
-             ("Civilization", 6, 5, 4, 5)]
+    # WALL is the rank cap less two (\u00a707): 12/14/16/18/20 minus 2. Written out
+    # rather than computed so check_rules can read both numbers off this figure
+    # and hold them against the engine, which is what caught this column being
+    # absent from the figure while the printed board had it.
+    bands = [("Tribe", 2, 2, 0, 1, 10),
+             ("Settlement", 3, 3, 1, 2, 12),
+             ("Kingdom", 4, 5, 2, 3, 14),
+             ("Empire", 5, 5, 3, 4, 16),
+             ("Civilization", 6, 5, 4, 5, 18)]
     # Tribe spent, Settlement half-emptied — the state the caption describes.
     filled_state = {0: 0, 1: 2, 2: 5, 3: 5, 4: 5}
 
@@ -744,7 +805,7 @@ def board():
     y = PAD + 18
     ur = 9                 # unit ellipse radius x
     ustep = 2 * ur + 6
-    for i, (name, limit, n, coins, moves) in enumerate(bands):
+    for i, (name, limit, n, coins, moves, wall) in enumerate(bands):
         cy = y + band_h / 2
         b += (f'<rect x="{PAD}" y="{y}" width="{W-2*PAD}" height="{band_h-8}" rx="6" '
               f'fill="{"#F4F1E9" if i % 2 else "#E7E3D8"}" stroke="#CDC7B8" '
@@ -769,6 +830,8 @@ def board():
             else:
                 b += (f'<ellipse cx="{ux}" cy="{by}" rx="{ur}" ry="{ur*0.5:.0f}" fill="none" '
                       f'stroke="#B4AFA3" stroke-width="1.3" stroke-dasharray="3 3"/>')
+        # the wall this tier defends at
+        b += shield(wall_x, by, wall)
         # feed coins
         if coins:
             for c in range(coins):

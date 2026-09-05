@@ -62,8 +62,13 @@ def extent(tag):
 els = [(m.group(0), *extent(m.group(0))) for m in ELEM.finditer(inner)]
 print(f'{len(els)} elements')
 
-GAP_MIN  = float(sys.argv[1]) if len(sys.argv) > 1 else 9.0   # gaps bigger than this get cut
-GAP_KEEP = float(sys.argv[2]) if len(sys.argv) > 2 else 7.0   # ...down to this
+# THE DEFAULTS ARE LOAD-BEARING. Hippodice wants the description on ONE A4
+# page, and at 9/7 the tightened figure comes out 550 units tall, which spills
+# it onto a second page. 10/4 gives 546 and fits. Two pages is not a warning
+# anywhere in this build - the PDF simply comes out with a second sheet - so
+# check the page count after changing either number.
+GAP_MIN  = float(sys.argv[1]) if len(sys.argv) > 1 else 10.0  # gaps bigger than this get cut
+GAP_KEEP = float(sys.argv[2]) if len(sys.argv) > 2 else 4.0   # ...down to this
 
 spans = sorted((a, b) for _, a, b, _, _ in els)
 merged = []
