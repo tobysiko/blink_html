@@ -23,7 +23,7 @@
 <rect x="266.00" y="16.00" width="15.0" height="15.0" rx="2.6" fill="none" stroke="#B4B4B4" stroke-width="0.6" stroke-dasharray="1.6 1.6"/><circle cx="270.20" cy="20.20" r="0.9" fill="#B4B4B4"/><circle cx="276.80" cy="20.20" r="0.9" fill="#B4B4B4"/><circle cx="273.50" cy="23.50" r="0.9" fill="#B4B4B4"/><circle cx="270.20" cy="26.80" r="0.9" fill="#B4B4B4"/><circle cx="276.80" cy="26.80" r="0.9" fill="#B4B4B4"/>
 <text x="37.00" y="22.00" font-family="IBM Plex Sans" font-size="9" fill="#2D2D2D" text-anchor="start" font-weight="600" letter-spacing="0" style="">BLINK</text>
 <text x="71.00" y="22.00" font-family="IBM Plex Sans" font-size="5" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0" style="font-style:italic">player board</text>
-<text x="260.00" y="21.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6E6E6E" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.24 · units 13 mm</text>
+<text x="260.00" y="21.00" font-family="IBM Plex Mono" font-size="3.4" fill="#6E6E6E" text-anchor="end" font-weight="400" letter-spacing="0.3" style="">playtest · v0.25 · units 13 mm</text>
 <text x="148.50" y="29.50" font-family="IBM Plex Mono" font-size="3.0" fill="#6E6E6E" text-anchor="middle" font-weight="400" letter-spacing="0" style="">your initiative die waits in either corner — whichever is nearer the table — and comes out when your turn ends</text>
 <line x1="14.0" y1="33.0" x2="283.0" y2="33.0" stroke="#2D2D2D" stroke-width="0.5"/>
 <text x="16.00" y="38.00" font-family="IBM Plex Mono" font-size="3.6" fill="#6E6E6E" text-anchor="start" font-weight="400" letter-spacing="0.4" style="">MELD</text>

@@ -29,6 +29,16 @@ for (const lang of langs)
   ok(String(I.STRINGS[lang]['app.sub'] || '').includes('__VTAG__'),
      `${lang} app.sub names a version instead of taking the build's`);
 
+/* And the same for anything else that claims to describe THIS rulebook. A
+   string saying "as printed in the v0.24 rulebook" is a version number typed
+   out by hand, and it went stale the day the version moved - twice. Naming an
+   OLD version on purpose is fine and common here (the v0.22 rules are kept for
+   comparison); what is not fine is naming one as the current one. */
+for (const lang of langs)
+  for (const [key, val] of Object.entries(I.STRINGS[lang]))
+    if (/\bv0\.\d+ (rulebook|Regelheft)|(rulebook|Regelheft) v0\.\d+/.test(String(val)))
+      fail.push(`${lang} ${key} names a rulebook version instead of using __VTAG__`);
+
 /* ---------------------------------------- 0. one key, one place
  *
  * The quietest failure of all, and it shipped: three GERMAN strings were

@@ -90,7 +90,7 @@ en: {
   "coach.food": "Your people eat every time your hand recycles. The coins on your tier\u2019s slots are the meal; short slots starve units off the map.",
   "coach.duel": "Someone attacked on their own turn. You answer with one card plus the ground under it \u2014 which is why a hand played out is dangerous.",
   "setup.fortify": "Fortifications",
-  "setup.fortify.assault": "Assault (v0.24) \u2014 two cards from your meld, the lower rank fights",
+  "setup.fortify.assault": "Assault \u2014 two cards from your meld, the lower rank fights (experiment)",
   "setup.fortify.wall": "Wall by tier \u2014 the coin defends at 10/12/14/16/18, or a better card from hand (printed rule)",
   "setup.fortify.note": "(a wall is a floor, not a substitute, and it climbs with your tier: no card from the starting deck breaks a Tribe\u2019s)",
   "setup.attacks": "Attacks per turn",
@@ -312,7 +312,7 @@ en: {
      more: four of them are ahead of the rulebook while they are playtested,
      and a setup screen that misdescribes itself is worse than no note. Every
      published choice is still labelled "as printed". */
-  "setup.advanced.note": "The defaults are the game as printed in the v0.24 rulebook. Everything below is a rules experiment — including the four v0.22 rules, kept so the two versions can be compared.",
+  "setup.advanced.note": "The defaults are the game as printed in the __VTAG__ rulebook. Everything below is a rules experiment — including the four v0.22 rules, kept so the two versions can be compared.",
   "pass.ready": "I have it",
   "pass.note": "Hand the device over. The board is hidden until you are holding it.",
 
@@ -719,7 +719,7 @@ de: {
   "coach.food": "Dein Volk isst bei jedem Handwechsel. Die M\u00fcnzen auf den Feldern deiner Stufe sind die Mahlzeit; fehlt sie, verhungern Einheiten.",
   "coach.duel": "Jemand greift in seinem eigenen Zug an. Du antwortest mit einer Karte plus dem Gel\u00e4nde \u2014 darum ist eine leergespielte Hand gef\u00e4hrlich.",
   "setup.fortify": "Befestigungen",
-  "setup.fortify.assault": "Sturmangriff (v0.24) \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft",
+  "setup.fortify.assault": "Sturmangriff \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft (Experiment)",
   "setup.fortify.wall": "Mauer nach Stufe \u2014 die M\u00fcnze verteidigt mit 10/12/14/16/18, oder eine bessere Karte aus der Hand (gedruckte Regel)",
   "setup.fortify.note": "(die Mauer ist ein Mindestwert, kein Ersatz, und sie w\u00e4chst mit der Stufe: keine Karte des Startdecks bricht die eines Stammes)",
   "setup.attacks": "Angriffe pro Zug",
@@ -937,7 +937,7 @@ de: {
   "setup.level.normal.short": "Normal",
   "setup.level.hard.short": "Schwer",
   "setup.advanced": "Erweiterte Regeln und Varianten",
-  "setup.advanced.note": "Die Voreinstellungen sind das Spiel wie im Regelheft v0.24 gedruckt. Alles hier unten ist ein Regelexperiment — auch die vier Regeln aus v0.22, die zum Vergleich erhalten bleiben.",
+  "setup.advanced.note": "Die Voreinstellungen sind das Spiel wie im Regelheft __VTAG__ gedruckt. Alles hier unten ist ein Regelexperiment — auch die vier Regeln aus v0.22, die zum Vergleich erhalten bleiben.",
   "pass.ready": "Ich habe es",
   "pass.note": "Gib das Gerät weiter. Der Spielplan bleibt verdeckt, bis du es in der Hand hast.",
 
