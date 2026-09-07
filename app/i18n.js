@@ -388,6 +388,8 @@ en: {
   "board.colFood": "feeds",
   "board.colMove": "moves",
   "board.colCap": "buy up to",
+  "board.colWall": "wall",
+  "board.wallAt": "a fortification on this tier holds at {n} \u2014 always two under its rank cap",
   "board.foodNote": "Each refill costs {n} 🪙 at {tier}. Short of gold, a unit "
     + "comes off the map.",
   "board.foodNoteFree": "Refilling is free at {tier}. From {next} on it costs gold.",
@@ -1002,6 +1004,8 @@ de: {
   "board.colFood": "Nahrung",
   "board.colMove": "Bewegung",
   "board.colCap": "Kauf bis",
+  "board.colWall": "Mauer",
+  "board.wallAt": "eine Befestigung auf dieser Stufe h\u00e4lt bei {n} \u2014 immer zwei unter dem Kauflimit",
   "board.foodNote": "Jede Auffrischung kostet {n} 🪙 als {tier}. Fehlt das Gold, "
     + "kommt eine Einheit von der Karte.",
   "board.foodNoteFree": "Auffrischen ist als {tier} kostenlos. Ab {next} kostet es Gold.",

@@ -191,7 +191,8 @@ def back():
   <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter">{ter}</div>
-  <p class="note"><b>Round.</b> Declare A → melds → highest total wins → winner's die
+  <p class="note"><b>Round.</b> Declare A → melds face down → turn over together →
+    highest total wins → winner's die
     = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
     lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
@@ -199,8 +200,7 @@ def back():
   <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
     wins; level goes to the card matching the ground, else the defender. Clear the last
     unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed, or the market at one layer: finish the
-    round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
+  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
     terrain.</p>
   <div class="foot"><span>Blink {VTAG}</span><span>deep-diversions.com/blink</span></div>
 </div>"""

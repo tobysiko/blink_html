@@ -316,7 +316,8 @@ HTML = f"""<!doctype html>
   played still yours to spend; match the winner's count and lose, and one of yours is
   set aside. Come last and you pocket a coin.</p>
   <ol class="seq">
-    <li><b>Card phase.</b> Everyone plays a meld. The highest total wins the trick.</li>
+    <li><b>Card phase.</b> Everyone plays a meld face down, then all are turned over at
+    once. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
     explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
     your free actions: your band's free moves, and gold shuffled between food, fortresses
@@ -325,8 +326,8 @@ HTML = f"""<!doctype html>
     pays you a one-off ascension reward, lets you play a bigger meld and move further — and
     raises the gold your people cost to feed.</li>
   </ol>
-  <p>The game ends when someone places their last unit or the market thins to its last layer.
-  Most points wins: one per unit on the map, plus your victory row, plus the terrain
+  <p>The game ends when someone places their last unit. Most points wins: one per unit on
+  the map, plus your victory row, plus the terrain
   you dominate — the largest connected stretch of each.</p>
   {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game; the market beside it is where cards are bought; every meld played goes to the play area and stays there until it is spent. Your own board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
 
@@ -378,24 +379,19 @@ HTML = f"""<!doctype html>
 <section>
   <div class="h2"><span class="num">03</span><h2>Setup</h2></div>
   <ol class="seq">
-    <li><b>Split the cards.</b> Divide the 80 cards into a <strong>starting deck</strong> and an
-    <strong>upgrade deck</strong> by rank, according to the player count.
-    <table>
-      <thead><tr><th>Players</th><th>Starting deck</th><th>Upgrade deck</th></tr></thead>
-      <tbody>
-        <tr><td>2</td><td>ranks 6–10</td><td>ranks 11–20</td></tr>
-        <tr><td>3</td><td>ranks 3–10 †</td><td>ranks 11–20</td></tr>
-        <tr><td>4</td><td>ranks 1–10</td><td>ranks 11–20</td></tr>
-      </tbody>
-    </table>
-    <p class="fine">† <b>Three-player balance.</b> Ranks 3–10 give 32 starting cards for 30
-    dealt. Draw <b>two of the four rank-3 cards at random</b> and keep them; return the other
-    two to the box. The upgrade deck is the full <b>ranks 11–20 at every player count</b> —
-    the tier rank caps only mean something if the market reaches above them.</p></li>
+    <li><b>Split the cards.</b> Divide the 80 cards by rank into a
+    <strong>starting deck</strong>, ranks <b>1–10</b>, and an <strong>upgrade deck</strong>,
+    ranks <b>11–20</b>. Forty cards each, four suits of every rank, and the same split
+    however many of you are playing. Nothing is set aside and nothing goes back in the
+    box: every card is in the game.</li>
 
-    <li><b>Draft your hand.</b> Deal 10 starting-deck cards to each player. Keep 4 and pass 6
-    clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end with a fixed hand
-    of <strong>ten cards</strong>.</li>
+    <li><b>Draft your hand.</b> Shuffle the starting deck and deal 10 cards to each player.
+    Keep 4 and pass 6 clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end
+    with a fixed hand of <strong>ten cards</strong>. Put whatever is left of the starting deck
+    <strong>face down as the shared pile</strong> — twenty cards at two players, ten at
+    three, none at four. It is not out of the game: it is where every hand refills from
+    (§09), so the cards nobody drafted come back to the table later, in somebody else's
+    hand.</li>
 
     <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 3, 5, 5, 5 from
     the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
@@ -419,11 +415,10 @@ HTML = f"""<!doctype html>
     where everyone can see and reach them. There is no bag and nothing is hidden: any tile
     may be taken at any time until that terrain runs out.</li>
 
-    <li><b>Upgrade deck and market.</b> Shuffle <strong>all advanced cards together</strong>
-    into one face-down deck — <b>ranks 11–20, whatever the player count</b>. Deal
+    <li><b>Upgrade deck and market.</b> Shuffle the upgrade deck face down and deal
     <strong>nine face up in a 3 &times; 3 grid</strong> beside it — that is the market
-    (§10). Leave a clear space next to it for the <strong>shared pile</strong>: it starts
-    empty, and fills with the cards losing melds discard (§04).</li>
+    (§10). The shared pile from step 2 sits next to it, and grows as losing melds discard
+    into it (§04).</li>
 
     <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>;
     nothing is played yet, so set it to 1.</li>
@@ -440,10 +435,10 @@ HTML = f"""<!doctype html>
   follow, and named where it comes up, so nothing below has to be taken on trust.</p>
 
   <h3>Setting up</h3>
-  <p>With three players, the <strong>starting deck</strong> is ranks 3–10 and the
-  <strong>upgrade deck</strong> ranks 11–20, shuffled together. They deal ten cards
-  apiece and draft — keep four and pass the rest, then keep six, keep eight, keep all
-  ten — until each holds a fixed hand of ten.</p>
+  <p>The <strong>starting deck</strong> is ranks 1–10 and the <strong>upgrade deck</strong>
+  ranks 11–20. They deal ten cards apiece and draft — keep four and pass the rest,
+  then keep six, keep eight, keep all ten — until each holds a fixed hand of ten. Ten
+  starting cards are left over; those go face down as the shared pile.</p>
   <p>Each takes a board and loads all five tiers with twenty units, and sets their
   ascension coins on the printed spots. They lay the three-player
   starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
@@ -457,14 +452,18 @@ HTML = f"""<!doctype html>
   <h3>The card phase</h3>
   <p>Everyone’s board is full, so the meld limit is <strong>2</strong> for all three.
   Ada leads.</p>
+  <p>Each lays their meld <strong>face down</strong>. All the others can see is the count:
+  Ada puts down two cards, Bex two, Cy one. Cy laid last and knew only that both of them had
+  committed two — not what those two were.</p>
   <ul>
-    <li><strong>Ada</strong> plays <strong>5 of Plains + 6 of Plains</strong> — the run
+    <li><strong>Ada</strong> has played <strong>5 of Plains + 6 of Plains</strong> — the run
     5-6.</li>
-    <li><strong>Bex</strong> plays <strong>8 of Mountain + 8 of Ocean</strong> — the run 8,
-    doubled. Suits are irrelevant to the meld.</li>
-    <li><strong>Cy</strong> plays a single <strong>4 of Mountain</strong>.</li>
+    <li><strong>Bex</strong> has played <strong>8 of Mountain + 8 of Ocean</strong> — the run
+    8, doubled. Suits are irrelevant to the meld.</li>
+    <li><strong>Cy</strong> has played a single <strong>4 of Mountain</strong>.</li>
   </ul>
-  <p>Now the trick resolves: <strong>highest total wins</strong>. Bex played 8 + 8 for
+  <p>They turn them over together, and the trick resolves:
+  <strong>highest total wins</strong>. Bex played 8 + 8 for
   <strong>16</strong>; Ada played 5 + 6 for <strong>11</strong>; Cy played a single 4 for
   <strong>4</strong>. <strong>Bex wins the trick</strong> and takes the winner's die, setting
   it to <strong>2</strong> — the size of her meld, and a reminder that anyone who also played
@@ -477,7 +476,7 @@ HTML = f"""<!doctype html>
   instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
   so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
 
-  {fig('trick', "Round one, all three melds at once. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick and the winner's die — set to the SIZE of her meld, two cards, not to her placing. Cy's single 4 is not a mistake in principle: a lone 17 would have beaten both of them.")}
+  {fig('trick', "Round one, the moment after everything is turned over. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick and the winner's die — set to the SIZE of her meld, two cards, not to her placing. Cy's single 4 is not a mistake in principle: a lone 17 would have beaten both of them.")}
 
   <h3>The map phase</h3>
   <p>Bex spends both her cards; Ada spends the one she kept; Cy spends his single. They act
@@ -502,8 +501,8 @@ HTML = f"""<!doctype html>
   <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
   units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
   happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
-  to build the ground first. To finish the round they check the end triggers — no one has
-  placed their last unit and no suit deck is empty, so play continues. No one emptied a whole
+  to build the ground first. To finish the round they check the end trigger — no one has
+  placed their last unit, so play continues. No one emptied a whole
   tier, so meld limits stay at 2, nobody has claimed an ascension coin, and no food is due;
   that only comes when a hand recycles.
   <strong>Bex leads the next round.</strong></p>
@@ -528,16 +527,16 @@ HTML = f"""<!doctype html>
   your game: the size of meld you may play, the free moves you get each turn, the gold your
   people cost to feed, and the highest card rank you may buy from the market.</p>
   <table>
-    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th></tr></thead>
+    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th><th>Wall</th></tr></thead>
     <tbody>
-      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">12</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">14</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">16</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">18</td></tr>
-      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td></tr>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
     </tbody>
   </table>
-  <p>Read all four off the topmost tier that still holds units — one rule, no counting,
+  <p>Read all six off the topmost tier that still holds units — one rule, no counting,
   and <strong>nothing cumulative</strong>: you owe the coins on that tier and no others.
   Empty a tier and every number steps up together: the expansion that buys you a bigger meld
   and a longer stride is the same expansion that sends you the bill. Melds never exceed
@@ -563,18 +562,23 @@ HTML = f"""<!doctype html>
   the leader — whichever your table prefers, so long as it happens <em>before any meld is on
   the table</em>.</p>
   <p>You are committing blind. You do not know what anyone is about to play, only what is in
-  your own hand — which is the whole point: A is a bet, not an answer.</p>
+  your own hand — which is the whole point: A is a bet, not an answer. So is the meld you
+  are about to lay, for the same reason.</p>
   <p>Only A is declared here. <strong>B</strong> is used in your own map phase and
   <strong>C</strong> at any moment, so neither needs announcing now. Most rounds nobody declares
   anything and the step takes a second.</p>
 
   <h3>Card phase</h3>
   <ol class="seq">
-    <li>The leader plays a meld from their hand — anything from a single card up to
-    their current <strong>meld size limit</strong>, read off their board. You begin the
-    game able to play two cards at a time.</li>
-    <li>Clockwise, every other player plays a meld of their own, from one card up to
-    their own limit. You may not pass, and you never have to follow what was led.</li>
+    <li>The leader plays a meld from their hand, <strong>face down</strong> — anything
+    from a single card up to their current <strong>meld size limit</strong>, read off their
+    board. You begin the game able to play two cards at a time.</li>
+    <li>Clockwise, every other player plays a meld of their own, face down, from one card up
+    to their own limit. You may not pass, and you never have to follow what was led.
+    <strong>All anyone can see is how many cards each player laid</strong>, which is enough
+    to know what matching the winner will cost you (§04) and nothing more.</li>
+    <li><strong>Turn them all over together.</strong> When the last meld is down, every
+    player reveals at once. Only now is there anything to beat.</li>
     <li>The <strong>highest total wins</strong> the trick: add up the ranks of the cards
     in each meld. A single 20 is worth more than three 6s. If two totals are equal, the meld
     with <strong>more cards</strong> wins; if they are still level, compare their
@@ -627,7 +631,7 @@ HTML = f"""<!doctype html>
 
 <section>
   <div class="h2"><span class="num">05</span><h2>Melds</h2></div>
-  <p class="lede">One rule, and it replaces every meld type Blink used to have.</p>
+  <p class="lede">One rule, and every legal meld in the game obeys it.</p>
 
   <div class="note" style="border-left-color:var(--forest)">
     <span class="tag">The meld rule</span>
@@ -650,9 +654,10 @@ HTML = f"""<!doctype html>
 
   {fig('meld_rule', 'The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant at this stage. Only the last row is illegal, and only because nothing sits at rank 3.')}
 
-  <p>So the old vocabulary is gone. There is no straight, no set, no full house — only
-  runs with any number of duplicates. A pair is a run of one rank; a straight is a run
-  with no duplicates; everything between them is now legal too.</p>
+  <p>If you know rummy or poker, set that vocabulary aside: there is no straight here, no
+  set, no full house. There is one shape — a run — and duplicates inside it are free. A pair
+  is a run of one rank; a straight is a run with no duplicates; everything between them is
+  legal as well.</p>
 
   <p>Your <strong>meld limit</strong> is the ceiling on how many cards you may play, never
   a quota: Tribe 2, Settlement 3, Kingdom 4, Empire 5, Civilization 6. Suits still matter
@@ -1082,14 +1087,9 @@ HTML = f"""<!doctype html>
 
 <section>
   <div class="h2"><span class="num">11</span><h2>End of the game</h2></div>
-  <p>The end is triggered as soon as either:</p>
-  <ul>
-    <li>a player places the <strong>last unit</strong> from their reserve onto the map, or</li>
-    <li>the <strong>market thins to a single layer</strong> — the upgrade deck is empty
-    and no grid position has a card buried under another. While the deck lasts every
-    research deepens the market; once it is dry the market can only be eaten down, and its
-    last layer is the last of the ideas.</li>
-  </ul>
+  <p>One trigger, and it is the one you can see coming from across the table: a player
+  places the <strong>last unit</strong> from their reserve onto the map. Twenty units, and
+  the moment somebody has none left the game is nearly over.</p>
   <p>Finish the current round, then play <strong>one more full round</strong>. Then score.</p>
   <table>
     <thead><tr><th>Score</th><th></th></tr></thead>
@@ -1181,9 +1181,7 @@ HTML = f"""<!doctype html>
 
 <section id="perks">
   <div class="h2"><span class="num">13</span><h2>Perks</h2></div>
-  <p class="lede">A module, and a new one. Everything in sections 01 to 11 still applies.
-  This one has not been through a full playtest — treat it as an experiment and tell us
-  how it went.</p>
+  <p class="lede">An optional module. Everything in sections 01 to 11 still applies.</p>
 
   <p>Your victory row scores at the end and does nothing before it, which is a strange
   thing for five slots sitting in front of you all game. Perks give them a job: a perk
@@ -1280,14 +1278,15 @@ HTML = f"""<!doctype html>
   <div class="cols">
     <div>
       <h3>Reserve bands</h3>
-      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. <b>Tribe</b> melds 2,
-      1 move, food free, cap 12. <b>Settlement</b> 3, 2, food 1, cap 14. <b>Kingdom</b> 4,
-      3, food 2, cap 16. <b>Empire</b> 5, 4, food 3, cap 18. <b>Civilization</b> 6, 5,
-      food 4, cap 20. Read them off your current tier only — food is <b>not</b> cumulative,
+      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds, free moves, food,
+      rank cap, wall: <b>Tribe</b> 2, 1, free, 12, 10. <b>Settlement</b> 3, 2, 1, 14, 12.
+      <b>Kingdom</b> 4, 3, 2, 16, 14. <b>Empire</b> 5, 4, 3, 18, 16.
+      <b>Civilization</b> 6, 5, 4, 20, 18. Read them off your current tier only — food is <b>not</b> cumulative,
       eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
       1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
       <h3>Round</h3>
-      <p>Declare A effects blind → leader plays a meld → everyone plays a meld → highest total
+      <p>Declare A effects blind → leader lays a meld face down → everyone lays one
+      face down → turn them all over together → highest total
       wins, then most cards, then highest card, then earliest played (never a tie) →
       <b>winner's die = their meld size</b> (and always first), others 2/3/4 →
       spend melds in initiative order. The winner spends every card. Anyone who

@@ -787,9 +787,29 @@ def board():
     chip_x = PAD + 6
     name_x = chip_x + 34
     slots_x0 = name_x + 74          # unit slots start here
-    wall_x = slots_x0 + 172         # the tier's wall, two under its rank cap
+    # BUY UP TO and WALL sit side by side, in that order, exactly as they do on
+    # the printed board: both are ranks, and the pair is two apart, which is
+    # the rule. The figure had the wall and not the cap, so the picture of the
+    # board was missing a column the board itself prints.
+    cap_x = slots_x0 + 132          # the rank cap, as a card's index corner
+    wall_x = slots_x0 + 184         # the tier's wall, two under its rank cap
     feed_x = W - PAD - 116          # feed coin column
     moves_x = W - PAD - 52          # free-move column
+
+    def rank_corner(cx, cy, n):
+        """The rank cap as the INDEX CORNER OF A CARD - the same glyph the
+        printed board uses, so a player who has seen one recognises the other.
+        An open L: down the left edge, round the corner, along the top, and
+        nothing closing the bottom right, which is the "and everything below
+        this" the rule means."""
+        w, h, r = 22.0, 18.0, 2.6
+        x0, y0 = cx - w / 2, cy - h / 2
+        out = (f'<path d="M{x0:.1f} {y0 + h:.1f} L{x0:.1f} {y0 + r:.1f} '
+               f'Q{x0:.1f} {y0:.1f} {x0 + r:.1f} {y0:.1f} L{x0 + w:.1f} {y0:.1f}" '
+               f'fill="none" stroke="#2A2E2B" stroke-width="1.2" '
+               f'stroke-linecap="round"/>')
+        out += label(cx + 1, cy + 6, str(n), 12, cls="fig-strong")
+        return out
 
     def shield(cx, cy, n):
         """A heater shield with the rank it holds at. Same glyph as the printed
@@ -808,11 +828,10 @@ def board():
     # ---- header ----
     y = PAD + 4
     b += label(PAD, y, "RESERVE", 12, anchor="start", cls="fig-step")
+    b += label(cap_x, y, "BUY UP TO", 11, cls="fig-step")
     b += label(wall_x, y, "WALL", 11, cls="fig-step")
     b += label(feed_x, y, "FOOD", 11, anchor="start", cls="fig-step")
     b += label(moves_x, y, "MOVES", 11, anchor="start", cls="fig-step")
-    b += label(slots_x0, y, "empty from the top band down",
-               9.5, anchor="start", cls="fig-label")
 
     # (label, meld limit, units, food coins, free moves) — units are 2/3/5/5/5
     # as of v0.23. This figure had its own copy of the column and kept the v0.22
@@ -822,11 +841,11 @@ def board():
     # rather than computed so check_rules can read both numbers off this figure
     # and hold them against the engine, which is what caught this column being
     # absent from the figure while the printed board had it.
-    bands = [("Tribe", 2, 2, 0, 1, 10),
-             ("Settlement", 3, 3, 1, 2, 12),
-             ("Kingdom", 4, 5, 2, 3, 14),
-             ("Empire", 5, 5, 3, 4, 16),
-             ("Civilization", 6, 5, 4, 5, 18)]
+    bands = [("Tribe", 2, 2, 0, 1, 12, 10),
+             ("Settlement", 3, 3, 1, 2, 14, 12),
+             ("Kingdom", 4, 5, 2, 3, 16, 14),
+             ("Empire", 5, 5, 3, 4, 18, 16),
+             ("Civilization", 6, 5, 4, 5, 20, 18)]
     # Tribe spent, Settlement half-emptied — the state the caption describes.
     filled_state = {0: 0, 1: 2, 2: 5, 3: 5, 4: 5}
 
@@ -834,7 +853,7 @@ def board():
     y = PAD + 18
     ur = 9                 # unit ellipse radius x
     ustep = 2 * ur + 6
-    for i, (name, limit, n, coins, moves, wall) in enumerate(bands):
+    for i, (name, limit, n, coins, moves, cap, wall) in enumerate(bands):
         cy = y + band_h / 2
         b += (f'<rect x="{PAD}" y="{y}" width="{W-2*PAD}" height="{band_h-8}" rx="6" '
               f'fill="{"#F4F1E9" if i % 2 else "#E7E3D8"}" stroke="#CDC7B8" '
@@ -859,12 +878,14 @@ def board():
             else:
                 b += (f'<ellipse cx="{ux}" cy="{by}" rx="{ur}" ry="{ur*0.5:.0f}" fill="none" '
                       f'stroke="#B4AFA3" stroke-width="1.3" stroke-dasharray="3 3"/>')
-        # the wall this tier defends at
+        # the highest rank this tier may buy, and the wall it defends at
+        b += rank_corner(cap_x, by, cap)
         b += shield(wall_x, by, wall)
         # feed coins
         if coins:
+            # 15, not 17: at four coins the last one touched the MOVES chip.
             for c in range(coins):
-                b += gold(feed_x + 8 + c * 17, by)
+                b += gold(feed_x + 6 + c * 15, by)
         else:
             b += label(feed_x + 8, by + 3, "free", 9, anchor="start", cls="fig-label")
         # free-move chip

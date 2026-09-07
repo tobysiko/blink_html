@@ -1,0 +1,50 @@
+{
+  "id": "civ-ladder",
+  "title": "The Civilisation Ladder",
+  "note": "A naming skin for the 80-card main deck. Adds no rules. Rank is the age axis, suit is the aspect axis; the four age bands are exactly the four effect bands the rules already print, so the theme never has to be reconciled with the mechanics.",
+  "ages": [
+    { "numeral": "I",   "name": "Dawn",      "ranks": "1-5",   "half": "starting" },
+    { "numeral": "II",  "name": "Craft",     "ranks": "6-10",  "half": "starting" },
+    { "numeral": "III", "name": "Discovery", "ranks": "11-15", "half": "advanced" },
+    { "numeral": "IV",  "name": "Industry",  "ranks": "16-20", "half": "advanced" }
+  ],
+  "aspects": {
+    "plains":   { "label": "Settlement",  "long": "settlement, farming, law and governance" },
+    "forest":   { "label": "Craft",       "long": "tools, machines, knowledge and science" },
+    "mountain": { "label": "Iron",        "long": "metals, engineering, defence and war" },
+    "ocean":    { "label": "Voyage",      "long": "seafaring, trade, frontiers and exchange" }
+  },
+  "cards": {
+    "plains": [
+      "Hearth", "Hamlet", "Granary", "Village", "Elders' Council",
+      "Irrigation", "Township", "Marketplace", "Code of Law", "Census",
+      "Aqueduct", "Guildhall", "Charter", "Public Assembly", "Capital City",
+      "Sanitation", "Civil Service", "Parliament", "Metropolis", "Constitution"
+    ],
+    "forest": [
+      "Firemaking", "Stone Tools", "Cordage", "The Wheel", "Carpentry",
+      "The Kiln", "Papermaking", "Block and Tackle", "Windmill", "Waterwheel",
+      "Printing Press", "The Lens", "Clockwork", "Scientific Method", "Mechanical Loom",
+      "Steam Engine", "Chemistry", "Electricity", "Computation", "Automation"
+    ],
+    "mountain": [
+      "The Sling", "Copper", "Bronze", "Palisade", "The Shield",
+      "Iron", "Rampart", "Stonemasonry", "Siegecraft", "The Keep",
+      "Steel", "Crossbow", "Bastion", "Gunpowder", "Cannon",
+      "The Foundry", "Fortress", "Blast Furnace", "Artillery", "The Arsenal"
+    ],
+    "ocean": [
+      "The Raft", "Fishing Net", "Dugout Canoe", "The Oar", "Barter",
+      "The Sail", "Harbour", "Coinage", "Cartography", "The Compass",
+      "Deep Keel", "Lighthouse", "Caravel", "Sextant", "Trading Company",
+      "The Canal", "Chronometer", "Steamship", "Telegraph", "World Market"
+    ]
+  },
+  "board": {
+    "tier_track": "Ages",
+    "victory_row": "Chronicle",
+    "reserve_tracks": "Peoples",
+    "market": "Research",
+    "gold": "Treasury"
+  }
+}

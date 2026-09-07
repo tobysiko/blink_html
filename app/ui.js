@@ -596,10 +596,25 @@ function fxEnabled() {
  */
 let TRICK = null;
 function newTrick(r) {
-  return { round: r, laid: new Set(), winner: null, order: null,
+  return { round: r, laid: new Set(), shown: false, winner: null, order: null,
            acting: null, done: new Set() };
 }
 const laid = (i) => !fxEnabled() || TRICK.laid.has(i);
+/* Whether the melds are FACE UP yet. Everyone lays face down, showing only how
+ * many cards; the table turns over together once the last one is down. Your own
+ * meld is never hidden from you - you played it.
+ *
+ * WITH the animations, the reveal is a beat in the queue and happens when the
+ * table sees it happen. WITHOUT them - a player who has asked for reduced
+ * motion, or any client where the fx layer cannot measure the board - there is
+ * no queue to wait for, so the question is asked of the engine directly: the
+ * melds are face up once the trick has a winner. Reading `fxEnabled()` alone
+ * would have turned every meld face up for exactly the players who turned the
+ * animations off, which is an information leak dressed as an accessibility
+ * setting. */
+const shown = (i) => i === ME || !G || G.MELD_FACEDOWN === false
+  || (fxEnabled() ? TRICK.shown
+                  : G.winner !== null && G.winner !== undefined);
 const uiWinner = () => (fxEnabled() ? TRICK.winner : G.winner);
 const uiOrder = () => (fxEnabled() ? TRICK.order : G.trickOrder);
 const uiActing = () => (fxEnabled() ? TRICK.acting : G.acting);
@@ -637,6 +652,9 @@ function syncTrick() {
   if (!G) return;
   if (!TRICK || TRICK.round !== G.round) TRICK = newTrick(G.round);
   for (let i = 0; i < G.n; i++) if (G.P[i].tableau) TRICK.laid.add(i);
+  /* Catch-up: if the winner is known the trick has been resolved, so the melds
+   * are face up whatever beats were dropped. */
+  if (G.winner !== null && G.winner !== undefined) TRICK.shown = true;
   TRICK.winner = G.winner;
   TRICK.order = G.trickOrder;
   TRICK.acting = G.acting;
@@ -899,6 +917,18 @@ function playEvents() {
           TRICK.laid.add(seat);
           flash(seat, "laid");                    // the cards drop into the slots
         });
+        break;
+      }
+      /* Every meld turns over at once, and it is worth a beat of its own: it is
+       * the moment the round is decided, and until it happens all anybody has
+       * to go on is how many cards each player put down. */
+      case "reveal": {
+        at(d, round, () => {
+          TRICK.shown = true;
+          for (let i = 0; i < G.n; i++) if (i !== ME) flash(i, "laid");
+          renderTable();
+        });
+        d += 260;
         break;
       }
       case "trick": {
@@ -1617,6 +1647,20 @@ const meldFan = (n) => {
 };
 const rankCorner = (n) =>
   `<span class="rankix" aria-hidden="true"><b>${n}</b></span>`;
+/* The wall, as the heater shield the printed board draws: flat across the top,
+ * straight down the shoulders, then curving to a point. */
+const wallShield = (n) =>
+  `<span class="wallsh" aria-hidden="true"><svg viewBox="0 0 20 22">`
+  + `<path d="M2 2 h16 v8 q0 7 -8 10 q-8 -3 -8 -10 Z"/></svg><b>${n}</b></span>`;
+/* What a fortification on THIS tier holds at. The printed rule is the ladder:
+ * two under the tier's rank cap, 10/12/14/16/18. Under a flat wall it is one
+ * number for everyone, and under the assault rule there is no wall at all -
+ * the coin costs the attacker a second card instead - so the column is only
+ * shown when there is something true to put in it. */
+const wallLadder = () => G && ["wall", "wallonly"].includes(G.FORTIFY || "wall");
+const wallOf = (cap) => G && G.WALL_BY_CAP === false
+  ? G.WALL_RANK
+  : Math.max(1, cap + (G && G.WALL_OFFSET !== undefined ? G.WALL_OFFSET : -2));
 const stride = (n) =>
   `<span class="movestride"><b>${n}</b><svg viewBox="0 0 16 10" aria-hidden="true">`
   + '<path d="M1 5 h11 M9 1.6 L12.6 5 L9 8.4" fill="none" stroke="currentColor"'
@@ -1636,10 +1680,16 @@ const SHIELD = `<svg viewBox="0 0 20 22" class="gl sh" aria-hidden="true">
  * whether to fight them for the trick depends on exactly that. */
 function meldFaces(q) {
   const played = (q.tableau || []).slice().sort(cardSortUI);
+  const n = played.length + (q.tableauBonus ? 1 : 0);
+  /* Face DOWN until the table turns over: a back per card, so the one thing a
+   * rival may know - how many you played - is still countable across the
+   * table, and nothing else is. */
+  if (!shown(q.i))
+    return { html: `<span class="cf mid back" aria-hidden="true"></span>`.repeat(n), n };
   let html = played
     .map((c) => cardChip(c, c === q.asideCard ? "aside" : "", "", "mid")).join("");
   if (q.tableauBonus) html += cardChip(q.tableauBonus, "bonus", "", "mid");
-  return { html, n: played.length + (q.tableauBonus ? 1 : 0) };
+  return { html, n };
 }
 function meldSlots(q, n) {
   const empty = Math.max(0, Math.max(q.meldLimit(), n) - n);
@@ -1746,10 +1796,17 @@ function renderTurnbar() {
   seq.forEach((i, k) => {
     const p = G.P[i];
     const played = !!(p.tableau && p.tableau.length) && laid(i);
-    const done = ord ? uiDone(i) : played;
+    /* A DIE OUT OF ITS SLOT MEANS FINISHED, and during the card phase nobody
+     * is. This read `played` before the trick resolved, so laying a meld -
+     * the first thing anyone does in a round - emptied their slot and the
+     * strip said two of the three players were done before a single card had
+     * been spent on the map. Pre-trick the dice are not set at all; the chip
+     * just dims to show that seat has laid. */
+    const done = ord ? uiDone(i) : false;
     const now = ord ? uiActing() === i
       : !played && seq.slice(0, k).every((j) => G.P[j].tableau && laid(j));
     const cls = ["tchip", done ? "done" : "", now ? "now" : "",
+                 !ord && played ? "hasLaid" : "",
                  win === i ? "won" : "", i === ME ? "me" : ""].filter(Boolean).join(" ");
     /* The face the die shows. A plain die shows the finishing place, which is
      * also the position in this list. The winner’s die shows the SIZE of the
@@ -1886,6 +1943,8 @@ function renderPlayer() {
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
         <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
+        <span class="wallcol" title="${t("board.wallAt")}">${
+          wallLadder() ? t("board.colWall") : ""}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
         <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
@@ -1932,6 +1991,8 @@ function renderPlayer() {
     s += `<div class="tier-row${here ? " here" : ""}${claimed ? "" : " unclaimed"}">
       <span class="mlim" title="${t("board.meldLimit")}">${meldFan(meld)}</span>
       <span class="capcol" title="${t("board.rankCap")}">${rankCorner(cap)}</span>
+      <span class="wallcol" title="${t("board.wallAt", { n: wallOf(cap) })}">${
+        wallLadder() ? wallShield(wallOf(cap)) : ""}</span>
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>

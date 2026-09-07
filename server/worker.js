@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-05T20:31:36Z
+ * Built 2026-09-07T05:06:57Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1524,6 +1524,17 @@ class Game {
     this.CONSOLATION = ["last", "half", "ladder"].includes(opts.consolation)
       ? opts.consolation : "last";
     /* v0.23: up to twice a turn, 1 gold then 2. "once" is v0.22 as printed. */
+    /* One trigger: a player placing their last unit. The market emptying can
+     * be switched back on to measure it, and defaults off. */
+    this.END_ON_MARKET = opts.endOnMarket === true;
+    /* MELDS GO DOWN FACE DOWN. All anybody sees while the cards are being laid
+     * is HOW MANY each player played - which is the number that matters for
+     * the set-aside anyway - and every meld is turned over together once the
+     * last one is down. The bot never read a rival's cards when choosing its
+     * own meld, so this changes nothing for it and everything for a person:
+     * the last player to lay used to choose knowing exactly what they had to
+     * beat. Set false for the open table. */
+    this.MELD_FACEDOWN = opts.meldFacedown !== false;
     this.RESEARCH_RULE = ["once", "twice", "escalating"].includes(opts.researchRule)
       ? opts.researchRule : "twice";
     /* How many a turn may hold at most. "twice" exists because unlimited
@@ -1650,24 +1661,35 @@ class Game {
   _deal() {
     const n = this.n, R = this.rng;
     const range = (a, b) => { const o = []; for (let i = a; i < b; i++) o.push(i); return o; };
-    const sr = n === 2 ? range(6, 11) : n === 3 ? range(3, 11) : range(1, 11);
-    // FULL_ADV_DECK: the rank caps only mean anything if the market reaches
-    // above them, so ranks 11-20 at every player count.
+    /* ONE DECK, EVERY PLAYER COUNT. Ranks 1-10 are the starting deck and
+     * 11-20 the advanced one, at two players, three and four alike. It used to
+     * cut the starting deck down to fit the table - 6-10 at two players, 3-10
+     * at three, with a hand-tuned fix removing two 3s and two 18s to keep the
+     * suits even - and that had two costs. The rank caps printed on the board
+     * only mean something against a full ladder: a two-player game that stops
+     * at 15 makes Empire and Civilization's caps decoration. And it was a
+     * setup step, with a table, that a player had to get right before the
+     * first card was dealt.
+     *
+     * What is left over after everyone has drafted ten is not removed from the
+     * game. It becomes the shared pile, face down, which is where every hand
+     * refills from (\u00a709) - so at two and three players the pile starts
+     * stocked and the cards that come back to a hand are less predictable than
+     * the ones that went in. At four players nothing is left over and this is
+     * exactly the game it always was.
+     *
+     * All 80 cards are in play in every game. The only way a card leaves is
+     * the victory row and the effects spent from it. */
+    const sr = range(1, 11);
     const ar = range(11, 21);
-    let start = [], adv = [];
+    const start = [], adv = [];
     for (const r of sr) for (const s of TER) start.push({ r, s });
     for (const r of ar) for (const s of TER) adv.push({ r, s });
-    if (n === 3) {                                   // three-player suit balance
-      const threes = start.filter((c) => c.r === 3);
-      const keep = R.sample(threes, 2);
-      start = start.filter((c) => c.r !== 3).concat(keep);
-      const kept = keep.map((c) => c.s);
-      const missing = TER.filter((s) => !kept.includes(s));
-      adv = adv.filter((c) => !(c.r === 18 && missing.includes(c.s)));
-    }
     R.shuffle(start);
     const hands = [];
     for (let i = 0; i < n; i++) hands.push(start.slice(i * 10, (i + 1) * 10));
+    /* Everything the draft never touched, straight into the shared pile. */
+    this.pile = start.slice(n * 10);
     // draft: cumulative keeps of 4, 6, 8, 10
     let kept = []; for (let i = 0; i < n; i++) kept.push([]);
     for (const target of [4, 6, 8, 10]) {
@@ -1808,6 +1830,11 @@ class Game {
       this.inc("meld_" + cards.length);
       yield* this._maybeDeclareABlind(p);          // A is declared blind (§10)
     }
+
+    /* Everything turns over at once. One beat, after the last meld is down and
+     * before anything is ranked, so the reveal is a moment at the table rather
+     * than a row of cards that were always visible. */
+    this.fx("reveal", { melds: this.P.map((q) => (q.played || []).length) });
 
     /* v0.22 ranking: most cards, then highest card, then next-highest, and so
      * on; earliest played breaks what is left. There are never ties.
@@ -3827,9 +3854,12 @@ class Game {
     if (this.endedOn) return;
     if (this.P.some((p) => p.reserveEmpty())) {
       this.endedOn = "end.lastUnit";
-    } else if (!this.deck.length && this.grid.every((st) => st.length <= 1)) {
-      /* The market THINNING to a single layer ends the game, not the deck
-       * emptying: while the deck lasts every upgrade deepens the grid. */
+    } else if (this.END_ON_MARKET
+               && !this.deck.length && this.grid.every((st) => st.length <= 1)) {
+      /* Kept, and off. A thinning market used to end the game as well, and in
+       * practice it almost never got there first - the last unit is what ends
+       * a game of Blink, and a second trigger nobody meets is a rule everyone
+       * has to be taught for nothing. */
       this.endedOn = "end.marketThin";
     }
     if (this.endedOn) {

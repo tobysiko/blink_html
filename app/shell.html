@@ -519,6 +519,8 @@
   .tchip .die.win b{color:#FBFAF6}
   /* A die OUT of its slot is a player who has finished - the same dashed,
      empty idiom the printed board uses for the slot it came from. */
+  /* laid their meld, but the round is far from over */
+  .tchip.hasLaid{opacity:.78}
   .tchip.done{opacity:.6}
   .tchip.done .die{background:none; border-style:dashed; border-color:var(--mut)}
   .tchip.done .die b{visibility:hidden}
@@ -734,7 +736,7 @@
      misformatted. A grid template makes every row line up by construction, and
      the whole thing is one declaration to change. */
   .tier-row{display:grid; align-items:center; gap:7px; padding:3px 6px;
-    grid-template-columns:34px 26px 84px 1fr auto 40px;
+    grid-template-columns:34px 26px 26px 84px 1fr auto 40px;
     border-bottom:1px solid #E7E3D8; font-size:11px; color:var(--mut)}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
@@ -748,7 +750,7 @@
     display:flex; align-items:center;
     justify-content:center; font-size:9px; font-weight:700; color:var(--ink)}
   .tier-row.head .meldfan, .tier-row.head .rankix,
-  .tier-row.head .movestride{display:none}
+  .tier-row.head .wallsh, .tier-row.head .movestride{display:none}
   /* BUY UP TO, as a card's index corner: an L with the rank inside it.
      NOT called `.corner` - that name already belongs to the rival seat panels
      around the map, complete with grid-area placements, so the first version of
@@ -759,6 +761,16 @@
   .rankix b{position:absolute; left:0; right:0; top:0; bottom:0;
     display:flex; align-items:center;
     justify-content:center; font-size:11px; font-weight:700}
+  /* WALL, as the heater shield the printed board draws. It sits beside BUY UP
+     TO because both are ranks and the pair is always two apart, which is the
+     rule; the board printed it and this table did not, so the one number a
+     player needs before deciding whether to attack was on paper only. */
+  .wallsh{position:relative; display:block; width:20px; height:20px}
+  .wallsh svg{position:absolute; inset:0; width:100%; height:100%;
+    fill:#FBFAF6; stroke:var(--ink); stroke-width:1.4}
+  .wallsh b{position:absolute; left:0; right:0; top:0; bottom:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; color:var(--ink)}
   /* MOVES, as a number and a stride. */
   .movestride{display:inline-flex; align-items:center; gap:2px; color:var(--mut)}
   .movestride b{font-size:12px; font-weight:700; color:var(--ink)}
@@ -978,6 +990,13 @@
     color:#2B2620}
   .ab{flex:none; width:15px; height:15px; border-radius:50%; background:var(--deep);
     color:#fff; font-size:9.5px; font-weight:700; text-align:center; line-height:15px}
+
+  /* A CARD FACE DOWN. Same footprint as a face, so a meld does not resize when
+     the table turns over - the backs are replaced in place. The stripe is the
+     one the deck and the shared pile already wear, so a back is a back
+     wherever it is on the table. */
+  .cf.mid.back{border-color:#1E4229;
+    background:repeating-linear-gradient(135deg,#1E4229 0 5px,#2A5638 5px 10px)}
 
   button.cf.sel{box-shadow:0 0 0 2px #111 inset}
   button.cf.mini.sel{background:var(--suit)}

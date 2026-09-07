@@ -451,6 +451,39 @@ for terrain, bonus in defence.items():
 # both rules that had already been replaced, and every text-level check above
 # passed the whole time because none of them look inside an <svg>.
 figs = json.load(open(HERE / "figs.json"))
+
+# ---- EVERY PICTURE OF THE BOARD SHOWS EVERY NUMBER ON IT --------------------
+#
+# A tier prints six things and they only work read together: the meld you may
+# play, the units it holds, the free moves, the food, the highest rank you may
+# BUY and the wall your ground HOLDS at. Each representation had been built at a
+# different time and each was missing a different one - the tier table in the
+# rulebook had the cap and not the wall, and the board figure had the wall and
+# not the cap, so a reader who checked one against the other found neither
+# complete. Nothing above catches that, because each document was internally
+# consistent. This asks all of them for the whole ladder.
+WALLS = [c - 2 for c in CAPS]
+board_fig = figs.get("board", "")
+fig_nums = re.findall(r"<text[^>]*>([^<]*)</text>", board_fig)
+for cap, wall in zip(CAPS, WALLS):
+    check(str(cap) in fig_nums,
+          f"the board figure does not print rank cap {cap}")
+    check(str(wall) in fig_nums,
+          f"the board figure does not print the wall {wall}")
+    check(f">{wall}<" in board,
+          f"the printed player board does not show the wall {wall}")
+    check(str(wall) in aid_txt,
+          f"the player aid does not show the wall {wall}")
+_raw_for_table = (HERE / RULES_HTML).read_text(encoding="utf8")
+tier_table = _raw_for_table[_raw_for_table.find("<th>Tier</th>"):]
+tier_table = tier_table[:tier_table.find("</table>")]
+for head in ("Units", "Meld limit", "Free moves", "Food per recycle",
+             "Rank cap", "Wall"):
+    check(f">{head}<" in tier_table,
+          f"the rulebook's tier table has no {head} column")
+for wall in WALLS:
+    check(f">{wall}<" in tier_table,
+          f"the rulebook's tier table does not print the wall {wall}")
 combat_fig = figs.get("combat", "")
 fig_text = " ".join(re.findall(r"<text[^>]*>([^<]*)</text>", combat_fig))
 check("attack" in fig_text and "defence" in fig_text,

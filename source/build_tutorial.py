@@ -63,11 +63,10 @@ HTML = f"""<!doctype html>
   <div class="step">
     <span class="n">Step 1 · the cards</span>
     <h3>Split the deck by rank, not by suit</h3>
-    <p>Find every card of ranks <b>3 to 10</b> — that's your <b>starting deck</b>. Ranks
-    <b>11 to 20</b> are the <b>advanced deck</b> — the full range, whatever the player count.
-    Put ranks 1 and 2 back in the box; they belong to the four-player starting deck.</p>
-    <p>Ranks 3–10 give 32 cards and you only need 30. Shuffle the four rank-3 cards, keep two
-    at random, and box the others. That keeps the starting deck at 30 cards.</p>
+    <p>Find every card of ranks <b>1 to 10</b> — that's your <b>starting deck</b>, forty
+    cards. Ranks <b>11 to 20</b> are the <b>advanced deck</b>, the other forty. That is the
+    whole split, and it is the same however many of you are playing.</p>
+    <p>Nothing goes back in the box.</p>
   </div>
 
   <div class="step">
@@ -76,6 +75,9 @@ HTML = f"""<!doctype html>
     <p>Deal ten starting-deck cards to each player. Now draft: <b>keep 4, pass the rest
     clockwise</b>. From the six you receive, <b>keep 6, pass 4</b>. Then <b>keep 8, pass 2</b>.
     Then keep the last two. You end with ten cards.</p>
+    <p>Put the rest of the starting deck <b>face down in the middle</b> — that's the
+    <b>shared pile</b>. Ten cards with three players, twenty with two, none with four. You'll
+    draw from it later, when somebody's hand runs out.</p>
     <div class="say"><b>Say this out loud:</b> these ten cards are your civilization for the
     whole game. You will play them, pick them back up, and play them again. You'll only change
     them by buying better ones later — one at a time, and never more than ten.</div>
