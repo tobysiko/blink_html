@@ -1422,6 +1422,14 @@
       <p class="hint" id="fortify-hint" data-i18n="setup.fortify.note"></p>
     </div>
     <div class="field">
+      <label for="loss" data-i18n="setup.loss">A beaten unit</label>
+      <select id="loss">
+        <option value="reserve" selected data-i18n="setup.loss.reserve"></option>
+        <option value="displace" data-i18n="setup.loss.displace"></option>
+      </select>
+      <p class="hint" data-i18n="setup.loss.note"></p>
+    </div>
+    <div class="field">
       <label for="attacks" data-i18n="setup.attacks">Attacks per turn</label>
       <select id="attacks">
         <option value="any" selected data-i18n="setup.attacks.any"></option>
@@ -1643,7 +1651,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"7b91b96e89","branch":"main","dirty":true,"built":"2026-09-07T05:40:34Z"};
+const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"8d6f81543e","branch":"main","dirty":true,"built":"2026-09-07T09:55:42Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2214,6 +2222,13 @@ en: {
   "log.cashed": "You cashed {card} for 1 gold.",
   "log.unusedGold": "{n} unused card(s) → {n} gold.",
   "log.duel.won": "Duel: {a} beat {b} \u2014 a defender goes home.",
+  "log.retreat": "Seat {seat} falls back to the {terrain} next door.",
+  "ask.retreat": "<b>Fall back</b> <span class=\"muted\">\u2014 you lost the ground. Choose a tile of yours beside it with room; that unit retreats there and stays yours. Only plains and forest can ever take one.</span>",
+  "hex.retreat": "retreat here",
+  "setup.loss": "A beaten unit",
+  "setup.loss.reserve": "Goes home to your reserve (printed rule)",
+  "setup.loss.displace": "Falls back to a neighbouring tile of yours with room \u2014 and only dies if there is none",
+  "setup.loss.note": "(displacement keeps your people on the map: your hinterland absorbs the blow, your frontier does not, and a detached unit has nowhere to go)",
   "log.duel.held": "Duel: {a} against {b} \u2014 the ground held.",
   "fx.duel.won": "{a} v {b} \u2014 won",
   "fx.duel.held": "{a} v {b} \u2014 held",
@@ -2827,6 +2842,13 @@ de: {
   "log.cashed": "Du tauschst {card} gegen 1 Gold.",
   "log.unusedGold": "{n} ungenutzte Karte(n) → {n} Gold.",
   "log.duel.won": "Duell: {a} schl\u00e4gt {b} \u2014 ein Verteidiger geht heim.",
+  "log.retreat": "Platz {seat} zieht sich auf das benachbarte {terrain} zur\u00fcck.",
+  "ask.retreat": "<b>R\u00fcckzug</b> <span class=\"muted\">\u2014 du hast das Feld verloren. W\u00e4hle ein benachbartes eigenes Feld mit Platz; die Einheit zieht sich dorthin zur\u00fcck und bleibt deine. Nur Ebene und Wald k\u00f6nnen eine aufnehmen.</span>",
+  "hex.retreat": "hierhin zur\u00fcckziehen",
+  "setup.loss": "Geschlagene Einheit",
+  "setup.loss.reserve": "kehrt in die Reserve zur\u00fcck (gedruckte Regel)",
+  "setup.loss.displace": "zieht sich auf ein benachbartes eigenes Feld mit Platz zur\u00fcck \u2014 und stirbt nur, wenn es keines gibt",
+  "setup.loss.note": "(Verdr\u00e4ngung h\u00e4lt deine Leute auf der Karte: das Hinterland f\u00e4ngt den Schlag ab, die Grenze nicht, und eine abgetrennte Einheit hat kein Ziel)",
   "log.duel.held": "Duell: {a} gegen {b} \u2014 der Boden h\u00e4lt.",
   "fx.duel.won": "{a} v {b} \u2014 gewonnen",
   "fx.duel.held": "{a} v {b} \u2014 gehalten",
@@ -4294,6 +4316,9 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* What becomes of a beaten unit: "reserve" is the printed rule, "displace"
+     * falls back to a neighbouring tile of its own. See _takeUnit. */
+    this.LOSS = opts.loss === "displace" ? "displace" : "reserve";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -5494,7 +5519,7 @@ class Game {
       const cost = attackGold(this.COMBAT, tile.terrain);
       if (p.gold >= cost && tile.units.length) {
         this.purse(p, -cost, "attack", cell, { terrain: tile.terrain });
-        this._takeUnit(p, cell);
+        yield* this._takeUnit(p, cell);
       } else { this.inc("cards_to_gold"); this.purse(p, 1, "unplaceable", "hand"); }
     }
   }
@@ -5519,15 +5544,72 @@ class Game {
   }
 
   /* One defender removed, fortification absorbing first. */
-  _takeUnit(p, cell) {
+  /* WHAT HAPPENS TO A BEATEN UNIT.
+   *
+   * Printed: it goes home to its owner's reserve. That is the rule this file
+   * shipped with, and it has one consequence nobody chose - being attacked
+   * refills the very thing that ends the game, so an aggressive table runs
+   * about three rounds longer than a peaceful one.
+   *
+   * DISPLACEMENT (`loss: "displace"`): it falls back to a NEIGHBOURING tile its
+   * owner holds that has room. It stays on the map and stays theirs; only when
+   * there is nowhere beside it to go does it die and go home. Two consequences
+   * fall out of the printed capacities without a word of new rule:
+   *
+   *   - a retreat can only ever reach PLAINS or FOREST, because ocean and
+   *     mountain hold one unit and a tile you already own is therefore full.
+   *     Your hinterland is where you can absorb a blow; your frontier is not.
+   *   - a DETACHED unit dies, because there is nothing beside it to take it in.
+   *
+   * The defender chooses where to fall back, because it is their unit and the
+   * choice is theirs - the same reason they choose the card in a duel. */
+  *_takeUnit(p, cell) {
     const victim = this.m.removeUnit(cell);
     if (victim === null) {
       this.inc("absorbed_by_fortification");
       this.fx("shield", { seat: p.i, at: cell });
-    } else {
-      this.inc("killed_by_attack"); this.P[victim].returnUnit();
-      this.fx("unit-out", { seat: victim, from: cell });
+      return;
     }
+    if (this.LOSS === "displace") {
+      const src = this.m.tiles.get(cell);
+      const near = src ? src.neighbours() : [];
+      const home = near.filter((t) => t.owner === victim && t.hasRoom(victim))
+                       .map((t) => t.key);
+      if (home.length) {
+        const q = this.P[victim];
+        let to = home[0];
+        if (home.length > 1) {
+          to = this.isHuman(victim)
+            ? yield { type: "retreat", seat: victim, from: cell,
+                      by: p.i, terrain: src.terrain, options: home.slice() }
+            : this._botRetreat(q, home);
+          if (!home.includes(to)) to = home[0];
+        }
+        this.m.settle(to, victim);
+        this.inc("displaced");
+        this.fx("unit-move", { seat: victim, from: cell, to });
+        this.say("log.retreat", { seat: victim, terrain: this.m.tiles.get(to).terrain });
+        return;
+      }
+      this.inc("displace_nowhere");
+    }
+    this.inc("killed_by_attack"); this.P[victim].returnUnit();
+    this.fx("unit-out", { seat: victim, from: cell });
+  }
+
+  /* Where a bot falls back to: the tile with the most room left, because that
+   * is the one still able to take the NEXT unit pushed off. Ties go to the
+   * fuller one - a retreat that reinforces beats a retreat that scatters. */
+  _botRetreat(q, home) {
+    let best = home[0], bestRoom = -1, bestUnits = -1;
+    for (const k of home) {
+      const t = this.m.tiles.get(k);
+      const room = t.capacityFor(q.i) - t.units.length;
+      if (room > bestRoom || (room === bestRoom && t.units.length > bestUnits)) {
+        best = k; bestRoom = room; bestUnits = t.units.length;
+      }
+    }
+    return best;
   }
 
   /* Which card the DEFENDER commits. Only the defender is ever asked: the
@@ -5757,7 +5839,7 @@ class Game {
     this.say(attackerWins ? "log.duel.won" : "log.duel.held",
              { a, b, wall: dCard && dCard.wall ? dCard.r : 0 });
     if (attackerWins) {
-      this.inc("duel_won"); this._takeUnit(p, cell);
+      this.inc("duel_won"); yield* this._takeUnit(p, cell);
       /* The ground changes hands — but only if the fight actually emptied it,
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
@@ -8032,6 +8114,7 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
+                             loss: $("#loss") ? $("#loss").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              food: !leanEconomy(),
@@ -8792,7 +8875,8 @@ function needZone() {
       return "#mymeld";
     case "feed": case "effectA": return ".vrowbox";
     case "objective": return ".objpick";
-    case "conquest": case "waterexplore": case "colony": return "#mapbox";
+    case "conquest": case "waterexplore": case "colony": case "retreat":
+      return "#mapbox";
     default: return null;                        // `turn` is free-form on purpose
   }
 }
@@ -8910,6 +8994,10 @@ function activeCells() {
     for (const k of REQ.options) out.set(k, { act: "colony" });
   if (REQ.type === "conquest")
     for (const k of REQ.options) out.set(k, { act: "strike" });
+  /* A retreat is answered on somebody else's turn, so the tiles that can take
+   * the unit have to be the lit ones - there is no other way to say "here". */
+  if (REQ.type === "retreat")
+    for (const k of REQ.options) out.set(k, { act: "retreat" });
   return out;
 }
 
@@ -9221,6 +9309,7 @@ function cellBadge(a) {
   if (a.act === "fortify") return t("hex.fortify");
   if (a.act === "explore") return t("hex.freeTile");
   if (a.act === "colony") return t("hex.colony");
+  if (a.act === "retreat") return t("hex.retreat");
   return ACT_LABEL[a.act] || "";
 }
 
@@ -9234,6 +9323,7 @@ function onCell(k) {
     SEL.colonyCell = k; render(); return;
   }
   if (REQ.type === "conquest") { answer(k); return; }
+  if (REQ.type === "retreat") { answer(k); return; }
   if (REQ.type !== "turn") return;
   if (SEL.mode === "fortify") { answer({ kind: "fortify", cell: k }); return; }
   if (SEL.mode === "move") {
@@ -10187,6 +10277,9 @@ function renderPromptBody() {
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
       break;
     }
+    case "retreat":
+      ask(t("ask.retreat"));
+      break;
     case "conquest":
       ask(tn("ask.conquest", REQ.left, {
         name: fxTextD(REQ.card.r).d.split(":")[0], left: REQ.left,
@@ -11115,6 +11208,7 @@ function netRules() {
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
+    loss: $("#loss") ? $("#loss").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     food: !leanEconomy(),
     ascension: !leanEconomy(),

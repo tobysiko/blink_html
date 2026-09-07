@@ -236,6 +236,7 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
+                             loss: $("#loss") ? $("#loss").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              food: !leanEconomy(),
@@ -996,7 +997,8 @@ function needZone() {
       return "#mymeld";
     case "feed": case "effectA": return ".vrowbox";
     case "objective": return ".objpick";
-    case "conquest": case "waterexplore": case "colony": return "#mapbox";
+    case "conquest": case "waterexplore": case "colony": case "retreat":
+      return "#mapbox";
     default: return null;                        // `turn` is free-form on purpose
   }
 }
@@ -1114,6 +1116,10 @@ function activeCells() {
     for (const k of REQ.options) out.set(k, { act: "colony" });
   if (REQ.type === "conquest")
     for (const k of REQ.options) out.set(k, { act: "strike" });
+  /* A retreat is answered on somebody else's turn, so the tiles that can take
+   * the unit have to be the lit ones - there is no other way to say "here". */
+  if (REQ.type === "retreat")
+    for (const k of REQ.options) out.set(k, { act: "retreat" });
   return out;
 }
 
@@ -1425,6 +1431,7 @@ function cellBadge(a) {
   if (a.act === "fortify") return t("hex.fortify");
   if (a.act === "explore") return t("hex.freeTile");
   if (a.act === "colony") return t("hex.colony");
+  if (a.act === "retreat") return t("hex.retreat");
   return ACT_LABEL[a.act] || "";
 }
 
@@ -1438,6 +1445,7 @@ function onCell(k) {
     SEL.colonyCell = k; render(); return;
   }
   if (REQ.type === "conquest") { answer(k); return; }
+  if (REQ.type === "retreat") { answer(k); return; }
   if (REQ.type !== "turn") return;
   if (SEL.mode === "fortify") { answer({ kind: "fortify", cell: k }); return; }
   if (SEL.mode === "move") {
@@ -2391,6 +2399,9 @@ function renderPromptBody() {
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
       break;
     }
+    case "retreat":
+      ask(t("ask.retreat"));
+      break;
     case "conquest":
       ask(tn("ask.conquest", REQ.left, {
         name: fxTextD(REQ.card.r).d.split(":")[0], left: REQ.left,
@@ -3319,6 +3330,7 @@ function netRules() {
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
+    loss: $("#loss") ? $("#loss").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     food: !leanEconomy(),
     ascension: !leanEconomy(),

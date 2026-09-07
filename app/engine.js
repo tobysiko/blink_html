@@ -1352,6 +1352,9 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
+    /* What becomes of a beaten unit: "reserve" is the printed rule, "displace"
+     * falls back to a neighbouring tile of its own. See _takeUnit. */
+    this.LOSS = opts.loss === "displace" ? "displace" : "reserve";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -2552,7 +2555,7 @@ class Game {
       const cost = attackGold(this.COMBAT, tile.terrain);
       if (p.gold >= cost && tile.units.length) {
         this.purse(p, -cost, "attack", cell, { terrain: tile.terrain });
-        this._takeUnit(p, cell);
+        yield* this._takeUnit(p, cell);
       } else { this.inc("cards_to_gold"); this.purse(p, 1, "unplaceable", "hand"); }
     }
   }
@@ -2577,15 +2580,72 @@ class Game {
   }
 
   /* One defender removed, fortification absorbing first. */
-  _takeUnit(p, cell) {
+  /* WHAT HAPPENS TO A BEATEN UNIT.
+   *
+   * Printed: it goes home to its owner's reserve. That is the rule this file
+   * shipped with, and it has one consequence nobody chose - being attacked
+   * refills the very thing that ends the game, so an aggressive table runs
+   * about three rounds longer than a peaceful one.
+   *
+   * DISPLACEMENT (`loss: "displace"`): it falls back to a NEIGHBOURING tile its
+   * owner holds that has room. It stays on the map and stays theirs; only when
+   * there is nowhere beside it to go does it die and go home. Two consequences
+   * fall out of the printed capacities without a word of new rule:
+   *
+   *   - a retreat can only ever reach PLAINS or FOREST, because ocean and
+   *     mountain hold one unit and a tile you already own is therefore full.
+   *     Your hinterland is where you can absorb a blow; your frontier is not.
+   *   - a DETACHED unit dies, because there is nothing beside it to take it in.
+   *
+   * The defender chooses where to fall back, because it is their unit and the
+   * choice is theirs - the same reason they choose the card in a duel. */
+  *_takeUnit(p, cell) {
     const victim = this.m.removeUnit(cell);
     if (victim === null) {
       this.inc("absorbed_by_fortification");
       this.fx("shield", { seat: p.i, at: cell });
-    } else {
-      this.inc("killed_by_attack"); this.P[victim].returnUnit();
-      this.fx("unit-out", { seat: victim, from: cell });
+      return;
     }
+    if (this.LOSS === "displace") {
+      const src = this.m.tiles.get(cell);
+      const near = src ? src.neighbours() : [];
+      const home = near.filter((t) => t.owner === victim && t.hasRoom(victim))
+                       .map((t) => t.key);
+      if (home.length) {
+        const q = this.P[victim];
+        let to = home[0];
+        if (home.length > 1) {
+          to = this.isHuman(victim)
+            ? yield { type: "retreat", seat: victim, from: cell,
+                      by: p.i, terrain: src.terrain, options: home.slice() }
+            : this._botRetreat(q, home);
+          if (!home.includes(to)) to = home[0];
+        }
+        this.m.settle(to, victim);
+        this.inc("displaced");
+        this.fx("unit-move", { seat: victim, from: cell, to });
+        this.say("log.retreat", { seat: victim, terrain: this.m.tiles.get(to).terrain });
+        return;
+      }
+      this.inc("displace_nowhere");
+    }
+    this.inc("killed_by_attack"); this.P[victim].returnUnit();
+    this.fx("unit-out", { seat: victim, from: cell });
+  }
+
+  /* Where a bot falls back to: the tile with the most room left, because that
+   * is the one still able to take the NEXT unit pushed off. Ties go to the
+   * fuller one - a retreat that reinforces beats a retreat that scatters. */
+  _botRetreat(q, home) {
+    let best = home[0], bestRoom = -1, bestUnits = -1;
+    for (const k of home) {
+      const t = this.m.tiles.get(k);
+      const room = t.capacityFor(q.i) - t.units.length;
+      if (room > bestRoom || (room === bestRoom && t.units.length > bestUnits)) {
+        best = k; bestRoom = room; bestUnits = t.units.length;
+      }
+    }
+    return best;
   }
 
   /* Which card the DEFENDER commits. Only the defender is ever asked: the
@@ -2815,7 +2875,7 @@ class Game {
     this.say(attackerWins ? "log.duel.won" : "log.duel.held",
              { a, b, wall: dCard && dCard.wall ? dCard.r : 0 });
     if (attackerWins) {
-      this.inc("duel_won"); this._takeUnit(p, cell);
+      this.inc("duel_won"); yield* this._takeUnit(p, cell);
       /* The ground changes hands — but only if the fight actually emptied it,
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
