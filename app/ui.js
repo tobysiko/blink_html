@@ -49,6 +49,8 @@ const SEAT_N = new Proxy({}, { get: (_, k) => t("seat." + String(k)) });
 const ACT_LABEL = new Proxy({}, { get: (_, k) => t("hex." + String(k)) });
 
 let G = null, IT = null, REQ = null;
+/* The last duel this seat fought, shown in the prompt until they act again. */
+let LASTDUEL = null;
 /* ME is the seat whose hand and board are on screen. With one person that is
  * fixed; with several it follows whoever is being asked; with none it is just
  * a vantage point. */
@@ -259,6 +261,7 @@ function startGame(force) {
   REP = carryFlags(REP,
     newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
   IT = null; REQ = null; SEL = blankSel();
+  LASTDUEL = null;
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
   hidePass();
@@ -353,6 +356,7 @@ function pump(a) {
 
 function answer(a, keepSel) {
   if (!REQ) return;
+  LASTDUEL = null;                     // you have moved on; so does the notice
   const tok = encodeAns(REQ, a);
   /* Remote: the server decides the order things happen in, so this goes on
    * the wire and takes effect when it comes back. One round trip, and nobody
@@ -526,6 +530,7 @@ function abortGame() {
   if (!G || !window.confirm(t("nav.abort.ask"))) return;
   if (netOn()) { netClose(); history.replaceState(null, "", location.pathname); }
   G = null; IT = null; REQ = null; LOG = []; BLOCK = null; MARK = 0;
+  LASTDUEL = null;
   SEL = blankSel(); RESEARCH = null; TRICK = null;
   $("#setup").classList.remove("hide");
   $("#game").classList.remove("show");
@@ -822,6 +827,13 @@ function coachDismiss() { COACH = null; renderPrompt(); }
 function playEvents() {
   if (!G || !G.events || !G.events.length) return 0;
   const q = G.events.splice(0, G.events.length);
+  /* THE LAST FIGHT YOU WERE IN, kept before anything can decide not to animate.
+   * A duel used to be a caption that floated over a hex for 1.4 seconds and a
+   * grey line in a 44px log, and with reduced motion on it was neither: the
+   * events are dropped whole below this line. So an attack that failed looked
+   * exactly like a card leaving your meld for nothing. */
+  for (const e of q)
+    if (e.type === "duel" && (e.seat === ME || e.defender === ME)) LASTDUEL = e;
   FX_OK = null;
   if (!fxEnabled()) return 0;
 
@@ -1696,8 +1708,21 @@ const SHIELD = `<svg viewBox="0 0 20 22" class="gl sh" aria-hidden="true">
  * framed, and a faint placeholder for every card that seat's tier still
  * allows. Rank, terrain and effect are legible on a rival's cards because
  * whether to fight them for the trick depends on exactly that. */
-function meldFaces(q) {
-  const played = (q.tableau || []).slice().sort(cardSortUI);
+/* `list` is what to draw, and it differs by whose meld this is.
+ *
+ * A RIVAL'S CORNER shows the meld they played this round and keeps showing it:
+ * their resolved cards go face up into their own discard, which on a real
+ * table is lying right there in front of them, and the record of the trick is
+ * what you read the round from. It also has to survive the reveal being the
+ * only thing that happened this tick, which is what facedown_test guards.
+ *
+ * YOUR OWN MELD AREA is not a record, it is the cards in front of you waiting
+ * to be spent - and it is clickable. Leaving a spent card in it invites a
+ * click that can do nothing, which is what was reported: "I just played all my
+ * cards, now I'm being attacked, and I again see my meld that should be gone."
+ * So that one is drawn from `onTable` instead. */
+function meldFaces(q, list) {
+  const played = (list || q.tableau || []).slice().sort(cardSortUI);
   const n = played.length + (q.tableauBonus ? 1 : 0);
   /* Face DOWN until the table turns over: a back per card, so the one thing a
    * rival may know - how many you played - is still countable across the
@@ -1772,6 +1797,8 @@ function renderCorners() {
     ].filter(Boolean).join(" ");
 
     // nothing until their beat: an empty place at the table is not a lie
+    /* Has this seat laid a meld this round? The record, not what is left of it
+     * - a player who has spent every card still laid one. */
     const shown = laid(i) && q.tableau && q.tableau.length;
     const m = shown ? meldFaces(q) : { html: "", n: 0 };
     // victory cards as squares — how many, not which
@@ -1888,8 +1915,8 @@ function renderMyMeld() {
       const nomap = m.options.length ? "" : " nomap";
       return cardBtn(m.card, on + nomap, `data-turn="${i}"`, "mid");
     }).join("");
-  } else if (p.tableau && p.tableau.length) {
-    const m = meldFaces(p);
+  } else if ((p.onTable || p.tableau || []).length) {
+    const m = meldFaces(p, p.onTable || p.tableau);
     cards = m.html; n = m.n;
   }
 
@@ -2226,6 +2253,54 @@ function meldOk() {
  * `return renderTurn(...)`, which is most of a turn — and a lesson attached to
  * the end of the body simply never appeared for any of them. Settle, explore,
  * cash and the tier step-up were all armed and then silently dropped. */
+/* WHAT JUST HAPPENED IN A FIGHT.
+ *
+ * Reported from a real game: "I don't see when the opponent is holding the
+ * ground when I attack." They did not, because the only two places it was said
+ * were a caption that faded in 1.4 seconds and a line of 10px grey text in a
+ * 44-pixel box below the fold - and neither exists at all for a player who has
+ * asked for reduced motion.
+ *
+ * So the result of a fight you were in is drawn in the prompt, where the next
+ * question is, and stays until you answer something. It shows the arithmetic
+ * rather than announcing a winner, and when the ranks came out level it says
+ * which rule broke the tie - because that is the one case where the numbers on
+ * screen do not explain the outcome by themselves. */
+function renderDuelOutcome() {
+  const e = LASTDUEL;
+  if (!e || !G || !G.P[ME]) return null;
+  const iAttacked = e.seat === ME;
+  const goodForMe = iAttacked ? e.won : !e.won;
+  const box = el("div", "duelout " + (goodForMe ? "good" : "bad"));
+  const mini = (c) => c
+    ? `<span class="cf mini" style="--suit:${TC[c.s]}">${faceInner(c, "mini")}</span>`
+    : `<span class="needcard"><b>0</b></span>`;
+  const shields = e.bonus
+    ? `<span class="shields">${SHIELD.repeat(e.bonus)}</span>` : "";
+  const wall = e.wall
+    ? `<span class="tot" title="${t("fx.duel.wall")}">${t("fx.duel.wall")}</span>` : "";
+  const sum = el("span", "duelsum");
+  sum.innerHTML = mini(e.attackCard) + `<span class="vs">${SWORDS}</span>`
+    + `<span class="ground" style="--terr:${TC[e.terrain]}"`
+    + ` title="${TL[e.terrain]}">${shields}</span>`
+    + mini(e.wall ? null : e.defendCard) + wall;
+  box.appendChild(sum);
+  box.appendChild(el("span", "tot", `${e.a} \u2013 ${e.b}`));
+  box.appendChild(el("span", "verdict",
+    t(`duel.out.${iAttacked ? "attack" : "defend"}.${goodForMe ? "won" : "lost"}`,
+      { terrain: TL[e.terrain] })));
+  /* Only a level fight needs explaining; when one total is higher the two
+     numbers beside it have already said everything. */
+  if (e.a === e.b) {
+    const am = !!e.attackCard && e.attackCard.s === e.terrain;
+    const dm = !!e.defendCard && e.defendCard.s === e.terrain;
+    box.appendChild(el("span", "why",
+      am && !dm ? t("duel.why.suit", { n: e.a, terrain: TL[e.terrain] })
+                : t("duel.why.tie", { n: e.a })));
+  }
+  return box;
+}
+
 function renderPrompt() {
   renderPromptBody();
   if (!COACH || gameOver()) return;
@@ -2250,6 +2325,11 @@ function renderPromptBody() {
   /* gameOver(), not finished(): during the extra round §11 grants, finished()
    * is already true and this would replace the player's turn with the result. */
   if (gameOver()) return renderFinal(bar);
+  /* Before the guards below, deliberately: a fight you lost while defending is
+     resolved on somebody else's turn, and that is exactly when this bar would
+     otherwise say nothing but "wait". */
+  const fight = renderDuelOutcome();
+  if (fight) bar.appendChild(fight);
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
@@ -2371,7 +2451,16 @@ function renderPromptBody() {
           + `<span class="vs">${SWORDS}</span>`
           + `<span class="ground" style="--terr:${TC[REQ.terrain]}"`
           + ` title="${TL[REQ.terrain]}">${shields}</span>`
-          + `<span class="needcard"><b>${need}</b><em>+</em></span>`
+          + `<span class="needcard" title="${t("duel.need.any")}">`
+          + `<b>${need}</b><em>+</em></span>`
+          /* And the lower rank that holds ONLY with a card of this terrain.
+             It appears exactly when the attacker matched the ground and you
+             would not: the one case where rank alone is not the answer. */
+          + (REQ.needMatch !== undefined && REQ.needMatch < need
+             ? `<span class="needcard match" style="--terr:${TC[REQ.terrain]}"`
+               + ` title="${t("duel.need.match", { terrain: TL[REQ.terrain] })}">`
+               + `<i></i><b>${REQ.needMatch}</b></span>`
+             : "")
           + `</span>`);
       }
       btn(t("ask.duel.decline"), () => answer(null), "ghost");

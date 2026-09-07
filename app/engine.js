@@ -1837,7 +1837,8 @@ class Game {
     /* Clear the table first. A seat that has not played yet must show nothing,
      * not last round's meld — the play area is public information about THIS
      * trick, and a stale card would be a lie. */
-    for (const q of this.P) { q.tableau = null; q.tableauBonus = null; q.asideCard = null; }
+    for (const q of this.P) { q.tableau = null; q.tableauBonus = null; q.asideCard = null;
+                              q.onTable = null; }
     this.trickOrder = null; this.winner = null; this.turnDone = new Set();
     for (const i of order) {
       const p = this.P[i];
@@ -2237,6 +2238,14 @@ class Game {
       yield* self._recycle(p);
     };
     for (;;) {
+      /* WHAT IS STILL LYING IN FRONT OF YOU, as opposed to what you played.
+       * `tableau` is the record of the meld and the turnbar reads its length
+       * for the winner's card count, so it must not shrink. But the meld area
+       * draws the cards on the table, and a card spent on the map is in your
+       * discard - it is not on the table any more. Without this the whole meld
+       * reappeared the moment your turn ended, and sat there through everyone
+       * else's turns and through any duel you were asked to defend. */
+      p.onTable = st.cards.slice();
       const opts = this.turnOptions(p, st);
       const ans = yield { type: "turn", seat: p.i, state: st, opts };
       if (!ans || ans.kind === "end") break;
@@ -2416,6 +2425,7 @@ class Game {
     if (st.cards.length)
       this.say("log.unusedGold", { n: st.cards.length });
     st.cards = [];
+    p.onTable = [];                       // the table in front of you is clear
     yield* refill(this);
   }
 
@@ -2452,6 +2462,7 @@ class Game {
            * shows no way to comply) still gives one up — the bot's choice. */
           const aside = (yield* this._pickSetAside(p, use)) || use[0];
           use.splice(use.indexOf(aside), 1);
+          p.onTable = use.slice();
           spent.splice(spent.indexOf(aside), 1);
           p.asideCard = aside;
           /* §09: the card leaves your economy for the SHARED pile — this is the
@@ -2550,7 +2561,9 @@ class Game {
     this.m.atkLeft = this.ATTACKS_PER_TURN || Infinity;
     if (!cards.length) return;
     const todo = cards.slice();
+    p.onTable = todo.slice();
     while (todo.length) {
+      p.onTable = todo.slice();
       const exempt = this.m.civ(p.i).size === 0;      // re-entry rule (§06)
       const spaces = this.spacesFor(p);
       const reachable = exempt ? new Set([...this.m.tiles.keys(), ...spaces])
@@ -2573,10 +2586,12 @@ class Game {
         this.inc("no_legal_placement", todo.length);
         this.inc("cards_to_gold", todo.length);
         this.purse(p, todo.length, "unplaceable", "hand", { n: todo.length });
+        p.onTable = [];
         return;
       }
       const [v, card, cell, act] = best;
       todo.splice(todo.indexOf(card), 1);
+      p.onTable = todo.slice();
 
       // cashing on purpose: gold is a first-class use of a card, not a fallback
       let thr = 0.8;
@@ -2761,12 +2776,35 @@ class Game {
   *_duelCard(q, role, tile, against, by, floor) {
     if (!q.hand.length) return null;
     const bonus = TERRAIN_DEFENCE[tile.terrain];
+    /* WHAT ACTUALLY HOLDS THE GROUND.
+     *
+     * This used to be one number, attack minus terrain, and it quietly assumed
+     * every level fight goes to the defender. It does not (see duelWinner): a
+     * level fight goes to the card whose SUIT MATCHES THE GROUND, and only to
+     * the defender when both match or neither does. So a defender was shown
+     * "11 holds", played an 11 of Plains on their Mountain, and lost the tile
+     * to a 13 of Mountain with nothing on screen to explain it.
+     *
+     * Two numbers now, because there are two answers: the rank that holds
+     * whatever you play, and the lower one that holds only with a card of this
+     * terrain. They differ by exactly one, and only when the attacker matched
+     * and you would not. */
+    const holdsIt = (c) => !duelWinner(against, c, tile.terrain, this.GARRISON);
+    const needFor = (suited) => {
+      if (!against) return 0;
+      for (let r = 1; r <= 20; r++)
+        if (holdsIt({ r, s: suited ? tile.terrain : null })) return r;
+      return 21;                                  // nothing in the deck holds it
+    };
+    const needAny = needFor(false), needMatch = needFor(true);
     /* A WALL IS ANSWERED BEFORE THE HAND IS. Two cases never reach the player
      * at all: the coin already holds the ground, and nothing in hand tops the
      * coin. Asking in either case offers a choice that changes nothing. */
     if (floor) {
-      const need0 = against ? against.r - bonus - this.GARRISON : 0;
-      if (need0 <= floor) return null;
+      /* The coin's suit is the ground it stands on, so a wall wins level
+       * fights the same way a matching card does — ask duelWinner rather than
+       * comparing ranks and getting the tie wrong. */
+      if (holdsIt({ r: floor, s: tile.terrain, wall: true })) return null;
       if (!q.hand.some((c) => c.r > floor)) return null;
     }
     if (this.isHuman(q.i)) {
@@ -2786,8 +2824,7 @@ class Game {
                            by: by === undefined ? null : by, from,
                            against: against || null,
                            wall: floor || 0,
-                           need: against
-                             ? Math.max(0, against.r - bonus - this.GARRISON) : 0,
+                           need: needAny, needMatch,
                            options };
       return options.includes(pick) ? pick : null;   // declining is legal
     }
@@ -2797,17 +2834,21 @@ class Game {
      *
      * The defender can see the attack, so unlike the earlier version of this
      * there is nothing to estimate — `need` is exact. */
-    const sorted = q.hand.slice().sort((a, b) => a.r - b.r);
-    const need = against ? against.r - bonus - this.GARRISON : 0;
+    /* Cheapest first, and at equal rank spend the card that does NOT match the
+     * ground — a matching card is worth keeping for the next level fight. */
+    const sorted = q.hand.slice().sort((a, b) =>
+      a.r - b.r || (a.s === tile.terrain ? 1 : 0) - (b.s === tile.terrain ? 1 : 0));
+    const need = needAny;
     /* The ground already holds it: keep the card. */
-    if (this.GARRISON && need <= 0) return null;
+    if (this.GARRISON && holdsIt(null)) return null;
     /* A wall already holds this one, or nothing in hand beats the wall: keep
      * the card. The coin fights instead and costs no hand. */
     if (floor && (need <= floor || Math.max(...q.hand.map((c) => c.r)) <= floor))
       return null;
     /* Ground nearly lost is worth stretching for; ground you can retake is not.
-     * A level fight goes to the defender, so meeting `need` exactly is enough. */
-    const able = sorted.filter((c) => c.r >= need && (!floor || c.r > floor));
+     * Ask duelWinner rather than comparing to a number: an 11 of Mountain holds
+     * a mountain an 11 of Plains loses, and the rank alone cannot see that. */
+    const able = sorted.filter((c) => holdsIt(c) && (!floor || c.r > floor));
     if (!able.length) return null;
     if (tile.units.length > 1 && !able.length) return null;
     if (this.DEFEND === "lastditch" && tile.units.length > 1) return null;

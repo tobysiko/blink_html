@@ -54,6 +54,9 @@ function run(seed, n, seat, deck, obj, cb, extra) {
     let steps = 0;
     const tick = () => {
       const t = txt();
+      /* The fight report has to be VISIBLE, not merely computed: it is the
+         answer to "I don't see when the opponent holds the ground". */
+      if (q('.duelout')) note('duelout');
       if (/Game over/.test(t) || steps++ > 6000) return done(t);
 
       /* A duel is asked of whoever is being attacked, so it lands in the middle
@@ -215,6 +218,10 @@ for (const [s, n, seat, deck, obj, extra] of cases) run(s, n, seat, deck, obj, (
         say('FAIL: no homeland ' + stage + ' was ever placed through the DOM');
         bad++;
       }
+    if (allKinds['duel-defend'] && !allKinds.duelout) {
+      say('FAIL: duels were fought and the result was never shown in the prompt');
+      bad++;
+    }
     process.exit(bad ? 1 : 0);
   }
 }, extra);

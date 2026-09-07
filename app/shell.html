@@ -664,6 +664,22 @@
            color:#C0392B; font-weight:700; line-height:1.1}
   .duelsum .needcard em{font-style:normal; font-size:.78em}
   /* The wall being stormed, and the second card the assault still needs. */
+  /* The lower rank that only holds if your card matches the ground. */
+  .duelsum .needcard.match{border-color:var(--terr); color:var(--terr)}
+  .duelsum .needcard.match i{display:inline-block; width:9px; height:9px;
+           border-radius:2px; background:var(--terr); margin-right:.18rem}
+  /* WHAT JUST HAPPENED IN A FIGHT, and it stays put until you act again. The
+     animation layer says it for 1.4 seconds on the hex; this says it where the
+     player is already looking, and says it with animations turned off. */
+  .duelout{display:flex; align-items:center; flex-wrap:wrap; gap:.4rem .6rem;
+           width:100%; margin:0 0 .45rem; padding:.35rem .55rem;
+           border:1px solid var(--line); border-left-width:4px; border-radius:8px}
+  .duelout.good{border-left-color:#2F6B45}
+  .duelout.bad{border-left-color:#8C3A16}
+  .duelout .duelsum{margin-left:0}
+  .duelout .verdict{font-weight:600}
+  .duelout .why{color:var(--mut)}
+  .duelout .tot{font-family:"IBM Plex Mono",monospace; font-size:.82em; color:var(--mut)}
   .duelsum .wall{flex:none; position:relative; display:inline-flex}
   .duelsum .wall .gl{fill:var(--stone)}
   .duelsum .wall .coin{position:absolute; right:-3px; bottom:-2px; width:9px;
