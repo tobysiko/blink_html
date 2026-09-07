@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-07T09:55:42Z
+ * Built 2026-09-07T15:12:58Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -535,7 +535,7 @@ function draftPick(kept, offered, need) {
 
 // --------------------------------------------------------------- map
 class GameMap {
-  constructor(n, bagEach) {
+  constructor(n, bagEach, startLayout) {
     const [mts, pls] = STARTS[n];
     /* Which combat rule is in force. The map has to know, because the map is
      * what answers "may I attack here" — and under the duel the answer no
@@ -544,10 +544,19 @@ class GameMap {
     this.limits = null;
     this.bandOf = () => 0;
     this.tiles = new Map();
-    for (const c of mts) this._add(c, "mountain");
-    for (const c of pls) this._add(c, "plains");
-    this.starts = pls.map((c) => c.slice());
-    pls.forEach((c, i) => this.tiles.get(K(c[0], c[1])).units.push(i));
+    this.core = mts.map((c) => c.slice());
+    if (startLayout === "homelands") {
+      /* Only the block of Mountains exists at construction. The rest of every
+       * homeland is placed by the players themselves, in initiative order,
+       * during the setup phase of the first round. */
+      for (const c of mts) this._add(c, "mountain");
+      this.starts = [];
+    } else {
+      for (const c of mts) this._add(c, "mountain");
+      for (const c of pls) this._add(c, "plains");
+      this.starts = pls.map((c) => c.slice());
+      pls.forEach((c, i) => this.tiles.get(K(c[0], c[1])).units.push(i));
+    }
     // An open supply: every unused tile is visible and may be taken freely
     // until that terrain runs out. No bag, no face-up tile market.
     /* SCARCITY IS A DIAL. At the printed 15 a game ends with five or six of
@@ -625,6 +634,30 @@ class GameMap {
     }
     if (spaces.has(k) && this.tileAvailable(suit)) return ["explore"];
     return [];
+  }
+
+  /* SETUP CANDIDATE: the free cells this seat may take at one step of its
+   * homeland. `from` is the tile the new one must touch. `also`, when given,
+   * is a second tile it must touch as well - that is what makes the Forest and
+   * the Plains a fan around the Mountain rather than a chain leading away from
+   * it. `keepApart` enforces the one legality rule of the whole procedure:
+   * your Plains may not touch another player's Plains, so the last player to
+   * place cannot park on top of the first. */
+  homelandOptions(seat, from, also, keepApart) {
+    const out = [];
+    for (const d of DIRS) {
+      const c = step(from, d);
+      const k = K(c[0], c[1]);
+      if (this.tiles.has(k)) continue;
+      const near = nbrKeys(c[0], c[1]);
+      if (also && !near.includes(K(also[0], also[1]))) continue;
+      if (keepApart && near.some((nk) => {
+        const t = this.tiles.get(nk);
+        return t && t.terrain === "plains" && t.owner !== null && t.owner !== seat;
+      })) continue;
+      out.push(k);
+    }
+    return out;
   }
 
   doExplore(k, suit) {
@@ -1291,7 +1324,13 @@ class Game {
     opts = opts || {};
     this.rng = makeRng(seed === undefined ? 1 : seed);
     this.n = n;
-    this.m = new GameMap(n, opts.tileSupply);
+    /* SETUP CANDIDATE. "block" is the printed rule: one Mountain per player in
+     * the middle and one Plains each around it, laid before anyone touches
+     * anything. "homelands" gives every player all four terrains and lets them
+     * choose where those face, in initiative order. */
+    this.START = opts.startLayout === "homelands" ? "homelands" : "block";
+    this.m = new GameMap(n, opts.tileSupply,
+                         this.START === "homelands" ? "homelands" : undefined);
     /* The player board this table is using. `layout` is a name, a "2-3-5-5-5"
      * string or an array; anything unreadable falls back to the printed board
      * rather than to a half-applied one. Held on the game and handed to each
@@ -1793,6 +1832,7 @@ class Game {
         p.objOffer = [];
       }
     }
+    if (this.START === "homelands" && !this._homelandsLaid) yield* this._layHomelands();
     this.round += 1;
     const order = [];
     for (let k = 0; k < this.n; k++) order.push((this.leader + k) % this.n);
@@ -2121,6 +2161,69 @@ class Game {
           : "why.conquest.none",
       fortifyCells: p.gold >= 1 ? fortifyCells : [],
     };
+  }
+
+  /* SETUP CANDIDATE: everyone builds their own homeland, in initiative order,
+   * the player who leads the first trick going first. Three tiles each -
+   * Forest touching your Mountain, Plains touching both, Ocean touching the
+   * Plains - and your first unit stands on the Plains.
+   *
+   * The order is the point. The last player places knowing the whole map,
+   * which is the compensation for laying their meld last into a trick where
+   * ties go to whoever played earlier. */
+  *_layHomelands() {
+    this._homelandsLaid = true;
+    const core = this.m.core;
+    for (let k = 0; k < this.n; k++) {
+      const i = (this.leader + k) % this.n;
+      const mt = core[i];
+      /* Only offer a Forest that still leaves somewhere legal for the Plains.
+       * Cheaper than a fallback, and it means no player can be talked into a
+       * dead end by the shape of the board. */
+      const fOpts = this.m.homelandOptions(i, mt, null, false)
+        .filter((fk) => this.m.homelandOptions(i, mt, unK(fk), true).length);
+      if (!fOpts.length) continue;                 // unreachable at 2-4 players
+      const fk = yield* this._pickHomeland(i, "forest", fOpts);
+      this.m.doExplore(fk, "forest");
+      this.fx("tile", { seat: i, to: fk });
+
+      const pOpts = this.m.homelandOptions(i, mt, unK(fk), true);
+      const pk = yield* this._pickHomeland(i, "plains", pOpts);
+      this.m.doExplore(pk, "plains");
+      this.m.settle(pk, i);
+      this.m.starts.push(unK(pk));
+      this.fx("tile", { seat: i, to: pk });
+
+      const oOpts = this.m.homelandOptions(i, unK(pk), null, false);
+      if (oOpts.length) {
+        const ok = yield* this._pickHomeland(i, "ocean", oOpts);
+        this.m.doExplore(ok, "ocean");
+        this.fx("tile", { seat: i, to: ok });
+      }
+      this.say("log.homeland", { seat: i });
+    }
+  }
+  /* A human is asked; a bot is not. Same shape as every other choice in the
+   * file, so the app, the replay log and the simulator all take one path. */
+  *_pickHomeland(i, stage, opts) {
+    if (!this.isHuman(i)) return this._botHomeland(opts);
+    const ans = yield { type: "homeland", seat: i, stage, options: opts.slice() };
+    return opts.includes(ans) ? ans : this._botHomeland(opts);
+  }
+  _botHomeland(opts) {
+    /* Outward. A bot has no plan for the map, so it does the one thing that is
+     * never wrong: face away from the middle, where the room is. */
+    const core = this.m.core;
+    const cx = core.reduce((a, c) => a + c[0], 0) / core.length;
+    const cy = core.reduce((a, c) => a + c[1], 0) / core.length;
+    let best = opts[0], far = -1;
+    for (const k of opts) {
+      const [c, r] = unK(k);
+      const dx = (c + (r & 1) * 0.5) - (cx + 0.25), dy = (r - cy) * 0.87;
+      const d = Math.hypot(dx, dy);
+      if (d > far) { far = d; best = k; }
+    }
+    return best;
   }
 
   *_humanTurn(p, use) {

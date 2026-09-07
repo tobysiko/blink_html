@@ -680,6 +680,62 @@ for terr in ("plains", "ocean", "forest", "mountain"):
 check("lowest-ranked card in your hand" in tut,
       "the tutorial does not teach the lowest-card retire")
 
+# --- the starting map is as far apart as the rulebook says it is -----------
+# The book claimed "every start exactly three tiles from every other". At four
+# players it is not: five of the six pairs are three apart and one is five.
+# Nobody caught it because each document was internally consistent, which is
+# this project's whole failure mode. So the distance is computed from the
+# layout the figure actually draws, and the claim is checked against it.
+def _hex_distance(a, b):
+    """Ring-by-ring search on the same offset grid build_figs draws."""
+    def nbrs(c, r):
+        odd = r & 1
+        return [(c + 1, r), (c - 1, r), (c + odd, r - 1), (c - 1 + odd, r - 1),
+                (c + odd, r + 1), (c - 1 + odd, r + 1)]
+    if a == b:
+        return 0
+    front, seen, n = [a], {a}, 0
+    while front and n < 12:
+        n += 1
+        nxt = []
+        for cell in front:
+            for q in nbrs(*cell):
+                if q == b:
+                    return n
+                if q not in seen:
+                    seen.add(q)
+                    nxt.append(q)
+        front = nxt
+    return 99
+
+
+# Read the layouts out of the figure builder rather than keeping a second copy
+# here. A constant duplicated across two files is how the last four of these
+# bugs happened.
+_figsrc = (HERE / "build_figs.py").read_text(encoding="utf8")
+_block = re.search(r"LAYOUTS = \[(.*?)\n    \]", _figsrc, re.S)
+check(_block is not None, "check_rules cannot find LAYOUTS in build_figs.py")
+_LAYOUTS = {}
+if _block:
+    for _line in re.finditer(r'"(\d) players", \[(.*?)\],\s*\[(.*?)\]\)',
+                             _block.group(1).replace("\n", " "), re.S):
+        _LAYOUTS[int(_line.group(1))] = [
+            tuple(int(v) for v in m.groups())
+            for m in re.finditer(r"\((\d+), (\d+)\)", _line.group(3))]
+check(sorted(_LAYOUTS) == [2, 3, 4],
+      f"check_rules read {sorted(_LAYOUTS)} player counts out of build_figs, wanted 2/3/4")
+_dists = []
+for _n, _pls in _LAYOUTS.items():
+    for _i in range(len(_pls)):
+        for _j in range(_i + 1, len(_pls)):
+            _dists.append(_hex_distance(_pls[_i], _pls[_j]))
+_lo, _hi = min(_dists), max(_dists)
+check(_lo == 3, f"the closest two starts are {_lo} tiles apart, not 3")
+check("no start closer than three tiles" in rules,
+      "the rulebook no longer states the minimum distance between two starts")
+check("exactly three tiles from every other" not in rules,
+      f"the rulebook claims every start is exactly three apart; they run {_lo}\u2013{_hi}")
+
 print("\n".join("FAIL: " + f for f in fails) if fails else
       "rulebook agrees with the engine: tiers "
       + "/".join(str(u) for u in UNITS)

@@ -237,6 +237,9 @@ function startGame(force) {
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
                              loss: $("#loss") ? $("#loss").value : undefined,
+    startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
+                             startLayout: $("#startlayout")
+                               ? $("#startlayout").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              food: !leanEconomy(),
@@ -998,6 +1001,7 @@ function needZone() {
     case "feed": case "effectA": return ".vrowbox";
     case "objective": return ".objpick";
     case "conquest": case "waterexplore": case "colony": case "retreat":
+    case "homeland":
       return "#mapbox";
     default: return null;                        // `turn` is free-form on purpose
   }
@@ -1120,6 +1124,10 @@ function activeCells() {
    * the unit have to be the lit ones - there is no other way to say "here". */
   if (REQ.type === "retreat")
     for (const k of REQ.options) out.set(k, { act: "retreat" });
+  /* Setting up. Nothing else on the board is live yet, and the cells on offer
+   * are empty ground rather than tiles, so they get their own act. */
+  if (REQ.type === "homeland")
+    for (const k of REQ.options) out.set(k, { act: "homeland" });
   return out;
 }
 
@@ -1432,6 +1440,7 @@ function cellBadge(a) {
   if (a.act === "explore") return t("hex.freeTile");
   if (a.act === "colony") return t("hex.colony");
   if (a.act === "retreat") return t("hex.retreat");
+  if (a.act === "homeland") return t("hex.homeland");
   return ACT_LABEL[a.act] || "";
 }
 
@@ -1446,6 +1455,7 @@ function onCell(k) {
   }
   if (REQ.type === "conquest") { answer(k); return; }
   if (REQ.type === "retreat") { answer(k); return; }
+  if (REQ.type === "homeland") { answer(k); return; }
   if (REQ.type !== "turn") return;
   if (SEL.mode === "fortify") { answer({ kind: "fortify", cell: k }); return; }
   if (SEL.mode === "move") {
@@ -2399,6 +2409,9 @@ function renderPromptBody() {
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
       break;
     }
+    case "homeland":
+      ask(t("ask.homeland." + REQ.stage));
+      break;
     case "retreat":
       ask(t("ask.retreat"));
       break;

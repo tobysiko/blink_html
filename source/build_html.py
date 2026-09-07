@@ -404,9 +404,10 @@ HTML = f"""<!doctype html>
     <ul>
       <li><strong>one Mountain per player</strong>, in a single block in the middle;</li>
       <li><strong>one Plains per player</strong> around it, each touching exactly one Mountain;</li>
-      <li>every start exactly <strong>three tiles</strong> from every other.</li>
+      <li><strong>no start closer than three tiles</strong> to any other.</li>
     </ul>
-    <p class="fine">Three is not decoration. A card only acts next to your civilization, so
+    <p class="fine">Three is the closest any two players ever start, and it is not decoration.
+    A card only acts next to your civilization, so
     in the opening rounds nobody can reach a rival's homeland at all. Long before homelands are
     in danger, the Mountains become the contested ground — each holds one unit and defends at +2
     a card to take — so the fight for the middle comes first.</p></li>
@@ -423,7 +424,7 @@ HTML = f"""<!doctype html>
     <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>;
     nothing is played yet, so set it to 1.</li>
   </ol>
-  {fig('setup_maps', 'The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and every start is three tiles from every other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.')}
+  {fig('setup_maps', 'The starting layouts. One Mountain per player forms the block in the middle; one Plains per player sits around it, each touching exactly one Mountain, and no start closer than three tiles to any other. Nobody opens with cheaper access to the high ground, and nobody can be reached in the first rounds.')}
 </section>
 
 <section class="example">
