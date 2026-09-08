@@ -1,77 +1,20 @@
 # -*- coding: utf-8 -*-
-"""Builds the proof sheet for the Blink civ-ladder card skin.
-
-    python3 build_skin.py   ->  source/skins/Blink-skin-proof-1.html
-
-Reads civ-ladder.json for the names, art.py for the tech drawings, marks.py for
-the A/B/C effect marks and back.py for the card back. Nothing here changes a
-rule: the effect bands and the rank/suit grid are read from the same shape the
-rulebook prints, and the skin only decides what each card is called and what it
-looks like. A second skin is a second JSON file.
-"""
+"""Builds the proof sheet for the Blink civ-ladder skin."""
 import json, pathlib
-import art, marks, back
+import back, face, marks
 from marks import COLOUR
+from face import SUITS, GOLD
 
 HERE = pathlib.Path(__file__).resolve().parent
 SKIN = json.loads((HERE / "civ-ladder.json").read_text(encoding="utf-8"))
 
-SUITS = ("plains", "forest", "ocean", "mountain")
 SAMPLE_RANKS = (4, 8, 12, 18)
-
-# terrain glyphs, lifted verbatim from source/cardstock.py so the skin cannot
-# invent a different suit shape from the one the rest of the game prints
-GLYPH = {
-    "mountain": ('<path d="M2 20 L9 6.5 L13 13 L15.5 9.5 L22 20 Z" fill="{ink}"/>'
-                 '<path d="M9 6.5 L6.2 11.9 L9 10.7 L11.3 12.1 Z" fill="#fff"/>'),
-    "forest":   ('<path d="M12 2.6 L18.2 12 L14.8 12 L19.6 19 L4.4 19 L9.2 12'
-                 ' L5.8 12 Z" fill="{ink}"/>'
-                 '<rect x="11" y="18" width="2" height="3.6" fill="{ink}"/>'),
-    "plains":   ('<path d="M2.6 19.6 h18.8" stroke="{ink}" stroke-width="1.8"'
-                 ' fill="none" stroke-linecap="round"/>'
-                 '<path d="M6 19.6 q0 -6 2.4 -8 M11.2 19.6 q-.6 -7.4 1.6 -10'
-                 ' M16.6 19.6 q0 -6 2.2 -7.6" stroke="{ink}" stroke-width="1.6"'
-                 ' fill="none" stroke-linecap="round"/>'),
-    "ocean":    ('<path d="M2.4 8 q3 -3 6 0 t6 0 t5.4 0 M2.4 13.8 q3 -3 6 0 t6 0 t5.4 0'
-                 ' M2.4 19.6 q3 -3 6 0 t6 0 t5.4 0" fill="none" stroke="{ink}"'
-                 ' stroke-width="1.8" stroke-linecap="round"/>'),
-}
-GOLD = (2, 3, 4, 5)
-
-
-def glyph(suit, ink):
-    return (f'<svg class="gl" viewBox="0 0 24 24" aria-hidden="true">'
-            f'{GLYPH[suit].format(ink=ink)}</svg>')
-
-
-def card(suit, rank):
-    band = (rank - 1) // 5
-    age = SKIN["ages"][band]
-    ink, pale = COLOUR[suit]["ink"], COLOUR[suit]["pale"]
-    name = SKIN["cards"][suit][rank - 1]
-    idx = (f'<span class="rk">{rank}</span>{glyph(suit, ink)}')
-    ties = band in (1, 3)
-    return f"""
-<div class="card" style="--ink:{ink};--pale:{pale}">
-  <span class="idx">{idx}</span>
-  <span class="idx idx-r">{idx}</span>
-  <div class="plate">{art.tech(suit, rank)}</div>
-  <div class="title">
-    <span class="nm">{name}</span>
-    <span class="age">{age['numeral']} &middot; {age['name']}</span>
-  </div>
-  <div class="fx">
-    <div class="fxr"><span class="k">A</span>{marks.mark_a(rank, ink, ties)}</div>
-    <div class="fxr"><span class="k">B</span>{marks.mark_b(band, suit)}</div>
-    <div class="fxr"><span class="k">C</span>{marks.mark_c(GOLD[band], ink)}</div>
-  </div>
-</div>"""
 
 
 def ladder_table():
     head = "".join(
         f'<th style="--ink:{COLOUR[s]["ink"]}">'
-        f'{glyph(s, COLOUR[s]["ink"])}<span>{SKIN["aspects"][s]["label"]}</span>'
+        f'{face.glyph(s, COLOUR[s]["ink"])}<span>{SKIN["aspects"][s]["label"]}</span>'
         f'<em>{SKIN["aspects"][s]["long"]}</em></th>' for s in SUITS)
     rows = ""
     for rank in range(1, 21):
@@ -98,20 +41,23 @@ def sample_grid():
         out += (f'<div class="rowlabel"><span class="rn">{age["numeral"]}</span>'
                 f'<span class="an">{age["name"]}</span>'
                 f'<span class="ar">rank {rank}</span></div>')
-        out += '<div class="row">' + "".join(card(s, rank) for s in SUITS) + '</div>'
+        out += '<div class="row">' + "".join(face.card(s, rank, SKIN) for s in SUITS) + '</div>'
     return f'<div class="scroll"><div class="deck">{out}</div></div>'
 
 
 KEY = [
-    ("A", marks.mark_a(12, "#3C3833", False),
-     "Add this card&rsquo;s own rank to your meld&rsquo;s total for the trick. "
-     "The number on the badge is the number already on the card, so nothing "
-     "has to be looked up."),
-    ("A", marks.mark_a(18, "#3C3833", True),
-     "The same, and this meld wins ties. Ranks 6&ndash;10 and 16&ndash;20 only."),
+    ("A", marks.mark_a("#3C3833", False),
+     "Add this card&rsquo;s own rank to your meld&rsquo;s total for the trick. The "
+     "badge is card-shaped because A is the only effect that happens in the card "
+     "phase; it does not restate the rank, which is printed in all four corners "
+     "already, and a plus sign survives a half turn where a numeral does not."),
+    ("A", marks.mark_a("#3C3833", True),
+     "The same, and this meld wins ties &mdash; the equals sign is the tie itself, "
+     "and it too is unchanged upside-down. Ranks 6&ndash;10 and 16&ndash;20 only."),
     ("B", marks.mark_b(0, "ocean"),
      "Found a colony: one new tile of this card&rsquo;s suit, one unit standing "
-     "on it, fortified."),
+     "on it, fortified. The hex is pointy-top, the orientation the map is "
+     "actually laid in; the ring around it is the fortification."),
     ("B", marks.mark_b(1, "ocean"),
      "The same colony, but the tile may sit up to two out from your "
      "civilisation &mdash; the dotted run counts the gap."),
@@ -119,10 +65,12 @@ KEY = [
      "Open a frontier: two new tiles of this suit, a unit on one of them, "
      "fortified."),
     ("B", marks.mark_b(3, "ocean"),
-     "Two colonies on any terrain, a unit on each, both fortified. The "
-     "quartered tile is the deck&rsquo;s only way of saying &ldquo;any&rdquo;."),
+     "Two colonies on any terrain, a unit on each, both fortified. The four "
+     "strata are the deck&rsquo;s only way of saying &ldquo;any&rdquo;."),
     ("C", marks.mark_c(4, "#3C3833"),
-     "Take that many gold from the bank."),
+     "Take that many gold from the bank &mdash; counted in coins rather than "
+     "written as a numeral, so it reads from either end. Two to five, which is "
+     "inside the range a person counts at a glance."),
 ]
 
 
@@ -182,6 +130,8 @@ h2{font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:27px;
 .lede strong{color:var(--ink); font-weight:600;}
 
 .scroll{overflow-x:auto; padding-bottom:8px;}
+/* the proof floats the cards on a proofing ground; the deck sheet does not */
+.card{flex:none; border-radius:2.6mm; box-shadow:var(--shadow);}
 .deck{display:flex; flex-direction:column; gap:8px; min-width:1052px;}
 .row{display:flex; gap:16px;}
 .rowlabel{display:flex; align-items:baseline; gap:11px; padding:20px 0 4px;
@@ -193,37 +143,6 @@ h2{font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:27px;
   letter-spacing:.17em; text-transform:uppercase;}
 .rowlabel .ar{font-family:"IBM Plex Mono",monospace; font-size:11.5px;
   color:var(--faint); letter-spacing:.06em;}
-
-/* ---- the card face: 63 x 88 mm ---- */
-.card{position:relative; width:63mm; height:88mm; flex:none; background:#fff;
-  border-radius:2.6mm; box-shadow:var(--shadow); overflow:hidden;
-  display:flex; flex-direction:column; color:#191713;}
-.idx{position:absolute; top:3.6mm; left:4.4mm; display:flex; flex-direction:column;
-  align-items:center; line-height:1; z-index:2;}
-.idx-r{left:auto; right:4.4mm; transform:scale(.74); transform-origin:top right;}
-.idx .rk{font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:19pt;
-  line-height:.82; color:var(--ink);}
-.idx .gl{width:4.4mm; height:4.4mm; margin-top:1.1mm; display:block;}
-
-.plate{margin:16mm 4.5mm 0; height:28mm; border-radius:1.6mm;
-  background:var(--pale); display:flex; align-items:center; justify-content:center;}
-.plate .tech{width:21mm; height:21mm; fill:none; stroke:var(--ink);
-  stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;}
-.plate .ghost{opacity:.3;}
-
-.title{margin:4.2mm 4.5mm 0; display:flex; flex-direction:column; gap:1.2mm;
-  align-items:center; text-align:center;}
-.nm{font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:11.4pt;
-  line-height:1.05; letter-spacing:.005em; color:#17150F;}
-.age{font-family:"IBM Plex Mono",monospace; font-size:6.2pt; letter-spacing:.19em;
-  text-transform:uppercase; color:#8C877D;}
-
-.fx{margin:auto 4.5mm 4.2mm; display:flex; flex-direction:column;}
-.fxr{display:flex; align-items:center; gap:2.6mm; padding:1.3mm 0;
-  border-top:.22mm solid #E2DFD8;}
-.fxr .k{font-family:"IBM Plex Mono",monospace; font-size:7.4pt; font-weight:600;
-  color:#A9A49A; width:3mm; flex:none;}
-.mk{height:5.2mm; width:auto; display:block; overflow:visible;}
 
 /* ---- backs ---- */
 .backs{display:flex; gap:22px; flex-wrap:wrap; align-items:flex-start;}
@@ -237,13 +156,13 @@ h2{font-family:"Fraunces",Georgia,serif; font-weight:600; font-size:27px;
 /* ---- key ---- */
 .keys{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
   gap:0 34px; background:var(--raise); border-radius:4px; padding:8px 22px;}
-.keyrow{display:grid; grid-template-columns:16px 62px 1fr; align-items:center;
+.keyrow{display:grid; grid-template-columns:16px 92px 1fr; align-items:center;
   gap:14px; padding:13px 0; border-bottom:1px solid var(--rule);}
 .keyrow:last-child{border-bottom:none;}
 .keyrow .k{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
   color:var(--faint);}
 .keyrow .kmk{display:flex; align-items:center;}
-.keyrow .kmk .mk{height:23px;}
+.keyrow .kmk .mk{height:26px;}
 .keyrow p{margin:0; font-size:13.6px; line-height:1.45; color:var(--soft);}
 
 /* ---- the ladder ---- */
@@ -298,7 +217,7 @@ HTML = f"""<title>The Civilisation Ladder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
-<style>{CSS}</style>
+<style>{CSS}{face.CARD_CSS}</style>
 
 <div class="wrap">
 
@@ -313,6 +232,7 @@ HTML = f"""<title>The Civilisation Ladder</title>
     <li>80 cards &middot; 4 suits &times; ranks 1&ndash;20</li>
     <li>63 &times; 88 mm</li>
     <li>rules v0.24</li>
+    <li>same either way up</li>
     <li>16 of 80 illustrations drawn</li>
   </ul>
 </header>
@@ -321,10 +241,12 @@ HTML = f"""<title>The Civilisation Ladder</title>
   <div class="h2"><span class="num">01</span><h2>The face</h2></div>
   <p class="lede">Sixteen cards &mdash; one suit per column, one age per row &mdash;
   covering every variant of every effect in the deck. <strong>Rank and suit hold
-  the top corners</strong>, so a fanned hand reads and sorts from the left edge
-  alone. The illustration sits in a tinted plate, the tech name and its age sit
-  under it, and the three effects sit along the bottom <strong>as marks, never
-  as sentences</strong>. Shown at print size.</p>
+  both top corners</strong>: the numeral in the suit&rsquo;s saturated tone, the
+  terrain glyph knocked out of a solid hex the same shape as the tiles on the
+  table. The illustration sits in a tinted plate; the tech name and its age sit
+  under it; the three effects sit along the bottom <strong>as marks, never as
+  sentences</strong>, pulled in on both sides so they stay on the card&rsquo;s centre
+  axis while the rotated index keeps its corner. Shown at print size.</p>
   {sample_grid()}
 </section>
 
@@ -360,8 +282,15 @@ HTML = f"""<title>The Civilisation Ladder</title>
   <div class="h2"><span class="num">03</span><h2>The marks</h2></div>
   <p class="lede">There are only twelve effects in the whole deck &mdash; four
   rank bands &times; A / B / C &mdash; which is why the bottom of the card can be
-  drawn instead of written. Six pieces build all of them: a tile, a unit, a
-  fortification, a reach, a coin, and a numeral.</p>
+  drawn instead of written. Six pieces build all of them: a <strong>hex</strong>,
+  a unit, a rampart, a reach, a coin, and a card. Every one of the six is unchanged
+  by a half turn &mdash; and <strong>the shape says which phase the effect belongs
+  to</strong>: hexes act on the map, discs are coins, and A&rsquo;s badge is a
+  little card, in the same 0.72 proportion as the card it is printed on, because it
+  acts in the card phase. The hex is taken from <code>figs.py</code>, so the mark on
+  the card and the tile in the box are the same object. They are listed here A&ndash;C, but <strong>printed on the card
+  in reverse</strong>: C at the top, A at the bottom, so a card turned around in
+  the victory row leads with&nbsp;A.</p>
   <div class="keys">{key_list()}</div>
 </section>
 
@@ -380,10 +309,38 @@ HTML = f"""<title>The Civilisation Ladder</title>
   <div class="notes">
     <div class="note">
       <span class="tag">Settled</span>
-      <h3>Suit still means terrain first</h3>
-      <p>The aspect meaning lives entirely in the names. Colour, glyph and the
-      tinted plate keep saying &ldquo;this card acts on ocean tiles&rdquo;, which
-      is the thing a player needs in the map phase.</p>
+      <h3>Hexes, pointy-top</h3>
+      <p>The B marks drew rounded squares, which said &ldquo;square grid&rdquo;.
+      They are now hexes at the same orientation <code>figs.py</code> lays the
+      map in, so the mark on the card and the tile in the box are the same
+      object. &ldquo;Any terrain&rdquo; is four strata rather than four quarters,
+      and <strong>fortified became a ring around the tile</strong> rather than a
+      shield badge beside it &mdash; at 6&nbsp;mm a hex, a disc and a badge in
+      one square simply merged into a blob.</p>
+    </div>
+    <div class="note">
+      <span class="tag">Settled</span>
+      <h3>Four corners, and a mirrored face</h3>
+      <p>A meld is played face up to the table, and the players opposite have to
+      read its ranks &mdash; to check the run is unbroken and to total it for
+      initiative. They never need the name or the picture, and those are the only
+      things on the card with a definite up. <strong>The rank is the one element
+      that becomes unreadable upside-down</strong>, so the index is the one
+      element made rotationally symmetric: rotate the card and top-left lands on
+      bottom-right, top-right on bottom-left.</p>
+    </div>
+    <div class="note">
+      <span class="tag">Settled</span>
+      <h3>Printed C, B, A &mdash; and A set apart by shape</h3>
+      <p>The rows run C, B, A down the face, so a card turned around in the
+      victory row &mdash; where its effects are actually spent &mdash; leads with
+      A, the one that decides a trick. In hand the order is upside-down, which
+      costs nothing: you never spend an effect from your hand.</p>
+      <p>C and B are both map phase; A is not. Rather than label the seam, the
+      <strong>shape</strong> carries it: hexes for the map, discs for coins, and a
+      little card for the card phase. A slightly firmer rule sits above A as a
+      second, quieter signal. Both travel with the rows, so a turned card still
+      shows the break between A and B.</p>
     </div>
     <div class="note">
       <span class="tag">Settled</span>
@@ -394,34 +351,54 @@ HTML = f"""<title>The Civilisation Ladder</title>
       you, while ages describe the card.</p>
     </div>
     <div class="note open">
-      <span class="tag">Open</span>
-      <h3>Both indices are at the top</h3>
-      <p>The printed deck repeats the index upside-down in the bottom-right so a
-      card works either way up. That corner is now effects. A second top-corner
-      index keeps the bottom clean but costs you nothing only if hands are always
-      fanned the same way.</p>
+      <span class="tag">Open &middot; your call</span>
+      <h3>Rotated text always looks like a mistake</h3>
+      <p>The first attempt at a mirrored centre band printed the age line twice,
+      once upside-down, and doubled the A&nbsp;/&nbsp;B&nbsp;/&nbsp;C letters the
+      same way. Both read as typos rather than as symmetry &mdash; corner numerals
+      only get away with it because playing cards have trained everyone to expect
+      exactly that. So the letters are gone from the face and the age is
+      <strong>pips</strong>, which are countable from either end. The aid names
+      A&nbsp;/&nbsp;B&nbsp;/&nbsp;C; the three marks are distinct enough to carry
+      themselves.</p>
+    </div>
+    <div class="note open">
+      <span class="tag">Open &middot; your call</span>
+      <h3>Ascending left to right</h3>
+      <p>Worth encouraging, not requiring. Melds are runs, so players sort
+      ascending on their own; hands are private, so a standard order leaks
+      nothing; and the strong top-left index rewards it. That makes it a line in
+      the player aid &mdash; &ldquo;keep your hand in rank order, melds are
+      runs&rdquo; &mdash; and not a rule. An unenforceable rule that changes no
+      legality is exactly the kind of weight the deck has been shedding.</p>
+    </div>
+    <div class="note">
+      <span class="tag">Settled</span>
+      <h3>The name stays single</h3>
+      <p>Setting the tech name twice &mdash; once at the top, once rotated at the
+      bottom &mdash; would complete the mirror, but it would put the largest text
+      on the card into the quiet corner zones and hand the most prominence to the
+      element with the least consequence. It is flavour. It sits once, on the
+      mirror axis itself, which is the one place a single asymmetric element is
+      defensible.</p>
     </div>
     <div class="note open">
       <span class="tag">Open</span>
-      <h3>Sixty-four drawings to go</h3>
-      <p>Ranks 4, 8, 12 and 18 are drawn in all four suits. The rest follow the
-      same rules &mdash; one stroke weight, silhouette first, no interior detail
-      &mdash; once this style is approved.</p>
-    </div>
-    <div class="note open">
-      <span class="tag">Open</span>
-      <h3>Names are a first pass</h3>
-      <p>They live in <code>source/skins/civ-ladder.json</code> as plain data, so
-      renaming a card is a one-line edit and a second skin is a second file.
+      <h3>Sixty-four drawings, and the names</h3>
+      <p>Ranks 4, 8, 12 and 18 are drawn in all four suits; the rest follow the
+      same rules once the style is approved. Names live in
+      <code>source/skins/civ-ladder.json</code>, so renaming is a one-line edit.
       Rank&nbsp;10 is the loosest row &mdash; Census, Waterwheel, The Keep and
       The Compass are not really contemporaries.</p>
     </div>
     <div class="note open">
       <span class="tag">Open</span>
-      <h3>The b/w deck</h3>
-      <p>Every drawing is a stroke with no fill, so it survives a mono printer
-      unchanged. The back does not: parchment and blue both flatten to mid-grey.
-      It would need the hatch treatment the terrain tiles already use.</p>
+      <h3>The b/w deck and the back</h3>
+      <p>Every drawing is a stroke with no fill, so the faces survive a mono
+      printer unchanged. The back does not: parchment and blue both flatten to
+      mid-grey. It would need the hatch treatment the terrain tiles already use.
+      The full-bleed back also still wants either 3&nbsp;mm of bleed or a quiet
+      margin before it meets a home printer.</p>
     </div>
   </div>
 </section>
@@ -436,6 +413,6 @@ HTML = f"""<title>The Civilisation Ladder</title>
 </div>
 """
 
-out = HERE / "Blink-skin-proof-1.html"
+out = HERE / "Blink-skin-proof.html"
 out.write_text(HTML, encoding="utf-8")
 print("wrote", out, len(HTML), "bytes")

@@ -51,6 +51,8 @@ const ACT_LABEL = new Proxy({}, { get: (_, k) => t("hex." + String(k)) });
 let G = null, IT = null, REQ = null;
 /* The last duel this seat fought, shown in the prompt until they act again. */
 let LASTDUEL = null;
+/* And the last objective this seat finished, shown the same way. */
+let LASTOBJ = null;
 /* ME is the seat whose hand and board are on screen. With one person that is
  * fixed; with several it follows whoever is being asked; with none it is just
  * a vantage point. */
@@ -261,7 +263,7 @@ function startGame(force) {
   REP = carryFlags(REP,
     newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
   IT = null; REQ = null; SEL = blankSel();
-  LASTDUEL = null;
+  LASTDUEL = null; LASTOBJ = null;
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
   hidePass();
@@ -356,7 +358,7 @@ function pump(a) {
 
 function answer(a, keepSel) {
   if (!REQ) return;
-  LASTDUEL = null;                     // you have moved on; so does the notice
+  LASTDUEL = null; LASTOBJ = null;     // you have moved on; so do the notices
   const tok = encodeAns(REQ, a);
   /* Remote: the server decides the order things happen in, so this goes on
    * the wire and takes effect when it comes back. One round trip, and nobody
@@ -530,7 +532,7 @@ function abortGame() {
   if (!G || !window.confirm(t("nav.abort.ask"))) return;
   if (netOn()) { netClose(); history.replaceState(null, "", location.pathname); }
   G = null; IT = null; REQ = null; LOG = []; BLOCK = null; MARK = 0;
-  LASTDUEL = null;
+  LASTDUEL = null; LASTOBJ = null;
   SEL = blankSel(); RESEARCH = null; TRICK = null;
   $("#setup").classList.remove("hide");
   $("#game").classList.remove("show");
@@ -832,8 +834,10 @@ function playEvents() {
    * grey line in a 44px log, and with reduced motion on it was neither: the
    * events are dropped whole below this line. So an attack that failed looked
    * exactly like a card leaving your meld for nothing. */
-  for (const e of q)
+  for (const e of q) {
     if (e.type === "duel" && (e.seat === ME || e.defender === ME)) LASTDUEL = e;
+    if (e.type === "objective" && e.seat === ME) LASTOBJ = e;
+  }
   FX_OK = null;
   if (!fxEnabled()) return 0;
 
@@ -871,6 +875,15 @@ function playEvents() {
       case "shield":
         ring(cellPoint(e.at), true, d);
         break;
+      /* The three tiles that did it, lit in order, so the pattern is visible as
+       * a shape on the map rather than a name on a card. */
+      case "objective": {
+        (e.cells || []).forEach((k, j) => ring(cellPoint(k), false, d + j * 120));
+        const mid = cellPoint((e.cells || [])[0]);
+        if (mid) caption(mid, t("obj.points", { n: e.points }), true, d + 260);
+        d += 420;
+        break;
+      }
       /* THE DUEL. The engine has always sent this event with both totals in
        * it; nothing drew it, so a fight the attacker LOST moved nothing on the
        * map and the whole thing was a card silently leaving the meld. Now the
@@ -2169,7 +2182,10 @@ function renderPlayer() {
     const shared = G.OBJECTIVES_MODE === "open";
     s += `<div class="objbox"><span class="vlab">${
       t(shared ? "board.sharedObjectives" : "board.myObjective")}</span><div class="objrow">` +
-      p.objectives.map((o) => objCard(o, G.objectiveDone(ME, o) ? "done" : "")).join("") +
+      p.objectives.map((o) => {
+        const pr = G.objectiveProgress(ME, o);
+        return objCard(o, pr.done ? "done" : "", undefined, pr);
+      }).join("") +
       `</div></div>`;
   }
 
@@ -2330,6 +2346,13 @@ function renderPromptBody() {
      otherwise say nothing but "wait". */
   const fight = renderDuelOutcome();
   if (fight) bar.appendChild(fight);
+  if (LASTOBJ) {
+    const note = el("div", "duelout good");
+    note.appendChild(el("span", "verdict",
+      t("obj.finished", { name: objName({ id: LASTOBJ.id, name: LASTOBJ.name }) })));
+    note.appendChild(el("span", "why", t("obj.points", { n: LASTOBJ.points })));
+    bar.appendChild(note);
+  }
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
@@ -2658,7 +2681,10 @@ function vcardPanel(bar, p) {
 
 /* An objective card: the chain it asks for, drawn as three terrain chips with
  * the middle one marked, because the shape is the whole point. */
-function objCard(o, cls, attr) {
+/* `prog` is the engine's objectiveProgress for this seat, when there is one:
+ * the card then says how close it is and what is missing, rather than only
+ * going quiet until it flips to done. */
+function objCard(o, cls, attr, prog) {
   // `terr`, not `t` — `t` is the translator, and shadowing it here would be a
   // silent, language-shaped bug
   const chip = (terr, mid) => `<span class="ochip${mid ? " mid" : ""}"
@@ -2668,7 +2694,11 @@ function objCard(o, cls, attr) {
     <span class="oname">${objName(o)}<em>${t("obj.points", { n: o.points })}</em></span>
     <span class="ochain">${chip(o.a)}${chip(o.mid, true)}${chip(o.b)}</span>
     <span class="oflav">${t(o.a === o.b ? "obj.chainSame" : "obj.chain",
-      { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>
+      { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>${
+    prog ? `<span class="oprog${prog.done ? " done" : ""}">${
+      prog.done ? t("obj.prog.done")
+      : prog.n === 0 ? t("obj.prog.none", { terrain: TL[prog.missing] })
+      : t("obj.prog", { n: prog.n, terrain: TL[prog.missing] })}</span>` : ""}
   </${tag}>`;
 }
 

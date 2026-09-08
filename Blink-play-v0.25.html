@@ -679,6 +679,8 @@
   .duelout .duelsum{margin-left:0}
   .duelout .verdict{font-weight:600}
   .duelout .why{color:var(--mut)}
+  .objcard .oprog{display:block; margin-top:.15rem; font-size:.72rem; color:var(--mut)}
+  .objcard .oprog.done{color:#2F6B45; font-weight:600}
   .duelout .tot{font-family:"IBM Plex Mono",monospace; font-size:.82em; color:var(--mut)}
   .duelsum .wall{flex:none; position:relative; display:inline-flex}
   .duelsum .wall .gl{fill:var(--stone)}
@@ -1675,7 +1677,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"3baceb132d","branch":"main","dirty":true,"built":"2026-09-08T04:55:14Z"};
+const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"cd2cc95ad1","branch":"main","dirty":true,"built":"2026-09-08T21:36:36Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2114,6 +2116,11 @@ en: {
   "duel.out.defend.lost": "They took your {terrain}.",
   "duel.why.suit": "Level at {n} \u2014 the {terrain} card takes the tie.",
   "duel.why.tie": "Level at {n} \u2014 a tie goes to the defender.",
+  "obj.prog": "{n} of 3 \u2014 needs a {terrain} of yours beside it",
+  "obj.prog.none": "not started \u2014 needs a {terrain} of your own",
+  "obj.prog.done": "complete",
+  "obj.finished": "{name} complete.",
+  "log.objective": "{name} completed \u2014 {n} points.",
   "fx.why.lost_trick": "last place",
   "fx.why.docked": "set aside",
   "fx.why.bonus_gold": "no bonus card",
@@ -2754,6 +2761,11 @@ de: {
   "duel.out.defend.lost": "Sie nehmen dein {terrain}.",
   "duel.why.suit": "Gleichstand bei {n} \u2014 die {terrain}-Karte gewinnt.",
   "duel.why.tie": "Gleichstand bei {n} \u2014 bei Gleichstand h\u00e4lt die Verteidigung.",
+  "obj.prog": "{n} von 3 \u2014 braucht ein eigenes {terrain} daneben",
+  "obj.prog.none": "noch nicht begonnen \u2014 braucht ein eigenes {terrain}",
+  "obj.prog.done": "erf\u00fcllt",
+  "obj.finished": "{name} erf\u00fcllt.",
+  "log.objective": "{name} erf\u00fcllt \u2014 {n} Punkte.",
   "fx.why.lost_trick": "letzter Platz",
   "fx.why.docked": "beiseitegelegt",
   "fx.why.bonus_gold": "keine Extrakarte",
@@ -4813,20 +4825,47 @@ class Game {
 
   /* Three tiles you occupy: a middle of one terrain touching an end of each of
    * the other two. The ends need not touch each other. */
-  objectiveDone(seat, o) {
-    for (const [k, t] of this.m.tiles) {
-      if (t.terrain !== o.mid || t.owner !== seat || !t.units.length) continue;
-      const ends = t.neighbours().filter(
-        (u) => u.owner === seat && u.units.length);
+  objectiveDone(seat, o) { return this.objectiveProgress(seat, o).done; }
+
+  /* HOW CLOSE, AND WHERE. The same search as before, but it reports the best
+   * partial match instead of only yes or no: the middle you occupy that has
+   * the most of what the card asks for, the tiles that count so far, and the
+   * terrain still missing. "2 of 3, needs a Forest" is the number that changes
+   * where you place next; "done" arrives too late to act on.
+   *
+   * Each objective is judged independently against the whole map and scores
+   * ONCE. Nothing is reserved: the same tile may be the middle of one
+   * objective and an end of another, and a pattern that appears twice is worth
+   * no more than a pattern that appears once. */
+  objectiveProgress(seat, o) {
+    const mine = (u) => u.owner === seat && u.units.length;
+    let best = null;
+    for (const [, t] of this.m.tiles) {
+      if (t.terrain !== o.mid || !mine(t)) continue;
+      const ends = t.neighbours().filter(mine);
+      /* The two ends must be two different tiles - which is the whole rule on
+       * a card like the Fjord, where both ends are the same terrain. */
+      let pair = null;
       for (const x of ends) {
         if (x.terrain !== o.a) continue;
-        for (const y of ends) {
-          if (y === x) continue;
-          if (y.terrain === o.b) return true;
-        }
+        const y = ends.find((u) => u !== x && u.terrain === o.b);
+        if (y) { pair = [x, y]; break; }
       }
+      let cells, missing;
+      if (pair) { cells = [t.key, pair[0].key, pair[1].key]; missing = null; }
+      else {
+        const one = ends.find((u) => u.terrain === o.a)
+                 || ends.find((u) => u.terrain === o.b);
+        cells = one ? [t.key, one.key] : [t.key];
+        missing = !one ? o.a
+                : (one.terrain === o.a && o.a !== o.b) ? o.b : o.a;
+      }
+      const cand = { n: cells.length, cells, missing, done: !!pair };
+      if (!best || cand.n > best.n) best = cand;
+      if (best.done) break;
     }
-    return false;
+    /* No middle of your own at all: the middle is what is missing. */
+    return best || { n: 0, cells: [], missing: o.mid, done: false };
   }
 
   gridTop(k) { return this.grid[k].length ? this.grid[k][this.grid[k].length - 1] : null; }
@@ -4989,6 +5028,10 @@ class Game {
       const p = this.P[i];
       this.acting = i;
       this.fx("turnstart", { seat: i });
+      /* Snapshot before the turn, so a pattern completed during it can be
+       * announced. A "done" that only ever appears as a style on a card in the
+       * board panel is a state, not news - the same fault the duel result had. */
+      const objBefore = (p.objectives || []).map((o) => this.objectiveDone(i, o));
       const cards = p.played.slice();
       const spent = this.ASIDE_AT_TRICK ? p.mapSpent : cards.slice();
       const use   = this.ASIDE_AT_TRICK ? p.mapUse   : cards.slice();
@@ -5039,6 +5082,14 @@ class Game {
         yield* this._maybeFortify(p);
         if (!p.hand.length) { yield* this._reclaimForFood(p); yield* this._recycle(p); }
       }
+      (p.objectives || []).forEach((o, j) => {
+        if (objBefore[j] || !this.objectiveDone(i, o)) return;
+        this.inc("objective_done");
+        this.fx("objective", { seat: i, id: o.id, name: o.name,
+                               points: o.points,
+                               cells: this.objectiveProgress(i, o).cells });
+        this.say("log.objective", { name: o.name, n: o.points });
+      });
       this.turnDone.add(i);
       this.fx("turnend", { seat: i });
     }
@@ -8131,6 +8182,8 @@ const ACT_LABEL = new Proxy({}, { get: (_, k) => t("hex." + String(k)) });
 let G = null, IT = null, REQ = null;
 /* The last duel this seat fought, shown in the prompt until they act again. */
 let LASTDUEL = null;
+/* And the last objective this seat finished, shown the same way. */
+let LASTOBJ = null;
 /* ME is the seat whose hand and board are on screen. With one person that is
  * fixed; with several it follows whoever is being asked; with none it is just
  * a vantage point. */
@@ -8341,7 +8394,7 @@ function startGame(force) {
   REP = carryFlags(REP,
     newReport(BUILD, GARGS, { lang: getLang(), players: seatRoster(styles, humans) }));
   IT = null; REQ = null; SEL = blankSel();
-  LASTDUEL = null;
+  LASTDUEL = null; LASTOBJ = null;
   lastZone = null;
   ZOOM = null; PAN = { x: 0, y: 0 };       // a new board fits itself again
   hidePass();
@@ -8436,7 +8489,7 @@ function pump(a) {
 
 function answer(a, keepSel) {
   if (!REQ) return;
-  LASTDUEL = null;                     // you have moved on; so does the notice
+  LASTDUEL = null; LASTOBJ = null;     // you have moved on; so do the notices
   const tok = encodeAns(REQ, a);
   /* Remote: the server decides the order things happen in, so this goes on
    * the wire and takes effect when it comes back. One round trip, and nobody
@@ -8610,7 +8663,7 @@ function abortGame() {
   if (!G || !window.confirm(t("nav.abort.ask"))) return;
   if (netOn()) { netClose(); history.replaceState(null, "", location.pathname); }
   G = null; IT = null; REQ = null; LOG = []; BLOCK = null; MARK = 0;
-  LASTDUEL = null;
+  LASTDUEL = null; LASTOBJ = null;
   SEL = blankSel(); RESEARCH = null; TRICK = null;
   $("#setup").classList.remove("hide");
   $("#game").classList.remove("show");
@@ -8912,8 +8965,10 @@ function playEvents() {
    * grey line in a 44px log, and with reduced motion on it was neither: the
    * events are dropped whole below this line. So an attack that failed looked
    * exactly like a card leaving your meld for nothing. */
-  for (const e of q)
+  for (const e of q) {
     if (e.type === "duel" && (e.seat === ME || e.defender === ME)) LASTDUEL = e;
+    if (e.type === "objective" && e.seat === ME) LASTOBJ = e;
+  }
   FX_OK = null;
   if (!fxEnabled()) return 0;
 
@@ -8951,6 +9006,15 @@ function playEvents() {
       case "shield":
         ring(cellPoint(e.at), true, d);
         break;
+      /* The three tiles that did it, lit in order, so the pattern is visible as
+       * a shape on the map rather than a name on a card. */
+      case "objective": {
+        (e.cells || []).forEach((k, j) => ring(cellPoint(k), false, d + j * 120));
+        const mid = cellPoint((e.cells || [])[0]);
+        if (mid) caption(mid, t("obj.points", { n: e.points }), true, d + 260);
+        d += 420;
+        break;
+      }
       /* THE DUEL. The engine has always sent this event with both totals in
        * it; nothing drew it, so a fight the attacker LOST moved nothing on the
        * map and the whole thing was a card silently leaving the meld. Now the
@@ -10249,7 +10313,10 @@ function renderPlayer() {
     const shared = G.OBJECTIVES_MODE === "open";
     s += `<div class="objbox"><span class="vlab">${
       t(shared ? "board.sharedObjectives" : "board.myObjective")}</span><div class="objrow">` +
-      p.objectives.map((o) => objCard(o, G.objectiveDone(ME, o) ? "done" : "")).join("") +
+      p.objectives.map((o) => {
+        const pr = G.objectiveProgress(ME, o);
+        return objCard(o, pr.done ? "done" : "", undefined, pr);
+      }).join("") +
       `</div></div>`;
   }
 
@@ -10410,6 +10477,13 @@ function renderPromptBody() {
      otherwise say nothing but "wait". */
   const fight = renderDuelOutcome();
   if (fight) bar.appendChild(fight);
+  if (LASTOBJ) {
+    const note = el("div", "duelout good");
+    note.appendChild(el("span", "verdict",
+      t("obj.finished", { name: objName({ id: LASTOBJ.id, name: LASTOBJ.name }) })));
+    note.appendChild(el("span", "why", t("obj.points", { n: LASTOBJ.points })));
+    bar.appendChild(note);
+  }
   if (!REQ) { bar.appendChild(el("div", "ask muted", t("ask.waiting"))); return; }
   if (!mine()) { bar.appendChild(el("div", "ask muted", t("ask.wait"))); return; }
 
@@ -10738,7 +10812,10 @@ function vcardPanel(bar, p) {
 
 /* An objective card: the chain it asks for, drawn as three terrain chips with
  * the middle one marked, because the shape is the whole point. */
-function objCard(o, cls, attr) {
+/* `prog` is the engine's objectiveProgress for this seat, when there is one:
+ * the card then says how close it is and what is missing, rather than only
+ * going quiet until it flips to done. */
+function objCard(o, cls, attr, prog) {
   // `terr`, not `t` — `t` is the translator, and shadowing it here would be a
   // silent, language-shaped bug
   const chip = (terr, mid) => `<span class="ochip${mid ? " mid" : ""}"
@@ -10748,7 +10825,11 @@ function objCard(o, cls, attr) {
     <span class="oname">${objName(o)}<em>${t("obj.points", { n: o.points })}</em></span>
     <span class="ochain">${chip(o.a)}${chip(o.mid, true)}${chip(o.b)}</span>
     <span class="oflav">${t(o.a === o.b ? "obj.chainSame" : "obj.chain",
-      { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>
+      { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>${
+    prog ? `<span class="oprog${prog.done ? " done" : ""}">${
+      prog.done ? t("obj.prog.done")
+      : prog.n === 0 ? t("obj.prog.none", { terrain: TL[prog.missing] })
+      : t("obj.prog", { n: prog.n, terrain: TL[prog.missing] })}</span>` : ""}
   </${tag}>`;
 }
 

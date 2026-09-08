@@ -1791,20 +1791,47 @@ class Game {
 
   /* Three tiles you occupy: a middle of one terrain touching an end of each of
    * the other two. The ends need not touch each other. */
-  objectiveDone(seat, o) {
-    for (const [k, t] of this.m.tiles) {
-      if (t.terrain !== o.mid || t.owner !== seat || !t.units.length) continue;
-      const ends = t.neighbours().filter(
-        (u) => u.owner === seat && u.units.length);
+  objectiveDone(seat, o) { return this.objectiveProgress(seat, o).done; }
+
+  /* HOW CLOSE, AND WHERE. The same search as before, but it reports the best
+   * partial match instead of only yes or no: the middle you occupy that has
+   * the most of what the card asks for, the tiles that count so far, and the
+   * terrain still missing. "2 of 3, needs a Forest" is the number that changes
+   * where you place next; "done" arrives too late to act on.
+   *
+   * Each objective is judged independently against the whole map and scores
+   * ONCE. Nothing is reserved: the same tile may be the middle of one
+   * objective and an end of another, and a pattern that appears twice is worth
+   * no more than a pattern that appears once. */
+  objectiveProgress(seat, o) {
+    const mine = (u) => u.owner === seat && u.units.length;
+    let best = null;
+    for (const [, t] of this.m.tiles) {
+      if (t.terrain !== o.mid || !mine(t)) continue;
+      const ends = t.neighbours().filter(mine);
+      /* The two ends must be two different tiles - which is the whole rule on
+       * a card like the Fjord, where both ends are the same terrain. */
+      let pair = null;
       for (const x of ends) {
         if (x.terrain !== o.a) continue;
-        for (const y of ends) {
-          if (y === x) continue;
-          if (y.terrain === o.b) return true;
-        }
+        const y = ends.find((u) => u !== x && u.terrain === o.b);
+        if (y) { pair = [x, y]; break; }
       }
+      let cells, missing;
+      if (pair) { cells = [t.key, pair[0].key, pair[1].key]; missing = null; }
+      else {
+        const one = ends.find((u) => u.terrain === o.a)
+                 || ends.find((u) => u.terrain === o.b);
+        cells = one ? [t.key, one.key] : [t.key];
+        missing = !one ? o.a
+                : (one.terrain === o.a && o.a !== o.b) ? o.b : o.a;
+      }
+      const cand = { n: cells.length, cells, missing, done: !!pair };
+      if (!best || cand.n > best.n) best = cand;
+      if (best.done) break;
     }
-    return false;
+    /* No middle of your own at all: the middle is what is missing. */
+    return best || { n: 0, cells: [], missing: o.mid, done: false };
   }
 
   gridTop(k) { return this.grid[k].length ? this.grid[k][this.grid[k].length - 1] : null; }
@@ -1967,6 +1994,10 @@ class Game {
       const p = this.P[i];
       this.acting = i;
       this.fx("turnstart", { seat: i });
+      /* Snapshot before the turn, so a pattern completed during it can be
+       * announced. A "done" that only ever appears as a style on a card in the
+       * board panel is a state, not news - the same fault the duel result had. */
+      const objBefore = (p.objectives || []).map((o) => this.objectiveDone(i, o));
       const cards = p.played.slice();
       const spent = this.ASIDE_AT_TRICK ? p.mapSpent : cards.slice();
       const use   = this.ASIDE_AT_TRICK ? p.mapUse   : cards.slice();
@@ -2017,6 +2048,14 @@ class Game {
         yield* this._maybeFortify(p);
         if (!p.hand.length) { yield* this._reclaimForFood(p); yield* this._recycle(p); }
       }
+      (p.objectives || []).forEach((o, j) => {
+        if (objBefore[j] || !this.objectiveDone(i, o)) return;
+        this.inc("objective_done");
+        this.fx("objective", { seat: i, id: o.id, name: o.name,
+                               points: o.points,
+                               cells: this.objectiveProgress(i, o).cells });
+        this.say("log.objective", { name: o.name, n: o.points });
+      });
       this.turnDone.add(i);
       this.fx("turnend", { seat: i });
     }
