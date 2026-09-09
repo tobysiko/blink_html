@@ -104,6 +104,48 @@ function put(g, cell, ter, seat) {
   ok(two === one, `two Fjords scored ${two} against one Fjord's ${one} — it is meant to score once`);
 }
 
+/* ---- scoring once per middle, with the ends shared ---- */
+{
+  const fjord = byName('Fjord');                 // mountain - OCEAN - mountain
+  /* Two adjacent hexes share exactly two neighbours, so one pair of mountains
+     can be the ends of two different ocean middles. That sharing is the whole
+     reason the efficient shape is a strip rather than a triangle, and it is
+     what makes this rule cost about 1.7 tiles a point instead of 3. */
+  const g = new E.Game(2, 1, { humans: [], objectives: 'both',
+                               objectiveScoring: 'perMiddle' });
+  for (const [, t] of g.m.tiles) t.units.length = 0;
+  const c = E.unK([...g.m.tiles.keys()][0]);
+  put(g, c, 'mountain', 0);
+  put(g, E.step(c, 'E'), 'mountain', 0);
+  /* the two cells that touch both of those mountains */
+  const shared = E.nbrKeys(c[0], c[1])
+    .filter((k) => E.nbrKeys(...E.step(c, 'E')).includes(k));
+  ok(shared.length === 2, `two adjacent hexes shared ${shared.length} neighbours, wanted 2`);
+  put(g, E.unK(shared[0]), 'ocean', 0);
+  ok(g.objectiveCount(0, fjord) === 1, 'one ocean between two mountains was not one hit');
+  put(g, E.unK(shared[1]), 'ocean', 0);
+  ok(g.objectiveCount(0, fjord) === 2,
+     `two oceans sharing the same pair of mountains gave ${g.objectiveCount(0, fjord)} hits, wanted 2`);
+
+  g.P[0].objectives = [fjord]; g.P[1].objectives = [];
+  ok(g.objectiveScore(0, fjord) === fjord.points + 1,
+     `two hits paid ${g.objectiveScore(0, fjord)}, wanted ${fjord.points} + 1`);
+  ok(g.score()[0].obj === fjord.points + 1, 'the score sheet did not use the per-middle rule');
+  ok(g.score()[0].objDone[0].hits === 2, 'the score sheet did not report the hit count');
+
+  /* ...and the printed rule still pays once for exactly the same map. */
+  const h = new E.Game(2, 1, { humans: [], objectives: 'both' });
+  for (const [, t] of h.m.tiles) t.units.length = 0;
+  put(h, c, 'mountain', 0);
+  put(h, E.step(c, 'E'), 'mountain', 0);
+  put(h, E.unK(shared[0]), 'ocean', 0);
+  put(h, E.unK(shared[1]), 'ocean', 0);
+  h.P[0].objectives = [fjord]; h.P[1].objectives = [];
+  ok(h.objectiveCount(0, fjord) === 2, 'the count changed with the scoring rule');
+  ok(h.score()[0].obj === fjord.points,
+     `the printed rule paid ${h.score()[0].obj} for two hits, wanted ${fjord.points}`);
+}
+
 /* ---- progress never disagrees with done, over real games ---- */
 {
   for (let s = 0; s < 25; s++) {
@@ -114,6 +156,7 @@ function put(g, cell, ter, seat) {
       ok(q.done ? q.missing === null : q.missing !== null,
          'an unfinished objective did not say what it is missing');
       ok(q.n === q.cells.length, 'the count and the tiles named disagree');
+      ok(q.hits === g.objectiveCount(p.i, o), 'progress and the hit count disagree');
     }
   }
 }

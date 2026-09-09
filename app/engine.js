@@ -1538,6 +1538,21 @@ class Game {
     this.m.combat = this.COMBAT;
     /* off | secret (deal two, keep one) | open (two face up, shared) | both */
     this.OBJECTIVES_MODE = opts.objectives || "off";
+    /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
+     * worth its points or nothing, however many times you built it.
+     * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
+     * tile of yours that also completes it.
+     *
+     * Why the middle and not the whole instance: one payment per middle is a
+     * scan a person can do at a table - point at each tile of the middle
+     * terrain, check its neighbours, tally. Counting instances that share no
+     * tiles at all is a packing problem, and two players will count the same
+     * map differently, which is the worst thing a scoring rule can do.
+     * Measured ceiling from twelve tiles: 7 middles against 4 disjoint
+     * instances, and 30 if every combination counted. See
+     * claude/map-objectives.md. */
+    this.OBJ_SCORING = opts.objectiveScoring === "perMiddle" ? "perMiddle" : "once";
+    this.OBJ_EXTRA = opts.objectiveExtra === undefined ? 1 : opts.objectiveExtra;
     /* "lowest" — research retires the LOWEST rank you hold (any suit of it).
      *            Research is then an upgrade in the plain sense: your worst
      *            card leaves and a better one arrives.
@@ -1791,7 +1806,36 @@ class Game {
 
   /* Three tiles you occupy: a middle of one terrain touching an end of each of
    * the other two. The ends need not touch each other. */
-  objectiveDone(seat, o) { return this.objectiveProgress(seat, o).done; }
+  objectiveDone(seat, o) { return this.objectiveCount(seat, o) > 0; }
+
+  /* Every middle tile of yours that completes this pattern, with the ends that
+   * do it. Ends may be shared between two middles - that is the rule, and it
+   * is what makes a strip of alternating terrain the efficient shape to build
+   * rather than one perfect triangle. */
+  objectiveHits(seat, o) {
+    const mine = (u) => u.owner === seat && u.units.length;
+    const out = [];
+    for (const [, t] of this.m.tiles) {
+      if (t.terrain !== o.mid || !mine(t)) continue;
+      const ends = t.neighbours().filter(mine);
+      for (const x of ends) {
+        if (x.terrain !== o.a) continue;
+        const y = ends.find((u) => u !== x && u.terrain === o.b);
+        if (y) { out.push([t.key, x.key, y.key]); break; }
+      }
+    }
+    return out;
+  }
+  objectiveCount(seat, o) { return this.objectiveHits(seat, o).length; }
+
+  /* What one objective is worth to this seat, under whichever rule is on. */
+  objectiveScore(seat, o) {
+    const n = this.objectiveCount(seat, o);
+    if (!n) return 0;
+    return this.OBJ_SCORING === "perMiddle"
+      ? o.points + (n - 1) * this.OBJ_EXTRA
+      : o.points;
+  }
 
   /* HOW CLOSE, AND WHERE. The same search as before, but it reports the best
    * partial match instead of only yes or no: the middle you occupy that has
@@ -1831,7 +1875,9 @@ class Game {
       if (best.done) break;
     }
     /* No middle of your own at all: the middle is what is missing. */
-    return best || { n: 0, cells: [], missing: o.mid, done: false };
+    best = best || { n: 0, cells: [], missing: o.mid, done: false };
+    best.hits = best.done ? this.objectiveCount(seat, o) : 0;
+    return best;
   }
 
   gridTop(k) { return this.grid[k].length ? this.grid[k][this.grid[k].length - 1] : null; }
@@ -1997,7 +2043,7 @@ class Game {
       /* Snapshot before the turn, so a pattern completed during it can be
        * announced. A "done" that only ever appears as a style on a card in the
        * board panel is a state, not news - the same fault the duel result had. */
-      const objBefore = (p.objectives || []).map((o) => this.objectiveDone(i, o));
+      const objBefore = (p.objectives || []).map((o) => this.objectiveCount(i, o));
       const cards = p.played.slice();
       const spent = this.ASIDE_AT_TRICK ? p.mapSpent : cards.slice();
       const use   = this.ASIDE_AT_TRICK ? p.mapUse   : cards.slice();
@@ -2049,12 +2095,16 @@ class Game {
         if (!p.hand.length) { yield* this._reclaimForFood(p); yield* this._recycle(p); }
       }
       (p.objectives || []).forEach((o, j) => {
-        if (objBefore[j] || !this.objectiveDone(i, o)) return;
-        this.inc("objective_done");
+        const now = this.objectiveCount(i, o);
+        if (now <= objBefore[j]) return;
+        this.inc(objBefore[j] ? "objective_again" : "objective_done");
+        const hits = this.objectiveHits(i, o);
         this.fx("objective", { seat: i, id: o.id, name: o.name,
-                               points: o.points,
-                               cells: this.objectiveProgress(i, o).cells });
-        this.say("log.objective", { name: o.name, n: o.points });
+                               points: this.objectiveScore(i, o), hits: now,
+                               again: objBefore[j] > 0,
+                               cells: hits[hits.length - 1] || [] });
+        this.say(objBefore[j] ? "log.objective.again" : "log.objective",
+                 { name: o.name, n: this.objectiveScore(i, o) });
       });
       this.turnDone.add(i);
       this.fx("turnend", { seat: i });
@@ -4157,9 +4207,10 @@ class Game {
       let obj = 0;
       const objDone = [];
       for (const o of p.objectives || []) {
-        const done = this.objectiveDone(p.i, o);
-        objDone.push({ o, done });
-        if (done) obj += o.points;
+        const hits = this.objectiveCount(p.i, o);
+        const points = this.objectiveScore(p.i, o);
+        objDone.push({ o, done: hits > 0, hits, points });
+        obj += points;
       }
       out.push({ seat: p.i, pop, vrow: vp, dom, obj, objDone,
                  total: pop + vp + dom + obj,

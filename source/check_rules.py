@@ -736,6 +736,16 @@ check("no start closer than three tiles" in rules,
 check("exactly three tiles from every other" not in rules,
       f"the rulebook claims every start is exactly three apart; they run {_lo}\u2013{_hi}")
 
+# --- the objective pattern is a bend, not a row ---------------------------
+# The lede said "three tiles in a row" and the section three paragraphs later
+# said the ends need not touch each other. Both cannot be true, and the card
+# art draws some patterns straight and some bent, which teaches the wrong one.
+check("three tiles in a row" not in rules,
+      "the rulebook calls an objective three tiles in a row; the ends may sit "
+      "anywhere around the middle")
+check("a bend counts exactly as a straight line" in rules,
+      "the rulebook no longer says a bent objective counts the same as a straight one")
+
 print("\n".join("FAIL: " + f for f in fails) if fails else
       "rulebook agrees with the engine: tiers "
       + "/".join(str(u) for u in UNITS)

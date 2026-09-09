@@ -241,9 +241,10 @@ function startGame(force) {
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
                              loss: $("#loss") ? $("#loss").value : undefined,
-    startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
                              startLayout: $("#startlayout")
                                ? $("#startlayout").value : undefined,
+                             objectiveScoring: $("#objscoring")
+                               ? $("#objscoring").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              food: !leanEconomy(),
@@ -2348,8 +2349,10 @@ function renderPromptBody() {
   if (fight) bar.appendChild(fight);
   if (LASTOBJ) {
     const note = el("div", "duelout good");
+    const nm = objName({ id: LASTOBJ.id, name: LASTOBJ.name });
     note.appendChild(el("span", "verdict",
-      t("obj.finished", { name: objName({ id: LASTOBJ.id, name: LASTOBJ.name }) })));
+      t(LASTOBJ.again ? "obj.finished.again" : "obj.finished",
+        { name: nm, n: LASTOBJ.hits })));
     note.appendChild(el("span", "why", t("obj.points", { n: LASTOBJ.points })));
     bar.appendChild(note);
   }
@@ -2696,7 +2699,8 @@ function objCard(o, cls, attr, prog) {
     <span class="oflav">${t(o.a === o.b ? "obj.chainSame" : "obj.chain",
       { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>${
     prog ? `<span class="oprog${prog.done ? " done" : ""}">${
-      prog.done ? t("obj.prog.done")
+      prog.done ? (prog.hits > 1 ? t("obj.prog.doneN", { n: prog.hits })
+                                 : t("obj.prog.done"))
       : prog.n === 0 ? t("obj.prog.none", { terrain: TL[prog.missing] })
       : t("obj.prog", { n: prog.n, terrain: TL[prog.missing] })}</span>` : ""}
   </${tag}>`;
@@ -3463,6 +3467,8 @@ function netRules() {
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
     loss: $("#loss") ? $("#loss").value : undefined,
+    startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
+    objectiveScoring: $("#objscoring") ? $("#objscoring").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     food: !leanEconomy(),
     ascension: !leanEconomy(),
