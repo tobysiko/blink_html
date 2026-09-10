@@ -83,7 +83,7 @@ let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
-           waterCell: null, colonyCell: null, perk: null };
+           waterCell: null, colonyCell: null, perk: null, draft: [] };
 }
 
 const $ = (s) => document.querySelector(s);
@@ -245,6 +245,8 @@ function startGame(force) {
                                ? $("#startlayout").value : undefined,
                              objectiveScoring: $("#objscoring")
                                ? $("#objscoring").value : undefined,
+                             handSetup: $("#handsetup")
+                               ? $("#handsetup").value : undefined,
                              attacksPerTurn:
                                $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
                              food: !leanEconomy(),
@@ -1021,6 +1023,7 @@ function needZone() {
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
     case "retire": case "discard": case "bonus": case "duel": return "#hand";
+    case "draft": case "mulligan": return "#hand";
     case "buy": return "#market";
     case "setaside": case "assault":              // the cards are already on the table
       return "#mymeld";
@@ -2201,6 +2204,26 @@ function renderPlayer() {
    * like a discard does, and it is the one request that can arrive on somebody
    * else's turn — so the cards must say which ones are legal, because the
    * sentence above them is about a tile you may not even be looking at. */
+  /* DRAFTING. Your hand does not exist yet - the pack does - so the pack goes
+   * where the hand goes and is picked the same way. Ten cards, keep four, pass
+   * the rest: the one decision in setup, and until now the app took it for you
+   * with a bot heuristic and never said so. */
+  if (mine() && REQ.type === "draft") {
+    $("#hand").innerHTML = REQ.pack.map((c, i) => {
+      const on = SEL.draft.includes(i) ? " sel" : "";
+      const full = SEL.draft.length >= REQ.need && !on;
+      return cardBtn(c, on + (full ? " dead" : " want"), `data-pack="${i}"`, "mid");
+    }).join("");
+    $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
+      n.addEventListener("click", () => {
+        const i = Number(n.dataset.pack);
+        const at = SEL.draft.indexOf(i);
+        if (at >= 0) SEL.draft.splice(at, 1);
+        else if (SEL.draft.length < REQ.need) SEL.draft.push(i);
+        render();
+      }));
+    wireCardHold();
+  } else {
   const handPick = mine()
     && ["meld", "bonus", "discard", "retire", "duel"].includes(REQ.type);
   const wanted = handPick && REQ.type !== "meld";
@@ -2213,6 +2236,7 @@ function renderPlayer() {
   }).join("") || `<span class="muted small">${t("board.handEmpty")}</span>`;
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
+  }
   /* Arranging the perks: pick one up, then pick the slot it goes in. Two taps
    * rather than a drag, because this has to work on a phone. The arrangement
    * locks itself the moment the row holds a card, so this only ever fires
@@ -2524,6 +2548,20 @@ function renderPromptBody() {
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
       break;
     }
+    case "draft": {
+      ask(t("ask.draft", { need: REQ.need, pack: REQ.pack.length,
+                           kept: REQ.kept.length }));
+      const go = btn(t("btn.draftKeep", { n: REQ.need }),
+                     () => answer(SEL.draft.slice()), "",
+                     SEL.draft.length !== REQ.need);
+      go.classList.toggle("ready", SEL.draft.length === REQ.need);
+      break;
+    }
+    case "mulligan":
+      ask(t(REQ.pool ? "ask.mulligan" : "ask.mulligan.empty", { pool: REQ.pool }));
+      btn(t("btn.mulligan"), () => answer(true));
+      btn(t("btn.keepHand"), () => answer(false), "alt");
+      break;
     case "homeland":
       ask(t("ask.homeland." + REQ.stage));
       break;
@@ -3469,6 +3507,7 @@ function netRules() {
     loss: $("#loss") ? $("#loss").value : undefined,
     startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
     objectiveScoring: $("#objscoring") ? $("#objscoring").value : undefined,
+    handSetup: $("#handsetup") ? $("#handsetup").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,
     food: !leanEconomy(),
     ascension: !leanEconomy(),

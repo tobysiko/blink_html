@@ -59,6 +59,21 @@ function autoHuman(G, req, rng) {
      * legal too — which is the branch that used to lose a card silently. */
     case 'assault':
       return rng() < 0.2 ? null : pick(req.options);
+    /* Settling the starting hand. The draft is the printed rule and is asked
+     * of a person now, so a driver that claims to play a whole game as a human
+     * has to answer it. Pick at random rather than well: this is a protocol
+     * test, and a driver that only ever made good picks would never exercise
+     * the branch where a bad pack has to be lived with. */
+    case 'draft': {
+      const idx = req.pack.map((_, i) => i);
+      for (let i = idx.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [idx[i], idx[j]] = [idx[j], idx[i]];
+      }
+      return idx.slice(0, req.need);
+    }
+    case 'mulligan':
+      return rng() < 0.3;
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

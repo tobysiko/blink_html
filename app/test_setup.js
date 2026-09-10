@@ -40,7 +40,14 @@ function configure(w, d, opts) {
   }
   if (opts.level) pick(`#lv-${opts.level}`);
   if (opts.seed !== undefined) d.querySelector("#seed").value = String(opts.seed);
-  for (const [id, value] of Object.entries(opts.advanced || {})) {
+  /* THE DRAFT IS NOW A QUESTION, and the printed default. Every DOM test here
+   * was written before that: they start a game and expect the first thing the
+   * app asks for to be a meld. Give them the dealt hand unless the test says
+   * otherwise, so each one goes on testing the thing it was written for, and
+   * let a test that means to exercise the draft ask for it by name
+   * (`advanced: { handsetup: 'draft' }`, as ui_playthrough_test does). */
+  const advanced = Object.assign({ handsetup: "deal" }, opts.advanced || {});
+  for (const [id, value] of Object.entries(advanced)) {
     const sel = d.querySelector(`#${id}`);
     if (sel) sel.value = value;
   }

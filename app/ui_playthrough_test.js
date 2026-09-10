@@ -65,6 +65,24 @@ function run(seed, n, seat, deck, obj, cb, extra) {
       /* Laying out a homeland, before the first card is played. Three hexes in
        * a row and no buttons — matched on the request because the prompt is a
        * sentence in whatever language the page is in. */
+      /* Settling the starting hand, before the first card is played. */
+      if (w.eval('REQ && REQ.type') === 'draft') {
+        note('draft');
+        const need = w.eval('REQ.need');
+        const cards = qa('#hand button[data-pack]');
+        for (let k = 0; k < need && k < cards.length; k++) click(cards[k]);
+        const keep = [...d.querySelectorAll('#prompt button')].find((b) => !b.disabled);
+        if (keep) click(keep);
+        else { note('draft-STUCK'); return done(t); }
+        return setTimeout(tick, 0);
+      }
+      if (w.eval('REQ && REQ.type') === 'mulligan') {
+        note('mulligan');
+        const bs = [...d.querySelectorAll('#prompt button')].filter((b) => !b.disabled);
+        if (!bs.length) { note('mulligan-STUCK'); return done(t); }
+        click(bs[Math.random() < 0.5 ? 0 : bs.length - 1]);
+        return setTimeout(tick, 0);
+      }
       if (w.eval('REQ && REQ.type') === 'homeland') {
         note('homeland-' + w.eval('REQ.stage'));
         const h = hot();
@@ -193,7 +211,9 @@ function run(seed, n, seat, deck, obj, cb, extra) {
 const cases = [[11, 3, 0, 'abc', 'secret'], [12, 3, 1, 'abd', 'open'],
                [13, 4, 2, 'abd', 'both'],   [14, 2, 0, 'abc', 'off'],
                [15, 4, 1, 'abd', 'off', { startlayout: 'homelands' }],
-               [16, 2, 0, 'abc', 'off', { startlayout: 'homelands' }]];
+               [16, 2, 0, 'abc', 'off', { startlayout: 'homelands' }],
+               [17, 3, 0, 'abc', 'off', { handsetup: 'draft' }],
+               [18, 4, 2, 'abc', 'off', { handsetup: 'mulligan' }]];
 let done = 0, bad = 0;
 const allKinds = {};
 /* A watchdog, because the failure this file just had was silence: if a game
@@ -218,6 +238,8 @@ for (const [s, n, seat, deck, obj, extra] of cases) run(s, n, seat, deck, obj, (
         say('FAIL: no homeland ' + stage + ' was ever placed through the DOM');
         bad++;
       }
+    for (const k of ['draft', 'mulligan'])
+      if (!allKinds[k]) { say(`FAIL: the ${k} setup never appeared in the DOM`); bad++; }
     if (allKinds['duel-defend'] && !allKinds.duelout) {
       say('FAIL: duels were fought and the result was never shown in the prompt');
       bad++;

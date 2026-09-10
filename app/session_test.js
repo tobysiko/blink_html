@@ -28,7 +28,13 @@ let seq = 0;
 const rand = () => { seq = (seq * 1103515245 + 12345) % 2147483648; return seq / 2147483648; };
 
 // ------------------------------------------------------------ the lobby
-const s = S.newSession({ n: 3, seed: 77, objectives: 'off' }, rand);
+/* These sessions are DEALT rather than drafted. The printed draft is three
+ * questions a seat before a card is played, answered with a list of positions
+ * in the pack, and the generic answerers below send an option index - so they
+ * would refuse it and the section would test nothing. The draft's own trip
+ * through the session codec is asserted in handsetup_test, and human_test
+ * plays 240 whole games through it. */
+const s = S.newSession({ n: 3, seed: 77, objectives: 'off', handSetup: 'deal' }, rand);
 ok(/^[2-9BCDFGHJKLMNPQRSTVWXYZ]{4}-[2-9BCDFGHJKLMNPQRSTVWXYZ]{4}$/.test(s.code),
    `the session code "${s.code}" is not the shape people can read out`);
 ok(!/[AEIOU01]/.test(s.code), `the code "${s.code}" can contain a word or an ambiguous digit`);
@@ -139,7 +145,7 @@ const mine = boardOf(s);
 /* A client that has only ever seen the state message — code, seed, rules,
  * log — and never the server's own object. */
 const wire = JSON.parse(JSON.stringify(S.sessionState(s, host.player.token)));
-const rebuilt = S.newSession({ n: wire.n, seed: wire.seed, code: wire.code }, rand);
+const rebuilt = S.newSession({ n: wire.n, seed: wire.seed, code: wire.code, handSetup: 'deal' }, rand);
 rebuilt.rules = wire.rules;
 rebuilt.phase = 'playing';
 for (const seat of wire.humans) rebuilt.seats[seat].player = 'x' + seat;
@@ -151,7 +157,7 @@ ok(!JSON.stringify(wire).includes(host.player.token),
    'the state message leaks a player token to everybody at the table');
 
 // --------------------------------------------------------- reconnecting
-const s2 = S.newSession({ n: 3, seed: 12, objectives: 'off' }, rand);
+const s2 = S.newSession({ n: 3, seed: 12, objectives: 'off', handSetup: 'deal' }, rand);
 const h2 = S.sessionJoin(s2, { name: 'Toby' }, rand);
 const g2 = S.sessionJoin(s2, { name: 'Anna', seat: 1 }, rand);
 S.sessionStart(s2, h2.player.token);
@@ -175,7 +181,7 @@ ok(S.sessionState(s2, g2.player.token).seats[1].you,
 // ---------------------------------------------------------------- undo
 /* The same limit the local game enforces, worked out from the log: back to the
  * start of your own map turn, and no further. */
-const s3 = S.newSession({ n: 3, seed: 31, objectives: 'off' }, rand);
+const s3 = S.newSession({ n: 3, seed: 31, objectives: 'off', handSetup: 'deal' }, rand);
 const h3 = S.sessionJoin(s3, { name: 'Toby' }, rand);
 S.sessionStart(s3, h3.player.token);
 let inTurn = 0, sawTurn = false;
@@ -226,7 +232,7 @@ for (let k = 0; k < 400; k++) {
 ok(sawTurn, 'the undo section never reached a map turn');
 ok(inTurn > 0, 'the undo section never actually undid anything');
 /* And it stops: from the card phase there is nothing of yours to take back. */
-const s4 = S.newSession({ n: 3, seed: 5, objectives: 'off' }, rand);
+const s4 = S.newSession({ n: 3, seed: 5, objectives: 'off', handSetup: 'deal' }, rand);
 const h4 = S.sessionJoin(s4, { name: 'Toby' }, rand);
 S.sessionStart(s4, h4.player.token);
 S.sessionAnswer(s4, E, h4.player.token, 0, { pick: 0 });     // the meld
@@ -282,7 +288,7 @@ ok(!S.sessionUndo(s4, E, h4.player.token).ok,
 
   for (const rule of ['classic', 'bonus']) {
     for (let seed = 1; seed <= 12; seed++) {
-      const g = new E.Game(3, seed * 131 + 7, { humans: [0], trickRule: rule });
+      const g = new E.Game(3, seed * 131 + 7, { humans: [0], trickRule: rule, handSetup: 'deal' });
       let it = g.playRound(), r = it.next(), guard = 0, block = null;
       while (guard++ < 20000) {
         if (r.done) { if (g.finished()) break; it = g.playRound(); r = it.next(); continue; }

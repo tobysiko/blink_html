@@ -307,7 +307,10 @@ setTimeout(() => {
  */
 function rebuild(rep) {
   const { n, seed, ...rules } = rep.setup;
-  const g = new E.Game(n, seed, Object.assign({ botStyle: 'mixed' }, rules));
+  /* Dealt, not drafted: this replays a recorded log through a generic
+     answerer, and the draft is answered with positions in a pack rather than
+     an option index. handsetup_test covers that codec directly. */
+  const g = new E.Game(n, seed, Object.assign({ botStyle: 'mixed', handSetup: 'deal' }, rules));
   const decode = (req, tok) => S.decodeAnswer(g, req, tok);
   let it = g.playRound(), r = it.next(), i = 0, guard = 0;
   for (;;) {

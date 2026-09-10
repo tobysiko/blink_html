@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-09T20:47:12Z
+ * Built 2026-09-10T05:44:53Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1544,6 +1544,23 @@ class Game {
     this.DUEL_KEEP = !!opts.duelKeep;
     this.m.combat = this.COMBAT;
     /* off | secret (deal two, keep one) | open (two face up, shared) | both */
+    /* HOW A STARTING HAND IS SETTLED.
+     *
+     * "draft" is the printed rule (§03 step 2): ten cards each, keep four and
+     * pass six, keep six, keep eight, keep the last two.
+     * "deal"  is ten cards and nothing else - the baseline a mulligan or a
+     *         draft has to beat.
+     * "mulligan" is ten cards and one do-over a player, taken or not, and you
+     *         live with what comes back.
+     *
+     * THE DO-OVER HAS A HARD LIMIT AND IT COMES FROM §03. The full 1-10 deck is
+     * dealt at every player count and whatever is left over starts the shared
+     * pile: twenty spare cards at two players, ten at three, and AT FOUR
+     * PLAYERS NONE AT ALL. So a do-over draws from the shared pile plus the
+     * hands of everyone else taking one at the same time, and at four players
+     * a lone caller has nothing but their own ten cards to shuffle. */
+    this.HAND_SETUP = ["deal", "mulligan"].includes(opts.handSetup)
+      ? opts.handSetup : "draft";
     this.OBJECTIVES_MODE = opts.objectives || "off";
     /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
      * worth its points or nothing, however many times you built it.
@@ -1747,8 +1764,42 @@ class Game {
     for (let i = 0; i < n; i++) hands.push(start.slice(i * 10, (i + 1) * 10));
     /* Everything the draft never touched, straight into the shared pile. */
     this.pile = start.slice(n * 10);
-    // draft: cumulative keeps of 4, 6, 8, 10
-    let kept = []; for (let i = 0; i < n; i++) kept.push([]);
+    /* The packs, kept for the setup phase. A draft is a decision, and a
+     * decision cannot be taken in a constructor - it has to be asked for. So
+     * when a person is at the table the hands are settled at the head of the
+     * first round instead, by `_handSetup`. Bots-only games resolve here as
+     * they always did, so every existing measurement still means what it said. */
+    this._packs = hands;
+    if (this.HAND_SETUP === "draft" && !this.P.some((q) => this.isHuman(q.i))) {
+      this._runDraft(hands);
+    } else if (this.HAND_SETUP !== "draft") {
+      for (let i = 0; i < n; i++) this.P[i].hand = hands[i];
+      this._packs = null;
+    } else {
+      /* Hold the pack AS the hand until the draft settles it. An empty hand is
+       * a state nothing else in the file expects - the duel refuses to ask a
+       * player with no cards, the table renders "hand empty" - and the pack is
+       * anyway exactly what you have been dealt before you draft it. */
+      for (let i = 0; i < n; i++) this.P[i].hand = hands[i].slice();
+    }
+    // ONE shuffled upgrade deck and a face-up 3x3 grid. Each grid position is a
+    // STACK — a drawn card is placed on top of one, burying what was under it.
+    this.deck = adv.slice();
+    R.shuffle(this.deck);
+    this.grid = [];
+    for (let i = 0; i < this.MARKET_GRID; i++)
+      this.grid.push(this.deck.length ? [this.deck.pop()] : []);
+    this.leader = 0;
+    this.playOrder = null;                    // set each round, leader first
+    this._dealObjectives();
+  }
+
+  /* The printed draft, all seats decided by the bot heuristic. Kept as its own
+   * function so a table with no people in it takes exactly the path it always
+   * took, and so `_handSetup` can fall back to it for any seat that declines. */
+  _runDraft(hands) {
+    const n = this.n;
+    const kept = []; for (let i = 0; i < n; i++) kept.push([]);
     for (const target of [4, 6, 8, 10]) {
       for (let i = 0; i < n; i++) {
         const need = target - kept[i].length;
@@ -1761,16 +1812,97 @@ class Game {
       for (let i = 0; i < n; i++) hands[i] = rot[i];
     }
     for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
-    // ONE shuffled upgrade deck and a face-up 3x3 grid. Each grid position is a
-    // STACK — a drawn card is placed on top of one, burying what was under it.
-    this.deck = adv.slice();
-    R.shuffle(this.deck);
-    this.grid = [];
-    for (let i = 0; i < this.MARKET_GRID; i++)
-      this.grid.push(this.deck.length ? [this.deck.pop()] : []);
-    this.leader = 0;
-    this.playOrder = null;                    // set each round, leader first
-    this._dealObjectives();
+    this._packs = null;
+  }
+
+  /* SETUP: how the starting hands are settled, asked rather than assumed.
+   * Runs once, at the head of the first round, before the map is laid. */
+  *_handSetup() {
+    this._handsSettled = true;
+    if (this.HAND_SETUP === "deal") return;
+    if (this.HAND_SETUP === "draft") { yield* this._draftPhase(); return; }
+    yield* this._mulliganPhase();
+  }
+
+  *_draftPhase() {
+    const n = this.n;
+    let packs = this._packs;
+    if (!packs) return;                       // a bots-only table already drafted
+    const kept = []; for (let i = 0; i < n; i++) kept.push([]);
+    for (const target of [4, 6, 8, 10]) {
+      for (let i = 0; i < n; i++) {
+        const need = target - kept[i].length;
+        let picks;
+        /* The last two cards are not a decision - the pack is exactly what is
+         * left - so nobody is asked to "choose" them. */
+        if (need >= packs[i].length) picks = packs[i].slice();
+        else if (this.isHuman(i)) {
+          const ans = yield { type: "draft", seat: i, pack: packs[i].slice(),
+                              need, kept: kept[i].slice(), round: target };
+          picks = this._readDraft(ans, packs[i], need)
+               || draftPick(kept[i], packs[i], need);
+        } else picks = draftPick(kept[i], packs[i], need);
+        kept[i] = kept[i].concat(picks);
+        packs[i] = packs[i].filter((c) => !picks.includes(c));
+      }
+      const rot = [];
+      for (let i = 0; i < n; i++) rot.push(packs[(i - 1 + n) % n]);
+      for (let i = 0; i < n; i++) packs[i] = rot[i];
+    }
+    for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
+    this._packs = null;
+    this.say("log.drafted", { n: 10 });
+  }
+
+  /* An answer is a list of positions in the pack. Anything else - a wrong
+   * count, a repeat, an index off the end - is refused whole rather than
+   * half-applied, and the heuristic picks instead. */
+  _readDraft(ans, pack, need) {
+    if (!Array.isArray(ans) || ans.length !== need) return null;
+    const seen = new Set(), out = [];
+    for (const i of ans) {
+      if (!Number.isInteger(i) || i < 0 || i >= pack.length || seen.has(i)) return null;
+      seen.add(i); out.push(pack[i]);
+    }
+    return out;
+  }
+
+  *_mulliganPhase() {
+    const callers = [];
+    for (let i = 0; i < this.n; i++) {
+      const p = this.P[i];
+      /* What a do-over would actually draw from: the shared pile, plus the
+       * hands of everyone taking one. Told up front, because at four players
+       * that number can be your own ten cards and nothing else. */
+      const want = this.isHuman(i)
+        ? yield { type: "mulligan", seat: i, hand: p.hand.slice(),
+                  pool: this.pile.length }
+        : this._botMulligan(p);
+      if (want) callers.push(i);
+    }
+    if (!callers.length) return;
+    let pool = this.pile.slice();
+    for (const i of callers) pool = pool.concat(this.P[i].hand);
+    if (callers.length === 1 && !this.pile.length) this.inc("mulligan_futile");
+    this.rng.shuffle(pool);
+    for (const i of callers) {
+      this.P[i].hand = pool.splice(0, 10);
+      this.inc("mulligans");
+      this.say("log.mulligan", { seat: i });
+    }
+    this.pile = pool;
+  }
+
+  /* A bot calls it on the hand a person would complain about: nothing to build
+   * a meld longer than two out of. */
+  _botMulligan(p) {
+    const rs = p.hand.map((c) => c.r).sort((a, b) => a - b);
+    let run = 1, best = 1;
+    for (let k = 1; k < rs.length; k++) {
+      if (rs[k] === rs[k - 1]) continue;
+      if (rs[k] === rs[k - 1] + 1) { run++; if (run > best) best = run; } else run = 1;
+    }
+    return best < 3;
   }
 
   /* Give every seat its weights. A human seat gets the tuned set so that
@@ -1905,6 +2037,8 @@ class Game {
         p.objOffer = [];
       }
     }
+    /* Setup, in the order §03 prints it: the hands first, then the map. */
+    if (!this._handsSettled) yield* this._handSetup();
     if (this.START === "homelands" && !this._homelandsLaid) yield* this._layHomelands();
     this.round += 1;
     const order = [];
@@ -4343,11 +4477,34 @@ function newSession(opts, rand) {
       /* Default "low", so anything else has to survive the trip — two clients
        * disagreeing about whether the frontier pays would replay different
        * purses and then different boards. */
-      frontier: ["always", "seams", "off"].includes(o.frontier) ? o.frontier : "low",
+      frontier: ["always", "seams", "off", "chance", "low"].includes(o.frontier)
+        ? o.frontier : "low",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
+      /* EVERYTHING THE SETUP PAGE CAN SEND HAS TO SURVIVE THIS OBJECT.
+       *
+       * These eleven were missing, and a missing key here is not an error
+       * anywhere: `netRules()` sent them, this whitelist dropped them, and the
+       * table played the printed rule while every client's setup page said
+       * otherwise. Displacement, the homelands map and the lean economy were
+       * all silently off in every online game. `netrules_test` now round-trips
+       * every key through newSession and gameArgs, so the next option cannot
+       * be lost the same way. Each is defaulted defensively, because a value
+       * that fails to survive the trip is two clients replaying different
+       * boards. */
+      fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
+      loss: o.loss === "displace" ? "displace" : "reserve",
+      startLayout: o.startLayout === "homelands" ? "homelands" : "block",
+      objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",
+      handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
+      attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
+      food: o.food !== false,
+      ascension: o.ascension !== false,
+      spoils: ["ground", "gold"].includes(o.spoils) ? o.spoils : "none",
+      asideTiming: o.asideTiming === "trick" ? "trick" : "turn",
+      tileSupply: [8, 11, 15].includes(Number(o.tileSupply)) ? Number(o.tileSupply) : 15,
     },
     /* One entry per seat. `player` is null for a bot seat. */
     seats: new Array(n).fill(null).map((_, i) => ({ seat: i, player: null, name: null })),

@@ -93,6 +93,16 @@ async function main() {
   A.w.eval('netSetup()');
   ok(!A.d.querySelector('#remote').hidden,
      'a build that knows a table service does not offer to open one');
+  /* This test's subject is the protocol - double taps, refusals, undo across
+   * two clients - not the setup phase. The printed draft asks the host three
+   * questions before a card is played and the generic clicker below cannot
+   * answer them, so this table is dealt instead. It has to be set BEFORE the
+   * table is opened: netRules() is read when the session is created, not when
+   * the start button is pressed. The draft's own trip through encode /
+   * legalAnswer / decode is asserted in handsetup_test. */
+  A.d.querySelector('#handsetup').value = 'deal';
+  ok(A.w.eval('netRules().handSetup') === 'deal',
+     'the host could not be told to deal instead of draft');
   A.d.querySelector('#net-name').value = 'Toby';
   A.d.querySelector('#net-host').dispatchEvent(new A.w.MouseEvent('click', { bubbles: true }));
 

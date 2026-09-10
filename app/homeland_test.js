@@ -65,7 +65,8 @@ for (const n of [2, 3, 4]) {
        With no humans the whole round runs without ever yielding, and what you
        measure then is a round of play, not a setup. */
     const seats = []; for (let i = 0; i < n; i++) seats.push(i);
-    const g = new E.Game(n, 12, { humans: seats, startLayout: 'homelands' });
+    const g = new E.Game(n, 12, { humans: seats, startLayout: 'homelands',
+                                 handSetup: 'deal' });
     const it = g.playRound();
     let r = it.next();
     while (!r.done && r.value && r.value.type === 'homeland')
@@ -107,7 +108,8 @@ for (const n of [2, 3, 4]) {
 
 /* ---- a human is asked, in initiative order, and is obeyed ---- */
 {
-  const g = new E.Game(3, 21, { humans: [0, 1, 2], startLayout: 'homelands' });
+  const g = new E.Game(3, 21, { humans: [0, 1, 2], startLayout: 'homelands',
+                                handSetup: 'deal' });
   const it = g.playRound();
   let r = it.next(), asked = [], picked = [];
   while (!r.done && r.value && r.value.type === 'homeland') {

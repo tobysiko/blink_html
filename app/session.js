@@ -100,11 +100,34 @@ function newSession(opts, rand) {
       /* Default "low", so anything else has to survive the trip — two clients
        * disagreeing about whether the frontier pays would replay different
        * purses and then different boards. */
-      frontier: ["always", "seams", "off"].includes(o.frontier) ? o.frontier : "low",
+      frontier: ["always", "seams", "off", "chance", "low"].includes(o.frontier)
+        ? o.frontier : "low",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
       layout: o.layout || null,
+      /* EVERYTHING THE SETUP PAGE CAN SEND HAS TO SURVIVE THIS OBJECT.
+       *
+       * These eleven were missing, and a missing key here is not an error
+       * anywhere: `netRules()` sent them, this whitelist dropped them, and the
+       * table played the printed rule while every client's setup page said
+       * otherwise. Displacement, the homelands map and the lean economy were
+       * all silently off in every online game. `netrules_test` now round-trips
+       * every key through newSession and gameArgs, so the next option cannot
+       * be lost the same way. Each is defaulted defensively, because a value
+       * that fails to survive the trip is two clients replaying different
+       * boards. */
+      fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
+      loss: o.loss === "displace" ? "displace" : "reserve",
+      startLayout: o.startLayout === "homelands" ? "homelands" : "block",
+      objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",
+      handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
+      attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
+      food: o.food !== false,
+      ascension: o.ascension !== false,
+      spoils: ["ground", "gold"].includes(o.spoils) ? o.spoils : "none",
+      asideTiming: o.asideTiming === "trick" ? "trick" : "turn",
+      tileSupply: [8, 11, 15].includes(Number(o.tileSupply)) ? Number(o.tileSupply) : 15,
     },
     /* One entry per seat. `player` is null for a bot seat. */
     seats: new Array(n).fill(null).map((_, i) => ({ seat: i, player: null, name: null })),
