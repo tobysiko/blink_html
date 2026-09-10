@@ -2558,7 +2558,7 @@ function renderPromptBody() {
       break;
     }
     case "mulligan":
-      ask(t(REQ.pool ? "ask.mulligan" : "ask.mulligan.empty", { pool: REQ.pool }));
+      ask(t(REQ.again ? "ask.mulligan.again" : "ask.mulligan", { n: REQ.again }));
       btn(t("btn.mulligan"), () => answer(true));
       btn(t("btn.keepHand"), () => answer(false), "alt");
       break;

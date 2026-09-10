@@ -5,12 +5,11 @@
  * `draftPick()` chose for every seat including the human's. It is a setup
  * phase now, like the homelands map.
  *
- * The do-over has a hard limit that comes straight from §03: the whole 1-10
- * deck is dealt at every player count and the remainder starts the shared pile
- * - twenty spare at two players, ten at three, NONE at four. So the pool a
- * do-over draws from is the pile plus every hand handed back at the same
- * moment, and at four players a lone caller reshuffles their own ten cards.
- * That is asserted here rather than left as a surprise at a table.
+ * A do-over RE-DEALS THE WHOLE TABLE: every card of the 1-10 deck goes back,
+ * hands and shared pile alike, and the lot is shuffled and dealt again. That
+ * is the only version that works at four players, where §03 leaves no spare
+ * cards - a do-over that refreshed only the caller's ten would hand back the
+ * same ten. One call each, asked in seat order, so it always ends.
  */
 const E = require('./engine.js');
 const fail = [];
@@ -79,49 +78,45 @@ function everyCardOnce(g, n, what) {
   }
 }
 
-/* ---- the do-over, and the pool it draws from ---- */
+/* ---- the do-over re-deals everybody, at every player count ---- */
 {
-  /* two players: twenty spare cards, so a lone do-over is a real one */
-  const g = new E.Game(2, 6, { humans: [0, 1], handSetup: 'mulligan' });
-  const was = bag(g.P[0].hand);
-  const it = g.playRound();
-  let r = it.next(), pools = [];
-  while (!r.done && r.value && r.value.type === 'mulligan') {
-    pools.push(r.value.pool);
-    r = it.next(r.value.seat === 0);                 // only seat 0 calls it
+  for (const n of [2, 3, 4]) {
+    const seats = []; for (let i = 0; i < n; i++) seats.push(i);
+    const g = new E.Game(n, 6, { humans: seats, handSetup: 'mulligan' });
+    const before = g.P.map((p) => bag(p.hand));
+    const it = g.playRound();
+    let r = it.next(), asked = 0;
+    while (!r.done && r.value && r.value.type === 'mulligan') {
+      asked++;
+      r = it.next(r.value.seat === 0);            // only seat 0 calls it
+    }
+    ok(asked === n, `${n}p: ${asked} seats were asked, wanted ${n}`);
+    const after = g.P.map((p) => bag(p.hand));
+    let changed = 0;
+    for (let i = 0; i < n; i++) if (before[i] !== after[i]) changed++;
+    /* EVERY hand, not just the caller's - that is what "re-deal" means, and it
+       is the whole reason this works at four players where nothing is spare. */
+    ok(changed === n,
+       `${n}p: one call changed ${changed} of ${n} hands, wanted all of them`);
+    ok((g.stats.mulligans || 0) === 1, `${n}p: ${g.stats.mulligans} re-deals for one call`);
+    everyCardOnce(g, n, `${n}p do-over`);
   }
-  ok(pools.length === 2, `a 2-player table was asked ${pools.length} times, wanted 2`);
-  ok(pools[0] === 20, `the do-over said it drew from ${pools[0]} cards, wanted 20`);
-  ok(bag(g.P[0].hand) !== was, 'the do-over handed back the same ten cards at two players');
-  everyCardOnce(g, 2, '2p do-over');
 }
+
+/* ---- one each, and no more ---- */
 {
-  /* four players: the pile is empty, so a LONE do-over is the same ten cards */
-  const g = new E.Game(4, 6, { humans: [0, 1, 2, 3], handSetup: 'mulligan' });
-  const was = bag(g.P[0].hand);
+  const g = new E.Game(3, 8, { humans: [0, 1, 2], handSetup: 'mulligan' });
   const it = g.playRound();
-  let r = it.next(), pool0 = null;
-  while (!r.done && r.value && r.value.type === 'mulligan') {
-    if (r.value.seat === 0) pool0 = r.value.pool;
-    r = it.next(r.value.seat === 0);
-  }
-  ok(pool0 === 0, `at four players the do-over offered a pool of ${pool0}, wanted 0`);
-  ok(bag(g.P[0].hand) === was,
-     'a lone four-player do-over changed the hand — there is nothing to change it with');
-  ok((g.stats.mulligan_futile || 0) === 1, 'the futile do-over was not counted');
-  everyCardOnce(g, 4, '4p lone do-over');
-}
-{
-  /* ...but two callers at four players really do swap */
-  const g = new E.Game(4, 6, { humans: [0, 1, 2, 3], handSetup: 'mulligan' });
-  const was = [bag(g.P[0].hand), bag(g.P[1].hand)];
-  const it = g.playRound();
-  let r = it.next();
-  while (!r.done && r.value && r.value.type === 'mulligan') r = it.next(r.value.seat < 2);
-  ok(bag(g.P[0].hand) !== was[0] || bag(g.P[1].hand) !== was[1],
-     'two do-overs at four players changed nothing between them');
-  ok((g.stats.mulligan_futile || 0) === 0, 'two callers were counted as futile');
-  everyCardOnce(g, 4, '4p two do-overs');
+  let r = it.next(), asked = 0;
+  while (!r.done && r.value && r.value.type === 'mulligan') { asked++; r = it.next(true); }
+  ok(asked === 3, `everyone calling it asked ${asked} seats, wanted 3`);
+  ok((g.stats.mulligans || 0) === 3, `three calls gave ${g.stats.mulligans} re-deals`);
+  everyCardOnce(g, 3, 'three do-overs');
+  /* Nobody is asked twice: the pass is over even though the last re-deal may
+     have handed seat 0 something worse than what it gave up. */
+  const again = g.playRound().next();
+  ok(!again.value || again.value.type !== 'mulligan',
+     'a seat was asked for a second do-over');
 }
 
 /* ---- a draft answer survives the wire ---- */
@@ -152,5 +147,5 @@ function everyCardOnce(g, n, what) {
 
 if (fail.length) { console.error('FAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
 console.log('starting hands: the draft is three real decisions a seat and the choice is obeyed; '
-  + 'deal asks nothing; the do-over draws from the shared pile plus every hand handed back, '
-  + 'which at four players is nothing at all unless somebody else calls it too');
+  + 'deal asks nothing; a do-over re-deals the whole starting deck to everybody, one call each, '
+  + 'and works the same at two, three and four players');

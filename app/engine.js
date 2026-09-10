@@ -1546,12 +1546,13 @@ class Game {
      * "mulligan" is ten cards and one do-over a player, taken or not, and you
      *         live with what comes back.
      *
-     * THE DO-OVER HAS A HARD LIMIT AND IT COMES FROM §03. The full 1-10 deck is
-     * dealt at every player count and whatever is left over starts the shared
-     * pile: twenty spare cards at two players, ten at three, and AT FOUR
-     * PLAYERS NONE AT ALL. So a do-over draws from the shared pile plus the
-     * hands of everyone else taking one at the same time, and at four players
-     * a lone caller has nothing but their own ten cards to shuffle. */
+     * A DO-OVER RE-DEALS THE WHOLE TABLE. Every card of the 1-10 deck goes
+     * back - all the hands and the shared pile with them - and the lot is
+     * shuffled and dealt again. That is the only version that works at four
+     * players, where §03 leaves no spare cards to draw from: a do-over that
+     * only refreshed the caller's ten would, at four players, hand back the
+     * same ten. The cost is that somebody else's call can take away a hand you
+     * were happy with, which is the trade the table makes for a fast one. */
     this.HAND_SETUP = ["deal", "mulligan"].includes(opts.handSetup)
       ? opts.handSetup : "draft";
     this.OBJECTIVES_MODE = opts.objectives || "off";
@@ -1860,30 +1861,34 @@ class Game {
     return out;
   }
 
+  /* One pass, in seat order, and one call each. A player is asked about the
+   * hand they are holding AT THAT MOMENT - so if the seat before them called
+   * a do-over, they are looking at what the re-deal gave them, which is the
+   * hand they have to decide about. Exactly n questions, and at most n
+   * re-deals, so it always ends. */
   *_mulliganPhase() {
-    const callers = [];
     for (let i = 0; i < this.n; i++) {
       const p = this.P[i];
-      /* What a do-over would actually draw from: the shared pile, plus the
-       * hands of everyone taking one. Told up front, because at four players
-       * that number can be your own ten cards and nothing else. */
       const want = this.isHuman(i)
         ? yield { type: "mulligan", seat: i, hand: p.hand.slice(),
-                  pool: this.pile.length }
+                  again: this.stats.mulligans || 0 }
         : this._botMulligan(p);
-      if (want) callers.push(i);
-    }
-    if (!callers.length) return;
-    let pool = this.pile.slice();
-    for (const i of callers) pool = pool.concat(this.P[i].hand);
-    if (callers.length === 1 && !this.pile.length) this.inc("mulligan_futile");
-    this.rng.shuffle(pool);
-    for (const i of callers) {
-      this.P[i].hand = pool.splice(0, 10);
+      if (!want) continue;
+      this._redealStart();
       this.inc("mulligans");
       this.say("log.mulligan", { seat: i });
     }
-    this.pile = pool;
+  }
+
+  /* Every card of the starting deck back on the table, shuffled, dealt again -
+   * hands and the shared pile alike, because together they ARE the 1-10 deck
+   * (§03) and nothing else may be touched. */
+  _redealStart() {
+    let all = this.pile.slice();
+    for (const q of this.P) { all = all.concat(q.hand); q.hand = []; }
+    this.rng.shuffle(all);
+    for (const q of this.P) q.hand = all.splice(0, 10);
+    this.pile = all;
   }
 
   /* A bot calls it on the hand a person would complain about: nothing to build

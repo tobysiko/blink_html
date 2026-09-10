@@ -1694,7 +1694,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"f394e6801e","branch":"main","dirty":true,"built":"2026-09-10T05:44:51Z"};
+const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"2ae0e545fa","branch":"main","dirty":true,"built":"2026-09-10T07:41:49Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2139,17 +2139,17 @@ en: {
   "obj.prog.doneN": "complete \u00d7{n}",
   "ask.draft": "<b>Keep {need}</b> <span class=\"muted\">\u2014 the rest of this pack passes on. You have {kept} so far.</span>",
   "btn.draftKeep": "Keep these {n}",
-  "ask.mulligan": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 your ten go back, and you draw ten from a pool of {pool} plus every other hand taken back at the same time. You live with what comes.</span>",
-  "ask.mulligan.empty": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 but the shared pile is empty at this player count, so unless somebody else takes one too you will shuffle your own ten and be dealt them again.</span>",
+  "ask.mulligan": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 every hand goes back, the whole starting deck is shuffled, and the table is dealt again. One each, and you live with what comes.</span>",
+  "ask.mulligan.again": "<b>Your do-over, if you want it</b> <span class=\"muted\">\u2014 this hand came from somebody else\u2019s. Calling it re-deals the table again; you have one, and this is it.</span>",
   "btn.mulligan": "Take the do-over",
   "btn.keepHand": "Keep this hand",
   "log.drafted": "Hands drafted \u2014 {n} cards each.",
-  "log.mulligan": "Seat {seat} took the do-over.",
+  "log.mulligan": "Seat {seat} called the do-over \u2014 the table is dealt again.",
   "setup.hand": "Starting hands",
   "setup.hand.draft": "Draft \u2014 keep 4, pass 6, keep 6, keep 8 (printed)",
   "setup.hand.deal": "Deal ten, no do-over",
   "setup.hand.mulligan": "Deal ten, one do-over each",
-  "setup.hand.note": "Printed: ten cards, keep four and pass six, keep six, keep eight, keep the last two \u2014 the one decision in setup. Deal: ten cards and live with them. Do-over: ten cards, and once each you may hand them back and draw ten from the shared pile plus every other hand handed back at the same moment. At four players the whole 1\u201310 deck is dealt, so that pile is empty and a lone do-over changes nothing.",
+  "setup.hand.note": "Printed: ten cards, keep four and pass six, keep six, keep eight, keep the last two \u2014 the one decision in setup. Deal: ten cards and live with them. Do-over: ten cards, and once each anyone may call for a re-deal \u2014 every hand goes back, the whole starting deck is shuffled and the table is dealt again. Fast, and it works at every player count, but somebody else\u2019s call can take away a hand you liked.",
   "obj.finished.again": "{name} again \u2014 {n} of them now.",
   "log.objective.again": "{name} completed again \u2014 {n} points in all.",
   "setup.objscoring": "An objective pays",
@@ -2804,17 +2804,17 @@ de: {
   "obj.prog.doneN": "erf\u00fcllt \u00d7{n}",
   "ask.draft": "<b>Behalte {need}</b> <span class=\"muted\">\u2014 der Rest dieses Stapels wandert weiter. Du hast bisher {kept}.</span>",
   "btn.draftKeep": "Diese {n} behalten",
-  "ask.mulligan": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 deine zehn Karten gehen zur\u00fcck, und du ziehst zehn aus einem Vorrat von {pool} plus allen gleichzeitig zur\u00fcckgegebenen H\u00e4nden. Was kommt, bleibt.</span>",
-  "ask.mulligan.empty": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 aber der gemeinsame Stapel ist bei dieser Spielerzahl leer. Wenn niemand sonst tauscht, mischst du deine eigenen zehn und bekommst sie wieder.</span>",
+  "ask.mulligan": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 alle H\u00e4nde gehen zur\u00fcck, das ganze Startdeck wird gemischt und neu ausgeteilt. Einer je Person, und was kommt, bleibt.</span>",
+  "ask.mulligan.again": "<b>Dein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 diese Hand kam schon aus einem fremden. Wer ihn nimmt, l\u00e4sst noch einmal neu geben; du hast einen, und das ist er.</span>",
   "btn.mulligan": "Neu geben",
   "btn.keepHand": "Hand behalten",
   "log.drafted": "H\u00e4nde gedraftet \u2014 je {n} Karten.",
-  "log.mulligan": "Platz {seat} hat neu geben lassen.",
+  "log.mulligan": "Platz {seat} l\u00e4sst neu geben \u2014 der ganze Tisch.",
   "setup.hand": "Starth\u00e4nde",
   "setup.hand.draft": "Draft \u2014 4 behalten, 6 weitergeben, 6, dann 8 (gedruckt)",
   "setup.hand.deal": "Zehn geben, kein Neuversuch",
   "setup.hand.mulligan": "Zehn geben, ein Neuversuch je Person",
-  "setup.hand.note": "Gedruckt: zehn Karten, vier behalten und sechs weitergeben, sechs behalten, acht behalten, die letzten zwei behalten \u2014 die eine Entscheidung im Aufbau. Geben: zehn Karten, und damit spielst du. Neuversuch: zehn Karten, und einmal je Person darfst du sie zur\u00fcckgeben und zehn aus dem gemeinsamen Stapel plus allen gleichzeitig zur\u00fcckgegebenen H\u00e4nden ziehen. Bei vier Personen wird das ganze Deck 1\u201310 ausgeteilt, der Stapel ist also leer und ein einzelner Neuversuch \u00e4ndert nichts.",
+  "setup.hand.note": "Gedruckt: zehn Karten, vier behalten und sechs weitergeben, sechs behalten, acht behalten, die letzten zwei behalten \u2014 die eine Entscheidung im Aufbau. Geben: zehn Karten, und damit spielst du. Neuversuch: zehn Karten, und einmal je Person darf jemand neu geben lassen \u2014 alle H\u00e4nde zur\u00fcck, das ganze Startdeck gemischt, neu ausgeteilt. Schnell und bei jeder Spielerzahl gleich, aber ein fremder Ruf kann dir eine Hand nehmen, die dir gefiel.",
   "obj.finished.again": "{name} erneut \u2014 jetzt {n} davon.",
   "log.objective.again": "{name} erneut erf\u00fcllt \u2014 insgesamt {n} Punkte.",
   "setup.objscoring": "Ein Ziel z\u00e4hlt",
@@ -4637,12 +4637,13 @@ class Game {
      * "mulligan" is ten cards and one do-over a player, taken or not, and you
      *         live with what comes back.
      *
-     * THE DO-OVER HAS A HARD LIMIT AND IT COMES FROM §03. The full 1-10 deck is
-     * dealt at every player count and whatever is left over starts the shared
-     * pile: twenty spare cards at two players, ten at three, and AT FOUR
-     * PLAYERS NONE AT ALL. So a do-over draws from the shared pile plus the
-     * hands of everyone else taking one at the same time, and at four players
-     * a lone caller has nothing but their own ten cards to shuffle. */
+     * A DO-OVER RE-DEALS THE WHOLE TABLE. Every card of the 1-10 deck goes
+     * back - all the hands and the shared pile with them - and the lot is
+     * shuffled and dealt again. That is the only version that works at four
+     * players, where §03 leaves no spare cards to draw from: a do-over that
+     * only refreshed the caller's ten would, at four players, hand back the
+     * same ten. The cost is that somebody else's call can take away a hand you
+     * were happy with, which is the trade the table makes for a fast one. */
     this.HAND_SETUP = ["deal", "mulligan"].includes(opts.handSetup)
       ? opts.handSetup : "draft";
     this.OBJECTIVES_MODE = opts.objectives || "off";
@@ -4951,30 +4952,34 @@ class Game {
     return out;
   }
 
+  /* One pass, in seat order, and one call each. A player is asked about the
+   * hand they are holding AT THAT MOMENT - so if the seat before them called
+   * a do-over, they are looking at what the re-deal gave them, which is the
+   * hand they have to decide about. Exactly n questions, and at most n
+   * re-deals, so it always ends. */
   *_mulliganPhase() {
-    const callers = [];
     for (let i = 0; i < this.n; i++) {
       const p = this.P[i];
-      /* What a do-over would actually draw from: the shared pile, plus the
-       * hands of everyone taking one. Told up front, because at four players
-       * that number can be your own ten cards and nothing else. */
       const want = this.isHuman(i)
         ? yield { type: "mulligan", seat: i, hand: p.hand.slice(),
-                  pool: this.pile.length }
+                  again: this.stats.mulligans || 0 }
         : this._botMulligan(p);
-      if (want) callers.push(i);
-    }
-    if (!callers.length) return;
-    let pool = this.pile.slice();
-    for (const i of callers) pool = pool.concat(this.P[i].hand);
-    if (callers.length === 1 && !this.pile.length) this.inc("mulligan_futile");
-    this.rng.shuffle(pool);
-    for (const i of callers) {
-      this.P[i].hand = pool.splice(0, 10);
+      if (!want) continue;
+      this._redealStart();
       this.inc("mulligans");
       this.say("log.mulligan", { seat: i });
     }
-    this.pile = pool;
+  }
+
+  /* Every card of the starting deck back on the table, shuffled, dealt again -
+   * hands and the shared pile alike, because together they ARE the 1-10 deck
+   * (§03) and nothing else may be touched. */
+  _redealStart() {
+    let all = this.pile.slice();
+    for (const q of this.P) { all = all.concat(q.hand); q.hand = []; }
+    this.rng.shuffle(all);
+    for (const q of this.P) q.hand = all.splice(0, 10);
+    this.pile = all;
   }
 
   /* A bot calls it on the hand a person would complain about: nothing to build
@@ -10954,7 +10959,7 @@ function renderPromptBody() {
       break;
     }
     case "mulligan":
-      ask(t(REQ.pool ? "ask.mulligan" : "ask.mulligan.empty", { pool: REQ.pool }));
+      ask(t(REQ.again ? "ask.mulligan.again" : "ask.mulligan", { n: REQ.again }));
       btn(t("btn.mulligan"), () => answer(true));
       btn(t("btn.keepHand"), () => answer(false), "alt");
       break;
