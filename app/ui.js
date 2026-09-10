@@ -2209,11 +2209,15 @@ function renderPlayer() {
    * the rest: the one decision in setup, and until now the app took it for you
    * with a bot heuristic and never said so. */
   if (mine() && REQ.type === "draft") {
-    $("#hand").innerHTML = REQ.pack.map((c, i) => {
-      const on = SEL.draft.includes(i) ? " sel" : "";
-      const full = SEL.draft.length >= REQ.need && !on;
-      return cardBtn(c, on + (full ? " dead" : " want"), `data-pack="${i}"`, "mid");
-    }).join("");
+    /* `keep` and `passing`, NOT the meld builder's `sel` and `want`. Both of
+     * those say what they mean with a box-shadow, and on a card in the hand
+     * both lose that box-shadow to the card's own - so a chosen card computed
+     * byte-identically to an unchosen one and the draft looked broken: the
+     * click registered, the selection was right, and the table did not move.
+     * jsdom cannot see this, which is why the DOM test passed. */
+    $("#hand").innerHTML = REQ.pack.map((c, i) =>
+      cardBtn(c, SEL.draft.includes(i) ? "keep" : "passing",
+              `data-pack="${i}"`, "mid")).join("");
     $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
       n.addEventListener("click", () => {
         const i = Number(n.dataset.pack);
@@ -2549,8 +2553,10 @@ function renderPromptBody() {
       break;
     }
     case "draft": {
+      /* And say the count in words too, so the state is legible even to
+       * somebody who cannot pick the ring out of the row. */
       ask(t("ask.draft", { need: REQ.need, pack: REQ.pack.length,
-                           kept: REQ.kept.length }));
+                           kept: REQ.kept.length, chosen: SEL.draft.length }));
       const go = btn(t("btn.draftKeep", { n: REQ.need }),
                      () => answer(SEL.draft.slice()), "",
                      SEL.draft.length !== REQ.need);

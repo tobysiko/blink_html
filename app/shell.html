@@ -679,6 +679,22 @@
   .duelout .duelsum{margin-left:0}
   .duelout .verdict{font-weight:600}
   .duelout .why{color:var(--mut)}
+  /* CHOOSING CARDS IN THE DRAFT. Outline, not box-shadow: every other card
+     state in this file says what it means with a shadow, and they compete -
+     `.cf.sel` and `.cf.want` both lost theirs to the card's own and a chosen
+     card was indistinguishable from an unchosen one. Nothing else sets an
+     outline on a card, so nothing can take this one away. Three signals, so
+     one failing is not fatal: the ring, the lift, and the rest fading back. */
+  /* Room for the lift, so a chosen card rises into space rather than into the
+     section label above it. */
+  #hand{padding-top:10px}
+  #hand button.cf{position:relative}
+  #hand button.cf.keep{outline:3px solid var(--ink); outline-offset:1px;
+           transform:translateY(-9px); z-index:2}
+  #hand button.cf.passing{opacity:.4}
+  @media (prefers-reduced-motion:reduce){
+    #hand button.cf.keep{transform:none}
+  }
   .objcard .oprog{display:block; margin-top:.15rem; font-size:.72rem; color:var(--mut)}
   .objcard .oprog.done{color:#2F6B45; font-weight:600}
   .duelout .tot{font-family:"IBM Plex Mono",monospace; font-size:.82em; color:var(--mut)}

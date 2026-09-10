@@ -679,6 +679,22 @@
   .duelout .duelsum{margin-left:0}
   .duelout .verdict{font-weight:600}
   .duelout .why{color:var(--mut)}
+  /* CHOOSING CARDS IN THE DRAFT. Outline, not box-shadow: every other card
+     state in this file says what it means with a shadow, and they compete -
+     `.cf.sel` and `.cf.want` both lost theirs to the card's own and a chosen
+     card was indistinguishable from an unchosen one. Nothing else sets an
+     outline on a card, so nothing can take this one away. Three signals, so
+     one failing is not fatal: the ring, the lift, and the rest fading back. */
+  /* Room for the lift, so a chosen card rises into space rather than into the
+     section label above it. */
+  #hand{padding-top:10px}
+  #hand button.cf{position:relative}
+  #hand button.cf.keep{outline:3px solid var(--ink); outline-offset:1px;
+           transform:translateY(-9px); z-index:2}
+  #hand button.cf.passing{opacity:.4}
+  @media (prefers-reduced-motion:reduce){
+    #hand button.cf.keep{transform:none}
+  }
   .objcard .oprog{display:block; margin-top:.15rem; font-size:.72rem; color:var(--mut)}
   .objcard .oprog.done{color:#2F6B45; font-weight:600}
   .duelout .tot{font-family:"IBM Plex Mono",monospace; font-size:.82em; color:var(--mut)}
@@ -1694,7 +1710,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"2ae0e545fa","branch":"main","dirty":true,"built":"2026-09-10T07:41:49Z"};
+const BUILD = {"version":"v0.25","api":"/api/blink","reportUrl":"/api/blink/report","commit":"8e5f2e26ed","branch":"main","dirty":true,"built":"2026-09-10T20:35:04Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2137,7 +2153,7 @@ en: {
   "obj.prog.none": "not started \u2014 needs a {terrain} of your own",
   "obj.prog.done": "complete",
   "obj.prog.doneN": "complete \u00d7{n}",
-  "ask.draft": "<b>Keep {need}</b> <span class=\"muted\">\u2014 the rest of this pack passes on. You have {kept} so far.</span>",
+  "ask.draft": "<b>Keep {need}</b> <span class=\"muted\">\u2014 {chosen} chosen. The rest of this pack passes on; you have {kept} cards so far.</span>",
   "btn.draftKeep": "Keep these {n}",
   "ask.mulligan": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 every hand goes back, the whole starting deck is shuffled, and the table is dealt again. One each, and you live with what comes.</span>",
   "ask.mulligan.again": "<b>Your do-over, if you want it</b> <span class=\"muted\">\u2014 this hand came from somebody else\u2019s. Calling it re-deals the table again; you have one, and this is it.</span>",
@@ -2802,7 +2818,7 @@ de: {
   "obj.prog.none": "noch nicht begonnen \u2014 braucht ein eigenes {terrain}",
   "obj.prog.done": "erf\u00fcllt",
   "obj.prog.doneN": "erf\u00fcllt \u00d7{n}",
-  "ask.draft": "<b>Behalte {need}</b> <span class=\"muted\">\u2014 der Rest dieses Stapels wandert weiter. Du hast bisher {kept}.</span>",
+  "ask.draft": "<b>Behalte {need}</b> <span class=\"muted\">\u2014 {chosen} gew\u00e4hlt. Der Rest dieses Stapels wandert weiter; du hast bisher {kept} Karten.</span>",
   "btn.draftKeep": "Diese {n} behalten",
   "ask.mulligan": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 alle H\u00e4nde gehen zur\u00fcck, das ganze Startdeck wird gemischt und neu ausgeteilt. Einer je Person, und was kommt, bleibt.</span>",
   "ask.mulligan.again": "<b>Dein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 diese Hand kam schon aus einem fremden. Wer ihn nimmt, l\u00e4sst noch einmal neu geben; du hast einen, und das ist er.</span>",
@@ -10610,11 +10626,15 @@ function renderPlayer() {
    * the rest: the one decision in setup, and until now the app took it for you
    * with a bot heuristic and never said so. */
   if (mine() && REQ.type === "draft") {
-    $("#hand").innerHTML = REQ.pack.map((c, i) => {
-      const on = SEL.draft.includes(i) ? " sel" : "";
-      const full = SEL.draft.length >= REQ.need && !on;
-      return cardBtn(c, on + (full ? " dead" : " want"), `data-pack="${i}"`, "mid");
-    }).join("");
+    /* `keep` and `passing`, NOT the meld builder's `sel` and `want`. Both of
+     * those say what they mean with a box-shadow, and on a card in the hand
+     * both lose that box-shadow to the card's own - so a chosen card computed
+     * byte-identically to an unchosen one and the draft looked broken: the
+     * click registered, the selection was right, and the table did not move.
+     * jsdom cannot see this, which is why the DOM test passed. */
+    $("#hand").innerHTML = REQ.pack.map((c, i) =>
+      cardBtn(c, SEL.draft.includes(i) ? "keep" : "passing",
+              `data-pack="${i}"`, "mid")).join("");
     $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
       n.addEventListener("click", () => {
         const i = Number(n.dataset.pack);
@@ -10950,8 +10970,10 @@ function renderPromptBody() {
       break;
     }
     case "draft": {
+      /* And say the count in words too, so the state is legible even to
+       * somebody who cannot pick the ring out of the row. */
       ask(t("ask.draft", { need: REQ.need, pack: REQ.pack.length,
-                           kept: REQ.kept.length }));
+                           kept: REQ.kept.length, chosen: SEL.draft.length }));
       const go = btn(t("btn.draftKeep", { n: REQ.need }),
                      () => answer(SEL.draft.slice()), "",
                      SEL.draft.length !== REQ.need);
