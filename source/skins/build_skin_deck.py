@@ -31,6 +31,10 @@ from face import SUITS
 HERE = pathlib.Path(__file__).resolve().parent
 SKIN = json.loads((HERE / "civ-ladder.json").read_text(encoding="utf-8"))
 WITH_BACKS = "--backs" in sys.argv
+# --treatment plate|keyline|bleed|weave|deep   (default: face.TREATMENT)
+TREATMENT = face.TREATMENT
+if "--treatment" in sys.argv:
+    TREATMENT = sys.argv[sys.argv.index("--treatment") + 1]
 
 # 63 x 3 = 189 mm across, 88 x 3 = 264 mm down: nine cards inside an A4 page box
 # of 9 mm / 8 mm, the same geometry build_cards.py uses.
@@ -55,7 +59,7 @@ def sheets(items):
     return out
 
 
-cards = [face.card(t, r, SKIN) for r in range(1, 21) for t in SUITS]
+cards = [face.card(t, r, SKIN, TREATMENT) for r in range(1, 21) for t in SUITS]
 pages = sheets(cards)
 if WITH_BACKS:
     pages += "<div class='sheet'>" + "".join(
@@ -78,7 +82,8 @@ HTML = f"""<!doctype html>
 out = HERE / "Blink-skin-deck.html"
 out.write_text(HTML, encoding="utf-8")
 drawn = sum(1 for r in range(1, 21) for t in SUITS if f"{t}-{r}" in __import__("art").TECH)
-print(f"{out}  {len(cards)} cards, {(len(cards) + 8) // 9} sheets"
+print(f"{out}  {len(cards)} cards, {(len(cards) + 8) // 9} sheets, "
+      f"treatment {TREATMENT!r}"
       f"{' + 1 sheet of backs' if WITH_BACKS else ''}")
 print(f"  {drawn} of {len(cards)} illustrations drawn; the rest print a dashed "
       f"placeholder and are otherwise complete and playable")

@@ -1599,7 +1599,14 @@ let HELD = 0, HOLD_T = null, HOLD_AT = null;
 const FOLD = { market: null, board: null };
 const narrowScreen = () => !!(window.matchMedia
   && window.matchMedia("(max-width: 900px)").matches);
-const foldOpen = (k) => (FOLD[k] === null ? !narrowScreen() : FOLD[k]);
+/* YOUR OWN BOARD IS NOT AN EXTRA. Folding it away on a narrow screen made it
+ * vanish on a phone - reported as "the player board has disappeared", and it
+ * had: the tier ladder, the thing you check before every single decision, was
+ * behind a one-line summary that opened closed. The market is a reference you
+ * consult; your board is your state. Only the market folds itself. */
+const ALWAYS_OPEN = { board: true };
+const foldOpen = (k) =>
+  (FOLD[k] === null ? (ALWAYS_OPEN[k] || !narrowScreen()) : FOLD[k]);
 /* The USER's clicks are what set a preference - not the `toggle` event, which
  * also fires when the app opens the market itself for a step that needs it,
  * and would quietly record that as a choice they never made. */
@@ -2215,8 +2222,14 @@ function renderPlayer() {
      * byte-identically to an unchosen one and the draft looked broken: the
      * click registered, the selection was right, and the table did not move.
      * jsdom cannot see this, which is why the DOM test passed. */
+    /* Three states, and the middle one matters: before you have chosen
+     * anything every card is simply a card. Fading the whole pack the moment
+     * it appears - which the first version of this did - says "none of these
+     * are available" to somebody who has not touched it yet. They only fade
+     * once the quota is full, where the fade means "you have your four". */
+    const full = SEL.draft.length >= REQ.need;
     $("#hand").innerHTML = REQ.pack.map((c, i) =>
-      cardBtn(c, SEL.draft.includes(i) ? "keep" : "passing",
+      cardBtn(c, SEL.draft.includes(i) ? "keep" : (full ? "passing" : ""),
               `data-pack="${i}"`, "mid")).join("");
     $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
       n.addEventListener("click", () => {

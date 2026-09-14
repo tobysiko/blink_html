@@ -33,6 +33,28 @@ VER="$(cat "$HERE/VERSION")"
 
 echo "== publishing v$VER to $PUB"
 
+# ------------------------------------------- 0. the entry is frozen
+# v0.24 is what the Hippodice jury is reading. There is no mechanism to amend a
+# submission, so the only thing that can go wrong is changing it by accident -
+# a builder that still writes the v0.24 filename, a "small fix" to the file the
+# jury has. Compare it with the tag it was submitted from and refuse to publish
+# at all if it has moved. Its PDFs on the site are protected differently and
+# already: they carry the version in the name and this script will not write a
+# pinned name that exists.
+if git -C "$HERE" rev-parse --verify -q v0.24-submitted >/dev/null; then
+  if ! git -C "$HERE" diff --quiet v0.24-submitted -- \
+       source/Blink-rules-v0.24.html hippodice 2>/dev/null; then
+    echo "REFUSING: the v0.24 material has changed since tag v0.24-submitted." >&2
+    git -C "$HERE" diff --stat v0.24-submitted -- \
+       source/Blink-rules-v0.24.html hippodice >&2
+    echo "That is the file the jury is reading. Restore it before publishing." >&2
+    exit 1
+  fi
+  echo "== v0.24 unchanged since the tag it was submitted from"
+else
+  echo "== note: no v0.24-submitted tag here, so the entry cannot be checked" >&2
+fi
+
 # ---------------------------------------------------------------- 1. build
 if [ "$1" = "--pdfs" ]; then
   echo "== rebuilding the print PDFs (this takes a few minutes)"
@@ -126,6 +148,14 @@ done
 [ "$BAD" = 0 ] || { echo "== the page links files that are not there" >&2; exit 1; }
 grep -q "v$VER" "$PUB/index.html" \
   || echo "   note: index.html never mentions v$VER - is its copy still on the old version?"
+# ONE VERSION ON THE PAGE. A play page and a rulebook that stamp different
+# numbers is the same fault as a stale PDF: both load, both look right, and the
+# game they describe is not the same game.
+for f in play.html rulebook.html; do
+  grep -q "v$VER" "$PUB/$f" \
+    || { echo "   $f does not name v$VER - it is not this version's build" >&2; BAD=1; }
+done
+[ "$BAD" = 0 ] || { echo "== the page is serving mixed versions" >&2; exit 1; }
 
 echo
 echo "== ready. Review, then commit both repos:"

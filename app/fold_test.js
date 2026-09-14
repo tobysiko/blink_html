@@ -63,7 +63,14 @@ function run() {
     if (!mkt || !brd) fail.push('the folds are missing from the page');
     else {
       if (mkt.open) fail.push('the market is open on a phone');
-      if (brd.open) fail.push('the tier table is open on a phone');
+      /* YOUR OWN BOARD IS NOT AN EXTRA, and this test used to say the
+         opposite. Folding the tier table away on a narrow screen was reported
+         from a real game as "the player board has disappeared" - and it had:
+         the ladder you check before every decision was behind a one-line
+         summary that opened closed. The market is a reference you go and look
+         at; your board is the state you are playing from. Only the market
+         folds itself now. */
+      if (!brd.open) fail.push('the player board is folded away on a phone');
       const m = mkt.querySelector('.foldnow').textContent.trim();
       const b = brd.querySelector('.foldnow').textContent.trim();
       if (!/\d/.test(m)) fail.push(`the folded market says nothing countable: "${m}"`);
@@ -93,7 +100,7 @@ function run() {
   }
 
   if (fail.length) { console.error('FAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
-  console.log('folds: on a phone the market and the tier table start closed and still '
+  console.log('folds: on a phone the market starts closed and your own board stays open, both '
     + 'say their current line; a buy opens the market and closes it again; '
     + 'with room, both are open');
 }

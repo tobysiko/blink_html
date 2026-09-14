@@ -20,10 +20,17 @@ maps every box onto its opposite number.
 
 import art
 import marks
+import variants
 from marks import COLOUR
 
 SUITS = ("plains", "forest", "ocean", "mountain")
 GOLD = (2, 3, 4, 5)
+
+# The chosen treatment. "deep" is Deep weave — a bleed ground under a lattice
+# lighter than itself, with the illustration stroke darkened to hold against the
+# tint. The other four (plate, keyline, bleed, weave) live in variants.py and
+# stay switchable; see claude/card-skin-variations.md for what each costs.
+TREATMENT = "deep"
 
 # Terrain glyphs, lifted verbatim from source/cardstock.py so the skin cannot
 # invent a different suit shape from the one the rest of the game prints.
@@ -72,7 +79,8 @@ def age_pips(n, colour):
             f'{body}</svg>')
 
 
-def card(suit, rank, skin):
+def card(suit, rank, skin, treatment=None):
+    treatment = treatment or TREATMENT
     band = (rank - 1) // 5
     ink, pale = COLOUR[suit]["ink"], COLOUR[suit]["pale"]
     name = skin["cards"][suit][rank - 1]
@@ -86,7 +94,7 @@ def card(suit, rank, skin):
         marks.mark_b(band, suit),
         marks.mark_a(ink, band in (1, 3))))
     return f"""
-<div class="card" style="--ink:{ink};--pale:{pale};--strong:{COLOUR[suit]["strong"]}">
+<div class="card v-{treatment}" style="--ink:{ink};--pale:{pale};--strong:{COLOUR[suit]["strong"]};{variants.card_vars(suit)}">
   <span class="idx idx-tl">{idx}</span>
   <span class="idx idx-tr">{idx}</span>
   <span class="idx idx-bl">{idx}</span>
@@ -97,7 +105,7 @@ def card(suit, rank, skin):
 </div>"""
 
 
-CARD_CSS = """
+BASE_CSS = """
 .card{position:relative; width:63mm; height:88mm; background:#fff;
   overflow:hidden; color:#191713;}
 .flip{transform:rotate(180deg);}
@@ -116,6 +124,7 @@ CARD_CSS = """
   border-radius:1.8mm; background:var(--pale);}
 .plate{top:16mm; display:flex; align-items:center; justify-content:center;}
 .plate .tech{width:20mm; height:20mm; fill:none; stroke:var(--ink);
+  color:var(--ink);   /* the few solid accents ride currentColor */
   stroke-width:1.85; stroke-linecap:round; stroke-linejoin:round;}
 .plate .ghost{opacity:.3;}
 
@@ -139,3 +148,6 @@ CARD_CSS = """
 .fxr:last-child{border-top:.32mm solid rgba(25,23,19,.20);}
 .mk{height:6.8mm; width:auto; display:block;}
 """
+
+
+CARD_CSS = BASE_CSS + variants.CSS
