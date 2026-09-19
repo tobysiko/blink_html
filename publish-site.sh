@@ -135,6 +135,54 @@ pin Blink-card-effects.pdf           blink-card-effects
 pin Blink-card-effects-bw.pdf        blink-card-effects-bw
 [ -n "$MISS" ] && { echo "== stopped: see above" >&2; exit 1; }
 
+# ------------------------------------------ 3b. pin this version's PLAY PAGE
+# play.html is a rolling name, so until now every new version quietly replaced
+# the only playable Blink a publisher or a juror might have been sent to. The
+# rulebook they were pointed at survived; the game did not.
+#
+# The pinned copy is DERIVED FROM THE FILE THAT SHIPS rather than built again,
+# because a second build is a second chance to be a different build. Two edits:
+#
+#   api -> null   An archived page must not talk to the current worker. Its
+#                 rules are not the worker's rules, so a multiplayer game would
+#                 be replayed through a rulebook it does not share - a wrong
+#                 answer with no error anywhere. Solo only, deliberately.
+#   a banner      api:null is also EXACTLY what the BLINK_API guard exists to
+#                 catch. An unlabelled archived page is indistinguishable from
+#                 a broken publish, so it says what it is at the top of itself.
+pin_play() {
+  dst="$PUB/play-v$VER.html"
+  if [ -f "$dst" ] && [ -z "$FORCE" ]; then
+    echo "   unchanged play-v$VER.html"; return 0
+  fi
+  VER="$VER" python3 - "$PUB/play.html" "$dst" <<'PY'
+import io, os, re, sys
+src, dst = sys.argv[1], sys.argv[2]
+ver = os.environ["VER"]
+html = io.open(src, encoding="utf8").read()
+html, n = re.subn(r'("?api"?):"/api/blink"', r'\1:null', html)
+if n != 1:
+    sys.exit("play.html: expected exactly one api setting, found %d" % n)
+banner = (
+  '<div id="archive-note" role="note" style="position:sticky;top:0;z-index:9999;'
+  'background:#3b2f14;color:#f6efdd;font:14px/1.5 system-ui,sans-serif;'
+  'padding:.6rem 1rem;border-bottom:2px solid #c8a94b;text-align:center">'
+  '<strong>Archived edition &mdash; Blink v' + ver + '</strong>. '
+  'Kept so a link to these rules never rots. '
+  '<b>Play with friends is switched off on purpose here</b>, so this page cannot '
+  'be run against the current table service. '
+  '<a href="/blink/play.html" style="color:#f0d98a">Play the current version &rarr;</a>'
+  '</div>')
+m = re.search(r'<body[^>]*>', html)
+if not m:
+    sys.exit("play.html has no <body>")
+io.open(dst, "w", encoding="utf8").write(html[:m.end()] + banner + html[m.end():])
+PY
+  echo "   published play-v$VER.html (solo only, labelled)"
+}
+pin_play
+
+
 # ------------------------------------- 4. every link on the page must exist
 # The whole point of pinned names is that a link cannot rot. Prove it rather
 # than trust it: a 404 on the print page is the one thing a juror WILL see.
