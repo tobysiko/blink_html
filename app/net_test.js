@@ -314,7 +314,11 @@ async function main() {
         + `| its REQ ${who.w.eval('REQ ? REQ.type + "@" + REQ.seat : "none"')} `
         + `| its LOG ${who.w.eval('LOG.length')} vs host ${len} `
         + `| net ${who.w.eval('NET.status')} `
-        + `| refusals ${who.w.eval('JSON.stringify(NETERR.slice(-3))')}`);
+        + `| refusals ${who.w.eval('JSON.stringify(NETERR.slice(-6))')} `
+        + `| the driver did: ${who.why || '(no branch recorded)'} `
+        + `| SEL ${who.w.eval('JSON.stringify({card:!!SEL.card,mode:SEL.mode,moveSrc:SEL.moveSrc,meld:SEL.meld&&SEL.meld.length})')} `
+        + `| hot ${who.w.eval('JSON.stringify([...document.querySelectorAll("#map .hot")].map(x=>x.getAttribute("data-k")).slice(0,4))')} `
+        + `| turncards ${who.w.eval('document.querySelectorAll("#mymeld button[data-turn]").length')}`);
       break;
     }
 
@@ -362,6 +366,12 @@ async function main() {
 /* One click, whatever the page is asking for. */
 function clickThrough(p) {
   const { w, d } = p;
+  /* WHICH BRANCH THIS TOOK. A dead end here used to report only that "a click
+   * produced no answer", which is the least useful half of the story: the
+   * interesting part is what the driver decided to click and what it found
+   * when it looked. Recorded on the page object and printed by the failure. */
+  p.why = null;
+  const took = (label, r) => { p.why = label; return r; };
   const click = (x) => x && x.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
   const qa = (s) => [...d.querySelectorAll(s)];
   const q = (s) => d.querySelector(s);
@@ -404,13 +414,46 @@ function clickThrough(p) {
   }
   if (/matched the winner/.test(t)) return click(q('#mymeld button[data-aside]'));
   if (/Your turn/.test(t)) {
+    /* A MOVE IS TWO CLICKS, and the first one answers nothing on purpose:
+     * onCell() stores the source in SEL.moveSrc and re-renders so the legal
+     * destinations light up. This driver asserted that every click grows the
+     * log, which is true of every other click on the page and false of this
+     * one - so whenever the turn opened in move mode the run died claiming the
+     * table had not answered, when the table was waiting for the other half of
+     * the instruction. Finish the move the way a person would. */
+    if (w.eval('SEL && SEL.mode') === 'move') {
+      const src = q('#map .hot');
+      if (src) {
+        click(src);
+        const dest = qa('#map .hot').find((x) => x !== src) || q('#map .hot');
+        if (dest && w.eval('SEL.moveSrc')) return took('turn: move, source then destination', click(dest));
+        return took('turn: move, one click was enough', undefined);
+      }
+    }
     const cs = qa('#mymeld button[data-turn]');
     if (cs.length) {
       click(cs[0]);
       const h = q('#map .hot');
-      return h ? click(h) : click(btn(/^Cash /));
+      if (h) {
+        click(h);
+        /* Same two-click shape if picking the card put the page into a move. */
+        if (w.eval('SEL && SEL.moveSrc')) {
+          const dest = qa('#map .hot').find((x) => x !== h) || q('#map .hot');
+          if (dest) return took('turn: card, then a move source and destination', click(dest));
+        }
+        return took('turn: card then a lit hex', undefined);
+      }
+      const cash = btn(/^Cash /);
+      if (cash) return took('turn: card had no lit hex, cashed it', click(cash));
+      /* A card with nowhere to go AND no cash button is a dead end for the
+       * driver, not necessarily for a person - but it is exactly the state
+       * worth naming rather than clicking blindly past. Put the card back and
+       * end the turn, so the run continues and the reason is on the record. */
+      click(cs[0]);
+      return took('turn: card had neither a lit hex nor a cash button',
+                  click(btn(/^End turn/)));
     }
-    return click(btn(/^End turn/));
+    return took('turn: nothing playable, ended it', click(btn(/^End turn/)));
   }
   if (/Give up|Retire a card|spend one extra|shared pile/.test(t))
     return click(qa('#hand button.want')[0] || qa('#hand button')[0]);

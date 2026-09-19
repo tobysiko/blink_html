@@ -175,6 +175,16 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         if (h) click(h); else click(btn(/Stop/));
       } else if (/Secret objective/.test(t)) {
         note('objective'); click(q('.objpick button'));
+      } else if (/Fall back/.test(t)) {
+        /* WHERE A BEATEN UNIT RETREATS TO — asked on somebody else's turn, and
+         * only when more than one neighbouring tile of yours has room. v0.26
+         * made displacement the printed rule, so this prompt now appears in a
+         * game nobody configured, and a driver with no branch for it does not
+         * fail loudly: the game just stops, one seed at a time, and the run
+         * reports "DID NOT FINISH". */
+        note('retreat');
+        const h = hot();
+        if (h) click(h);
       } else if (/Water advantage/.test(t)) {
         note('water');
         const h = hot();

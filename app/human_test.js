@@ -74,6 +74,15 @@ function autoHuman(G, req, rng) {
     }
     case 'mulligan':
       return rng() < 0.3;
+    /* WHERE A BEATEN UNIT FALLS BACK TO. Only asked when more than one
+     * neighbouring tile of yours has room; with one there is no decision and
+     * the engine takes it. This became a request a person can actually see in
+     * v0.26, when displacement stopped being an option and became the printed
+     * rule - and this driver threw on it, which is the right failure: every
+     * prompt a default game can raise has to be answerable, or the app has a
+     * dead end nobody met until a real table did. */
+    case 'retreat':
+      return pick(req.options);
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

@@ -1,12 +1,15 @@
 /* DISPLACEMENT: a beaten unit falls back, it does not evaporate.
  *
- * The printed rule sends it home to the reserve, which quietly refills the one
- * thing that ends the game. `loss: "displace"` has it retreat to a
+ * THIS IS THE PRINTED RULE AS OF v0.26. A beaten unit retreats to a
  * NEIGHBOURING tile its owner holds that has room — staying on the map and
- * staying theirs — and only die when there is nowhere beside it to go.
+ * staying theirs — and only dies when there is nowhere beside it to go.
+ * `loss: "reserve"` is the OLD printed rule, which sent it home to the reserve
+ * and so quietly refilled the one thing that ends the game; it is kept as an
+ * option because every measurement taken before v0.26 was taken under it, and
+ * it is still asserted below so those numbers stay reproducible.
  *
  * Two consequences fall out of the printed capacities with no new rule, and
- * both are asserted here because they are the whole character of the change:
+ * both are asserted here because they are the whole character of the rule:
  * a retreat can only ever reach plains or forest, and a detached unit dies.
  */
 const E = require('./engine.js');
@@ -15,12 +18,19 @@ const ok = (c, what) => { if (!c) fail.push(what); };
 
 const HOLDS = { plains: 3, forest: 2, ocean: 1, mountain: 1 };
 
-/* ---- the printed rule is untouched ---- */
+/* ---- the printed rule DISPLACES, with no option asked for ---- */
 {
   const g = E.playOut(4, 11, { humans: [] });
+  ok((g.stats.displaced || 0) > 0,
+     'nothing was displaced in a game playing the printed rule');
+}
+
+/* ---- and the old rule is still reachable, and still banks units ---- */
+{
+  const g = E.playOut(4, 11, { humans: [], loss: 'reserve' });
   ok((g.stats.displaced || 0) === 0,
-     'a unit was displaced in a game playing the printed rule');
-  ok((g.stats.killed_by_attack || 0) > 0, 'the printed rule stopped taking units');
+     'a unit was displaced under loss: "reserve"');
+  ok((g.stats.killed_by_attack || 0) > 0, 'loss: "reserve" stopped taking units');
 }
 
 /* ---- displacement moves units instead of banking them ---- */

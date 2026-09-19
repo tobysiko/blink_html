@@ -15,6 +15,42 @@ const PLAY_HTML = require("path").join(
     .readFileSync(require("path").join(__dirname, "..", "VERSION"), "utf8").trim()
   + ".html");
 
+/* THE BUILT PAGE IS A GENERATED FILE, AND A STALE ONE IS A DECOY.
+ *
+ * Every DOM test runs the engine that is baked into that page, not the one in
+ * app/engine.js. So a rule change plus a forgotten `node app/build.js` means
+ * the tests play LAST WEEK'S RULES against this week's expectations — and the
+ * way that surfaces is not "stale page", it is a replay that mysteriously
+ * deals a different game and a multiplayer click that mysteriously answers
+ * nothing. Both of those were chased a long way on 19 Sep before the page's
+ * timestamp was looked at.
+ *
+ * The check is a timestamp, not a hash, because it has to be cheap enough to
+ * run in every DOM test: if any source the page is built FROM is newer than
+ * the page, the page cannot be this version of the game. */
+(function checkFresh() {
+  const fs = require("fs"), path = require("path");
+  if (process.env.BLINK_ALLOW_STALE_PAGE) return;
+  if (!fs.existsSync(PLAY_HTML)) {
+    console.error(`${path.basename(PLAY_HTML)} has not been built — run: node app/build.js`);
+    process.exit(2);
+  }
+  const built = fs.statSync(PLAY_HTML).mtimeMs;
+  const sources = ["engine.js", "ui.js", "i18n.js", "net.js", "session.js",
+                   "report.js", "meldrules.js", "shell.html"]
+    .map((f) => path.join(__dirname, f))
+    .filter((f) => fs.existsSync(f));
+  const newer = sources.filter((f) => fs.statSync(f).mtimeMs > built);
+  if (newer.length) {
+    console.error(`${path.basename(PLAY_HTML)} is OLDER than `
+      + newer.map((f) => "app/" + path.basename(f)).join(", ")
+      + `\n  The page carries its own copy of the engine, so this test would `
+      + `play the rules as they were when it was built.`
+      + `\n  Rebuild it:  node app/build.js`);
+    process.exit(2);
+  }
+})();
+
 function configure(w, d, opts) {
   opts = opts || {};
   const players = opts.players || 3;

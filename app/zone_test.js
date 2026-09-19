@@ -181,6 +181,15 @@ function run(seed, n, seat, retire, deck, obj, cb) {
       } else if (/Move —|Fortify —/.test(t)) {
         const h = q('#map .hot');
         if (h) click(h); else click(btn(/Cancel/) || btn(/Pick another/));
+      } else if (/Fall back/.test(t)) {
+        /* WHERE A BEATEN UNIT RETREATS TO. This arrives on somebody else's
+         * turn and only when more than one neighbouring tile of yours has
+         * room. It became a prompt a default game can raise in v0.26, when
+         * displacement stopped being an option and became the printed rule,
+         * and this driver stalled on it: the game simply stopped, and the
+         * failure read "DID NOT FINISH" with the retreat sentence attached. */
+        const h = q('#map .hot');
+        if (h) click(h);
       }
       setTimeout(tick, 0);
     };

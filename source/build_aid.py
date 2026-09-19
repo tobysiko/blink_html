@@ -200,8 +200,8 @@ def back():
   <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
     wins; level goes to the card matching the ground, else the defender. Clear the last
     unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) · 3 per
-    terrain.</p>
+  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
+    your objectives.</p>
   <div class="foot"><span>Blink {VTAG}</span><span>deep-diversions.com/blink</span></div>
 </div>"""
 

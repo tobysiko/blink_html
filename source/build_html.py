@@ -7,7 +7,7 @@ from version import VTAG, RULES_HTML
 # constants, and an import inherits the caller's working directory. Running a
 # checker from the project root therefore died on a missing figs.json before it
 # had checked anything. Reading an input by absolute path costs nothing; where
-# this module WRITES is left alone on purpose.
+# this module WRITES is guarded by __main__ below, for the same reason.
 F = json.loads((pathlib.Path(__file__).resolve().parent / "figs.json").read_text())
 
 CSS = """
@@ -327,8 +327,8 @@ HTML = f"""<!doctype html>
     raises the gold your people cost to feed.</li>
   </ol>
   <p>The game ends when someone places their last unit. Most points wins: one per unit on
-  the map, plus your victory row, plus the terrain
-  you dominate — the largest connected stretch of each.</p>
+  the map, plus your victory row, plus the two <strong>map objectives</strong> you were
+  dealt &mdash; kinds of place, sung down the generations, that you score by holding.</p>
   {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game; the market beside it is where cards are bought; every meld played goes to the play area and stays there until it is spent. Your own board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
 
   <div class="contents">
@@ -380,18 +380,19 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">03</span><h2>Setup</h2></div>
   <ol class="seq">
     <li><b>Split the cards.</b> Divide the 80 cards by rank into a
-    <strong>starting deck</strong>, ranks <b>1–10</b>, and an <strong>upgrade deck</strong>,
-    ranks <b>11–20</b>. Forty cards each, four suits of every rank, and the same split
-    however many of you are playing. Nothing is set aside and nothing goes back in the
-    box: every card is in the game.</li>
+    <strong>starting deck</strong>, ranks <b>1–11</b>, and an <strong>upgrade deck</strong>,
+    ranks <b>12–20</b>. Forty-four and thirty-six, four suits of every rank, and the same
+    split however many of you are playing. Nothing is set aside and nothing goes back in
+    the box: every card is in the game.</li>
 
     <li><b>Draft your hand.</b> Shuffle the starting deck and deal 10 cards to each player.
     Keep 4 and pass 6 clockwise; keep 6 and pass 4; keep 8 and pass 2; keep the last 2. You end
     with a fixed hand of <strong>ten cards</strong>. Put whatever is left of the starting deck
-    <strong>face down as the shared pile</strong> — twenty cards at two players, ten at
-    three, none at four. It is not out of the game: it is where every hand refills from
-    (§09), so the cards nobody drafted come back to the table later, in somebody else's
-    hand.</li>
+    <strong>face down as the shared pile</strong> — twenty-four cards at two players,
+    fourteen at three, four at four. It is not out of the game: it is where every hand
+    refills from (§09), so the cards nobody drafted come back to the table later, in
+    somebody else's hand. Whatever the count, there is a pile there from the first
+    round.</li>
 
     <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 3, 5, 5, 5 from
     the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
@@ -436,9 +437,9 @@ HTML = f"""<!doctype html>
   follow, and named where it comes up, so nothing below has to be taken on trust.</p>
 
   <h3>Setting up</h3>
-  <p>The <strong>starting deck</strong> is ranks 1–10 and the <strong>upgrade deck</strong>
-  ranks 11–20. They deal ten cards apiece and draft — keep four and pass the rest,
-  then keep six, keep eight, keep all ten — until each holds a fixed hand of ten. Ten
+  <p>The <strong>starting deck</strong> is ranks 1–11 and the <strong>upgrade deck</strong>
+  ranks 12–20. They deal ten cards apiece and draft — keep four and pass the rest,
+  then keep six, keep eight, keep all ten — until each holds a fixed hand of ten. Fourteen
   starting cards are left over; those go face down as the shared pile.</p>
   <p>Each takes a board and loads all five tiers with twenty units, and sets their
   ascension coins on the printed spots. They lay the three-player
@@ -446,8 +447,9 @@ HTML = f"""<!doctype html>
   three tiles from the others — and each puts one unit on a Plains tile of their own. The
   remaining tiles are sorted into four open piles by terrain. Finally they shuffle the
   upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
-  it &mdash; that is the market. Their Tribe rank cap is 12, so most of what is showing is
-  out of reach until they grow.
+  it &mdash; that is the market. Their Tribe rank cap is 12, so only the 12s are within
+  reach &mdash; exactly one rank above the starting deck &mdash; and everything above them
+  is out of reach until they grow.
   Ada is chosen to start and takes the winner's die, set to 1.</p>
 
   <h3>The card phase</h3>
@@ -756,18 +758,32 @@ HTML = f"""<!doctype html>
     <li><b>The higher total wins.</b> If the totals are level, the card whose
     <strong>suit matches the ground being fought over</strong> takes it; if both match or
     neither does, <strong>the defender holds</strong>.</li>
-    <li><b>Attacker wins</b> — one defending unit returns to its owner's board.
-    If that was the <strong>last</strong> unit on the tile, <strong>the ground
+    <li><b>Attacker wins</b> — one defending unit <strong>falls back</strong>. Its owner
+    moves it to a tile beside the one it lost that they already hold and that has room;
+    if more than one will take it, its owner chooses. Only if there is <em>no</em> such
+    tile does the unit go home to their board, refilling the last slot they emptied
+    &mdash; which can cost them a tier.
+    If the losing unit was the <strong>last</strong> one on the tile, <strong>the ground
     changes hands</strong>: place a unit from your board on it at once, from
     your top occupied tier as usual. No unit in reserve, or defenders still
     standing, and the tile is simply left empty.
     <br><b>Defender wins</b> — nothing happens; the attack is spent for
     nothing.</li>
   </ol>
+  <div class="note">
+    <span class="tag">Where a retreat can actually go</span>
+    <p>Two things follow from the capacities on the terrain table and no extra rule is
+    needed for either. A retreat can only ever reach <strong>Plains or Forest</strong>:
+    Ocean and Mountain hold one unit each, so a neighbouring tile of those is already
+    full if it is yours. And a unit with nothing of yours beside it <strong>dies</strong>
+    &mdash; a lone outpost deep in someone else's country has nowhere to fall back to,
+    which is the risk you took when you put it there.</p>
+  </div>
   <p>The defender's card goes to their discard and comes back on the next recycle, so
-  holding a tile costs tempo rather than material. The attacker spends nothing beyond
-  the card already on the tile: an attack costs exactly what settling costs, and buys
-  a fight instead of a certainty.</p>
+  holding a tile costs tempo rather than material &mdash; and losing one usually costs
+  ground rather than people. The attacker spends nothing beyond the card already on the
+  tile: an attack costs exactly what settling costs, and buys a fight instead of a
+  certainty.</p>
 
   <table>
     <thead><tr><th>Attacking into</th><th>Defence bonus</th><th>What it means</th></tr></thead>
@@ -880,14 +896,17 @@ HTML = f"""<!doctype html>
     card from hand, and the <strong>higher of the two</strong> is your defence — a wall can
     never make you weaker than the card you were holding.</li>
     <li>The attacker still spends <strong>one</strong> card. Beat the wall and you have won
-    the duel outright: a defender goes home, and the ground changes hands if that was the
+    the duel outright: a defender falls back, and the ground changes hands if that was the
     last of them.</li>
     <li>The <strong>coin goes to the supply</strong> whichever way the fight goes. It bought
     what it was sold as buying: one attack made much harder, once.</li>
   </ul>
-  <p>A Tribe's wall is exactly the top of the starting deck, which is the shape of the whole
-  rule: <strong>no card you were dealt can break a wall</strong>. Walls are broken by cards
-  you researched — and by the time you can buy an 18, the walls around you hold at 16.</p>
+  <p>A Tribe's wall holds at 10 and the starting deck runs to 11, so there is exactly
+  <strong>one</strong> rank in a dealt hand that can break the lowest wall in the game
+  &mdash; and it has to be an 11 of the right suit, spent on the attack rather than kept
+  for the trick. Every wall above Tribe is out of a dealt hand's reach entirely. Walls are
+  broken by cards you researched &mdash; and by the time you can buy an 18, the walls
+  around you hold at 16.</p>
   <p>One coin per unit, never two. The coin is also lost the moment the unit is disturbed
   any other way — moved, or stacked onto. You cannot fortify in response to an attack —
   attacks happen on someone else's turn, and by then it is too late. A fortification is a
@@ -1097,7 +1116,6 @@ HTML = f"""<!doctype html>
     <tbody>
       <tr><td><strong>Population</strong></td><td>1 point per unit you have on the map.</td></tr>
       <tr><td><strong>Victory row</strong></td><td><strong>1 point per card</strong> in the row — always, however many you hold. <em>Then, in addition</em>, arrange them in rank order <strong>pushed to the right</strong> of five slots: if you hold three or more, also score the <strong>rank in the centre slot</strong>. A full row of five therefore scores 5 plus its middle rank.</td></tr>
-      <tr><td><strong>Dominance</strong></td><td>3 points for each terrain type where you hold the <strong>largest connected stretch</strong> of it. Count only tiles of that terrain that <strong>you have units on</strong>, and that touch each other; your biggest such group is your stretch. Scattered holdings do not add up — a stack of five units on one tile is a stretch of <b>one</b>. If two players are level, the one with <strong>more units on that terrain</strong> takes it. A terrain nobody occupies scores for nobody.</td></tr>
     </tbody>
   </table>
   {fig('vprow', 'The empty slots sit on the left, so the centre slot only reaches your true middle card once all five are filled. A half-full row scores a lower card — and slipping a low card in can push your centre down. Every card is also worth a point in its own right, so spending one is never free.')}
@@ -1175,7 +1193,7 @@ HTML = f"""<!doctype html>
     <span class="tag">Why it changes the map</span>
     <p>Without objectives, ground is ground: you take what you can reach. With them,
     a particular empty hex beside your Forest is suddenly worth exploring
-    <em>specifically</em>, and dominance stops being the only reason to hold a stretch of
+    <em>specifically</em>, and raw population stops being the only reason to hold a stretch of
     coast. Four points is roughly a fifth of a typical score, so an objective is worth
     steering for — but not worth wrecking your position over.</p>
   </div>
@@ -1367,8 +1385,8 @@ HTML = f"""<!doctype html>
       leaves the game.</p>
       <h3>Scoring</h3>
       <p>Units on the map + 1 per card in your victory row + the centre-slot rank of that row
-      once it holds three or more + 3 per terrain for the <b>largest connected stretch</b> you occupy,
-      level broken by units on that terrain. Gold breaks ties on the final score.</p>
+      once it holds three or more + both of your map objectives. Gold breaks ties on the
+      final score.</p>
     </div>
   </div>
 </section>
@@ -1384,7 +1402,25 @@ separately</footer></div>
 </html>
 """
 
-out = pathlib.Path("./" + RULES_HTML)
-out.parent.mkdir(parents=True, exist_ok=True)
-out.write_text(HTML, encoding="utf-8")
-print("wrote", out, len(HTML), "bytes")
+# ONLY WHEN RUN, NEVER WHEN IMPORTED.
+#
+# check_figs.py does `from build_html import SCALE, COMPARE`, and until this
+# guard existed that import EXECUTED this line — writing a complete rulebook
+# into whatever directory the checker happened to be run from. Run the checks
+# from the project root and you got Blink-rules-v0.26.html one level above the
+# real one, byte-identical on the day and stale by morning.
+#
+# That is this project's oldest and most expensive bug: figs.json,
+# Blink-rules-v0.24.html and game-description.html all lived in two places at
+# once, measurements were taken from the wrong copy, and a PDF shipped from a
+# file five days old. The note above about the write being "left alone on
+# purpose" was the wrong call — a module that writes a file as a side effect of
+# being imported manufactures the decoy.
+#
+# The path is still relative, so `python3 build_html.py` from source/ behaves
+# exactly as it always has and build_pdfs.sh is unaffected.
+if __name__ == "__main__":
+    out = pathlib.Path("./" + RULES_HTML)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(HTML, encoding="utf-8")
+    print("wrote", out, len(HTML), "bytes")

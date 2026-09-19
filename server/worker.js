@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-14T15:30:39Z
+ * Built 2026-09-19T21:16:28Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -126,6 +126,17 @@ function duelWinner(aCard, dCard, terrain, extra) {
   const dm = !!dCard && dCard.s === terrain;
   return am && !dm;
 }
+/* WHERE THE STARTING DECK ENDS AND THE ADVANCED ONE BEGINS.
+ *
+ * Ranks 1..DECK_SPLIT are dealt and drafted; DECK_SPLIT+1..20 are the upgrade
+ * deck the 3x3 research grid is filled from. It is a named constant because
+ * three separate things are derived from it and got out of step when it was a
+ * pair of literals: the size of the starting deck (4 x DECK_SPLIT), what is
+ * left for the shared market after the draft (4 x DECK_SPLIT - 10n), and the
+ * lowest rank a player can ever research. check_rules.py reads this number out
+ * of here and refuses a rulebook that states a different one. */
+const DECK_SPLIT = 11;
+
 const BAG_EACH = 15;
 
 /* tier -> [name, units, meld limit, food per recycle, free moves,
@@ -1383,7 +1394,21 @@ class Game {
     /* "area"  — the sim: your biggest CONNECTED STRETCH of a terrain, in tiles.
      * "units" — rulebook §13: most UNITS on that terrain, and only if all your
      *           units on it form one connected group. */
-    this.MAJORITY = opts.majority || "area";
+    /* DOMINANCE LEFT THE BASE GAME IN v0.26. It paid 3 a terrain for holding
+     * the biggest connected stretch of it - and map objectives, promoted from
+     * module to base game in the same version, pay for the same behaviour:
+     * occupy a shape, hold it to the end. Two rules pricing one behaviour is
+     * how a player ends up doing the arithmetic twice and feeling neither.
+     * Objectives are the one that survived, because what they ask for is
+     * legible from across the table and dominance never was - it needed a
+     * largest-connected-patch comparison against every other player.
+     *
+     * Kept as an option so every measurement taken against it still reproduces:
+     *   "off"    - v0.26, the printed rule. Dominance scores nothing.
+     *   "area"   - biggest connected stretch, the v0.25 printed rule.
+     *   "units"  - most units on the terrain, one connected group. */
+    this.MAJORITY = ["off", "area", "units"].includes(opts.majority)
+      ? opts.majority : "off";
     /* "gold": the printed rule — pay the terrain's price, remove a unit.
      * "duel": both sides reveal a card from hand; the defender adds the
      * terrain bonus — the printed rule as of v0.23. "gold" keeps the older
@@ -1398,9 +1423,20 @@ class Game {
      * (51/49), and it is what an attack looks like it should do at a table.
      * See DUEL-SPOILS.md. Can be turned off to reproduce the old numbers. */
     this.DUEL_TAKE = opts.duelTake !== false;
-    /* What becomes of a beaten unit: "reserve" is the printed rule, "displace"
-     * falls back to a neighbouring tile of its own. See _takeUnit. */
-    this.LOSS = opts.loss === "displace" ? "displace" : "reserve";
+    /* What becomes of a beaten unit. "displace" is the PRINTED RULE as of
+     * v0.26: it falls back to a neighbouring tile its owner already holds and
+     * which has room, and only goes home to the reserve when there is no such
+     * tile - so a detached unit still dies, and about 2 attacks a game land on
+     * one. Measured with homelands it takes a four-player game from 12.3
+     * rounds to 10.2 and the cost of fighting from -7.3 to -4.9.
+     *
+     * Retreat can only ever land on Plains or Forest (63-66% / 34-37%): Ocean
+     * holds 1 and Mountain holds 1, so a neighbouring tile of those terrains is
+     * by definition already full if your unit is standing on it.
+     *
+     * "reserve" is the v0.25 printed rule, kept so displace_test.js and every
+     * measurement taken before the change still reproduce. See _takeUnit. */
+    this.LOSS = opts.loss === "reserve" ? "reserve" : "displace";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -1736,8 +1772,8 @@ class Game {
   _deal() {
     const n = this.n, R = this.rng;
     const range = (a, b) => { const o = []; for (let i = a; i < b; i++) o.push(i); return o; };
-    /* ONE DECK, EVERY PLAYER COUNT. Ranks 1-10 are the starting deck and
-     * 11-20 the advanced one, at two players, three and four alike. It used to
+    /* ONE DECK, EVERY PLAYER COUNT. Ranks 1-11 are the starting deck and
+     * 12-20 the advanced one, at two players, three and four alike. It used to
      * cut the starting deck down to fit the table - 6-10 at two players, 3-10
      * at three, with a hand-tuned fix removing two 3s and two 18s to keep the
      * suits even - and that had two costs. The rank caps printed on the board
@@ -1748,15 +1784,24 @@ class Game {
      *
      * What is left over after everyone has drafted ten is not removed from the
      * game. It becomes the shared pile, face down, which is where every hand
-     * refills from (\u00a709) - so at two and three players the pile starts
-     * stocked and the cards that come back to a hand are less predictable than
-     * the ones that went in. At four players nothing is left over and this is
-     * exactly the game it always was.
+     * refills from (\u00a709) - so the pile starts stocked at EVERY count and
+     * the cards that come back to a hand are less predictable than the ones
+     * that went in.
+     *
+     * v0.26 moved the split from 10 to 11. The starting deck is 44 cards
+     * rather than 40, so the leftover is 44 - 10n: 24 at two players, 14 at
+     * three, 4 at four. Under the old split four players drafted the starting
+     * deck dry and the pile was empty until somebody recycled into it, which
+     * made trade a rule that did nothing for the first third of a four-player
+     * game. The rank CAPS do not move with the split (12/14/16/18/20), because
+     * a cap governs what you may RESEARCH, not what you may hold: a Tribe
+     * capped at 12 can research exactly one rank above the starting deck,
+     * which is the step the ladder is for.
      *
      * All 80 cards are in play in every game. The only way a card leaves is
      * the victory row and the effects spent from it. */
-    const sr = range(1, 11);
-    const ar = range(11, 21);
+    const sr = range(1, DECK_SPLIT + 1);
+    const ar = range(DECK_SPLIT + 1, 21);
     const start = [], adv = [];
     for (const r of sr) for (const s of TER) start.push({ r, s });
     for (const r of ar) for (const s of TER) adv.push({ r, s });
@@ -4316,7 +4361,7 @@ class Game {
       const vp = vrowScore(p.vrow.map((c) => c.r));
       let dom = 0;
       const detail = {};
-      for (const t of TER) {
+      for (const t of (this.MAJORITY === "off" ? [] : TER)) {
         if (this.MAJORITY === "units") {
           /* Rulebook §13: most units on the terrain, disqualified entirely if
            * your units on it are not one connected group. Tied players score. */

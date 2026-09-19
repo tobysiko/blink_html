@@ -5,11 +5,18 @@
  * `draftPick()` chose for every seat including the human's. It is a setup
  * phase now, like the homelands map.
  *
- * A do-over RE-DEALS THE WHOLE TABLE: every card of the 1-10 deck goes back,
- * hands and shared pile alike, and the lot is shuffled and dealt again. That
- * is the only version that works at four players, where §03 leaves no spare
- * cards - a do-over that refreshed only the caller's ten would hand back the
- * same ten. One call each, asked in seat order, so it always ends.
+ * A do-over RE-DEALS THE WHOLE TABLE: every card of the starting deck goes
+ * back, hands and shared pile alike, and the lot is shuffled and dealt again.
+ * That is the only version that worked at four players under the old 1-10
+ * split, where §03 left no spare cards - a do-over that refreshed only the
+ * caller's ten would hand back the same ten. One call each, asked in seat
+ * order, so it always ends.
+ *
+ * THE SIZE OF THE STARTING DECK IS NOT WRITTEN DOWN HERE. It is 4 x
+ * E.DECK_SPLIT, read from the engine, because this test's job is that every
+ * card is accounted for exactly once - not that there are forty of them. It
+ * hard-coded 40 until v0.26 moved the split from 10 to 11, at which point it
+ * failed four ways on a change that had not broken anything.
  */
 const E = require('./engine.js');
 const fail = [];
@@ -17,14 +24,27 @@ const ok = (c, what) => { if (!c) fail.push(what); };
 const key = (c) => c.r + c.s;
 const bag = (cards) => cards.map(key).sort().join(',');
 
+const START_DECK = 4 * E.DECK_SPLIT;   // four suits, ranks 1..DECK_SPLIT
+
 function everyCardOnce(g, n, what) {
   const all = g.P.map((p) => p.hand).reduce((a, b) => a.concat(b), []).concat(g.pile);
-  ok(all.length === 40, `${what}: ${all.length} starting cards accounted for, wanted 40`);
+  ok(all.length === START_DECK,
+     `${what}: ${all.length} starting cards accounted for, wanted ${START_DECK}`);
   const seen = new Set(all.map(key));
-  ok(seen.size === 40, `${what}: only ${seen.size} distinct cards — one was duplicated or lost`);
+  ok(seen.size === START_DECK,
+     `${what}: only ${seen.size} distinct cards — one was duplicated or lost`);
   for (const p of g.P)
     ok(p.hand.length === 10, `${what}: seat ${p.i} holds ${p.hand.length} cards, wanted 10`);
-  ok(g.pile.length === 40 - 10 * n, `${what}: the shared pile is ${g.pile.length}, wanted ${40 - 10 * n}`);
+  ok(g.pile.length === START_DECK - 10 * n,
+     `${what}: the shared pile is ${g.pile.length}, wanted ${START_DECK - 10 * n}`);
+}
+
+/* The market is live from turn one at every count now — that is the point of
+ * moving the split, and it is the thing a four-player table would notice. */
+{
+  for (const n of [2, 3, 4])
+    ok(new E.Game(n, 99, { humans: [] }).pile.length > 0,
+       `${n}p: the shared pile is empty at setup, so trade has nothing to offer`);
 }
 
 /* ---- deal: ten cards, no questions ---- */

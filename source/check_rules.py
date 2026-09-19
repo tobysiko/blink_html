@@ -286,11 +286,21 @@ check("ROUND" not in board_txt,
 # The map phase is the half a player forgets, and every item in it is a rule
 # the engine enforces — so the board's turn menu is checked against the
 # engine's own numbers rather than trusted.
-# "majority" reads as most units, which is the engine's OTHER option. The
-# default scores the largest connected stretch, and the rulebook calls that
-# dominance and never says majority — but the board did, in the one place a
-# player would read it while adding up their score.
-maj = re.search(r'opts\.majority \|\| "([a-z]+)"', js)
+# WHETHER TERRAIN IS SCORED AT ALL, and if so under which of the two rules.
+#
+# "majority" reads as most units, which is the engine's OTHER option; "area"
+# scores the largest connected stretch, which the rulebook calls dominance. As
+# of v0.26 the default is "off" — dominance left the base game, because map
+# objectives pay for the same behaviour and two rules pricing one behaviour is
+# how a player does the arithmetic twice and feels neither.
+#
+# The regex reads the ternary the engine actually writes rather than the older
+# `opts.majority || "area"` idiom. It matched nothing after the rewrite, and
+# the check said only "cannot find the engine's MAJORITY default" — which is
+# the right failure, but it is worth noting it took a REGEX to notice that a
+# scoring rule had been removed.
+maj = re.search(r'\["off", "area", "units"\]\.includes\(opts\.majority\)\s*'
+                r'\?\s*opts\.majority\s*:\s*"([a-z]+)"', js)
 check(bool(maj), "cannot find the engine's MAJORITY default")
 if maj and maj.group(1) == "area":
     check("majority" not in board_txt.lower(),
@@ -300,6 +310,31 @@ if maj and maj.group(1) == "area":
           "the board does not say the terrain point is the biggest connected stretch")
     check("majorit" not in rules.lower(),
           "the rulebook says terrain majority, but the engine scores area")
+elif maj and maj.group(1) == "off":
+    # Nothing scores terrain any more, so nothing printed may promise it. A
+    # scoring line nobody deleted is worth more points on paper than in the
+    # game, which is the worst kind of wrong: the table adds them up and the
+    # app does not.
+    # The AID is in this list because it is the sheet on the table when the
+    # scores are added up. The board and the rulebook were checked and the aid
+    # was not, which is how a removed scoring rule could have survived in the
+    # one document a player actually reads at the end of the game.
+    for name, txt in (("player board", board_txt), ("rulebook", rules),
+                      ("player aid", aid_txt)):
+        check("majorit" not in txt.lower(),
+              f"the {name} still scores terrain majority, which v0.26 removed")
+        check(not re.search(r"dominat|dominanc", txt, re.I),
+              f"the {name} still scores terrain dominance, which v0.26 removed")
+        # ...AND THE SAME RULE WITHOUT ITS NAME. The two checks above look for
+        # the WORD, and the player aid never used it: it said "3 per terrain",
+        # which is the rule spelled as arithmetic, on the one sheet that is on
+        # the table while the scores are added up. It survived both checks and
+        # the rulebook rewrite, and would have shipped. Anything that pays
+        # points FOR A TERRAIN is the rule, whatever it is called.
+        check(not re.search(r"\d\s*(?:points?|pts?|/)?\s*(?:per|a|each)\s+terrain",
+                            txt, re.I),
+              f"the {name} still pays points per terrain, which v0.26 removed "
+              f"(it does not have to say 'dominance' to be the same rule)")
 
 # The market is ONE face-down deck with nine face up. The worked example set
 # it up the v0.22 way — four suit decks, a four-card market — nine lines after

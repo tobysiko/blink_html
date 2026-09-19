@@ -6,14 +6,24 @@
  * decoration in a game whose market stops at 15, and it was a setup step, with
  * a table, that had to be got right before a card was dealt.
  *
- * Now ranks 1-10 are the starting deck and 11-20 the advanced one at every
- * count, and what nobody drafted becomes the shared pile rather than leaving
- * the game. This file is the accounting: 80 cards go in, 80 cards are
+ * Now ranks 1..DECK_SPLIT are the starting deck and the rest the advanced one
+ * at every count, and what nobody drafted becomes the shared pile rather than
+ * leaving the game. This file is the accounting: 80 cards go in, 80 cards are
  * somewhere, and the only thing that ever removes one is the victory row.
+ *
+ * THE SPLIT IS READ FROM THE ENGINE, never written down here. v0.26 moved it
+ * from 10 to 11 and this file failed nine ways on a change that had broken
+ * nothing - it was asserting the constant rather than the property. What it
+ * means to assert is that the two decks PARTITION the eighty cards: nothing
+ * above the split is dealt, nothing at or below it is in the market, and the
+ * shared pile is whatever the draft did not take.
  */
 const E = require('./engine.js');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
+
+const SPLIT = E.DECK_SPLIT;          // highest rank in the starting deck
+const START = 4 * SPLIT;             // four suits of each of those ranks
 
 /* By IDENTITY, not by count: `tableau` and `played` are two views of the same
    cards mid-trick, so adding lengths counts some of them twice. A Set also
@@ -34,29 +44,33 @@ for (const n of [2, 3, 4]) {
   const all = where(g);
   ok(all.length === 80, `${n}p: ${all.length} cards at setup, not 80`);
 
-  /* Ranks 1-10 start, 11-20 advance, four suits of each, at every count. */
+  /* Four suits of every rank, at every count, whatever the split. */
   const ranks = {};
   for (const c of all) ranks[c.r] = (ranks[c.r] || 0) + 1;
   for (let r = 1; r <= 20; r++)
     ok(ranks[r] === 4, `${n}p: rank ${r} appears ${ranks[r] || 0} times, not 4`);
 
   for (const p of g.P) ok(p.hand.length === 10, `${n}p: a hand holds ${p.hand.length}`);
-  ok(g.deck.concat(g.grid.flat()).every((c) => c.r >= 11),
+  ok(g.deck.concat(g.grid.flat()).every((c) => c.r > SPLIT),
      `${n}p: a starting-deck card is in the market`);
-  ok(g.P.every((p) => p.hand.every((c) => c.r <= 10)),
+  ok(g.P.every((p) => p.hand.every((c) => c.r <= SPLIT)),
      `${n}p: an advanced card was dealt to a hand`);
 
   /* What the draft never touched is the shared pile, not the bin. */
-  ok(g.pile.length === 40 - n * 10,
-     `${n}p: shared pile holds ${g.pile.length}, expected ${40 - n * 10}`);
-  ok(g.pile.every((c) => c.r <= 10),
+  ok(g.pile.length === START - n * 10,
+     `${n}p: shared pile holds ${g.pile.length}, expected ${START - n * 10}`);
+  ok(g.pile.every((c) => c.r <= SPLIT),
      `${n}p: an advanced card was left in the shared pile`);
 }
 
-/* Four players is the case where nothing is left over — the game it always
-   was, and the check that the pile is a consequence and not a constant. */
-ok(new E.Game(4, 5, { humans: [] }).pile.length === 0,
-   'four players start with cards already in the shared pile');
+/* THE PILE IS LIVE AT EVERY COUNT, which is the whole reason v0.26 moved the
+   split. Under 1-10 four players drafted the starting deck dry and the shared
+   pile was empty until somebody recycled into it — so trade, the rule that
+   reads two cards off the top of it, did nothing for the first third of a
+   four-player game. At 1-11 the leftover is 44 - 10n: 24, 14, 4. */
+for (const n of [2, 3, 4])
+  ok(new E.Game(n, 5, { humans: [] }).pile.length === START - n * 10,
+     `${n}p: the shared pile is not the ${START - n * 10} cards the draft left over`);
 
 /* Play them out: the accounting has to survive the game, and the ONLY cards
    that may go missing are the ones spent out of a victory row. */
@@ -86,5 +100,5 @@ for (const n of [2, 3, 4]) {
 }
 
 if (fail.length) { console.error('FAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
-console.log('setup: ranks 1-10 and 11-20 at 2, 3 and 4 players, all 80 cards in play, '
+console.log(`setup: ranks 1-${SPLIT} and ${SPLIT + 1}-20 at 2, 3 and 4 players, all 80 cards in play, `
   + 'the undrafted remainder in the shared pile, and the last unit the only end');
