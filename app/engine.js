@@ -1430,6 +1430,11 @@ class Game {
      * "reserve" is the v0.25 printed rule, kept so displace_test.js and every
      * measurement taken before the change still reproduce. See _takeUnit. */
     this.LOSS = opts.loss === "reserve" ? "reserve" : "displace";
+    /* NOTHING EVER LEAVES THE GAME (v0.26). A card spent for its effect goes
+     * to the bottom of the market rather than out of play. See _spendCard.
+     * "removed" is the v0.25 rule and reproduces every measurement taken
+     * under it. */
+    this.SPENT_CARDS = opts.spentCards === "removed" ? "removed" : "market";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -1670,7 +1675,8 @@ class Game {
     this.endedOn = null;
     this.finalRounds = null;
     this.pile = [];            // shared face-down discard pile (§04, §09)
-    this.removed = [];         // cards spent on effects; out of the game
+    this.removed = [];         // cards OUT OF THE GAME (empty under v0.26)
+    this.spent = [];           // every card spent for an effect, in order
     this.m.bandOf = (seat) => this.P[seat].band();
     this._dealStyles();
     for (const pl of this.P) pl.takeUnit();          // the starting unit
@@ -1759,6 +1765,48 @@ class Game {
     this.say("log.gold." + why,
              Object.assign({ seat: p.i, n }, vars || {}));
     return moved;
+  }
+
+  /* WHERE A CARD SPENT FOR ITS EFFECT GOES.
+   *
+   * v0.25 took it out of the game: `removed` was a one-way pile, and 80 cards
+   * became 79. v0.26's rule is that NOTHING EVER LEAVES THE GAME - a spent
+   * card goes to the bottom of the market, which is the shared face-down pile
+   * every hand refills from. Thematically it is used technology: what you
+   * bury comes round again, but not soon.
+   *
+   * This exists because the same two lines - splice out of vrow, push to
+   * removed - were written at SEVEN separate call sites (effects A, B, C and
+   * D, the bot's and the human's paths, and the famine). Changing where a
+   * spent card goes meant finding all seven, and the project's own rule is
+   * that anywhere which reimplements a rule instead of asking the function
+   * that owns it is the next thing to go wrong. One function owns it now.
+   *
+   *   "market"  - v0.26, printed. To the BOTTOM of the pile, so it is not the
+   *               next thing drawn.
+   *   "removed" - v0.25, kept so measurements taken before this reproduce.
+   *
+   * `removed` MEANS ONE THING: out of the game. So in "market" mode it stays
+   * empty and the card is only in the pile. Writing it to both was tried and
+   * is wrong - the card accounting counts by rank-and-suit across every
+   * location, so a card in two places reads as a DUPLICATE, and human_test
+   * said so immediately ("duplicated card 1ocean"). A field that means "gone"
+   * in one mode and "was spent, but is still here" in the other is exactly the
+   * kind of thing that is true on the day and misread six weeks later.
+   *
+   * `spent` is the log: every card ever spent for an effect, in order, in both
+   * modes. Nothing depends on it yet; it is what a card-economy diagram would
+   * be drawn from. */
+  _spendCard(card) {
+    this.spent.push(card);
+    if (this.SPENT_CARDS === "market") {
+      this.pile.unshift(card);       // the bottom: pile is drawn from the end
+      this.inc("spent_to_market");
+    } else {
+      this.removed.push(card);
+      this.inc("spent_out_of_game");
+    }
+    return card;
   }
 
   // --- setup ---------------------------------------------------
@@ -2647,7 +2695,7 @@ class Game {
           let targets = this.conquestTargets(p);
           if (!targets.length) break;
           p.vrow.splice(i, 1);
-          this.removed.push(ans.card);
+          this._spendCard(ans.card);
           this.inc("effect_d_used");
           for (let n = 0; n < kills; n++) {
             targets = this.conquestTargets(p);
@@ -2678,7 +2726,7 @@ class Game {
           const i = p.vrow.indexOf(ans.card);
           if (i >= 0) {
             p.vrow.splice(i, 1);
-            this.removed.push(ans.card);
+            this._spendCard(ans.card);
             this.inc("effect_c_used");
             this.purse(p, effectC(ans.card.r), "effect_c", "vrow",
                        { card: ans.card.r });
@@ -3630,7 +3678,7 @@ class Game {
       card = p.vrow.slice().sort(cardSort)[0];
     }
     p.vrow.splice(p.vrow.indexOf(card), 1);
-    this.removed.push(card);
+    this._spendCard(card);
     /* Two readings of the same card, one per scoring rule: cards under "count",
      * points on the total under "sum". Both are kept on the player because the
      * comparator reads whichever the rule needs and a replay must not care. */
@@ -3700,7 +3748,7 @@ class Game {
     if (!this.colonyCells(p, c).length) return false;
 
     p.vrow.splice(p.vrow.indexOf(c), 1);
-    this.removed.push(c);
+    this._spendCard(c);
     this.inc("effect_b_used");
 
     let placed = 0, settled = 0;
@@ -3731,7 +3779,7 @@ class Game {
     if (!this.colonyCells(p, c).length) return false;
 
     p.vrow.splice(p.vrow.indexOf(c), 1);
-    this.removed.push(c);
+    this._spendCard(c);
     this.inc("effect_b_used");
 
     let placed = 0, settled = 0;
@@ -3787,7 +3835,7 @@ class Game {
       // a coin is worth roughly a third of a point in this economy
       if (gain <= this._rowCost(p, card) + 0.33 * coins) continue;
       p.vrow.splice(p.vrow.indexOf(card), 1);
-      this.removed.push(card);
+      this._spendCard(card);
       this.inc("effect_d_used");
       let done = 0, list = targets;
       while (done < kills) {
@@ -3846,7 +3894,7 @@ class Game {
       const broke = p.gold < need;
       if (!broke || gain < cost * p.w.C_GOLD_PER_POINT) return;
       p.vrow.splice(p.vrow.indexOf(low), 1);
-      this.removed.push(low);
+      this._spendCard(low);
       this.inc("effect_c_used");
       this.purse(p, gain, "effect_c", "vrow", { card: low.r });
     }
@@ -3857,7 +3905,7 @@ class Game {
     while (p.gold < need && p.vrow.length) {
       const card = p.vrow.slice().sort(cardSort)[0];
       p.vrow.splice(p.vrow.indexOf(card), 1);
-      this.removed.push(card);
+      this._spendCard(card);
       this.inc("effect_c_used");
       this.purse(p, effectC(card.r), "effect_c", "vrow", { card: card.r });
     }
@@ -4239,7 +4287,7 @@ class Game {
         const card = yield { type: "feed", seat: p.i, owed, options: p.vrow.slice() };
         if (!card) break;
         p.vrow.splice(p.vrow.indexOf(card), 1);
-        this.removed.push(card);
+        this._spendCard(card);
         this.inc("effect_c_used");
         this.purse(p, effectC(card.r), "effect_c", "vrow", { card: card.r });
       }
