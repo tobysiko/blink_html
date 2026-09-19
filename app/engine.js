@@ -1435,6 +1435,9 @@ class Game {
      * "removed" is the v0.25 rule and reproduces every measurement taken
      * under it. */
     this.SPENT_CARDS = opts.spentCards === "removed" ? "removed" : "market";
+    /* WHEN EFFECT A IS DECLARED. "afterReveal" is v0.26 and printed; "blind"
+     * is the v0.25 rule, kept so its measurements reproduce. */
+    this.A_TIMING = opts.aTiming === "blind" ? "blind" : "afterReveal";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -2170,13 +2173,31 @@ class Game {
       p.bonus = 0; p.sumBonus = 0; p.ties = false; p.spentA = 0; p.aBand = null;
       for (const c of cards) p.hand.splice(p.hand.indexOf(c), 1);
       this.inc("meld_" + cards.length);
-      yield* this._maybeDeclareABlind(p);          // A is declared blind (§10)
+      if (this.A_TIMING === "blind")
+        yield* this._maybeDeclareA(p);             // v0.25: committed unseen
     }
 
     /* Everything turns over at once. One beat, after the last meld is down and
      * before anything is ranked, so the reveal is a moment at the table rather
      * than a row of cards that were always visible. */
     this.fx("reveal", { melds: this.P.map((q) => (q.played || []).length) });
+
+    /* A IS DECLARED AFTER THE REVEAL (v0.26), leader first then clockwise.
+     *
+     * This is a deliberate reversal of v0.25, where A was committed before
+     * anybody had seen a card. Melds are laid face down and only the COUNT is
+     * public while they go down, so declaring blind meant guessing at a number
+     * you were about to be shown. Declaring after it means the decision is
+     * about the table in front of you, which is the interesting version.
+     *
+     * IT IS NOT SYMMETRICAL, and that is worth watching at a real table: the
+     * last seat to declare has seen every meld AND every declaration before
+     * it. That stacks with two other late-seat advantages - laying last with
+     * the full count showing, and, under homelands, placing last with the
+     * whole map in view - against one disadvantage, that ties go to whoever
+     * laid first. Nobody has played this. */
+    if (this.A_TIMING === "afterReveal")
+      for (const i of order) yield* this._maybeDeclareA(this.P[i]);
 
     /* v0.22 ranking: most cards, then highest card, then next-highest, and so
      * on; earliest played breaks what is left. There are never ties.
@@ -3644,8 +3665,22 @@ class Game {
   }
 
   // --- victory-card effects -------------------------------------
-  /* A, declared blind: commit before seeing anyone else's meld. */
-  *_maybeDeclareABlind(p) {
+  /* Effect A. WHEN this is called is the rule, not what it does: before the
+   * reveal it is a blind commitment (v0.25), after it a read of the table
+   * (v0.26). See A_TIMING at the card phase. */
+  *_maybeDeclareA(p) {
+    /* THE BOT DOES NOT READ THE TABLE, so moving this after the reveal does
+     * not change a bots-only game by one card: both policies below guess at
+     * what rivals are likely to have from their meld LIMITS and its own hand,
+     * never from the melds now lying face up in front of it. Measured on the
+     * day the timing changed - same seed, same A count, same round count, at
+     * three and four players.
+     *
+     * So v0.26's reversal of this rule is, for now, UNSIMULATED: it changes
+     * what a person can do and nothing a bot does. Teaching the bot to read
+     * the revealed melds is what would make it measurable, and is also the
+     * only way to find out whether the last seat to declare is as well off as
+     * it looks. */
     let card;
     if (this.isHuman(p.i)) {
       /* A person may spend A whenever they hold a victory card — the size and

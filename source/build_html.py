@@ -560,16 +560,24 @@ HTML = f"""<!doctype html>
   {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — and your free moves — 1, 2, 3, 4, 5 — pays a one-off ascension coin, and moves you onto a costlier row. You always pay only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, one food owed each recycle.')}
 
   <h3>Declare</h3>
-  <p>Before a single card is played, each player may spend one card from their victory row on
-  effect <strong>A</strong> (§10). Declare together on a count of three, or in turn order from
-  the leader — whichever your table prefers, so long as it happens <em>before any meld is on
-  the table</em>.</p>
-  <p>You are committing blind. You do not know what anyone is about to play, only what is in
-  your own hand — which is the whole point: A is a bet, not an answer. So is the meld you
-  are about to lay, for the same reason.</p>
+  <p>Once every meld has been turned over, each player may spend one card from their victory
+  row on effect <strong>A</strong> (§10). Go round from the <strong>leader, clockwise</strong>
+  — the order matters here, because each of you can see what everyone before you has
+  declared.</p>
+  <p>The melds went down face down and only their <em>size</em> was public while they did
+  (§04). So when you declare you can see exactly what you are trying to beat: A is an
+  answer, not a bet. The meld you laid was the bet.</p>
   <p>Only A is declared here. <strong>B</strong> is used in your own map phase and
   <strong>C</strong> at any moment, so neither needs announcing now. Most rounds nobody declares
   anything and the step takes a second.</p>
+  <div class="note">
+    <span class="tag">Being late is an advantage</span>
+    <p>The last player to declare has seen every meld and every declaration before theirs,
+    and the leader has seen none of them. That is a real edge and it is deliberate &mdash;
+    but the leader won the last trick to get there, and ties go to whoever laid first. If
+    your table finds the last seat too comfortable, declaring together on a count of three
+    is the older rule and works perfectly well.</p>
+  </div>
 
   <h3>Card phase</h3>
   <ol class="seq">
@@ -1085,8 +1093,8 @@ HTML = f"""<!doctype html>
       <tr><td>16–20</td><td>Add its <b>rank</b>, and <b>win ties</b></td><td><b>Two colonies</b> — 2 new tiles of any terrain, 1 unit on each, both fortified</td><td><b>5</b> gold</td></tr>
     </tbody>
   </table>
-  <p><strong>A</strong> is declared in the <em>declare step</em> at the top of the round, before
-  any meld is played (§04) — blind, knowing only your own hand. Its bonus counts only toward
+  <p><strong>A</strong> is declared in the <em>declare step</em> (§04), after every meld has
+  been turned over, leader first then clockwise. Its bonus counts only toward
   winning the trick, never toward extra spending on the map; if two players both declare an
   effect that wins ties, the one who spent the <strong>higher-ranked card</strong> takes the
   trick. <strong>B</strong> is used during your own map phase, <strong>at most once per
@@ -1308,8 +1316,8 @@ HTML = f"""<!doctype html>
       eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
       1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
       <h3>Round</h3>
-      <p>Declare A effects blind → leader lays a meld face down → everyone lays one
-      face down → turn them all over together → highest total
+      <p>Leader lays a meld face down → everyone lays one face down → turn them all
+      over together → declare A effects, leader first → highest total
       wins, then most cards, then highest card, then earliest played (never a tie) →
       <b>winner's die = their meld size</b> (and always first), others 2/3/4 →
       spend melds in initiative order. The winner spends every card. Anyone who
@@ -1383,8 +1391,8 @@ HTML = f"""<!doctype html>
       <h3>Victory-card effects</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the
-      GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>blind,
-      before any meld is played</b>; B in your own map phase; C at any moment. The card
+      GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>after the
+      melds are turned over</b>, leader first; B in your own map phase; C at any moment. The card
       goes to the <b>bottom of the shared pile</b>.</p>
       <h3>Scoring</h3>
       <p>Units on the map + 1 per card in your victory row + the centre-slot rank of that row

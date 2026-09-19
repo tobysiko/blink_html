@@ -140,8 +140,21 @@ setTimeout(() => {
         click(cs[0]);
         const h = q('#map .hot');
         if (h) click(h); else { const c = btn(/^Cash /); if (c) click(c); }
-        // undo occasionally: the record must rewind with the game
-        if (steps % 7 === 0 && !q('#undo').disabled) { click(q('#undo')); undos += 1; }
+        /* UNDO, AND NOT BY COINCIDENCE. The record must rewind with the game,
+         * and three assertions at the bottom of this file depend on it having
+         * happened at least once. It used to fire only when `steps % 7 === 0`
+         * AND undo happened to be enabled AND the turn had a card to spend —
+         * three conditions that have to land together, so roughly one run in
+         * five reached the end having never undone anything and failed with
+         * "the run never undid anything". That is the intermittent failure
+         * this file has been carrying; it is not a race and not a rule, it is
+         * a test that left its own coverage to chance.
+         *
+         * Take the first two the moment they are offered, then go back to
+         * occasional so the rest of the run still looks like a person. */
+        if (!q('#undo').disabled && (undos < 2 || steps % 7 === 0)) {
+          click(q('#undo')); undos += 1;
+        }
       } else click(btn(/^End turn/));
     } else if (w.eval('REQ && REQ.type') === 'assault') {
       /* An assault takes its second card off the MELD, and calling it off is

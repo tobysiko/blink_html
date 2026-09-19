@@ -280,6 +280,23 @@ check(bool(aid_txt), "the player aid has not been built — run build_aid.py")
 for step in ["Declare A", "highest total wins", "spend in that order"]:
     check(step.lower() in aid_txt.lower(),
           f"the aid's round order is missing: {step}")
+
+# ...AND IN THAT ORDER. The three checks above only ask whether the words are
+# on the sheet, so the aid could list the whole round backwards and pass. That
+# nearly mattered: v0.26 moved the declare step from before the melds to after
+# the reveal, and the aid's line was rewritten by hand with nothing checking
+# that it had been. The engine decides this, so read it from there.
+a_timing = re.search(r'opts\.aTiming === "blind" \? "blind" : "(\w+)"', js)
+check(bool(a_timing), "cannot find the engine's A_TIMING default")
+if a_timing and a_timing.group(1) == "afterReveal":
+    low = aid_txt.lower()
+    i_declare, i_reveal = low.find("declare a"), low.find("turn over together")
+    check(i_declare > i_reveal > -1,
+          "the engine declares A after the melds are turned over, but the aid's "
+          "round order still puts the declare step first")
+    check("blind" not in rules.lower().split("glossary")[0],
+          "the rulebook still calls the A declaration blind, but the melds are "
+          "face up before anyone declares")
 check("ROUND" not in board_txt,
       "the round order is back on the player board — it belongs on the aid")
 

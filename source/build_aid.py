@@ -191,8 +191,8 @@ def back():
   <p class="note first">Read your top tier that still holds units. Food is due each
     recycle and is not cumulative; ascension is paid once, on arrival.</p>
   <div class="ter">{ter}</div>
-  <p class="note"><b>Round.</b> Declare A → melds face down → turn over together →
-    highest total wins → winner's die
+  <p class="note"><b>Round.</b> Melds face down → turn over together → Declare A, leader
+    first → highest total wins → winner's die
     = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
     lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
