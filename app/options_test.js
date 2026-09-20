@@ -458,7 +458,7 @@ if (!JSDOM) {
       consolation: 'last',         // as printed
       'research-rule': 'twice',    // AHEAD: two researches a turn, 1 gold then 2
       'retire-rule': 'lowest',     // as printed
-      objectives: 'off',           // as printed
+      objectives: 'showone',       // as printed: base game in v0.26, two each, one shown
       layout: 'late',              // AHEAD: 2/3/5/5/5 board
     };
     for (const [id, want] of Object.entries(DEFAULTS)) {

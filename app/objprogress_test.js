@@ -18,8 +18,8 @@ const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 const byName = (n) => E.OBJECTIVES.find((o) => o.name === n);
 
-function blank() {
-  const g = new E.Game(2, 1, { humans: [], objectives: 'both' });
+function blank(extra) {
+  const g = new E.Game(2, 1, Object.assign({ humans: [], objectives: 'both' }, extra || {}));
   for (const [, t] of g.m.tiles) t.units.length = 0;
   return g;
 }
@@ -82,7 +82,13 @@ function put(g, cell, ter, seat) {
      'the two objectives did not share the middle tile they both stand on');
 }
 
-/* ---- and each objective scores once, however many times you built it ---- */
+/* ---- AND BUILDING IT TWICE PAYS TWICE (v0.26) ----
+ *
+ * This block asserted the opposite until v0.26: an objective paid its 4 points
+ * once and a second arrangement was worth nothing. It pays 2 for EVERY
+ * arrangement now, so the same fixture measures the same thing from the other
+ * side - and `objectiveScoring: "once"` still has to produce the old answer,
+ * because every objective measurement before this was taken under it. */
 {
   const fjord = byName('Fjord');
   const g = blank();
@@ -100,8 +106,22 @@ function put(g, cell, ter, seat) {
   put(g, E.step(d, 'E'), 'mountain', 0);
   put(g, E.step(d, 'W'), 'mountain', 0);
   const two = g.score()[0].obj;
-  ok(one === fjord.points, `one Fjord scored ${one}, wanted ${fjord.points}`);
-  ok(two === one, `two Fjords scored ${two} against one Fjord's ${one} — it is meant to score once`);
+  const per = g.OBJ_PER;
+  ok(one === per, `one Fjord scored ${one}, wanted ${per}`);
+  ok(two === 2 * per,
+     `two Fjords scored ${two}, wanted ${2 * per} — each arrangement pays`);
+
+  /* The old rule, still reachable and still paying once. */
+  const gOnce = blank({ objectiveScoring: 'once' });
+  for (const [cell, ter] of [[c, 'ocean'], [E.step(c, 'E'), 'mountain'],
+                             [E.step(c, 'W'), 'mountain'],
+                             [d, 'ocean'], [E.step(d, 'E'), 'mountain'],
+                             [E.step(d, 'W'), 'mountain']])
+    put(gOnce, cell, ter, 0);
+  gOnce.P[0].objectives = [fjord]; gOnce.P[1].objectives = [];
+  ok(gOnce.score()[0].obj === fjord.points,
+     `under objectiveScoring:"once" two Fjords scored ${gOnce.score()[0].obj}, `
+     + `wanted ${fjord.points}`);
 }
 
 /* ---- scoring once per middle, with the ends shared ---- */
@@ -163,4 +183,4 @@ function put(g, cell, ter, seat) {
 
 if (fail.length) { console.error('FAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
 console.log('objectives: three tiles you occupy, the two ends distinct; objectives overlap freely '
-  + 'and each scores once; progress reports how many tiles are in place and what is missing');
+  + 'and each arrangement pays; progress reports how many tiles are in place and what is missing');

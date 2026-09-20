@@ -407,19 +407,51 @@ check(n_obj > 0, "cannot find the objective cards in app/engine.js")
 words = {12: "twelve", 6: "six", 8: "eight", 10: "ten", 14: "fourteen"}
 check(words.get(n_obj, str(n_obj)) in obj_sec,
       f"section 12 does not say there are {n_obj} objective cards")
-pts = re.search(r"points:\s*(\d+)", js)
-check(bool(pts) and f"{pts.group(1)} points" in obj_sec,
-      f"section 12 does not print an objective as worth {pts and pts.group(1)} points")
+# WHAT AN OBJECTIVE PAYS, read from whichever rule the engine is printing.
+# `points: 4` on the card is the "once" rule's figure and is no longer the
+# printed one, so checking it against the book asked section 12 for a number
+# the game had stopped using.
+obj_rule = re.search(r'OBJ_SCORING = \[[^\]]*\]\s*\n?\s*'
+                     r'\.includes\(opts\.objectiveScoring\) \? opts\.objectiveScoring '
+                     r': "(\w+)"', js)
+check(bool(obj_rule), "cannot find the engine's objective scoring rule")
+if obj_rule and obj_rule.group(1) == "perInstance":
+    per = re.search(r"OBJ_PER = opts\.objectivePer === undefined \? (\d+)", js)
+    check(bool(per), "cannot find the engine's per-instance objective value")
+    if per:
+        check(f"{per.group(1)} points" in obj_sec,
+              f"section 12 does not print an objective as worth {per.group(1)} "
+              f"points an arrangement")
+    check(re.search(r"each arrangement|every such arrangement", obj_sec, re.I),
+          "section 12 does not say an objective pays for EACH arrangement \u2014 "
+          "which is the whole of the change from paying once")
+    check(not re.search(r"does not pay twice", obj_sec, re.I),
+          "section 12 still says building the pattern twice does not pay twice")
+else:
+    pts = re.search(r"points:\s*(\d+)", js)
+    check(bool(pts) and f"{pts.group(1)} points" in obj_sec,
+          f"section 12 does not print an objective as worth {pts and pts.group(1)} points")
 for mode in ["Secret", "Open", "Keep both"]:
     check(mode in obj_sec, f"the objectives module is missing the {mode} mode")
 # The engine went from `opts.objectives || "off"` to a whitelist ternary when
 # v0.26 added the "showone" deal, and this regex matched neither the new shape
 # nor anything else - so it reported that objectives were no longer off by
 # default, which was false. It reads the whitelist form now.
+# MAP OBJECTIVES ARE BASE GAME IN v0.26 and this check has flipped with them.
+# They have to be: dominance was removed because objectives pay for the same
+# behaviour, so with both off the printed game scores nothing at all for the
+# SHAPE of what a player holds - and the printed board already lists them
+# under SCORING.
 modes = re.search(r'OBJECTIVES_MODE = \[[^\]]*\]\s*\n?\s*\.includes\(opts\.objectives\)'
                   r'\s*\?\s*opts\.objectives\s*:\s*"([a-z]+)"', js)
-check(bool(modes) and modes.group(1) == "off",
-      "map objectives are no longer off by default in the engine")
+check(bool(modes), "cannot find the engine's objectives default")
+if modes:
+    check(modes.group(1) != "off",
+          "map objectives are off by default, so the printed game scores nothing "
+          "for the shape of what you hold and the board's SCORING block lies")
+    check(not re.search(r"\bA module\b", obj_sec),
+          "section 12 still calls map objectives a module, and the engine deals "
+          "them in every game")
 
 # HOW MANY PERKS RUN AT ONCE, and does the book say the same number.
 #

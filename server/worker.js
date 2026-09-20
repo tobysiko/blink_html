@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-20T21:24:41Z
+ * Built 2026-09-20T22:05:53Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1740,8 +1740,14 @@ class Game {
     /* "off" | "secret" (choose one of two, hidden) | "open" (two shared by the
      * whole table) | "both" (two private, both score) | "showone" (v0.26: two
      * each, ONE SHOWN, both score). */
-    this.OBJECTIVES_MODE = ["secret", "open", "both", "showone"]
-      .includes(opts.objectives) ? opts.objectives : "off";
+    /* MAP OBJECTIVES ARE BASE GAME IN v0.26, dealt two per player with one
+     * shown and both scoring. They have to be: dominance was removed on the
+     * reasoning that objectives pay for the same behaviour, so with both off
+     * the printed game scores NOTHING for the shape of what you hold - only
+     * one point a unit - and the printed player board already lists them
+     * under SCORING. "off" is still reachable for a first game. */
+    this.OBJECTIVES_MODE = ["off", "secret", "open", "both", "showone"]
+      .includes(opts.objectives) ? opts.objectives : "showone";
     /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
      * worth its points or nothing, however many times you built it.
      * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
@@ -1755,8 +1761,29 @@ class Game {
      * Measured ceiling from twelve tiles: 7 middles against 4 disjoint
      * instances, and 30 if every combination counted. See
      * claude/map-objectives.md. */
-    this.OBJ_SCORING = opts.objectiveScoring === "perMiddle" ? "perMiddle" : "once";
+    /* HOW AN OBJECTIVE PAYS.
+     *
+     *   "perInstance" - v0.26, printed. OBJ_PER points for EVERY matching
+     *                   arrangement you hold, and nothing special about the
+     *                   first. Two tiles of the middle terrain that each
+     *                   complete the card pay twice.
+     *   "once"        - v0.25: the card pays its 4 points once or not at all,
+     *                   and building the pattern twice pays nothing extra.
+     *   "perMiddle"   - the measured half-step: 4 for the first, OBJ_EXTRA
+     *                   for each further middle.
+     *
+     * FLAT, and not "a big first payment plus a little for each extra",
+     * because the incidental rates across the twelve cards vary four-fold
+     * (0.09 mean instances for Mountain Lookout against 0.38 for Foothills)
+     * while the AIMED ceilings are identical at 7. So the spread between
+     * cards is a spread in luck, not in difficulty, and a large first payment
+     * pays for the luck. Flat barely does: measured at 2 a instance the
+     * accidental gap between the easiest and hardest card is about half a
+     * point, against a mean total near 22. */
+    this.OBJ_SCORING = ["once", "perMiddle", "perInstance"]
+      .includes(opts.objectiveScoring) ? opts.objectiveScoring : "perInstance";
     this.OBJ_EXTRA = opts.objectiveExtra === undefined ? 1 : opts.objectiveExtra;
+    this.OBJ_PER = opts.objectivePer === undefined ? 2 : opts.objectivePer;
     /* "lowest" — research retires the LOWEST rank you hold (any suit of it).
      *            Research is then an upgrade in the plain sense: your worst
      *            card leaves and a better one arrives.
@@ -2305,6 +2332,7 @@ class Game {
   objectiveScore(seat, o) {
     const n = this.objectiveCount(seat, o);
     if (!n) return 0;
+    if (this.OBJ_SCORING === "perInstance") return n * this.OBJ_PER;
     return this.OBJ_SCORING === "perMiddle"
       ? o.points + (n - 1) * this.OBJ_EXTRA
       : o.points;
@@ -4905,7 +4933,8 @@ function newSession(opts, rand) {
       income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
-      objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",
+      objectiveScoring: ["once", "perMiddle", "perInstance"]
+        .includes(o.objectiveScoring) ? o.objectiveScoring : "perInstance",
       handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
       attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
       food: o.food !== false,

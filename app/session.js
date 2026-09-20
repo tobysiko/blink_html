@@ -122,7 +122,8 @@ function newSession(opts, rand) {
       income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
-      objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",
+      objectiveScoring: ["once", "perMiddle", "perInstance"]
+        .includes(o.objectiveScoring) ? o.objectiveScoring : "perInstance",
       handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
       attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
       food: o.food !== false,

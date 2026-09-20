@@ -103,7 +103,12 @@ const ok = (c, what) => { if (!c) fail.push(what); };
    * under the printed rules cannot pay it by design. That it fires at all, and
    * fires exactly as often as ground changes hands, is asserted in
    * economy_test instead. */
-  const cannotHappenWithBots = ['bonus_gold', 'called_off', 'spoils'];
+  /* `reclaimed` is a coin taken back off a FOOD SLOT to pay for something
+   * else, so it cannot happen in a game with no food bill. v0.26 made the lean
+   * economy the printed rule, and the one full-economy game in the rotation
+   * above is not enough to guarantee it fires. It is covered by economy_test,
+   * which plays the full economy on purpose. */
+  const cannotHappenWithBots = ['bonus_gold', 'called_off', 'spoils', 'reclaimed'];
   const reallyDead = dead.filter((r) => !cannotHappenWithBots.includes(r));
   ok(!reallyDead.length,
      `these reasons never fired in 405 games — dead rule or typo? ${reallyDead}`);
