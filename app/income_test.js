@@ -105,7 +105,73 @@ const ok = (c, what) => { if (!c) fail.push(what); };
      `income made the victory row worse: ${off.vrow.toFixed(2)} -> ${on.vrow.toFixed(2)}`);
 }
 
+/* ---- the OPEN objective pays; the secret one does not ---- */
+{
+  const g = new E.Game(3, 11, { humans: [], objectives: 'showone', income: 'objective' });
+  const p0 = g.P[0];
+  ok(p0.objectives.length === 2, 'showone did not deal two objectives');
+  ok(p0.objOpen === p0.objectives[0], 'the open objective is not the one scoring reads first');
+  ok(g.P.every((q) => q.objOpen), 'a seat was dealt no open objective');
+
+  /* Build the OPEN card's pattern by hand and check it pays; then build the
+     SECRET card's and check it does not. The second half is the one that
+     matters - reading `objectives` instead of `objOpen` would pay for the
+     hidden card too, and nothing else in the game would look different. */
+  const lay = (card) => {
+    const m = g.m;
+    m.tiles.clear();
+    const mid = '0,0', near = E.nbrKeys(0, 0);
+    m.doExplore(mid, card.mid); m.settle(mid, 0);
+    m.doExplore(near[0], card.a); m.settle(near[0], 0);
+    m.doExplore(near[2], card.b); m.settle(near[2], 0);   // not adjacent to near[0]
+  };
+
+  lay(p0.objOpen);
+  ok(g.objectivePay(p0) >= 1, 'the open objective was built and paid nothing');
+
+  const secret = p0.objectives[1];
+  if (secret && secret.id !== p0.objOpen.id) {
+    lay(secret);
+    ok(g.objectivePay(p0) === 0,
+       'the SECRET objective paid gold — income is reading objectives, not objOpen');
+  }
+}
+
+/* ---- and it is off unless asked for ---- */
+{
+  const g = E.playOut(4, 77, { humans: [], objectives: 'showone' });
+  ok(!(g.stats.gold_in_objective), 'the open objective paid with no income rule on');
+  const h = E.playOut(4, 77, { humans: [], objectives: 'showone', income: 'crossroads' });
+  ok(!(h.stats.gold_in_objective), 'the crossroads rule also paid objective gold');
+}
+
+/* ---- WHAT IT ACTUALLY PAYS, recorded so it cannot drift unnoticed ----
+ *
+ * Bots weight objectives at zero, so this is the floor: what a player who
+ * IGNORES their open card earns. It is nearly nothing, which is the design
+ * working - but it also means this rule cannot fix a table that has no money,
+ * because it pays the player who is already executing well. 88% of recycles
+ * pay nothing at all. Kept as a range so a real change trips it and noise
+ * does not. */
+{
+  let fires = 0, paid = 0;
+  const orig = E.Game.prototype._recycle;
+  E.Game.prototype._recycle = function* (q) {
+    fires += 1; if (this.objectivePay(q)) paid += 1;
+    yield* orig.call(this, q);
+  };
+  for (let s = 0; s < 40; s++)
+    E.playOut(4, 4000 + s, { humans: [], food: false, ascension: false,
+                             objectives: 'showone', income: 'objective' });
+  E.Game.prototype._recycle = orig;
+  const pct = 100 * paid / fires;
+  ok(pct > 4 && pct < 25,
+     `the open objective paid on ${pct.toFixed(1)}% of recycles, expected 5-25% `
+     + '(bots do not aim at objectives, so this is the ignore-it floor)');
+}
+
 if (fail.length) { console.log('FAIL:'); for (const f of fail) console.log('  ' + f); process.exit(1); }
-console.log('crossroads: pays only when all three other terrains are occupied beside it, '
+console.log('income: the crossroads pays only when all three other terrains are occupied beside it, '
   + 'by anybody; one gold a unit; lapses when a neighbour leaves; lands before the bill; '
-  + 'and it moves fortifying and the victory row the way it was meant to');
+  + 'and it moves fortifying and the victory row the way it was meant to; '
+  + 'the open objective pays per instance and the secret one never does');

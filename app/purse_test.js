@@ -79,7 +79,8 @@ const ok = (c, what) => { if (!c) fail.push(what); };
        * report it dead - which is true of the sample and false of the rule,
        * and is exactly the shape of a check that cries wolf. */
       const opts = [{ deck: 'abd' }, { combat: 'gold' }, {},
-                    { income: 'crossroads' }][s % 4];
+                    { income: 'crossroads' },
+                    { income: 'objective', objectives: 'showone' }][s % 5];
       const done = E.playOut(n, (s * 40503) % 2147483647, opts);
       for (const k of Object.keys(done.stats)) {
         const m = /^gold_(in|out)_(.+)$/.exec(k);

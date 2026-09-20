@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-20T08:51:16Z
+ * Built 2026-09-20T08:59:27Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -78,7 +78,7 @@ const GOLD_REASONS = [
   // coming in
   "lost_trick", "docked", "bonus_gold", "ascension", "cashed", "unplaceable",
   "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
-  "crossroads",
+  "crossroads", "objective",
   // going out
   "food", "upgrade", "fortify", "attack",
   // coming in, but only under the SPOILS variant (see Game.SPOILS)
@@ -1471,7 +1471,8 @@ class Game {
      *
      * CADENCE IS PART OF THE RULE. At recycle (3.2 a game) it is the size
      * above; per ROUND it would pay up to 36 a game and drown the economy. */
-    this.INCOME = opts.income === "crossroads" ? "crossroads" : "off";
+    this.INCOME = ["crossroads", "objective", "both"].includes(opts.income)
+      ? opts.income : "off";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -1633,7 +1634,11 @@ class Game {
      * were happy with, which is the trade the table makes for a fast one. */
     this.HAND_SETUP = ["deal", "mulligan"].includes(opts.handSetup)
       ? opts.handSetup : "draft";
-    this.OBJECTIVES_MODE = opts.objectives || "off";
+    /* "off" | "secret" (choose one of two, hidden) | "open" (two shared by the
+     * whole table) | "both" (two private, both score) | "showone" (v0.26: two
+     * each, ONE SHOWN, both score). */
+    this.OBJECTIVES_MODE = ["secret", "open", "both", "showone"]
+      .includes(opts.objectives) ? opts.objectives : "off";
     /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
      * worth its points or nothing, however many times you built it.
      * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
@@ -1870,7 +1875,7 @@ class Game {
    * identically and only the nominated one needs a component and a prompt.
    * This is the cheap half; the interesting half is a decision for a table. */
   crossroadsPay(p) {
-    if (this.INCOME !== "crossroads") return 0;
+    if (this.INCOME !== "crossroads" && this.INCOME !== "both") return 0;
     let best = 0;
     for (const t of this.m.tiles.values()) {
       const mine = t.units.filter((u) => u === p.i).length;
@@ -1881,6 +1886,29 @@ class Game {
         best = mine;
     }
     return best;
+  }
+
+  /* WHAT YOUR OPEN OBJECTIVE PAYS, each recycle.
+   *
+   * One coin per matching instance of the card everyone can see. The SECRET
+   * one pays nothing, and both still score their points at the end, so
+   * showing a card is a trade rather than a formality: you are telling the
+   * table what you are building - and which single tile breaks it - in
+   * exchange for an income that arrives while you still have a game to spend
+   * it on.
+   *
+   * It uses a component already on the table and adds no marker, which is
+   * what recommends it over the crossroads. What it costs instead is that it
+   * pays for a thing you have ALREADY built, so it compounds for whoever gets
+   * there first; the counterplay is that a pattern is three tiles and taking
+   * one of them stops the payments.
+   *
+   * Only the open card is read, never `objectives` as a whole, or the secret
+   * one would pay through the back door. */
+  objectivePay(p) {
+    if (this.INCOME !== "objective" && this.INCOME !== "both") return 0;
+    if (!p.objOpen) return 0;
+    return this.objectiveCount(p.i, p.objOpen);
   }
 
   // --- setup ---------------------------------------------------
@@ -2099,6 +2127,24 @@ class Game {
     if (this.OBJECTIVES_MODE === "open") {
       this.objectives = [pool.pop(), pool.pop()];
       for (const p of this.P) p.objectives = this.objectives;
+      return;
+    }
+    if (this.OBJECTIVES_MODE === "showone") {
+      /* v0.26: TWO CARDS EACH, ONE SHOWN AND ONE KEPT, BOTH SCORED.
+       *
+       * Dealt AFTER the starting map is laid - dealing before would reward
+       * whoever happened to start beside the right terrain rather than
+       * whoever went and got it.
+       *
+       * `objOpen` is the one on the table, face up, and it is index 0 of
+       * `objectives` so that scoring does not have to know or care which was
+       * shown. What being shown costs you is information: everyone can see
+       * what shape you are building and which tile to take to break it. What
+       * it buys you is income, if the income rule is on. */
+      for (const p of this.P) {
+        p.objectives = [pool.pop(), pool.pop()].filter(Boolean);
+        p.objOpen = p.objectives[0] || null;
+      }
       return;
     }
     for (const p of this.P) {
@@ -4392,6 +4438,11 @@ class Game {
         this.inc("crossroads_paid");
         this.purse(p, pay, "crossroads", "board", { n: pay });
       }
+      const obj = this.objectivePay(p);
+      if (obj) {
+        this.inc("objective_paid");
+        this.purse(p, obj, "objective", "board", { n: obj });
+      }
     }
     let owed = p.food();
     if (this.DECK === "abd") {
@@ -4656,7 +4707,8 @@ function newSession(opts, rand) {
     rules: {
       trickRule: o.trickRule || "dock",
       deck: o.deck || "abc",
-      objectives: o.objectives || "off",
+      objectives: ["secret", "open", "both", "showone"].includes(o.objectives)
+        ? o.objectives : "off",
       retireRule: o.retireRule || "lowest",
       consolation: ["last", "half", "ladder"].includes(o.consolation)
         ? o.consolation : "last",
@@ -4703,7 +4755,7 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
-      income: o.income === "crossroads" ? "crossroads" : "off",
+      income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",

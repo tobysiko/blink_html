@@ -390,7 +390,12 @@ check(bool(pts) and f"{pts.group(1)} points" in obj_sec,
       f"section 12 does not print an objective as worth {pts and pts.group(1)} points")
 for mode in ["Secret", "Open", "Keep both"]:
     check(mode in obj_sec, f"the objectives module is missing the {mode} mode")
-modes = re.search(r'OBJECTIVES_MODE = opts\.objectives \|\| "([a-z]+)"', js)
+# The engine went from `opts.objectives || "off"` to a whitelist ternary when
+# v0.26 added the "showone" deal, and this regex matched neither the new shape
+# nor anything else - so it reported that objectives were no longer off by
+# default, which was false. It reads the whitelist form now.
+modes = re.search(r'OBJECTIVES_MODE = \[[^\]]*\]\s*\n?\s*\.includes\(opts\.objectives\)'
+                  r'\s*\?\s*opts\.objectives\s*:\s*"([a-z]+)"', js)
 check(bool(modes) and modes.group(1) == "off",
       "map objectives are no longer off by default in the engine")
 

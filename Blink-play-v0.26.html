@@ -1460,6 +1460,8 @@
       <select id="income">
         <option value="off" selected data-i18n="setup.income.off"></option>
         <option value="crossroads" data-i18n="setup.income.crossroads"></option>
+        <option value="objective" data-i18n="setup.income.objective"></option>
+        <option value="both" data-i18n="setup.income.both"></option>
       </select>
       <p class="hint" id="income-hint" data-i18n="setup.income.note"></p>
     </div>
@@ -1586,6 +1588,7 @@
         <option value="secret" data-i18n="setup.objectives.secret"></option>
         <option value="open" data-i18n="setup.objectives.open"></option>
         <option value="both" data-i18n="setup.objectives.both"></option>
+        <option value="showone" data-i18n="setup.objectives.showone"></option>
       </select>
     </div>
     <div class="field">
@@ -1718,7 +1721,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"5fc641c2ce","branch":"main","dirty":true,"built":"2026-09-20T08:51:15Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"b301413ef6","branch":"main","dirty":true,"built":"2026-09-20T08:59:27Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1817,6 +1820,8 @@ en: {
   "setup.income": "Income",
   "setup.income.off": "None \u2014 gold comes only from the trick, cashing cards and effect C (printed rule)",
   "setup.income.crossroads": "Crossroads \u2014 a tile of yours touching all three other terrains, occupied, pays 1 gold a unit each recycle (untested)",
+  "setup.income.objective": "Open objective \u2014 your shown objective pays 1 gold per matching pattern each recycle; the secret one pays nothing (untested)",
+  "setup.income.both": "Both \u2014 the crossroads and the open objective together (untested)",
   "setup.income.note": "(the neighbouring units may be anybody\u2019s: your income depends on your neighbours staying put. Measured at about 5 gold a seat a game, which is +40% under the lean economy)",
   "setup.attacks": "Attacks per turn",
   "setup.attacks.any": "Any \u2014 every card in your meld may attack",
@@ -1909,6 +1914,7 @@ en: {
   "setup.objectives.secret": "Secret — dealt two, keep one, 4 points",
   "setup.objectives.open": "Open — two face up, shared by everyone",
   "setup.objectives.both": "Keep both — dealt two, both score",
+  "setup.objectives.showone": "Two each, one shown \u2014 show one and keep one hidden; both score at the end (v0.26)",
   "setup.seed": "Seed",
   "setup.seed.note": "(same seed = same deal)",
   "setup.start": "Start game",
@@ -2203,6 +2209,7 @@ en: {
   "fx.why.upgrade": "research",
   "fx.why.fortify": "fortify",
   "fx.why.crossroads": "crossroads",
+  "fx.why.objective": "objective",
   "fx.why.attack": "attack",
   "log.gold.lost_trick": "Seat {seat} ranked last: +🪙{n}",
   "log.gold.docked": "Seat {seat} matched the winner's {cards} cards and lost — a card set aside: +🪙{n}",
@@ -2221,6 +2228,7 @@ en: {
   "log.gold.upgrade": "Seat {seat} researched {card}: −🪙{n}",
   "log.gold.fortify": "Seat {seat} fortified a unit: −🪙{n}",
   "log.gold.crossroads": "Seat {seat} trades at the crossroads: +🪙{n}",
+  "log.gold.objective": "Seat {seat}’s open objective pays out: +🪙{n}",
   "log.gold.attack": "Seat {seat} paid the {terrain} attack price: −🪙{n}",
   "ask.assault": "<b>Assault</b> <span class=\"muted\">— their coin refuses a single card. Spend a SECOND card from your meld: the lower of the two ranks is your attack, and yours is {lead}. They defend on {terrain} (+{bonus}).</span>",
   "ask.assault.stop": "Call it off",
@@ -2498,6 +2506,8 @@ de: {
   "setup.income": "Einkommen",
   "setup.income.off": "Keines \u2014 Gold kommt nur aus dem Stich, dem Einl\u00f6sen von Karten und Effekt C (gedruckte Regel)",
   "setup.income.crossroads": "Wegkreuz \u2014 ein eigenes Feld, das an alle drei anderen, besetzten Gel\u00e4ndearten grenzt, zahlt 1 Gold je Einheit pro Auffrischung (ungetestet)",
+  "setup.income.objective": "Offenes Ziel \u2014 dein aufgedecktes Ziel zahlt 1 Gold je passendem Muster pro Auffrischung; das geheime zahlt nichts (ungetestet)",
+  "setup.income.both": "Beides \u2014 Wegkreuz und offenes Ziel zusammen (ungetestet)",
   "setup.income.note": "(die benachbarten Einheiten d\u00fcrfen beliebigen Spielern geh\u00f6ren: dein Einkommen h\u00e4ngt davon ab, dass deine Nachbarn bleiben)",
   "setup.fortify.assault": "Sturmangriff \u2014 zwei Karten aus der Kombination, der niedrigere Wert k\u00e4mpft (Experiment)",
   "setup.fortify.wall": "Mauer nach Stufe \u2014 die M\u00fcnze verteidigt mit 10/12/14/16/18, oder eine bessere Karte aus der Hand (gedruckte Regel)",
@@ -2593,6 +2603,7 @@ de: {
   "setup.objectives.secret": "Geheim — zwei erhalten, eines behalten, 4 Punkte",
   "setup.objectives.open": "Offen — zwei offen, für alle",
   "setup.objectives.both": "Beide behalten — zwei erhalten, beide werten",
+  "setup.objectives.showone": "Zwei je Spieler, eines offen \u2014 zeige eines und halte eines geheim; beide z\u00e4hlen am Ende (v0.26)",
   "setup.seed": "Startwert",
   "setup.seed.note": "(gleicher Wert = gleiche Auslage)",
   "setup.start": "Partie starten",
@@ -2874,6 +2885,7 @@ de: {
   "fx.why.upgrade": "Forschung",
   "fx.why.fortify": "Befestigung",
   "fx.why.crossroads": "Wegkreuz",
+  "fx.why.objective": "Ziel",
   "fx.why.attack": "Angriff",
   "log.gold.lost_trick": "Platz {seat} wurde letzter: +🪙{n}",
   "log.gold.docked": "Platz {seat} hatte ebenso viele Karten wie der Gewinner ({cards}) und verlor — eine Karte beiseite: +🪙{n}",
@@ -2892,6 +2904,7 @@ de: {
   "log.gold.upgrade": "Platz {seat} erforscht {card}: −🪙{n}",
   "log.gold.fortify": "Platz {seat} befestigt eine Einheit: −🪙{n}",
   "log.gold.crossroads": "Platz {seat} handelt am Wegkreuz: +🪙{n}",
+  "log.gold.objective": "Platz {seat}: das offene Ziel zahlt aus: +🪙{n}",
   "log.gold.attack": "Platz {seat} zahlt den Angriffspreis für {terrain}: −🪙{n}",
   "ask.assault": "<b>Sturmangriff</b> <span class=\"muted\">— die Münze wehrt eine einzelne Karte ab. Gib eine ZWEITE Karte aus deiner Kombination: der niedrigere der beiden Werte ist dein Angriff, deiner ist {lead}. Verteidigt wird auf {terrain} (+{bonus}).</span>",
   "ask.assault.stop": "Abbrechen",
@@ -3198,7 +3211,7 @@ const GOLD_REASONS = [
   // coming in
   "lost_trick", "docked", "bonus_gold", "ascension", "cashed", "unplaceable",
   "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
-  "crossroads",
+  "crossroads", "objective",
   // going out
   "food", "upgrade", "fortify", "attack",
   // coming in, but only under the SPOILS variant (see Game.SPOILS)
@@ -4591,7 +4604,8 @@ class Game {
      *
      * CADENCE IS PART OF THE RULE. At recycle (3.2 a game) it is the size
      * above; per ROUND it would pay up to 36 a game and drown the economy. */
-    this.INCOME = opts.income === "crossroads" ? "crossroads" : "off";
+    this.INCOME = ["crossroads", "objective", "both"].includes(opts.income)
+      ? opts.income : "off";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -4753,7 +4767,11 @@ class Game {
      * were happy with, which is the trade the table makes for a fast one. */
     this.HAND_SETUP = ["deal", "mulligan"].includes(opts.handSetup)
       ? opts.handSetup : "draft";
-    this.OBJECTIVES_MODE = opts.objectives || "off";
+    /* "off" | "secret" (choose one of two, hidden) | "open" (two shared by the
+     * whole table) | "both" (two private, both score) | "showone" (v0.26: two
+     * each, ONE SHOWN, both score). */
+    this.OBJECTIVES_MODE = ["secret", "open", "both", "showone"]
+      .includes(opts.objectives) ? opts.objectives : "off";
     /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
      * worth its points or nothing, however many times you built it.
      * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
@@ -4990,7 +5008,7 @@ class Game {
    * identically and only the nominated one needs a component and a prompt.
    * This is the cheap half; the interesting half is a decision for a table. */
   crossroadsPay(p) {
-    if (this.INCOME !== "crossroads") return 0;
+    if (this.INCOME !== "crossroads" && this.INCOME !== "both") return 0;
     let best = 0;
     for (const t of this.m.tiles.values()) {
       const mine = t.units.filter((u) => u === p.i).length;
@@ -5001,6 +5019,29 @@ class Game {
         best = mine;
     }
     return best;
+  }
+
+  /* WHAT YOUR OPEN OBJECTIVE PAYS, each recycle.
+   *
+   * One coin per matching instance of the card everyone can see. The SECRET
+   * one pays nothing, and both still score their points at the end, so
+   * showing a card is a trade rather than a formality: you are telling the
+   * table what you are building - and which single tile breaks it - in
+   * exchange for an income that arrives while you still have a game to spend
+   * it on.
+   *
+   * It uses a component already on the table and adds no marker, which is
+   * what recommends it over the crossroads. What it costs instead is that it
+   * pays for a thing you have ALREADY built, so it compounds for whoever gets
+   * there first; the counterplay is that a pattern is three tiles and taking
+   * one of them stops the payments.
+   *
+   * Only the open card is read, never `objectives` as a whole, or the secret
+   * one would pay through the back door. */
+  objectivePay(p) {
+    if (this.INCOME !== "objective" && this.INCOME !== "both") return 0;
+    if (!p.objOpen) return 0;
+    return this.objectiveCount(p.i, p.objOpen);
   }
 
   // --- setup ---------------------------------------------------
@@ -5219,6 +5260,24 @@ class Game {
     if (this.OBJECTIVES_MODE === "open") {
       this.objectives = [pool.pop(), pool.pop()];
       for (const p of this.P) p.objectives = this.objectives;
+      return;
+    }
+    if (this.OBJECTIVES_MODE === "showone") {
+      /* v0.26: TWO CARDS EACH, ONE SHOWN AND ONE KEPT, BOTH SCORED.
+       *
+       * Dealt AFTER the starting map is laid - dealing before would reward
+       * whoever happened to start beside the right terrain rather than
+       * whoever went and got it.
+       *
+       * `objOpen` is the one on the table, face up, and it is index 0 of
+       * `objectives` so that scoring does not have to know or care which was
+       * shown. What being shown costs you is information: everyone can see
+       * what shape you are building and which tile to take to break it. What
+       * it buys you is income, if the income rule is on. */
+      for (const p of this.P) {
+        p.objectives = [pool.pop(), pool.pop()].filter(Boolean);
+        p.objOpen = p.objectives[0] || null;
+      }
       return;
     }
     for (const p of this.P) {
@@ -7512,6 +7571,11 @@ class Game {
         this.inc("crossroads_paid");
         this.purse(p, pay, "crossroads", "board", { n: pay });
       }
+      const obj = this.objectivePay(p);
+      if (obj) {
+        this.inc("objective_paid");
+        this.purse(p, obj, "objective", "board", { n: obj });
+      }
     }
     let owed = p.food();
     if (this.DECK === "abd") {
@@ -7776,7 +7840,8 @@ function newSession(opts, rand) {
     rules: {
       trickRule: o.trickRule || "dock",
       deck: o.deck || "abc",
-      objectives: o.objectives || "off",
+      objectives: ["secret", "open", "both", "showone"].includes(o.objectives)
+        ? o.objectives : "off",
       retireRule: o.retireRule || "lowest",
       consolation: ["last", "half", "ladder"].includes(o.consolation)
         ? o.consolation : "last",
@@ -7823,7 +7888,7 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
-      income: o.income === "crossroads" ? "crossroads" : "off",
+      income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",

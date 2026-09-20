@@ -71,7 +71,8 @@ function newSession(opts, rand) {
     rules: {
       trickRule: o.trickRule || "dock",
       deck: o.deck || "abc",
-      objectives: o.objectives || "off",
+      objectives: ["secret", "open", "both", "showone"].includes(o.objectives)
+        ? o.objectives : "off",
       retireRule: o.retireRule || "lowest",
       consolation: ["last", "half", "ladder"].includes(o.consolation)
         ? o.consolation : "last",
@@ -118,7 +119,7 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
-      income: o.income === "crossroads" ? "crossroads" : "off",
+      income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",
