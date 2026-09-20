@@ -1086,12 +1086,17 @@ def recycle():
                anchor="end", cls="fig-label")
 
     # ---- four steps
-    BW, BH, TOP, GAP = 141, 104, 58, 20
+    # THREE STEPS, NOT FOUR. v0.26 removed the food bill, so the box that used
+    # to sit between income and the perk - the only step the BASE game stopped
+    # here for - is gone. What is left is honest and worth saying plainly: with
+    # no modules on, a recycle is picking your cards up. The phase earns its
+    # name from the two dashed boxes, and the figure should not pretend
+    # otherwise by keeping a step that no longer happens.
+    BW, BH, TOP, GAP = 192, 104, 58, 24
     steps = [
         ("1", "INCOME", "your tiles, and your open objective", "module", GOLD),
-        ("2", "FEED", "the coins on your tier's food slots", "", None),
-        ("3", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
-        ("4", "REFILL", "take your discard back, draw to ten", "", None),
+        ("2", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
+        ("3", "REFILL", "take your discard back, draw to ten", "", None),
     ]
     for i, (n, title, detail, tag, accent) in enumerate(steps):
         x = i * (BW + GAP)
@@ -1103,7 +1108,7 @@ def recycle():
         words, line, lines = detail.split(), "", []
         for wd in words:
             trial = (line + " " + wd).strip()
-            if len(trial) > 22:
+            if len(trial) > 30:
                 lines.append(line); line = wd
             else:
                 line = trial
@@ -1121,7 +1126,7 @@ def recycle():
     # closes the same way and the eye knows the flow has ended. The first
     # version left the arrow pointing down into white space with the sentence
     # floating beside it, which read as two unrelated marks.
-    cx = 3 * (BW + GAP) + BW / 2          # the centre of the REFILL box
+    cx = 2 * (BW + GAP) + BW / 2          # the centre of the REFILL box
     y0, y1 = TOP + BH + 3, TOP + BH + 22
     b += (f'<path d="M {cx} {y0} L {cx} {y1 - 7}" stroke="{SOFT}" '
           f'stroke-width="1.6" fill="none"/>'

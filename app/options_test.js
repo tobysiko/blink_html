@@ -290,16 +290,40 @@ ok(new E.Game(2, 1, { humans: [], meldScore: 'nonsense' }).MELD_SCORE === 'sum',
 
   /* And it reaches real games: second-and-later researches actually happen,
    * and they cost more than the first. */
-  const once = E.playOut(3, 4242, { trickRule: 'dock', researchRule: 'once' });
-  const esc = E.playOut(3, 4242, { trickRule: 'dock', researchRule: 'escalating' });
-  ok(!(once.stats.research_repeat > 0),
+  /* SAMPLED, NOT ONE SEED. This asserted seed 4242 alone, and under v0.26's
+   * lean economy that one game happens to contain no second research at all -
+   * so a rule that works perfectly well failed its test because a single
+   * table stayed poor.
+   *
+   * And the reason it stayed poor is worth writing down: removing ascension
+   * took 24.8 gold a game out of the economy, and a second research costs 2.
+   * Across twelve seeds the escalating rule fires 22 times under lean against
+   * 128 under the full economy - about a sixth as often. It is still a live
+   * rule (ten of twelve seeds use it), but it is now a rule for players who
+   * have found money rather than one everybody reaches. */
+  let onceRepeats = 0, escRepeats = 0, escSeeds = 0;
+  let escGold = 0, escBuys = 0, onceGold = 0, onceBuys = 0, allFinished = true;
+  for (let s = 0; s < 12; s++) {
+    const o = E.playOut(3, 4242 + s, { trickRule: 'dock', researchRule: 'once' });
+    const e = E.playOut(3, 4242 + s, { trickRule: 'dock', researchRule: 'escalating' });
+    onceRepeats += o.stats.research_repeat || 0;
+    const n = e.stats.research_repeat || 0;
+    escRepeats += n; if (n) escSeeds += 1;
+    escGold += e.stats.gold_out_upgrade || 0; escBuys += e.stats.upgrades || 0;
+    onceGold += o.stats.gold_out_upgrade || 0; onceBuys += o.stats.upgrades || 0;
+    if (!e.finished() || !o.finished()) allFinished = false;
+  }
+  ok(!onceRepeats,
      'a second research happened under the printed once-a-turn rule');
-  ok(esc.stats.research_repeat > 0,
-     'no second research ever happened under the escalating rule');
-  ok(esc.stats.gold_out_upgrade / esc.stats.upgrades
-     > once.stats.gold_out_upgrade / once.stats.upgrades,
-     'the escalating rule is not charging more per research');
-  ok(esc.finished() && once.finished(), 'a game under either rule failed to finish');
+  ok(escRepeats > 0,
+     'no second research ever happened under the escalating rule, in 12 games');
+  ok(escSeeds >= 6,
+     `only ${escSeeds} of 12 games reached a second research — the escalating `
+     + 'rule is close to unreachable at the current income');
+  ok(escGold / escBuys > onceGold / onceBuys,
+     `the escalating rule is not charging more per research `
+     + `(${(escGold / escBuys).toFixed(2)} against ${(onceGold / onceBuys).toFixed(2)})`);
+  ok(allFinished, 'a game under either rule failed to finish');
 }
 
 // ==================================== 5. effect A when the total is what wins

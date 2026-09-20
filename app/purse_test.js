@@ -78,9 +78,16 @@ const ok = (c, what) => { if (!c) fail.push(what); };
        * below: it is off by default, so a sample of printed-rule games would
        * report it dead - which is true of the sample and false of the rule,
        * and is exactly the shape of a check that cries wolf. */
+      /* `economy: "full"` earns a slot for the same reason the income rules
+       * did: v0.26 removed food and ascension from the printed game, so a
+       * sample of printed-rule games reports both as dead reasons. They are
+       * not dead, they are optional - and `reclaimed` rides along with them,
+       * because reclaiming a coin is something only a player paying food ever
+       * needs to do. */
       const opts = [{ deck: 'abd' }, { combat: 'gold' }, {},
                     { income: 'crossroads' },
-                    { income: 'objective', objectives: 'showone' }][s % 5];
+                    { income: 'objective', objectives: 'showone' },
+                    { economy: 'full' }][s % 6];
       const done = E.playOut(n, (s * 40503) % 2147483647, opts);
       for (const k of Object.keys(done.stats)) {
         const m = /^gold_(in|out)_(.+)$/.exec(k);

@@ -1,21 +1,21 @@
-/* THE LEAN ECONOMY AND SPOILS — two variants, and the promise that neither of
- * them is on by default.
+/* THE ECONOMY, AND SPOILS.
  *
- * Both exist because of measurements taken 3 Sep 2026:
+ * THE LEAN ECONOMY IS THE PRINTED RULE AS OF v0.26 — no food bill, no
+ * ascension coins — and `economy: "full"` is the variant. This file used to
+ * assert the opposite, which is exactly what it is for: the two are one
+ * switch, and a change that flipped one and not the other would land here.
  *
- *   - Ascension pays 26.6 gold a game and food takes 31.8 back, and a player
- *     arrived at a recycle short of the food owed in 0.1% of 6,913 recycles.
- *     No unit was ever starved off the map. So the loop is very nearly closed,
- *     and `food:false, ascension:false` asks what the game is without it.
- *   - A bot forbidden to attack outscores one that fights by 2.0 points, even
- *     with DUEL_TAKE on. `spoils` asks what the smallest rule is that reverses
- *     that, and the answer measured was one coin.
+ * Measured 3 Sep 2026: ascension paid 26.6 gold a game and food took 31.8
+ * back, and a player arrived at a recycle short of the food owed in 0.1% of
+ * 6,913 recycles. No unit was ever starved off the map. So the loop was very
+ * nearly closed, and two board columns and a coin shuffle every recycle were
+ * the price of it. What the loop DID do was make players cash victory cards
+ * to pay the bill: effect C fell from 25.3 gold a game to 13.3 when it went.
  *
- * The most important assertions in this file are the ones in the FIRST block:
- * the printed game must be bit-for-bit what it was before either option
- * existed. A variant that quietly changes the default game is worse than no
- * variant, because every number in COMBAT-SIMPLIFY.md and DUEL-SPOILS.md was
- * taken under the default.
+ * `food` and `ascension` remain separable so the middle configurations stay
+ * measurable, and `economy: "full"` reproduces every number taken before the
+ * change — every figure in COMBAT-SIMPLIFY.md and DUEL-SPOILS.md was taken
+ * under it.
  */
 const E = require('./engine.js');
 const fail = [];
@@ -24,18 +24,32 @@ const ok = (c, what) => { if (!c) fail.push(what); };
 // -------------------------------------------------- the printed rule is intact
 {
   const g = new E.Game(4, 5, { humans: [] });
-  ok(g.FOOD_ON === true,      'food was not on by default');
-  ok(g.ASCEND_ON === true,    'the ascension reward was not on by default');
+  ok(g.ECONOMY === 'lean',    'the printed economy is no longer lean');
+  ok(g.FOOD_ON === false,     'food is on by default, and v0.26 removed it');
+  ok(g.ASCEND_ON === false,   'the ascension reward is on by default, and v0.26 removed it');
   ok(g.SPOILS === 'none',     'spoils were not off by default');
-  /* The printed food row: 0/1/2/3/4, one number per tier, not cumulative. */
+  /* NOTHING IS OWED, at any tier. */
   const p = g.P[0];
   const row = g.BANDS.map((_, i) => { p.reserve = p.reserve.map((_, j) => j < i ? 0 : 1);
                                       return p.food(); });
-  ok(row.join() === '0,1,2,3,4', 'the printed food row changed: ' + row.join('/'));
+  ok(row.join() === '0,0,0,0,0', 'a printed tier still owes food: ' + row.join('/'));
 
-  const full = E.playOut(4, 11, {});
-  ok((full.stats.gold_out_food || 0) > 0,   'a default game paid no food at all');
-  ok((full.stats.gold_in_ascension || 0) > 0, 'a default game paid no ascension reward');
+  const printed = E.playOut(4, 11, {});
+  ok(!(printed.stats.gold_out_food || 0),   'a default game paid food');
+  ok(!(printed.stats.gold_in_ascension || 0), 'a default game paid an ascension reward');
+  ok(!(printed.stats.starved_back || 0),    'a unit starved in a default game');
+  ok(printed.finished(),                    'a default game did not finish');
+
+  /* ...and the FULL economy is still reachable, whole. */
+  const full = E.playOut(4, 11, { economy: 'full' });
+  ok((full.stats.gold_out_food || 0) > 0,     'economy:"full" paid no food at all');
+  ok((full.stats.gold_in_ascension || 0) > 0, 'economy:"full" paid no ascension reward');
+  const gf = new E.Game(4, 5, { humans: [], economy: 'full' });
+  const q = gf.P[0];
+  const frow = gf.BANDS.map((_, i) => { q.reserve = q.reserve.map((_, j) => j < i ? 0 : 1);
+                                        return q.food(); });
+  ok(frow.join() === '0,1,2,3,4',
+     'economy:"full" no longer owes 0/1/2/3/4: ' + frow.join('/'));
   ok(!(full.stats.gold_in_spoils || 0),     'a default game paid spoils');
 }
 
@@ -48,7 +62,7 @@ const ok = (c, what) => { if (!c) fail.push(what); };
                                       return p.food(); });
   ok(row.join() === '0,0,0,0,0', 'a tier still asked to be fed: ' + row.join('/'));
 
-  const lean = E.playOut(4, 11, { food: false });
+  const lean = E.playOut(4, 11, { economy: 'full', food: false });
   ok(!(lean.stats.gold_out_food || 0),  'a coin was spent on food with food off');
   ok(!(lean.stats.starved_back || 0),   'a unit starved with food off');
   ok(lean.finished(),                   'a game with food off did not finish');

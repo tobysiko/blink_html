@@ -320,11 +320,10 @@ HTML = f"""<!doctype html>
     once. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
     explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
-    your free actions: your band's free moves, and gold shuffled between food, fortresses
-    and research.</li>
-    <li><b>Grow, and pay for it.</b> Units leave your board in tiers. Each tier you empty
-    pays you a one-off ascension reward, lets you play a bigger meld and move further — and
-    raises the gold your people cost to feed.</li>
+    your free actions: your band's free moves, and gold spent on fortresses and
+    research.</li>
+    <li><b>Grow.</b> Units leave your board in tiers. Each tier you empty lets you play a
+    bigger meld, move further, research a higher rank and hold a taller wall.</li>
   </ol>
   <p>The game ends when someone places their last unit. Most points wins: one per unit on
   the map, plus your victory row, plus the two <strong>map objectives</strong> you were
@@ -350,12 +349,11 @@ HTML = f"""<!doctype html>
   a run of four is four. You never choose a move separately from the cards — the meld is
   the budget.</p>
   <p>Winning the trick lets you act first, and every card you played still reaches the
-  map. The player who came last takes a coin. So a strong meld buys tempo, but growth has a cost:
-  the more ground you hold, the more it takes to feed, and feeding comes due whether or
-  not you won.</p>
+  map. The player who came last takes a coin. So a strong meld buys tempo, and the player
+  who spends the fewest cards on it is the one who leaves the round with money.</p>
   <p>Behind every card sits one plain question: <strong>is it people, or is it gold?</strong>
   Spent on the map, a card settles a unit, opens new ground or strikes a rival — always on
-  terrain matching its suit. Cashed, it is a coin, and coins buy food, fortresses and
+  terrain matching its suit. Cashed, it is a coin, and coins buy fortresses and
   research. Gold is tight, and winning play cashes cards constantly. The player who reads
   when a hand is people and when it is money — and when to spend a trick rather than win
   it — comes out ahead.</p>
@@ -398,9 +396,7 @@ HTML = f"""<!doctype html>
     round.</li>
 
     <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 3, 5, 5, 5 from
-    the top. Place the <strong>ascension coins</strong> on their printed spots: 1 on
-    Settlement, 2 on Kingdom, 3 on Empire, 4 on Civilization. Your meld limit starts at
-    <strong>2</strong>.</li>
+    the top. Your meld limit starts at <strong>2</strong>.</li>
 
     <li><b>Lay the starting map.</b> Build the layout shown for your player count, then each
     player places one unit from their top band on their own Plains tile. Whatever the count, the
@@ -445,7 +441,7 @@ HTML = f"""<!doctype html>
   looking at ten cards every time — until each holds a fixed hand of ten. Fourteen
   starting cards are left over; those go face down as the shared pile.</p>
   <p>Each takes a board and loads all five tiers with twenty units, and sets their
-  ascension coins on the printed spots. They lay the three-player
+  They lay the three-player
   starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
   three tiles from the others — and each puts one unit on a Plains tile of their own. The
   remaining tiles are sorted into four open piles by terrain. Finally they shuffle the
@@ -509,7 +505,7 @@ HTML = f"""<!doctype html>
   happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
   to build the ground first. To finish the round they check the end trigger — no one has
   placed their last unit, so play continues. No one emptied a whole
-  tier, so meld limits stay at 2, nobody has claimed an ascension coin, and no food is due;
+  tier, so meld limits stay at 2;
   that only comes when a hand recycles.
   <strong>Bex leads the next round.</strong></p>
   {fig('worked_map', 'The board at the end of round one. Compare it with your own: three Mountains in a triangle, a Plains beyond each outer face, one Ocean added. Bex owns a Mountain as well as her homeland; Ada has two units on one Plains; Cy has nothing on the map yet and two coins in hand.')}
@@ -530,37 +526,34 @@ HTML = f"""<!doctype html>
   <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 3, then 5,
   then 5, then a final 5 — and you always take units from the <b>topmost tier that still
   holds any</b>. That tier is your current tier, and it prints the four numbers that govern
-  your game: the size of meld you may play, the free moves you get each turn, the gold your
-  people cost to feed, and the highest card rank you may buy from the market.</p>
+  your game: the size of meld you may play, the free moves you get each turn, the highest
+  card rank you may buy from the market, and the wall your fortifications hold at.</p>
   <table>
-    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Food per recycle</th><th>Rank cap</th><th>Wall</th></tr></thead>
+    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Rank cap</th><th>Wall</th></tr></thead>
     <tbody>
-      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">free</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
-      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
     </tbody>
   </table>
-  <p>Read all six off the topmost tier that still holds units — one rule, no counting,
-  and <strong>nothing cumulative</strong>: you owe the coins on that tier and no others.
-  Empty a tier and every number steps up together: the expansion that buys you a bigger meld
-  and a longer stride is the same expansion that sends you the bill. Melds never exceed
-  six; placing the last unit of the Civilization tier ends the game (§11).</p>
-
-  <h3>Ascension</h3>
-  <p>Each tier below the first has a <strong>coin printed on your board</strong> at setup.
-  The first time you reach that tier — the moment the tier above it empties — take those
-  coins from your board into your reserve.</p>
-  <table>
-    <thead><tr><th>Reaching</th><th>Settlement</th><th>Kingdom</th><th>Empire</th><th>Civilization</th></tr></thead>
-    <tbody>
-      <tr><td>Ascension reward</td><td class="num-cell">1</td><td class="num-cell">2</td><td class="num-cell">3</td><td class="num-cell">4</td></tr>
-    </tbody>
-  </table>
-  <p class="fine">First time only. Ground you later lose does not put the coins back, and
-  falling to a lower tier does not let you claim them twice.</p>
-  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — and your free moves — 1, 2, 3, 4, 5 — pays a one-off ascension coin, and moves you onto a costlier row. You always pay only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, one food owed each recycle.')}
+  <p>Read them off the topmost tier that still holds units — one rule, no counting, and
+  <strong>nothing cumulative</strong>. Empty a tier and every number steps up together:
+  the expansion that buys you a bigger meld also buys you a longer stride, a better card
+  and a higher wall. Melds never exceed six; placing the last unit of the Civilization
+  tier ends the game (§11).</p>
+  <div class="note">
+    <span class="tag">Growing costs you nothing</span>
+    <p>It used to. Each tier printed a <em>food</em> bill you paid at every recycle, and
+    reaching a tier paid you an <em>ascension</em> coin to soften it — a lump handed over
+    when you climbed, repaid slowly by the tier you climbed to. The two were very nearly a
+    closed loop, and what the loop actually did was make players sell their victory rows
+    to cover the bill. Both are gone. Expansion is now pure upside, and the only thing
+    holding you back is that units on the map are units you cannot lose without losing
+    ground.</p>
+  </div>
+  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — your free moves — 1, 2, 3, 4, 5 — the rank you may research, and the wall your coins hold at. You read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, research up to 14.')}
 
   <h3>Declare</h3>
   <p>Once every meld has been turned over, each player may spend one card from their victory
@@ -826,7 +819,7 @@ HTML = f"""<!doctype html>
   <h3>Take gold</h3>
   <p>Instead of using a card on the map, take <strong>1 gold</strong>. Any card, any number
   of them — a whole meld can be cashed. This is not a fallback for cards that found no
-  terrain: gold is tight, it buys food, fortresses and research (§07), and winning play
+  terrain: gold is tight, it buys fortresses and research (§07), and winning play
   turns cards into coins constantly. Every card asks the same question — people, or
   gold?</p>
 </section>
@@ -884,8 +877,6 @@ HTML = f"""<!doctype html>
   between the first three:</p>
   <ul>
     <li><strong>Reserve</strong> — the gold area on your board. Liquid, uncommitted.</li>
-    <li><strong>Food</strong> — coins on your current band's food slots (§09). This is the
-    supply your people will eat at the next recycle.</li>
     <li><strong>Fortifications</strong> — coins standing on your units on the map
     (below).</li>
     <li><strong>Research</strong> — gold spent on upgrades (§10). Spending is one way:
@@ -893,8 +884,7 @@ HTML = f"""<!doctype html>
   </ul>
   <p>Reallocation is free and unlimited on your own turn. Between your turns the coins
   stand where you left them — and that is when they matter: a fortification only protects
-  while the coin is on the unit, and your food only counts if it is on the slots when your
-  hand recycles.</p>
+  while the coin is on the unit, and it is on somebody else's turn that it is tested.</p>
 
   <h3>Fortifying</h3>
   <p>A coin on one of your units is a <strong>wall</strong>, and a wall fights. Your
@@ -997,32 +987,18 @@ HTML = f"""<!doctype html>
   <p class="fine">Every player refills to exactly ten and every discarded card goes to the
   same pile, so the pile always holds enough. If it is ever empty when you must draw, you
   are already holding ten.</p>
-  <p>Your current tier prints its <strong>food slots</strong> — <strong>Tribe none,
-  Settlement 1, Kingdom 2, Empire 3, Civilization 4</strong> — and the coins standing on them are your food
-  supply. When your hand recycles, your people <strong>eat the supply</strong>: the coins on
-  your slots go back to the general supply, and the meal is paid. Food is <strong>not
-  cumulative</strong> — you feed the band you are on and no others.</p>
-  <p>If the slots are short — the food is not there when the recycle comes — return
-  <strong>one unit from the map to your board for each missing coin</strong>. The debt is
-  then settled; you never owe food into the next recycle. Coins reach the slots by
-  reallocation on your own turn (§07): a well-run civilization sets the table before the
-  harvest, and everyone can see whose slots are standing empty.</p>
-  <p><strong>You choose which units go.</strong> There is no rule forcing you to give up your
-  weakest or least defended ground first. A unit removed this way loses any fortification coin
-  standing on it, and that gold returns to the supply.</p>
-  <p>A unit that comes back — starved off the map, or removed by an attack — goes into the
+  <p>A unit that comes back — beaten off a tile with nowhere to fall back to (§08) — goes into the
   <strong>lowest band that still has a free slot</strong>: the band you emptied most recently.
   Only once that band is full again does the one above it begin to refill. Losing ground walks
   your limit back down <em>one step at a time</em>, and never drops you straight to the
   beginning.</p>
   <div class="note">
     <span class="tag">The pressure</span>
-    <p>The very expansion that lets you play a bigger meld is what sends you the bill: every
-    band you clear moves you onto a costlier row, up to three gold a recycle at Empire. Gold
-    buys research, fortifications, attacks on defended terrain, and food, and there is never
-    enough for all four. A civilization that expands faster than it earns will starve back
-    down — and shrink its own melds doing it. Losing a trick pays you a gold per unused card,
-    so falling behind quietly helps you feed; racing ahead does not.</p>
+    <p>Gold buys research, fortifications and attacks on defended terrain, and there is
+    never enough for all three. Nothing takes gold off you for simply being large — growing
+    is free — so the squeeze is not a bill, it is that every coin you spend on one of those
+    three is a coin you did not spend on the other two. Losing a trick pays you a gold per
+    unused card, so falling behind quietly funds you; racing ahead does not.</p>
   </div>
 </section>
 
@@ -1121,8 +1097,8 @@ HTML = f"""<!doctype html>
   <em>explore</em>, so §06 applies in full: the space must touch at least two tiles already
   on the map and lie <strong>within your reach</strong>. The 6–10 band is the one exception,
   and the only reason to prefer it: its colony may sit <strong>up to two tiles out</strong>.
-  <strong>C</strong> may be taken at any moment, even mid-payment when feeding falls
-  short.</p>
+  <strong>C</strong> may be taken at any moment, including part-way through paying for
+  something you have already started.</p>
   <div class="note">
     <span class="tag">One row, three appetites</span>
     <p>The same five slots are your <em>score</em>, your <em>war chest</em> and your
@@ -1276,8 +1252,8 @@ HTML = f"""<!doctype html>
   <h3>The two kinds</h3>
   <ul>
     <li><strong>SPEND</strong> — use it, then turn the token face down. It comes back the
-    next time your <b>hand recycles</b> (§09), which is also when you pay your food, so
-    the two happen together.</li>
+    next time your <b>hand recycles</b> (§09), which is also when you arm your perk for
+    the coming round, so the two happen together.</li>
     <li><strong>STANDING</strong> — no use to spend. It simply works, for as long as its
     slot holds a card. These tokens never turn over.</li>
   </ul>
@@ -1309,9 +1285,7 @@ HTML = f"""<!doctype html>
     <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
     <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom,
     Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
-    it prints your meld limit, your free moves, your food slots and your rank cap.</dd>
-    <dt>Ascension</dt><dd>Reaching a tier for the first time. Take the coins printed on that
-    tier: 1, 2, 3, 4 as you climb. Once only (§04).</dd>
+    it prints your meld limit, your free moves, your rank cap and your wall.</dd>
     <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
     matched the winner's count and lost. You refill your hand from it (§09).</dd>
     <dt>Set aside</dt><dd>The card you give up for matching the trick winner's card count
@@ -1319,10 +1293,9 @@ HTML = f"""<!doctype html>
     acting on the map, and goes to the shared pile (§04).</dd>
     <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
     across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
-    <dt>Food slots</dt><dd>The coin spaces on your current band. What stands there when your
-    hand recycles is what your people eat (§09).</dd>
-    <dt>Recycle</dt><dd>The moment your hand empties: you feed your population, then take your
-    personal discard back as your new hand (§09).</dd>
+    <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
+    playing with them, then take your personal discard back as your new hand and draw up to
+    ten from the shared pile (§09).</dd>
     <dt>Victory row</dt><dd>The five slots on your board holding retired cards. They score at the
     end — or can each be spent once for an effect, and then are gone.</dd>
   </dl>
@@ -1333,12 +1306,11 @@ HTML = f"""<!doctype html>
   <div class="cols">
     <div>
       <h3>Reserve bands</h3>
-      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds, free moves, food,
-      rank cap, wall: <b>Tribe</b> 2, 1, free, 12, 10. <b>Settlement</b> 3, 2, 1, 14, 12.
-      <b>Kingdom</b> 4, 3, 2, 16, 14. <b>Empire</b> 5, 4, 3, 18, 16.
-      <b>Civilization</b> 6, 5, 4, 20, 18. Read them off your current tier only — food is <b>not</b> cumulative,
-      eaten each time your hand recycles. Reaching a tier pays its ascension coins once:
-      1 / 2 / 3 / 4. Placing your last unit ends the game.</p>
+      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds, free moves,
+      rank cap, wall: <b>Tribe</b> 2, 1, 12, 10. <b>Settlement</b> 3, 2, 14, 12.
+      <b>Kingdom</b> 4, 3, 16, 14. <b>Empire</b> 5, 4, 18, 16.
+      <b>Civilization</b> 6, 5, 20, 18. Read them off your current tier only, and nothing
+      is cumulative. Growing costs you nothing. Placing your last unit ends the game.</p>
       <h3>Round</h3>
       <p>Leader lays a meld face down → everyone lays one face down → turn them all
       over together → declare A effects, leader first → highest total
@@ -1387,7 +1359,7 @@ HTML = f"""<!doctype html>
       free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
       <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
       of ANY terrain, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
-      between reserve, food slots and fortifications; research spending is one-way. ·
+      between reserve and fortifications; research spending is one-way. ·
       <b>One victory card on B</b> per turn.</p>
       <h3>Fortifying</h3>
       <p>1 gold on one of your units. The coin is a <b>wall</b>: it defends at your tier's
@@ -1398,9 +1370,9 @@ HTML = f"""<!doctype html>
       disturbed.</p>
       <h3>Gold</h3>
       <p>1 per cashed card · <b>1 for exploring with a card of rank 10 or under</b> ·
-      ascension coins 1/2/3/4, once each · 1 for ranking last ·
-      pay 1 to research · pay 1 to fortify · your tier's food (0/1/2/3/4, not cumulative) is eaten when your hand
-      recycles — short slots starve units off the map.</p>
+      1 for ranking last · 1 per card set aside after matching the winner ·
+      pay 1 to research (2 for the second this turn) · pay 1 to fortify.
+      <b>Nothing is ever taken off you for being large.</b></p>
       <h3>Research — up to twice per turn</h3>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
       covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
@@ -1410,8 +1382,9 @@ HTML = f"""<!doctype html>
       that finds nothing at or below your cap buys nothing, so it does not put the price up.
       No cards in hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
-      <p>Hand empty: <b>at once, mid-turn</b> — feed, take back your discard, then draw from
-      the <b>shared pile</b> up to ten. Carry on with the turn.</p>
+      <p>Hand empty: <b>at once, mid-turn</b> — collect any income, arm a perk if you are
+      playing with them, take back your discard, then draw from the <b>shared pile</b> up
+      to ten. Carry on with the turn.</p>
       <h3>Victory-card effects</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the

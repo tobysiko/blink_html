@@ -70,8 +70,13 @@ if pyb:
 # hardcode v0.22 and would have quietly checked the wrong rulebook after one.
 rules = text_of(HERE / RULES_HTML)
 
-# 1. the tier table, in order, as "Tribe 2 2 1 free 11"
-row = re.search(r"Tribe (\d+) (\d+) (\d+) free (\d+)", rules)
+# 1. the tier table, in order. Under the full economy Tribe's food cell reads
+# "free"; under lean (v0.26) the column is gone and the row is four numbers.
+_TRIBE_FULL = r"Tribe (\d+) (\d+) (\d+) free (\d+)"
+_TRIBE_LEAN = r"Tribe (\d+) (\d+) (\d+) (\d+)"
+row = (re.search(_TRIBE_LEAN, rules)
+       if re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "lean"', js)
+       else re.search(_TRIBE_FULL, rules))
 check(bool(row), "cannot find the Tribe row of the tier table")
 if row:
     u, ml, mv, cap = (int(x) for x in row.groups())
@@ -79,16 +84,29 @@ if row:
     check(ml == MELD[0], f"Tribe prints meld limit {ml}, engine has {MELD[0]}")
     check(mv == MOVES[0], f"Tribe prints {mv} free moves, engine has {MOVES[0]}")
     check(cap == CAPS[0], f"Tribe prints rank cap {cap}, engine has {CAPS[0]}")
+# The FOOD column left the table in v0.26, so the row is one number shorter.
+# Reading it positionally without noticing that is how a checker ends up
+# comparing the rank cap against the food column and reporting a cap of 18.
+_LEAN_ROW = bool(re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "lean"', js))
 for i, name in enumerate(["Settlement", "Kingdom", "Empire", "Civilization"], start=1):
-    r = re.search(rf"{name} (\d+) (\d+) (\d+) (\d+) (\d+)", rules)
+    cols = 4 if _LEAN_ROW else 5
+    r = re.search(rf"{name}" + r"\s+(\d+)" * cols, rules)
     check(bool(r), f"cannot find the {name} row of the tier table")
     if r:
-        u, ml, mv, food, cap = (int(x) for x in r.groups())
+        vals = [int(x) for x in r.groups()]
+        u, ml, mv = vals[0], vals[1], vals[2]
+        cap = vals[3] if _LEAN_ROW else vals[4]
         check(u == UNITS[i], f"{name} prints {u} units, engine has {UNITS[i]}")
         check(ml == MELD[i], f"{name} prints meld limit {ml}, engine has {MELD[i]}")
         check(mv == MOVES[i], f"{name} prints {mv} moves, engine has {MOVES[i]}")
-        check(food == FOOD[i], f"{name} prints food {food}, engine has {FOOD[i]}")
+        if not _LEAN_ROW:
+            check(vals[3] == FOOD[i], f"{name} prints food {vals[3]}, engine has {FOOD[i]}")
         check(cap == CAPS[i], f"{name} prints cap {cap}, engine has {CAPS[i]}")
+
+# WHICH ECONOMY IS PRINTED. Read here because four separate checks below
+# change shape with it; the paragraph that enforces its absence is at the
+# bottom of the file with the other v0.26 blocks.
+LEAN = bool(re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "lean"', js))
 
 # 2. setup and quick reference repeat the unit counts; they must agree
 setup = "/".join(str(u) for u in UNITS)
@@ -123,9 +141,10 @@ if m:
     check(fig_units == UNITS,
           f"the board figure draws {fig_units} units per tier, engine has {UNITS}")
 
-# 3. ascension coins
-check(" / ".join(str(a) for a in ASC[1:]) in rules,
-      f"ascension coins {ASC[1:]} are not printed as a run")
+# 3. ascension coins - only when there are any
+if not LEAN:
+    check(" / ".join(str(a) for a in ASC[1:]) in rules,
+          f"ascension coins {ASC[1:]} are not printed as a run")
 
 # 4. the trick, as the engine resolves it under the default rule
 check('trickRule || "dock"' in js, "the app's default trick rule is no longer 'dock'")
@@ -454,7 +473,10 @@ check(re.search(r"1 (gold )?then 2|1 then 2 gold", aid_txt),
       f"the aid does not print the 1-then-2 research price (engine default "
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
 # The board's job is now to name its own parts, so THAT is what is pinned.
-for term in ["MELD", "BUY UP TO", "MOVES", "FOOD", "ASCENSION", "RESERVE", "VICTORY ROW"]:
+_TERMS = ["MELD", "BUY UP TO", "MOVES", "RESERVE", "VICTORY ROW"]
+if not LEAN:
+    _TERMS += ["FOOD", "ASCENSION"]
+for term in _TERMS:
     check(term in board_txt, f"the board no longer glosses its own term: {term}")
 # "MV" and the meld chip looked like the same small numbered box from across a
 # table, which is a poor way to draw the two numbers a player uses most. MOVES
@@ -554,8 +576,10 @@ for cap, wall in zip(CAPS, WALLS):
 _raw_for_table = (HERE / RULES_HTML).read_text(encoding="utf8")
 tier_table = _raw_for_table[_raw_for_table.find("<th>Tier</th>"):]
 tier_table = tier_table[:tier_table.find("</table>")]
-for head in ("Units", "Meld limit", "Free moves", "Food per recycle",
-             "Rank cap", "Wall"):
+_HEADS = ["Units", "Meld limit", "Free moves", "Rank cap", "Wall"]
+if not LEAN:
+    _HEADS.insert(3, "Food per recycle")
+for head in _HEADS:
     check(f">{head}<" in tier_table,
           f"the rulebook's tier table has no {head} column")
 for wall in WALLS:
@@ -857,6 +881,33 @@ if passes:
     check(re.search(r"not\s+locked", setup, re.I),
           "\u00a703 does not say a card kept in an earlier round may still be "
           "passed \u2014 which is the change, not the numbers")
+
+# THE ECONOMY, read from the engine.
+#
+# v0.26 removed the food bill and the ascension coins together - one switch,
+# because removing ascension alone is the worst configuration ever measured
+# here. Nothing printed may go on asking for food or promising a coin for
+# climbing: a scoring or upkeep rule nobody deleted is worth more on paper than
+# in the game, and the table adds it up while the app does not.
+#
+# The board outlived its own columns by exactly one build during this change:
+# the ladder dropped FOOD and ASCENSION and the ON THE BOARD legend went on
+# explaining both, so the sheet defined two things a player could not find on
+# it. That is what this block is for.
+econ = re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "(\w+)"', js)
+check(bool(econ), "cannot find the engine's ECONOMY default")
+if econ and econ.group(1) == "lean":
+    for name, txt in (("rulebook", rules), ("player board", board_txt),
+                      ("player aid", aid_txt)):
+        # The rulebook keeps ONE paragraph explaining that the rules are gone,
+        # so it is allowed to name them - in the past tense, once.
+        hits = len(re.findall(r"\bfood\b|\bascension\b", txt, re.I))
+        allowed = 2 if name == "rulebook" else 0
+        check(hits <= allowed,
+              f"the {name} mentions food or ascension {hits} times and v0.26 "
+              f"removed both (at most {allowed} allowed here)")
+        check(not re.search(r"\bstarve|\bupkeep\b|per recycle", txt, re.I),
+              f"the {name} still describes an upkeep, which v0.26 removed")
 
 if "The recycle" in rules:
     check("recycle" in figs,

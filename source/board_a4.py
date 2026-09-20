@@ -15,6 +15,10 @@ from version import VTAG
 #   python3 board_a4.py             ->  board_a4.svg, with the WALL column
 #   python3 board_a4.py --no-wall   ->  board_a4_nowall.svg, the pre-wall sheet
 WALL = "--no-wall" not in sys.argv
+# THE FOOD COLUMN IS GONE IN v0.26, and so is ascension, which shared it.
+# Growing costs nothing now, so the board has nothing to print about the price
+# of a tier. `--food` puts the column back for a v0.25 board.
+FOOD = "--food" in sys.argv
 WALL_OFFSET = -2                 # a wall holds two under what you may buy
 
 # ---- page ----------------------------------------------------------------
@@ -298,8 +302,10 @@ def build():
     # because four coins do not need 12 mm of pitch.
     slots_x0 = name_x0 + (34 if WALL else 48)
     food_x0  = slots_x0 + slots_w + (9 if WALL else 12)
-    food_w   = max(b[3] for b in BANDS)*(CD+1.5)
-    moves_x0 = food_x0 + food_w + 10
+    food_w   = max(b[3] for b in BANDS)*(CD+1.5) if FOOD else 0
+    # Without the column its gap goes too, or MOVES floats in a void where the
+    # coins used to be and the board looks like it lost something.
+    moves_x0 = food_x0 + food_w + (10 if FOOD else 0)
     sep_x    = slots_x0 + slots_w + (4 if WALL else 6)   # units | upkeep
 
     s.append(T(meld_x0, top, "MELD", 3.6, anchor="start", col=SOFT, mono=True,
@@ -329,8 +335,9 @@ def build():
     # they leave are exactly what that tier now costs to feed. One row of
     # circles, and the reward arrives as something you pick up rather than a
     # number printed somewhere else.
-    s.append(T(food_x0 + food_w/2, top, "FOOD", 4.2,
-               col=GOLDd, mono=True, spacing="0.6", weight="600"))
+    if FOOD:
+        s.append(T(food_x0 + food_w/2, top, "FOOD", 4.2,
+                   col=GOLDd, mono=True, spacing="0.6", weight="600"))
     # "MV" was two letters nobody had to guess at once they had learned them,
     # which is a poor bargain on a board a stranger picks up.
     moves_cx = (moves_x0 + PW - M - 2) / 2      # centred in what is left
@@ -349,8 +356,9 @@ def build():
         # FOOD is the number that ambushes people — it comes due on a recycle,
         # in the middle of somebody else's excitement — so the column is tinted
         # the colour of the coins it asks for, all the way down.
-        s.append(f'<rect x="{food_x0-3}" y="{band_top:.2f}" width="{food_w+6}" '
-                 f'height="{band_h}" fill="{GOLDl}" fill-opacity="0.3"/>')
+        if FOOD:
+            s.append(f'<rect x="{food_x0-3}" y="{band_top:.2f}" width="{food_w+6}" '
+                     f'height="{band_h}" fill="{GOLDl}" fill-opacity="0.3"/>')
         # MELD, as a fan of that many cards
         s.append(card_fan(meld_x0, y, limit, active))
         # the rank cap, beside the meld fan: how HIGH, next to how MANY
@@ -380,7 +388,7 @@ def build():
         # FOOD is centred in its column: the coins are a QUANTITY, not a
         # sequence, and a centred cluster grows symmetrically down the tiers
         # instead of drifting rightward off a fixed left edge.
-        if coins:
+        if coins and FOOD:
             row_w = coins*CD + (coins-1)*1.5
             off = (food_w - row_w) / 2
             for c in range(coins):
@@ -394,7 +402,7 @@ def build():
                 yy = y + R - 0.6
                 s.append(f'<path d="M{x1:.2f} {yy:.2f} l0 1.2 L{x2:.2f} {yy+1.2:.2f} '
                          f'l0 -1.2" fill="none" stroke="{GOLDd}" stroke-width="0.4"/>')
-        else:
+        elif FOOD:
             s.append(T(food_x0 + food_w/2, y+1.5, "free", 3.3,
                        col=SOFT, mono=True, style="font-style:italic"))
         # MOVES: a number and a stride, centred as one group under its heading.
@@ -496,13 +504,18 @@ def build():
     # The board naming its own parts. Every word here is printed somewhere on
     # this sheet; nothing here is about the order of play.
     s.append(T(rx, low, "ON THE BOARD", 4.6, anchor="start", weight="600"))
+    # EVERY WORD HERE IS PRINTED SOMEWHERE ON THIS SHEET, which is the only
+    # rule this list has. FOOD and ASCENSION outlived their columns by one
+    # build: the ladder lost them and the legend went on explaining them, so
+    # the board defined two things a player could not find on it. Tied to the
+    # flags now, so the list cannot drift from the columns again.
     TERMS = ([("WALL", "a fortified unit defends here")] if WALL else []) + [
         ("INITIATIVE",  "a die in its corner: still to act"),
         ("MELD",        "cards you may play in a round"),
         ("BUY UP TO",   "highest rank you may take"),
         ("MOVES",       "free moves each turn"),
-        ("FOOD",        "pay these slots each recycle"),
-        ("ASCENSION",   "coins printed there, taken once"),
+    ] + ([("FOOD",      "pay these slots each recycle"),
+          ("ASCENSION", "coins printed there, taken once")] if FOOD else []) + [
         ("RESERVE",     "empties from the top band down"),
         ("VICTORY ROW", "retired cards, fills rightwards"),
     ]

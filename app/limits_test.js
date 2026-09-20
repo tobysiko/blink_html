@@ -62,9 +62,17 @@ function setTier(p, tier) {
  * have been higher and fallen — an Empire stacking Forest 3 deep, starved until
  * the board walks it back to Kingdom, where Forest holds 2. */
 {
+  /* economy: "full" ON PURPOSE. This whole cascade is driven by STARVATION -
+   * a seat too poor to feed its tier walks back down a band, and the stacks it
+   * left behind become illegal. v0.26 removed the food bill, so the printed
+   * game has no starvation and nothing here could happen: the test does not
+   * become wrong, it becomes unreachable. It is kept under the full economy
+   * because the over-limit cascade is not only reachable that way - combat can
+   * still leave a stack over its limit, which the block above covers - and
+   * because `economy: "full"` has to keep working. */
   const g = board([[0, 0, 'forest', 0, 3], [1, 0, 'forest', 0, 3], [2, 0, 'forest', 0, 3],
                    [0, 1, 'forest', 0, 3], [1, 1, 'forest', 0, 3],
-                   [3, 0, 'plains', 1, 1]], { growLimits: true });
+                   [3, 0, 'plains', 1, 1]], { growLimits: true, economy: 'full' });
   const p = g.P[0];
   p.reserve = [0, 0, 0, 1, 4];         // Empire, 15 placed, 5 in reserve = 20
   ok(p.band() === 3, 'the hand-built board is not at Empire');

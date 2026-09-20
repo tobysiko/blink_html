@@ -67,18 +67,20 @@ FREE = [
     ("FORTIFY", "1 gold",
      "a coin on a unit \u00b7 it defends at your tier's WALL, or a better card from hand."),
     ("GOLD", "",
-     "free \u00b7 shift coins between reserve, food and walls."),
+     "free \u00b7 shift coins between reserve and walls."),
     ("COLONY", "",
      "one a turn \u00b7 spend a victory card on its B effect."),
 ]
 
 TIERS = [
-    # tier, units, meld, moves, food, rank cap, WALL (= cap - 2), ascension
-    ("Tribe",        "2", "2", "1", "—", "12", "10", "—"),
-    ("Settlement",   "3", "3", "2", "1", "14", "12", "1"),
-    ("Kingdom",      "5", "4", "3", "2", "16", "14", "2"),
-    ("Empire",       "5", "5", "4", "3", "18", "16", "3"),
-    ("Civilization", "5", "6", "5", "4", "20", "18", "4"),
+    # tier, units, meld, moves, rank cap, WALL (= cap - 2)
+    # FOOD AND ASCENSION LEFT THE GAME IN v0.26, and the two columns went with
+    # them. Growing costs nothing now, so there is no price to read off a tier.
+    ("Tribe",        "2", "2", "1", "12", "10"),
+    ("Settlement",   "3", "3", "2", "14", "12"),
+    ("Kingdom",      "5", "4", "3", "16", "14"),
+    ("Empire",       "5", "5", "4", "18", "16"),
+    ("Civilization", "5", "6", "5", "20", "18"),
 ]
 
 TERRAIN = [("Plains", GOLD, "holds 3"), ("Forest", FOREST, "2 · +1 defence"),
@@ -176,8 +178,8 @@ def front():
 def back():
     rows = "".join(
         f'<tr><td class="n">{n}</td><td>{u}</td><td>{m}</td><td>{mv}</td>'
-        f'<td>{f}</td><td>{c}</td><td>{w}</td><td>{a}</td></tr>'
-        for n, u, m, mv, f, c, w, a in TIERS)
+        f'<td>{c}</td><td>{w}</td></tr>'
+        for n, u, m, mv, c, w in TIERS)
     ter = "".join(f'<span><i style="background:{c}"></i>{n} {d}</span>'
                   for n, c, d in TERRAIN)
     return f"""<div class="face back">
@@ -185,11 +187,11 @@ def back():
   <div class="rule"></div>
   <table>
     <tr><th class="n">Tier</th><th>Units</th><th>Meld</th><th>Moves</th>
-        <th>Food</th><th>Cap</th><th>Wall</th><th>Asc.</th></tr>
+        <th>Cap</th><th>Wall</th></tr>
     {rows}
   </table>
-  <p class="note first">Read your top tier that still holds units. Food is due each
-    recycle and is not cumulative; ascension is paid once, on arrival.</p>
+  <p class="note first">Read your top tier that still holds units, and nothing is
+    cumulative. Growing costs you nothing — there is no upkeep.</p>
   <div class="ter">{ter}</div>
   <p class="note"><b>Round.</b> Melds face down → turn over together → Declare A, leader
     first → highest total wins → winner's die

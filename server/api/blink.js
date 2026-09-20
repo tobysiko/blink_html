@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-20T11:24:40Z
+ * Built 2026-09-20T20:57:08Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1419,7 +1419,10 @@ class Game {
        * suite pins its own rule. `foodOn` on the next line reads opts for
        * exactly this reason; it should have been the clue. */
       pl.perkRule = opts.perkRule === "depth" ? "depth" : "one";
-      pl.foodOn = opts.food !== false;
+      /* Same derivation as FOOD_ON above, and from `opts` for the same reason
+       * perkRule is: this loop runs before the options block. */
+      pl.foodOn = opts.food === undefined
+        ? (opts.economy === "full") : opts.food !== false;
       this.P.push(pl);
     }
     this.humans = new Set(opts.humans || []);        // seats a person plays
@@ -1565,8 +1568,34 @@ class Game {
      * the worst configuration measured - the game runs 13.8 rounds instead of
      * 12.1, margins widen, and players eat 65% more of their own victory row
      * to cover a bill nothing pays for any more. */
-    this.FOOD_ON   = opts.food !== false;
-    this.ASCEND_ON = opts.ascension !== false;
+    /* THE LEAN ECONOMY IS THE PRINTED ONE AS OF v0.26. No food bill, no
+     * ascension coins.
+     *
+     * Ascension paid 24.8 gold a game and food took 29.0 back, so the pair was
+     * very nearly a closed loop - a lump handed to you when you climbed,
+     * repaid slowly by the tier you climbed to. Two board columns, a coin
+     * shuffle every recycle, and a debt that essentially never bit: a player
+     * reached a recycle short of the food owed in 0.1% of 6,913 recycles.
+     *
+     * What the loop DID do was eat victory rows. Effect C - cashing a victory
+     * card for gold - was the second largest income source in the game at 25.3
+     * a game, because it was how a short player paid the bill. Lean drops it
+     * to 13.3. Both numbers are the row being sold rather than scored, and the
+     * complaint from the table on 19 Sep was that nobody had cards in their
+     * victory row.
+     *
+     * They are ONE switch and not two, because removing ascension alone is the
+     * worst configuration ever measured here: the game runs 13.8 rounds
+     * instead of 12.1, margins widen, and players eat 65% more of their own
+     * row to cover a bill nothing pays for any more.
+     *
+     * `economy: "full"` restores both and reproduces every measurement taken
+     * before v0.26; `food` and `ascension` still override individually, which
+     * is what the variant tests use. */
+    this.ECONOMY = opts.economy === "full" ? "full" : "lean";
+    const leanDefault = this.ECONOMY === "full";
+    this.FOOD_ON   = opts.food === undefined ? leanDefault : opts.food !== false;
+    this.ASCEND_ON = opts.ascension === undefined ? leanDefault : opts.ascension !== false;
     /* SPOILS - what winning a duel pays, beyond the ground itself.
      *
      * Combat is the busiest thing in Blink and the least rewarding: about one
