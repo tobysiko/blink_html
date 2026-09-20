@@ -691,9 +691,22 @@
   #hand button.cf{position:relative}
   #hand button.cf.keep{outline:3px solid var(--ink); outline-offset:1px;
            transform:translateY(-9px); z-index:2}
-  #hand button.cf.passing{opacity:.4}
+  #hand button.cf.passing{opacity:.32; transform:translateY(6px)}
+  /* WHICH CARDS JUST REACHED YOU. The draft shows your kept cards and the pack
+     together, sorted into one ascending row, so without a mark there is no way
+     to tell what is new - and what is new is the only thing that changed since
+     your last decision. A dotted collar rather than a colour, because the card
+     faces already carry four colours that mean terrain.
+     DRAWN INSIDE THE CARD. The first version used inset:-4px to sit the ring
+     just outside the card, and it computed perfectly and painted nothing:
+     .cf is overflow:hidden, so anything outside the box is clipped away. The
+     style inspector says "2px dotted gold" either way, which is why this is
+     only ever caught by looking at the pixels. */
+  #hand button.cf.fresh::after{content:""; position:absolute; inset:2px;
+           border:2px dotted #C9992B; border-radius:6px; pointer-events:none}
   @media (prefers-reduced-motion:reduce){
     #hand button.cf.keep{transform:none}
+    #hand button.cf.passing{transform:none}
   }
   .objcard .oprog{display:block; margin-top:.15rem; font-size:.72rem; color:var(--mut)}
   .objcard .oprog.done{color:#2F6B45; font-weight:600}

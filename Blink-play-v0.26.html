@@ -691,9 +691,22 @@
   #hand button.cf{position:relative}
   #hand button.cf.keep{outline:3px solid var(--ink); outline-offset:1px;
            transform:translateY(-9px); z-index:2}
-  #hand button.cf.passing{opacity:.4}
+  #hand button.cf.passing{opacity:.32; transform:translateY(6px)}
+  /* WHICH CARDS JUST REACHED YOU. The draft shows your kept cards and the pack
+     together, sorted into one ascending row, so without a mark there is no way
+     to tell what is new - and what is new is the only thing that changed since
+     your last decision. A dotted collar rather than a colour, because the card
+     faces already carry four colours that mean terrain.
+     DRAWN INSIDE THE CARD. The first version used inset:-4px to sit the ring
+     just outside the card, and it computed perfectly and painted nothing:
+     .cf is overflow:hidden, so anything outside the box is clipped away. The
+     style inspector says "2px dotted gold" either way, which is why this is
+     only ever caught by looking at the pixels. */
+  #hand button.cf.fresh::after{content:""; position:absolute; inset:2px;
+           border:2px dotted #C9992B; border-radius:6px; pointer-events:none}
   @media (prefers-reduced-motion:reduce){
     #hand button.cf.keep{transform:none}
+    #hand button.cf.passing{transform:none}
   }
   .objcard .oprog{display:block; margin-top:.15rem; font-size:.72rem; color:var(--mut)}
   .objcard .oprog.done{color:#2F6B45; font-weight:600}
@@ -1721,7 +1734,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"ee9d733806","branch":"main","dirty":true,"built":"2026-09-20T10:26:35Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"3d894d63ff","branch":"main","dirty":true,"built":"2026-09-20T11:24:39Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2174,8 +2187,9 @@ en: {
   "obj.prog.none": "not started \u2014 needs a {terrain} of your own",
   "obj.prog.done": "complete",
   "obj.prog.doneN": "complete \u00d7{n}",
-  "ask.draft": "<b>Keep {need}</b> <span class=\"muted\">\u2014 {chosen} chosen. The rest of this pack passes on; you have {kept} cards so far.</span>",
-  "btn.draftKeep": "Keep these {n}",
+  "ask.draft": "<b>Pass on {pass}</b> <span class=\"muted\">\u2014 {left} still to choose. These ten are yours to sort out: the {fresh} with a dotted collar have just reached you, the rest you kept earlier, and you may pass either. What stays is your hand.</span>",
+  "ask.draft.first": "<b>Pass on {pass}</b> <span class=\"muted\">\u2014 {left} still to choose. Ten cards, all new. Keep four and pass six on; you will see the rest again.</span>",
+  "btn.draftPass": "Pass these {n} on",
   "ask.mulligan": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 every hand goes back, the whole starting deck is shuffled, and the table is dealt again. One each, and you live with what comes.</span>",
   "ask.mulligan.again": "<b>Your do-over, if you want it</b> <span class=\"muted\">\u2014 this hand came from somebody else\u2019s. Calling it re-deals the table again; you have one, and this is it.</span>",
   "btn.mulligan": "Take the do-over",
@@ -2853,8 +2867,9 @@ de: {
   "obj.prog.none": "noch nicht begonnen \u2014 braucht ein eigenes {terrain}",
   "obj.prog.done": "erf\u00fcllt",
   "obj.prog.doneN": "erf\u00fcllt \u00d7{n}",
-  "ask.draft": "<b>Behalte {need}</b> <span class=\"muted\">\u2014 {chosen} gew\u00e4hlt. Der Rest dieses Stapels wandert weiter; du hast bisher {kept} Karten.</span>",
-  "btn.draftKeep": "Diese {n} behalten",
+  "ask.draft": "<b>Gib {pass} weiter</b> <span class=\"muted\">\u2014 noch {left} zu w\u00e4hlen. Diese zehn geh\u00f6ren dir: die {fresh} mit gepunktetem Rand sind gerade angekommen, die \u00fcbrigen hast du vorher behalten, und du darfst beide weitergeben. Was bleibt, ist deine Hand.</span>",
+  "ask.draft.first": "<b>Gib {pass} weiter</b> <span class=\"muted\">\u2014 noch {left} zu w\u00e4hlen. Zehn Karten, alle neu. Behalte vier und gib sechs weiter; den Rest siehst du wieder.</span>",
+  "btn.draftPass": "Diese {n} weitergeben",
   "ask.mulligan": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 alle H\u00e4nde gehen zur\u00fcck, das ganze Startdeck wird gemischt und neu ausgeteilt. Einer je Person, und was kommt, bleibt.</span>",
   "ask.mulligan.again": "<b>Dein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 diese Hand kam schon aus einem fremden. Wer ihn nimmt, l\u00e4sst noch einmal neu geben; du hast einen, und das ist er.</span>",
   "btn.mulligan": "Neu geben",
@@ -3682,6 +3697,20 @@ function draftPick(kept, offered, need) {
     pool.splice(pool.indexOf(best), 1);
   }
   return picks;
+}
+
+/* WHICH `keep` CARDS OF `pool` TO KEEP, greedily by hand power.
+ *
+ * v0.26 drafts from a POOL rather than from a pack: what you have kept so far
+ * and what has just been passed to you are one set of ten, and the question is
+ * which to pass on. So a card kept in an earlier round is not locked - you may
+ * pass it and take something better, which is the whole reason the hand is
+ * shown beside the pack.
+ *
+ * Built on draftPick rather than beside it: two greedy card-choosers that were
+ * supposed to agree would be one more pair of things to drift apart. */
+function draftKeep(pool, keep) {
+  return draftPick([], pool, Math.min(keep, pool.length));
 }
 
 // --------------------------------------------------------------- map
@@ -5188,18 +5217,18 @@ class Game {
   _runDraft(hands) {
     const n = this.n;
     const kept = []; for (let i = 0; i < n; i++) kept.push([]);
-    for (const target of [4, 6, 8, 10]) {
+    for (const pass of Game.DRAFT_PASSES) {
       for (let i = 0; i < n; i++) {
-        const need = target - kept[i].length;
-        const picks = draftPick(kept[i], hands[i], need);
-        kept[i] = kept[i].concat(picks);
-        hands[i] = hands[i].filter((c) => !picks.includes(c));
+        const pool = kept[i].concat(hands[i]).sort(cardSort);
+        const keep = draftKeep(pool, pool.length - pass);
+        kept[i] = keep;
+        hands[i] = pool.filter((c) => !keep.includes(c));
       }
       const rot = [];
       for (let i = 0; i < n; i++) rot.push(hands[(i - 1 + n) % n]);
       for (let i = 0; i < n; i++) hands[i] = rot[i];
     }
-    for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
+    for (let i = 0; i < n; i++) this.P[i].hand = kept[i].sort(cardSort);
     this._packs = null;
   }
 
@@ -5212,45 +5241,65 @@ class Game {
     yield* this._mulliganPhase();
   }
 
+  /* HOW MANY CARDS ARE PASSED ON IN EACH ROUND OF THE DRAFT.
+   *
+   * The pool is always TEN - what you have kept plus what has just reached you
+   * - so these are the only numbers a player needs, and "pass six" is a much
+   * easier instruction to follow than "keep four of ten, then six of the ten
+   * you now have". The last round passes nothing, so it is not a question and
+   * nobody is asked it. */
+  static get DRAFT_PASSES() { return [6, 4, 2, 0]; }
+
   *_draftPhase() {
     const n = this.n;
     let packs = this._packs;
     if (!packs) return;                       // a bots-only table already drafted
     const kept = []; for (let i = 0; i < n; i++) kept.push([]);
-    for (const target of [4, 6, 8, 10]) {
+    for (const pass of Game.DRAFT_PASSES) {
       for (let i = 0; i < n; i++) {
-        const need = target - kept[i].length;
-        let picks;
-        /* The last two cards are not a decision - the pack is exactly what is
-         * left - so nobody is asked to "choose" them. */
-        if (need >= packs[i].length) picks = packs[i].slice();
+        /* ONE POOL. What you kept and what has just arrived, together, always
+         * ten cards - so a card you kept in round one can still be passed in
+         * round two if what reached you is better. */
+        const pool = kept[i].concat(packs[i]).sort(cardSort);
+        let passed;
+        if (!pass) passed = [];
         else if (this.isHuman(i)) {
-          const ans = yield { type: "draft", seat: i, pack: packs[i].slice(),
-                              need, kept: kept[i].slice(), round: target };
-          picks = this._readDraft(ans, packs[i], need)
-               || draftPick(kept[i], packs[i], need);
-        } else picks = draftPick(kept[i], packs[i], need);
-        kept[i] = kept[i].concat(picks);
-        packs[i] = packs[i].filter((c) => !picks.includes(c));
+          const fresh = packs[i];
+          const ans = yield { type: "draft", seat: i, pool: pool.slice(), pass,
+                              fresh: pool.map((c, j) => (fresh.includes(c) ? j : -1))
+                                         .filter((j) => j >= 0),
+                              round: Game.DRAFT_PASSES.indexOf(pass) + 1 };
+          passed = this._readDraft(ans, pool, pass)
+                || pool.filter((c) => !draftKeep(pool, pool.length - pass).includes(c));
+        } else {
+          passed = pool.filter((c) => !draftKeep(pool, pool.length - pass).includes(c));
+        }
+        kept[i] = pool.filter((c) => !passed.includes(c));
+        packs[i] = passed;
       }
       const rot = [];
       for (let i = 0; i < n; i++) rot.push(packs[(i - 1 + n) % n]);
       for (let i = 0; i < n; i++) packs[i] = rot[i];
     }
-    for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
+    for (let i = 0; i < n; i++) this.P[i].hand = kept[i].sort(cardSort);
     this._packs = null;
     this.say("log.drafted", { n: 10 });
   }
 
-  /* An answer is a list of positions in the pack. Anything else - a wrong
-   * count, a repeat, an index off the end - is refused whole rather than
-   * half-applied, and the heuristic picks instead. */
-  _readDraft(ans, pack, need) {
-    if (!Array.isArray(ans) || ans.length !== need) return null;
+  /* An answer is a list of positions in the POOL - the cards being PASSED ON,
+   * not the ones kept. Anything else - a wrong count, a repeat, an index off
+   * the end - is refused whole rather than half-applied, and the heuristic
+   * decides instead.
+   *
+   * It names what is passed rather than what is kept because that is the
+   * shorter list in every round that is a question (six, four, two against
+   * four, six, eight) and because it is what the player is asked for. */
+  _readDraft(ans, pool, pass) {
+    if (!Array.isArray(ans) || ans.length !== pass) return null;
     const seen = new Set(), out = [];
     for (const i of ans) {
-      if (!Number.isInteger(i) || i < 0 || i >= pack.length || seen.has(i)) return null;
-      seen.add(i); out.push(pack[i]);
+      if (!Number.isInteger(i) || i < 0 || i >= pool.length || seen.has(i)) return null;
+      seen.add(i); out.push(pool[i]);
     }
     return out;
   }
@@ -11008,10 +11057,20 @@ function renderPlayer() {
    * like a discard does, and it is the one request that can arrive on somebody
    * else's turn — so the cards must say which ones are legal, because the
    * sentence above them is about a tile you may not even be looking at. */
-  /* DRAFTING. Your hand does not exist yet - the pack does - so the pack goes
-   * where the hand goes and is picked the same way. Ten cards, keep four, pass
-   * the rest: the one decision in setup, and until now the app took it for you
-   * with a bot heuristic and never said so. */
+  /* DRAFTING. ONE POOL OF TEN, AND YOU CHOOSE WHAT LEAVES.
+   *
+   * This used to show only the pack, with the cards you had already kept
+   * nowhere on screen - so a player could not see the hand they were building
+   * while deciding what to add to it, and a card kept in round one could not
+   * be reconsidered in round two even if something better arrived.
+   *
+   * Now the kept cards and the pack are one row of ten, sorted ascending like
+   * every other row of cards in the app, and the question is which to PASS.
+   * The cards that just reached you carry a dotted collar; everything else was
+   * already yours. Selecting a card marks it to leave, which is why the
+   * selected state is the faded one here and the lifted one everywhere else -
+   * on this screen the cards you are pointing at are the ones you are giving
+   * away. */
   if (mine() && REQ.type === "draft") {
     /* `keep` and `passing`, NOT the meld builder's `sel` and `want`. Both of
      * those say what they mean with a box-shadow, and on a card in the hand
@@ -11024,16 +11083,19 @@ function renderPlayer() {
      * it appears - which the first version of this did - says "none of these
      * are available" to somebody who has not touched it yet. They only fade
      * once the quota is full, where the fade means "you have your four". */
-    const full = SEL.draft.length >= REQ.need;
-    $("#hand").innerHTML = REQ.pack.map((c, i) =>
-      cardBtn(c, SEL.draft.includes(i) ? "keep" : (full ? "passing" : ""),
-              `data-pack="${i}"`, "mid")).join("");
-    $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
+    const full = SEL.draft.length >= REQ.pass;
+    const fresh = new Set(REQ.fresh || []);
+    $("#hand").innerHTML = REQ.pool.map((c, i) => {
+      const cls = [SEL.draft.includes(i) ? "passing" : (full ? "keep" : ""),
+                   fresh.has(i) ? "fresh" : ""].filter(Boolean).join(" ");
+      return cardBtn(c, cls, `data-pool="${i}"`, "mid");
+    }).join("");
+    $("#hand").querySelectorAll("[data-pool]").forEach((n) =>
       n.addEventListener("click", () => {
-        const i = Number(n.dataset.pack);
+        const i = Number(n.dataset.pool);
         const at = SEL.draft.indexOf(i);
         if (at >= 0) SEL.draft.splice(at, 1);
-        else if (SEL.draft.length < REQ.need) SEL.draft.push(i);
+        else if (SEL.draft.length < REQ.pass) SEL.draft.push(i);
         render();
       }));
     wireCardHold();
@@ -11377,13 +11439,19 @@ function renderPromptBody() {
     }
     case "draft": {
       /* And say the count in words too, so the state is legible even to
-       * somebody who cannot pick the ring out of the row. */
-      ask(t("ask.draft", { need: REQ.need, pack: REQ.pack.length,
-                           kept: REQ.kept.length, chosen: SEL.draft.length }));
-      const go = btn(t("btn.draftKeep", { n: REQ.need }),
+       * somebody who cannot pick the collar out of the row. The number that
+       * matters is how many still have to GO, not how many are chosen: "two
+       * more to pass" is an instruction, "4 of 6 chosen" is a status. */
+      /* ROUND ONE HAS NO "REST". Every card is new, so the sentence about the
+       * ones you kept earlier describes an empty set and reads as a mistake. */
+      const allNew = (REQ.fresh || []).length >= REQ.pool.length;
+      ask(t(allNew ? "ask.draft.first" : "ask.draft",
+            { pass: REQ.pass, left: REQ.pass - SEL.draft.length,
+              fresh: (REQ.fresh || []).length, round: REQ.round }));
+      const go = btn(t("btn.draftPass", { n: REQ.pass }),
                      () => answer(SEL.draft.slice()), "",
-                     SEL.draft.length !== REQ.need);
-      go.classList.toggle("ready", SEL.draft.length === REQ.need);
+                     SEL.draft.length !== REQ.pass);
+      go.classList.toggle("ready", SEL.draft.length === REQ.pass);
       break;
     }
     case "mulligan":

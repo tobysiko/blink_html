@@ -68,8 +68,10 @@ function run(seed, n, seat, deck, obj, cb, extra) {
       /* Settling the starting hand, before the first card is played. */
       if (w.eval('REQ && REQ.type') === 'draft') {
         note('draft');
-        const need = w.eval('REQ.need');
-        const cards = qa('#hand button[data-pack]');
+        /* v0.26 asks which of the ten to PASS ON, so the count is REQ.pass and
+         * the cards carry data-pool. */
+        const need = w.eval('REQ.pass');
+        const cards = qa('#hand button[data-pool]');
         for (let k = 0; k < need && k < cards.length; k++) click(cards[k]);
         const keep = [...d.querySelectorAll('#prompt button')].find((b) => !b.disabled);
         if (keep) click(keep);

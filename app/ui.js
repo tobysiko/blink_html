@@ -2212,10 +2212,20 @@ function renderPlayer() {
    * like a discard does, and it is the one request that can arrive on somebody
    * else's turn — so the cards must say which ones are legal, because the
    * sentence above them is about a tile you may not even be looking at. */
-  /* DRAFTING. Your hand does not exist yet - the pack does - so the pack goes
-   * where the hand goes and is picked the same way. Ten cards, keep four, pass
-   * the rest: the one decision in setup, and until now the app took it for you
-   * with a bot heuristic and never said so. */
+  /* DRAFTING. ONE POOL OF TEN, AND YOU CHOOSE WHAT LEAVES.
+   *
+   * This used to show only the pack, with the cards you had already kept
+   * nowhere on screen - so a player could not see the hand they were building
+   * while deciding what to add to it, and a card kept in round one could not
+   * be reconsidered in round two even if something better arrived.
+   *
+   * Now the kept cards and the pack are one row of ten, sorted ascending like
+   * every other row of cards in the app, and the question is which to PASS.
+   * The cards that just reached you carry a dotted collar; everything else was
+   * already yours. Selecting a card marks it to leave, which is why the
+   * selected state is the faded one here and the lifted one everywhere else -
+   * on this screen the cards you are pointing at are the ones you are giving
+   * away. */
   if (mine() && REQ.type === "draft") {
     /* `keep` and `passing`, NOT the meld builder's `sel` and `want`. Both of
      * those say what they mean with a box-shadow, and on a card in the hand
@@ -2228,16 +2238,19 @@ function renderPlayer() {
      * it appears - which the first version of this did - says "none of these
      * are available" to somebody who has not touched it yet. They only fade
      * once the quota is full, where the fade means "you have your four". */
-    const full = SEL.draft.length >= REQ.need;
-    $("#hand").innerHTML = REQ.pack.map((c, i) =>
-      cardBtn(c, SEL.draft.includes(i) ? "keep" : (full ? "passing" : ""),
-              `data-pack="${i}"`, "mid")).join("");
-    $("#hand").querySelectorAll("[data-pack]").forEach((n) =>
+    const full = SEL.draft.length >= REQ.pass;
+    const fresh = new Set(REQ.fresh || []);
+    $("#hand").innerHTML = REQ.pool.map((c, i) => {
+      const cls = [SEL.draft.includes(i) ? "passing" : (full ? "keep" : ""),
+                   fresh.has(i) ? "fresh" : ""].filter(Boolean).join(" ");
+      return cardBtn(c, cls, `data-pool="${i}"`, "mid");
+    }).join("");
+    $("#hand").querySelectorAll("[data-pool]").forEach((n) =>
       n.addEventListener("click", () => {
-        const i = Number(n.dataset.pack);
+        const i = Number(n.dataset.pool);
         const at = SEL.draft.indexOf(i);
         if (at >= 0) SEL.draft.splice(at, 1);
-        else if (SEL.draft.length < REQ.need) SEL.draft.push(i);
+        else if (SEL.draft.length < REQ.pass) SEL.draft.push(i);
         render();
       }));
     wireCardHold();
@@ -2581,13 +2594,19 @@ function renderPromptBody() {
     }
     case "draft": {
       /* And say the count in words too, so the state is legible even to
-       * somebody who cannot pick the ring out of the row. */
-      ask(t("ask.draft", { need: REQ.need, pack: REQ.pack.length,
-                           kept: REQ.kept.length, chosen: SEL.draft.length }));
-      const go = btn(t("btn.draftKeep", { n: REQ.need }),
+       * somebody who cannot pick the collar out of the row. The number that
+       * matters is how many still have to GO, not how many are chosen: "two
+       * more to pass" is an instruction, "4 of 6 chosen" is a status. */
+      /* ROUND ONE HAS NO "REST". Every card is new, so the sentence about the
+       * ones you kept earlier describes an empty set and reads as a mistake. */
+      const allNew = (REQ.fresh || []).length >= REQ.pool.length;
+      ask(t(allNew ? "ask.draft.first" : "ask.draft",
+            { pass: REQ.pass, left: REQ.pass - SEL.draft.length,
+              fresh: (REQ.fresh || []).length, round: REQ.round }));
+      const go = btn(t("btn.draftPass", { n: REQ.pass }),
                      () => answer(SEL.draft.slice()), "",
-                     SEL.draft.length !== REQ.need);
-      go.classList.toggle("ready", SEL.draft.length === REQ.need);
+                     SEL.draft.length !== REQ.pass);
+      go.classList.toggle("ready", SEL.draft.length === REQ.pass);
       break;
     }
     case "mulligan":

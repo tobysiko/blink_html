@@ -47,9 +47,9 @@ const ok = (c, what) => { if (!c) fail.push(what); };
   /* Real mouse clicks, not dispatched events: the card-hold handler listens on
      pointerdown and can swallow a click, which a synthetic event never shows. */
   for (const i of [0, 2, 5, 7]) {
-    const el = await p.$(`#hand [data-pack="${i}"]`);
+    const el = await p.$(`#hand [data-pool="${i}"]`);
     const box = await el.boundingBox();
-    ok(!!box && box.width > 10, `pack card ${i} has no clickable box`);
+    ok(!!box && box.width > 10, `pool card ${i} has no clickable box`);
     await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
     await p.waitForTimeout(150);
   }
@@ -58,32 +58,80 @@ const ok = (c, what) => { if (!c) fail.push(what); };
     const paint = (n) => { const s = getComputedStyle(n);
       return [s.outlineWidth, s.outlineColor, s.boxShadow, s.transform,
               s.opacity, s.backgroundColor, s.borderColor].join(' | '); };
-    const keep = [...document.querySelectorAll('#hand [data-pack].keep')];
-    const pass = [...document.querySelectorAll('#hand [data-pack].passing')];
+    const keep = [...document.querySelectorAll('#hand [data-pool].keep')];
+    const pass = [...document.querySelectorAll('#hand [data-pool].passing')];
     return { picked: SEL.draft.length, keeps: keep.length, passes: pass.length,
              keepPaint: keep.length ? paint(keep[0]) : null,
              passPaint: pass.length ? paint(pass[0]) : null,
+             plainPaint: paint([...document.querySelectorAll('#hand [data-pool]')]
+                               .find((n) => !n.className.includes('passing'))),
+             /* ::after carries the collar, so it has to be measured, not the
+                card. Round one marks every card fresh, so `fresh` here is
+                whatever the first pool gives us and the comparison is against
+                a card with the class removed. */
+             freshPaint: (() => {
+               const n = document.querySelector('#hand [data-pool].fresh');
+               if (!n) return null;
+               const s = getComputedStyle(n, '::after');
+               return [s.content, s.borderTopWidth, s.borderTopStyle,
+                       s.borderTopColor, s.top, s.left].join(' | ');
+             })(),
+             plainNotFreshPaint: (() => {
+               const n = document.querySelector('#hand [data-pool]');
+               if (!n) return null;
+               const clone = n.cloneNode(true);
+               clone.className = clone.className.replace(/\bfresh\b/, '');
+               n.parentElement.appendChild(clone);
+               const s = getComputedStyle(clone, '::after');
+               const out = [s.content, s.borderTopWidth, s.borderTopStyle,
+                            s.borderTopColor, s.top, s.left].join(' | ');
+               clone.remove();
+               return out;
+             })(),
              prompt: (document.querySelector('#prompt .ask') || {}).textContent || '',
              ready: document.querySelector('#prompt button')
                     ? !document.querySelector('#prompt button').disabled : false };
   });
 
   ok(seen.picked === 4, `four clicks chose ${seen.picked} cards`);
-  ok(seen.keeps === 4 && seen.passes === 6,
-     `${seen.keeps} kept and ${seen.passes} passing, wanted 4 and 6`);
+  /* SELECTING NOW MEANS PASSING ON, so four clicks mark four to leave. The
+     other six are not painted `keep` until the quota of six is full, which is
+     the deliberate middle state: before you have chosen everything, no card
+     is claiming to be safe. */
+  ok(seen.passes === 4 && seen.keeps === 0,
+     `${seen.passes} marked to pass and ${seen.keeps} marked keep, wanted 4 and 0`);
   /* THE ASSERTION THIS FILE EXISTS FOR. */
-  ok(seen.keepPaint !== seen.passPaint,
-     'a chosen card and an unchosen one are painted identically — '
-     + 'the pick registers and the table does not move:\n      ' + seen.keepPaint);
-  ok(seen.ready, 'four cards chosen and the keep button is still disabled');
-  ok(/4/.test(seen.prompt),
-     `the prompt does not say how many are chosen: "${seen.prompt.trim()}"`);
+  ok(seen.passPaint && seen.passPaint !== seen.plainPaint,
+     'a card marked to pass and an untouched one are painted identically — '
+     + 'the pick registers and the table does not move:\n      ' + seen.passPaint);
+  /* AND THE OTHER THING ON THIS SCREEN THAT IS TOLD APART BY LOOKING. The
+     pool is your kept cards and the pack in one ascending row, so the only
+     way to see what has just reached you is the collar on it. The first
+     version drew that collar at inset:-4px, OUTSIDE the card — and .cf is
+     overflow:hidden, so it computed as a perfectly good 2px dotted gold
+     border and painted absolutely nothing. Every style query said it was
+     there. Only the pixels said otherwise. */
+  ok(seen.freshPaint && seen.freshPaint !== seen.plainNotFreshPaint,
+     'a card that just reached you is painted identically to one you already '
+     + 'kept — the draft cannot be read:\n      ' + seen.freshPaint);
+  ok(!seen.ready, 'four of six chosen and the pass button is already enabled');
+  ok(/2/.test(seen.prompt),
+     `the prompt does not say how many are still to choose: "${seen.prompt.trim()}"`);
 
-  /* ...and the choice actually goes through to the next pack. */
+  /* ...and six goes through to the next pool. */
+  for (const i of [1, 3]) {
+    const el = await p.$(`#hand [data-pool="${i}"]`);
+    const box = await el.boundingBox();
+    await p.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await p.waitForTimeout(120);
+  }
+  const ready = await p.evaluate(() =>
+    !document.querySelector('#prompt button').disabled);
+  ok(ready, 'six cards chosen and the pass button is still disabled');
   await p.click('#prompt button');
   await p.waitForTimeout(400);
-  const next = await p.evaluate(() => (REQ && REQ.type) + ':' + (REQ && REQ.need));
-  ok(next === 'draft:2', `after keeping four the next question was ${next}, wanted draft:2`);
+  const next = await p.evaluate(() => (REQ && REQ.type) + ':' + (REQ && REQ.pass));
+  ok(next === 'draft:4', `after passing six the next question was ${next}, wanted draft:4`);
 
   await b.close();
   report();
@@ -91,6 +139,7 @@ const ok = (c, what) => { if (!c) fail.push(what); };
 
 function report() {
   if (fail.length) { console.error('FAIL:\n  ' + fail.join('\n  ')); process.exit(1); }
-  console.log('paint: a card chosen in the draft is painted differently from one passing on, '
-    + 'the count is in the prompt, and four picks let the keep button through');
+  console.log('paint: a card marked to pass in the draft is painted differently from an '
+    + 'untouched one, the count still to choose is in the prompt, and six picks let the '
+    + 'pass button through');
 }

@@ -75,25 +75,43 @@ function everyCardOnce(g, n, what) {
     const it = g.playRound();
     let r = it.next();
     const asked = [], mine = [];
+    const dropped = [];
     while (!r.done && r.value && r.value.type === 'draft') {
       const q = r.value;
-      asked.push(`${q.seat}:${q.need}/${q.pack.length}`);
-      /* Take the LAST cards of the pack, which the heuristic would not, so a
+      asked.push(`${q.seat}:pass${q.pass}/${q.pool.length}`);
+      /* THE POOL IS ALWAYS TEN and is always ascending — what you have kept so
+         far plus what has just reached you, which is the change this shape is
+         here to pin down. */
+      ok(q.pool.length === 10, `${n}p draft: a pool of ${q.pool.length}, wanted 10`);
+      ok(q.pool.every((c, j) => !j || q.pool[j - 1].r <= c.r),
+         `${n}p draft: the pool was not handed over in ascending order`);
+      ok((q.fresh || []).length === (q.round === 1 ? 10 : [0, 0, 6, 4][q.round]),
+         `${n}p draft: round ${q.round} marked ${(q.fresh || []).length} cards as new`);
+      /* Pass the LAST cards of the pool, which the heuristic would not, so a
          game that quietly ignored the answer shows up here. */
       const picks = [];
-      for (let k = 0; k < q.need; k++) picks.push(q.pack.length - 1 - k);
-      if (q.seat === 0) for (const i of picks) mine.push(key(q.pack[i]));
+      for (let k = 0; k < q.pass; k++) picks.push(q.pool.length - 1 - k);
+      if (q.seat === 0) {
+        mine.length = 0;                       // only the FINAL round's keeps survive
+        for (const c of q.pool) if (!picks.includes(q.pool.indexOf(c))) mine.push(key(c));
+        for (const i of picks) dropped.push(key(q.pool[i]));
+      }
       r = it.next(picks);
     }
     ok(asked.length === 3 * n, `${n}p draft: ${asked.length} questions, wanted ${3 * n}`);
-    ok(asked[0] === '0:4/10', `${n}p draft: the first question was ${asked[0]}, wanted 0:4/10`);
+    ok(asked[0] === '0:pass6/10',
+       `${n}p draft: the first question was ${asked[0]}, wanted 0:pass6/10`);
     const rounds = asked.filter((a) => a.startsWith('0:')).join(' ');
-    ok(rounds === '0:4/10 0:2/6 0:2/4',
-       `${n}p draft: seat 0 was asked ${rounds}, wanted 4 of 10, 2 of 6, 2 of 4`);
-    /* Eight chosen, and the last two arrive without being asked for. */
+    ok(rounds === '0:pass6/10 0:pass4/10 0:pass2/10',
+       `${n}p draft: seat 0 was asked ${rounds}, wanted pass 6, then 4, then 2, always of ten`);
+    /* What seat 0 kept in the LAST round it was asked about is in its hand,
+       and the hand is sorted. The two cards that arrive after the last
+       question are not asked for, so they are not in `mine`. */
     const held = g.P[0].hand.map(key).sort();
     for (const k of mine)
-      ok(held.includes(k), `${n}p draft: a card seat 0 chose is not in their hand`);
+      ok(held.includes(k), `${n}p draft: a card seat 0 kept is not in their hand`);
+    ok(g.P[0].hand.every((c, j) => !j || g.P[0].hand[j - 1].r <= c.r),
+       `${n}p draft: the drafted hand is not in ascending order`);
     everyCardOnce(g, n, `${n}p draft`);
   }
 }

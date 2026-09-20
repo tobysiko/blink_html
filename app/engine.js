@@ -538,6 +538,20 @@ function draftPick(kept, offered, need) {
   return picks;
 }
 
+/* WHICH `keep` CARDS OF `pool` TO KEEP, greedily by hand power.
+ *
+ * v0.26 drafts from a POOL rather than from a pack: what you have kept so far
+ * and what has just been passed to you are one set of ten, and the question is
+ * which to pass on. So a card kept in an earlier round is not locked - you may
+ * pass it and take something better, which is the whole reason the hand is
+ * shown beside the pack.
+ *
+ * Built on draftPick rather than beside it: two greedy card-choosers that were
+ * supposed to agree would be one more pair of things to drift apart. */
+function draftKeep(pool, keep) {
+  return draftPick([], pool, Math.min(keep, pool.length));
+}
+
 // --------------------------------------------------------------- map
 class GameMap {
   constructor(n, bagEach, startLayout) {
@@ -2042,18 +2056,18 @@ class Game {
   _runDraft(hands) {
     const n = this.n;
     const kept = []; for (let i = 0; i < n; i++) kept.push([]);
-    for (const target of [4, 6, 8, 10]) {
+    for (const pass of Game.DRAFT_PASSES) {
       for (let i = 0; i < n; i++) {
-        const need = target - kept[i].length;
-        const picks = draftPick(kept[i], hands[i], need);
-        kept[i] = kept[i].concat(picks);
-        hands[i] = hands[i].filter((c) => !picks.includes(c));
+        const pool = kept[i].concat(hands[i]).sort(cardSort);
+        const keep = draftKeep(pool, pool.length - pass);
+        kept[i] = keep;
+        hands[i] = pool.filter((c) => !keep.includes(c));
       }
       const rot = [];
       for (let i = 0; i < n; i++) rot.push(hands[(i - 1 + n) % n]);
       for (let i = 0; i < n; i++) hands[i] = rot[i];
     }
-    for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
+    for (let i = 0; i < n; i++) this.P[i].hand = kept[i].sort(cardSort);
     this._packs = null;
   }
 
@@ -2066,45 +2080,65 @@ class Game {
     yield* this._mulliganPhase();
   }
 
+  /* HOW MANY CARDS ARE PASSED ON IN EACH ROUND OF THE DRAFT.
+   *
+   * The pool is always TEN - what you have kept plus what has just reached you
+   * - so these are the only numbers a player needs, and "pass six" is a much
+   * easier instruction to follow than "keep four of ten, then six of the ten
+   * you now have". The last round passes nothing, so it is not a question and
+   * nobody is asked it. */
+  static get DRAFT_PASSES() { return [6, 4, 2, 0]; }
+
   *_draftPhase() {
     const n = this.n;
     let packs = this._packs;
     if (!packs) return;                       // a bots-only table already drafted
     const kept = []; for (let i = 0; i < n; i++) kept.push([]);
-    for (const target of [4, 6, 8, 10]) {
+    for (const pass of Game.DRAFT_PASSES) {
       for (let i = 0; i < n; i++) {
-        const need = target - kept[i].length;
-        let picks;
-        /* The last two cards are not a decision - the pack is exactly what is
-         * left - so nobody is asked to "choose" them. */
-        if (need >= packs[i].length) picks = packs[i].slice();
+        /* ONE POOL. What you kept and what has just arrived, together, always
+         * ten cards - so a card you kept in round one can still be passed in
+         * round two if what reached you is better. */
+        const pool = kept[i].concat(packs[i]).sort(cardSort);
+        let passed;
+        if (!pass) passed = [];
         else if (this.isHuman(i)) {
-          const ans = yield { type: "draft", seat: i, pack: packs[i].slice(),
-                              need, kept: kept[i].slice(), round: target };
-          picks = this._readDraft(ans, packs[i], need)
-               || draftPick(kept[i], packs[i], need);
-        } else picks = draftPick(kept[i], packs[i], need);
-        kept[i] = kept[i].concat(picks);
-        packs[i] = packs[i].filter((c) => !picks.includes(c));
+          const fresh = packs[i];
+          const ans = yield { type: "draft", seat: i, pool: pool.slice(), pass,
+                              fresh: pool.map((c, j) => (fresh.includes(c) ? j : -1))
+                                         .filter((j) => j >= 0),
+                              round: Game.DRAFT_PASSES.indexOf(pass) + 1 };
+          passed = this._readDraft(ans, pool, pass)
+                || pool.filter((c) => !draftKeep(pool, pool.length - pass).includes(c));
+        } else {
+          passed = pool.filter((c) => !draftKeep(pool, pool.length - pass).includes(c));
+        }
+        kept[i] = pool.filter((c) => !passed.includes(c));
+        packs[i] = passed;
       }
       const rot = [];
       for (let i = 0; i < n; i++) rot.push(packs[(i - 1 + n) % n]);
       for (let i = 0; i < n; i++) packs[i] = rot[i];
     }
-    for (let i = 0; i < n; i++) this.P[i].hand = kept[i];
+    for (let i = 0; i < n; i++) this.P[i].hand = kept[i].sort(cardSort);
     this._packs = null;
     this.say("log.drafted", { n: 10 });
   }
 
-  /* An answer is a list of positions in the pack. Anything else - a wrong
-   * count, a repeat, an index off the end - is refused whole rather than
-   * half-applied, and the heuristic picks instead. */
-  _readDraft(ans, pack, need) {
-    if (!Array.isArray(ans) || ans.length !== need) return null;
+  /* An answer is a list of positions in the POOL - the cards being PASSED ON,
+   * not the ones kept. Anything else - a wrong count, a repeat, an index off
+   * the end - is refused whole rather than half-applied, and the heuristic
+   * decides instead.
+   *
+   * It names what is passed rather than what is kept because that is the
+   * shorter list in every round that is a question (six, four, two against
+   * four, six, eight) and because it is what the player is asked for. */
+  _readDraft(ans, pool, pass) {
+    if (!Array.isArray(ans) || ans.length !== pass) return null;
     const seen = new Set(), out = [];
     for (const i of ans) {
-      if (!Number.isInteger(i) || i < 0 || i >= pack.length || seen.has(i)) return null;
-      seen.add(i); out.push(pack[i]);
+      if (!Number.isInteger(i) || i < 0 || i >= pool.length || seen.has(i)) return null;
+      seen.add(i); out.push(pool[i]);
     }
     return out;
   }

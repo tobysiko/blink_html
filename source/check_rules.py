@@ -838,6 +838,26 @@ sys.exit(1 if fails else 0)
 # because `figs` is not loaded until well below where the rest of the perk and
 # objective checks live, and a NameError in a checker reads exactly like a
 # failing check to anyone running it.
+# THE DRAFT PASSES, read from the engine rather than trusted.
+#
+# v0.26 changed the draft from "keep four, then six, then eight" to "pass six,
+# then four, then two" - the same schedule counted the other way round, but
+# the pool is now ten cards every round and a card kept earlier may still be
+# passed. Both descriptions are internally sensible, which is precisely why a
+# book carrying the old one would not look wrong.
+passes = re.search(r"DRAFT_PASSES\(\)\s*\{\s*return \[([0-9,\s]+)\]", js)
+check(bool(passes), "cannot find the engine's draft schedule")
+if passes:
+    nums = [n.strip() for n in passes.group(1).split(",") if n.strip()]
+    said = [n for n in nums if n != "0"]
+    setup = rules[rules.find("Draft your hand"):][:900]
+    for n in said:
+        check(re.search(rf"\b{n}\b", setup),
+              f"\u00a703 does not mention passing {n} cards, and the engine does")
+    check(re.search(r"not\s+locked", setup, re.I),
+          "\u00a703 does not say a card kept in an earlier round may still be "
+          "passed \u2014 which is the change, not the numbers")
+
 if "The recycle" in rules:
     check("recycle" in figs,
           "\u00a709 is called The recycle but there is no recycle figure to draw it")

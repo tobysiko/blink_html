@@ -65,12 +65,17 @@ function autoHuman(G, req, rng) {
      * test, and a driver that only ever made good picks would never exercise
      * the branch where a bad pack has to be lived with. */
     case 'draft': {
-      const idx = req.pack.map((_, i) => i);
+      /* v0.26 asks which of the POOL to pass on, not which of a pack to keep,
+       * and the pool is ten cards every round. Picked at random rather than
+       * well: this is a protocol test, and a driver that only ever made good
+       * choices would never exercise the branch where a bad pool has to be
+       * lived with. */
+      const idx = req.pool.map((_, i) => i);
       for (let i = idx.length - 1; i > 0; i--) {
         const j = Math.floor(rng() * (i + 1));
         [idx[i], idx[j]] = [idx[j], idx[i]];
       }
-      return idx.slice(0, req.need);
+      return idx.slice(0, req.pass);
     }
     case 'mulligan':
       return rng() < 0.3;
