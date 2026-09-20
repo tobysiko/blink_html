@@ -2566,6 +2566,19 @@ function renderPromptBody() {
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
       break;
     }
+    case "perk": {
+      /* ARMING A PERK, at the recycle. The menu is whatever the row reaches at
+       * this moment, so it is read fresh from the request rather than from the
+       * row on screen - the row has just finished changing.
+       *
+       * Declining is a real answer and gets its own button: a player with a
+       * deep row may genuinely want none of what it offers this time. */
+      ask(t("ask.perk", { n: REQ.options.length }));
+      for (const id of REQ.options)
+        btn(t("perk." + id), () => answer(id), REQ.active === id ? "" : "alt");
+      btn(t("btn.perkNone"), () => answer(null), "alt");
+      break;
+    }
     case "draft": {
       /* And say the count in words too, so the state is legible even to
        * somebody who cannot pick the ring out of the row. */

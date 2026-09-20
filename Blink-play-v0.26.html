@@ -1721,7 +1721,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"b301413ef6","branch":"main","dirty":true,"built":"2026-09-20T08:59:27Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"ee9d733806","branch":"main","dirty":true,"built":"2026-09-20T10:26:35Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1859,6 +1859,9 @@ en: {
   "setup.perks.on": "On — one perk per row slot, drawn from the seed",
   "setup.perks.note": "(proposal \u00b7 four decks, one per slot; a perk is live while its slot holds a card)",
   "perk.ready": "ready", "perk.spent": "spent",
+  "ask.perk": "<b>Arm a perk</b> <span class=\"muted\">\u2014 your row reaches {n}. Exactly one runs, and it keeps running until your next recycle even if you spend the card that unlocked it.</span>",
+  "btn.perkNone": "None this time",
+  "log.perk.armed": "Seat {seat} arms {perk}.",
   "perk.spentLong": "spent \u2014 back on your next recycle",
   "perk.needs": "needs {n}",
   "perk.away": "{n} more card(s)",
@@ -2548,6 +2551,9 @@ de: {
   "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
   "setup.perks.note": "(Vorschlag \u00b7 vier Stapel, einer je Platz; ein Bonus wirkt, solange sein Platz eine Karte hält)",
   "perk.ready": "bereit", "perk.spent": "verbraucht",
+  "ask.perk": "<b>Vorteil aktivieren</b> <span class=\"muted\">\u2014 deine Reihe erreicht {n}. Genau einer l\u00e4uft, und er l\u00e4uft bis zur n\u00e4chsten Auffrischung weiter, auch wenn du die Karte ausgibst, die ihn freigeschaltet hat.</span>",
+  "btn.perkNone": "Diesmal keiner",
+  "log.perk.armed": "Platz {seat} aktiviert {perk}.",
   "perk.spentLong": "verbraucht \u2014 zurück beim nächsten Nachziehen",
   "perk.needs": "braucht {n}",
   "perk.away": "noch {n} Karte(n)",
@@ -3948,6 +3954,14 @@ class Player {
      * eight consumers - two bot policies, the UI's "you owe" line and the
      * recycle - and every one of them should stop asking for food together. */
     this.foodOn = true;
+    /* PERK RULE, set by the Game that owns this player, same reasoning as
+     * foodOn above. "one" is v0.26: exactly one perk runs at a time and you
+     * choose it at each recycle. "depth" is the v0.25 rule, where every perk
+     * whose slot your row reaches runs at once. See armPerk. */
+    this.perkRule = "one";
+    /* Which perk is running, under "one". null means none chosen yet - the
+     * first recycle is the first chance to choose. */
+    this.perkActive = null;
     this.hand = [];
     this.discard = [];
     this.gold = 0;
@@ -3985,8 +3999,41 @@ class Player {
     return null;
   }
   hasPerk(id) {
+    /* v0.26: ONE PERK RUNS AT A TIME, and it is the one you armed at your last
+     * recycle. Depth buys OPTIONS, not power - a full row does not run five
+     * perks, it chooses from five.
+     *
+     * Note what this deliberately does NOT ask: whether your row is still deep
+     * enough. An armed perk keeps running until your next recycle even if you
+     * spend the card that unlocked it, so the cost of spending a victory card
+     * lands at the next recycle as a shallower menu rather than switching
+     * something off in the middle of your turn. That was the whole complaint
+     * about the old rule - it made spending an effect feel like a punishment
+     * you had not agreed to. */
+    if (this.perkRule === "one") return this.perkActive === id;
     const s = this.slotOf(id);
     return s !== null && this.perkAt(s) === id;
+  }
+
+  /* WHICH PERKS YOUR ROW CAN REACH RIGHT NOW. The menu, not the choice. */
+  perkChoices() {
+    if (!this.perks) return [];
+    return PERK_SLOTS
+      .filter((s) => this.perks[s] && this.vrow.length >= perkSlotNeeds(s))
+      .map((s) => this.perks[s]);
+  }
+
+  /* Arm one for the coming recycle. Returns the id armed, or null.
+   *
+   * An id that is not on the menu is refused rather than silently ignored:
+   * this is reachable from the network layer, where "refused" and "quietly
+   * did something else" are very different answers. */
+  armPerk(id) {
+    if (this.perkRule !== "one") return null;
+    const menu = this.perkChoices();
+    if (id && !menu.includes(id)) return null;
+    this.perkActive = id || null;
+    return this.perkActive;
   }
   /* Assignment is PERMANENT, and "permanent" has to start somewhere: the row
    * is where a perk lives, so the arrangement locks the moment the row has
@@ -4489,6 +4536,14 @@ class Game {
     for (let i = 0; i < n; i++) {
       const dealt = this.PERK_DEAL ? this.PERK_DEAL[i] : null;
       const pl = new Player(i, this.BANDS, dealt);
+      /* Read from `opts` and NOT from this.PERK_RULE, which is parsed a
+       * hundred lines below this loop and is still undefined here. The first
+       * version of this line took it off the game and every player silently
+       * got `undefined`, which is not "one" and not "depth" - so no perk was
+       * ever armed and no test failed, because every perk measurement in the
+       * suite pins its own rule. `foodOn` on the next line reads opts for
+       * exactly this reason; it should have been the clue. */
+      pl.perkRule = opts.perkRule === "depth" ? "depth" : "one";
       pl.foodOn = opts.food !== false;
       this.P.push(pl);
     }
@@ -4606,6 +4661,17 @@ class Game {
      * above; per ROUND it would pay up to 36 a game and drown the economy. */
     this.INCOME = ["crossroads", "objective", "both"].includes(opts.income)
       ? opts.income : "off";
+    /* HOW MANY PERKS RUN AT ONCE.
+     *
+     *   "one"   - v0.26, printed. Exactly one, chosen at each recycle from
+     *             whatever your row reaches AT THAT MOMENT, and it keeps
+     *             running until your next recycle even if you spend the card
+     *             that unlocked it. Recycles run about 3.2 a game, so a perk
+     *             is re-chosen every few rounds.
+     *   "depth" - v0.25: every perk whose slot your row reaches runs at once,
+     *             so a full row runs five. Kept because every perk measurement
+     *             so far was taken under it. */
+    this.PERK_RULE = opts.perkRule === "depth" ? "depth" : "one";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -7613,6 +7679,30 @@ class Game {
     /* Every perk token turns back face up here — the one beat the board
      * already stops play for. */
     p.refreshPerks();
+
+    /* ARM A PERK FOR THE COMING RECYCLE (v0.26).
+     *
+     * The menu is read HERE, after the row has finished changing and before
+     * the hand comes back, so it is exactly what the row reaches at this
+     * moment. A person is asked; a bot takes the deepest slot it can reach,
+     * on the reasoning that a deeper slot is a perk they bet on rather than
+     * one they fell into. Declining is legal and leaves you with none.
+     *
+     * The choice is made even when the menu has one item, because the UI and
+     * the log should show a perk being armed rather than one appearing. */
+    if (p.perkRule === "one" && p.perks) {
+      const menu = p.perkChoices();
+      if (!menu.length) p.perkActive = null;
+      else {
+        let pick = menu[menu.length - 1];
+        if (this.isHuman(p.i))
+          pick = yield { type: "perk", seat: p.i, options: menu.slice(),
+                         active: p.perkActive };
+        const armed = p.armPerk(pick === null ? null : pick);
+        this.inc(armed ? "perk_armed" : "perk_declined");
+        if (armed) this.say("log.perk.armed", { seat: p.i, perk: armed });
+      }
+    }
 
     /* §09: take back everything you played, then draw from the SHARED pile up
      * to ten. The pile is shuffled first, so what comes back is whatever the
@@ -11270,6 +11360,19 @@ function renderPromptBody() {
       bar.appendChild(pick);
       pick.querySelectorAll("[data-obj]").forEach((n) =>
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
+      break;
+    }
+    case "perk": {
+      /* ARMING A PERK, at the recycle. The menu is whatever the row reaches at
+       * this moment, so it is read fresh from the request rather than from the
+       * row on screen - the row has just finished changing.
+       *
+       * Declining is a real answer and gets its own button: a player with a
+       * deep row may genuinely want none of what it offers this time. */
+      ask(t("ask.perk", { n: REQ.options.length }));
+      for (const id of REQ.options)
+        btn(t("perk." + id), () => answer(id), REQ.active === id ? "" : "alt");
+      btn(t("btn.perkNone"), () => answer(null), "alt");
       break;
     }
     case "draft": {

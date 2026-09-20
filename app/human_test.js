@@ -83,6 +83,11 @@ function autoHuman(G, req, rng) {
      * dead end nobody met until a real table did. */
     case 'retreat':
       return pick(req.options);
+    /* ARMING A PERK at the recycle (v0.26). Declining is a legal answer and a
+     * driver that always armed one would never exercise the branch where a
+     * player runs with none. */
+    case 'perk':
+      return rng() < 0.15 ? null : pick(req.options);
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

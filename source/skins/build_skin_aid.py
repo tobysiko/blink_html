@@ -59,13 +59,13 @@ GLYPH = {
 }
 
 
-def lattice(col="#DFDACB", op=".85"):
+def lattice(col="#EDE9DE", op=".5"):
     r, w, h = 4.0, 6.928, 12.0
     cells = [(3.464, 2), (0, 8), (6.928, 8), (3.464, 14), (0, -4), (6.928, -4)]
     body = "".join(f'<polygon points="{hex_points(cx, cy, r)}"/>' for cx, cy in cells)
     svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
            f'viewBox="0 0 {w} {h}"><g fill="none" stroke="{col}" '
-           f'stroke-width=".55" opacity="{op}">{body}</g></svg>')
+           f'stroke-width=".42" opacity="{op}">{body}</g></svg>')
     return "url('data:image/svg+xml," + quote(svg, safe="") + "')"
 
 
@@ -185,6 +185,24 @@ FREE = [
     ("COLONY", i_colony(), "one a turn &middot; spend a victory card on its <b>B</b>"),
 ]
 
+# The round, in the order the table meets it. build_aid.py compressed this into
+# one running sentence on the back; a sentence is the wrong shape for a sequence
+# — a player mid-round wants to find the step they are on, not re-read the whole
+# turn. Numbered, it is findable.
+STEPS = [
+    ("DECLARE", "you may spend one victory-row card on <b>A</b>. blind, "
+     "before any meld is down."),
+    ("MELD", "face down, an unbroken run, up to your limit. no passing, "
+     "no following."),
+    ("REVEAL", "all at once. highest <b>total</b> wins &mdash; then more cards, "
+     "then highest card."),
+    ("DICE", "winner&rsquo;s die = cards they played. the rest take 2 &middot; 3 "
+     "&middot; 4 in order."),
+]
+
+LAST = ("SETTLE UP", "matched the winner&rsquo;s count and lost &rarr; a card "
+        "aside, <b>+1 gold</b>. last meld &rarr; <b>+1 gold</b>. winner leads.")
+
 MARKS = [
     ("A", marks.mark_a("#3E4540", True), "card phase",
      "add this card&rsquo;s rank to your meld total. <b>=</b> also takes ties."),
@@ -215,6 +233,11 @@ PIECES = [
 
 
 def front():
+    def step(n, k, d, cls=""):
+        return (f'<div class="st {cls}"><span class="no">{n}</span>'
+                f'<span class="sk">{k}</span><span class="sd">{d}</span></div>')
+
+    head = "".join(step(i + 1, k, d) for i, (k, d) in enumerate(STEPS))
     uses = "".join(
         f'<div class="r"><span class="k">{k}</span>{icon}'
         f'<span class="d">{d}</span></div>' for k, icon, d in CARD_USES)
@@ -222,9 +245,15 @@ def front():
         f'<div class="r"><span class="k">{k}</span>{icon}'
         f'<span class="d">{d}</span></div>' for k, icon, d in FREE)
     return f'''<div class="face">
-  <div class="hd"><b>BLINK</b><span>your turn</span><i>lean</i></div>
-  <div class="sec"><span class="lbl">a card does one of four things</span>{uses}</div>
-  <div class="sec last"><span class="lbl">and these are always free</span>{free}</div>
+  <div class="hd"><b>BLINK</b><span>the round</span><i>lean</i></div>
+  {head}
+  <div class="st five"><span class="no">5</span><span class="sk">SPEND</span>
+    <span class="sd">in initiative order, one player at a time, card by card.</span></div>
+  <div class="box">
+    <span class="lbl">each card &mdash; on terrain matching its suit</span>{uses}
+    <span class="lbl mid">free, all turn, woven between the cards</span>{free}
+  </div>
+  {step(6, LAST[0], LAST[1], "last")}
 </div>'''
 
 
@@ -267,28 +296,40 @@ body {{ margin:0; background:#fff; -webkit-print-color-adjust:exact;
 .aid {{ display:flex; width:{2*W}mm; height:{H}mm;
         border:.25mm dashed {FAINT}; }}
 .fold {{ width:0; border-left:.25mm dotted {FAINT}; }}
-.face {{ width:{W}mm; height:{H}mm; padding:2.4mm 3mm 1.8mm; background:{PAPER};
-         background-image:{lattice()}; background-size:3.3mm 5.72mm;
+.face {{ width:{W}mm; height:{H}mm; padding:2.2mm 3mm 1.2mm; background:{PAPER};
+         background-image:{lattice()}; background-size:4.6mm 7.97mm;
          color:{INK}; font-size:0; position:relative; overflow:hidden; }}
 
 .hd {{ display:flex; align-items:baseline; gap:2mm; border-bottom:.35mm solid {INK};
-       padding-bottom:.9mm; margin-bottom:1.4mm; }}
-.hd b {{ font-family:"Fraunces",Georgia,serif; font-size:8pt; letter-spacing:.06em; }}
+       padding-bottom:.6mm; margin-bottom:.8mm; }}
+.hd b {{ font-family:"Fraunces",Georgia,serif; font-size:7.4pt; letter-spacing:.06em; }}
 .hd span {{ font-size:5.4pt; color:{SOFT}; font-style:italic; }}
 .hd i {{ margin-left:auto; font-family:"IBM Plex Mono",monospace; font-size:4.4pt;
          letter-spacing:.16em; text-transform:uppercase; color:{FAINT};
          font-style:normal; }}
 
-.lbl {{ display:block; margin-top:0; font-family:"IBM Plex Mono",monospace; font-size:4.3pt;
-        letter-spacing:.14em; text-transform:uppercase; color:{FAINT};
-        margin:0 0 .8mm; }}
-.sec {{ margin-bottom:1.2mm; }}
-.sec.last {{ margin-bottom:0; }}
-.r {{ display:flex; align-items:center; gap:1.4mm; padding:.22mm 0; }}
-.k {{ font-family:"IBM Plex Mono",monospace; font-size:5pt; font-weight:600;
-      letter-spacing:.07em; width:13.5mm; flex:none; }}
-.ic {{ height:4.1mm; width:auto; flex:none; }}
-.d {{ font-size:5pt; line-height:1.15; color:{SOFT}; }}
+.lbl {{ display:block; font-family:"IBM Plex Mono",monospace; font-size:3.9pt;
+        letter-spacing:.12em; text-transform:uppercase; color:{FAINT};
+        margin:0 0 .2mm; }}
+.lbl.mid {{ margin-top:.5mm; }}
+
+/* the numbered spine of the round */
+.st {{ display:flex; align-items:baseline; gap:1.2mm; padding:.05mm 0; }}
+.no {{ font-family:"Fraunces",Georgia,serif; font-size:5.8pt; font-weight:600;
+       color:{GOLDd}; width:3mm; flex:none; text-align:right; }}
+.sk {{ font-family:"IBM Plex Mono",monospace; font-size:4.6pt; font-weight:600;
+       letter-spacing:.06em; width:11.8mm; flex:none; }}
+.sd {{ font-size:4.4pt; line-height:1.12; color:{SOFT}; }}
+.sd b {{ color:{INK}; font-weight:600; }}
+.st.five {{ align-items:baseline; padding-bottom:.3mm; }}
+.st.last {{ border-top:.25mm solid {LINE}; padding-top:.5mm; margin-top:.4mm; }}
+.box {{ border-left:.4mm solid {GOLD}; padding:.1mm 0 .2mm 2.2mm;
+        margin:0 0 .2mm 4.2mm; }}
+.r {{ display:flex; align-items:center; gap:1.2mm; padding:0; }}
+.k {{ font-family:"IBM Plex Mono",monospace; font-size:4.5pt; font-weight:600;
+      letter-spacing:.06em; width:11.6mm; flex:none; }}
+.ic {{ height:3.1mm; width:auto; flex:none; }}
+.d {{ font-size:4.4pt; line-height:1.1; color:{SOFT}; }}
 .d b {{ color:{INK}; font-weight:600; }}
 
 .marks {{ border:.3mm solid {LINE}; background:rgba(255,255,255,.72);

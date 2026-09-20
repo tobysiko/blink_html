@@ -181,6 +181,9 @@ function run(seed, n, seat, retire, deck, obj, cb) {
       } else if (/Move —|Fortify —/.test(t)) {
         const h = q('#map .hot');
         if (h) click(h); else click(btn(/Cancel/) || btn(/Pick another/));
+      } else if (/Arm a perk/.test(t)) {
+        const b = qa('#prompt button').find((x) => !x.disabled);
+        if (b) click(b);
       } else if (/Fall back/.test(t)) {
         /* WHERE A BEATEN UNIT RETREATS TO. This arrives on somebody else's
          * turn and only when more than one neighbouring tile of yours has

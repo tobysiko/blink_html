@@ -336,7 +336,7 @@ HTML = f"""<!doctype html>
     <p><b>01</b> The idea · <b>02</b> Components · <b>03</b> Setup ·
     <b>✦</b> A worked round · <b>04</b> The round ·
     <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
-    <b>08</b> Terrain · <b>09</b> Feeding and refilling · <b>10</b> Research and the market ·
+    <b>08</b> Terrain · <b>09</b> The recycle · <b>10</b> Research and the market ·
     <b>11</b> End of the game ·
     <b>12</b> Map objectives · <b>13</b> Perks ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
@@ -953,7 +953,7 @@ HTML = f"""<!doctype html>
 </section>
 
 <section>
-  <div class="h2"><span class="num">09</span><h2>Feeding and refilling</h2></div>
+  <div class="h2"><span class="num">09</span><h2>The recycle</h2></div>
   <p>You play with a hand of <strong>ten cards</strong>. Cards leave it for good in two
   ways — <b>set aside</b> when you match the winner's count and lose, which sends a card you
   already played to the shared pile (§04), and <b>retired</b> to your victory row when you
@@ -962,22 +962,35 @@ HTML = f"""<!doctype html>
   immediately, in the middle of your turn, before you do anything else. Do not wait for the
   end of the turn: pick everything back up straight away, and you still have your full map
   phase and your research in front of you.</p>
+  <p>It is worth slowing down for. A recycle is not only picking your cards up: it is the
+  one moment in the game where you <strong>collect what your board has earned</strong> and
+  <strong>choose which perk you will run</strong> until the next one. Both are easy to skip
+  and expensive to skip — a perk you forgot to arm is a perk you did not have for three
+  rounds.</p>
+  {fig('recycle', 'The recycle, in order. Income lands before the bill so it can pay it; the perk is armed after your row has finished changing, so the menu is what the row reaches at that moment; the hand comes back last. The dashed steps belong to modules — leave them out and the base game is the two solid boxes.')}
   <ol class="seq">
+    <li><strong>Collect your income</strong>, if you are playing with one of the income
+    rules. Nothing in the base game pays here.</li>
     <li><strong>Feed your population</strong> (below).</li>
+    <li><strong>Arm a perk</strong>, if you are playing with perks (§13) — exactly one,
+    from whatever your victory row reaches at this moment.</li>
     <li><strong>Take back everything you have played</strong> — your whole personal
-    discard.</li>
-    <li><strong>Draw from the shared pile</strong> until you hold ten again. The shared
-    pile is the face-down stack in the middle of the table, beside the market; it starts
-    the game empty and holds the cards <em>set aside</em> by melds that matched the winner
-    and lost (§04). Shuffle it before drawing if it has not been shuffled since cards were
-    added.</li>
+    discard — and then <strong>draw from the shared pile</strong> until you hold ten
+    again. The shared pile is the face-down stack in the middle of the table, beside the
+    market. It is <em>not</em> empty at the start: it holds every starting card nobody
+    drafted (§03), which is twenty-four at two players, fourteen at three and four at
+    four. Cards join it as they are <em>set aside</em> by melds that matched the winner
+    and lost (§04) and as victory cards are spent for their effects (§10). Shuffle it
+    before drawing if it has not been shuffled since cards were added.</li>
   </ol>
   <p>Then carry on with your turn. Because the refill is immediate, playing your whole hand
   never costs you your research — you simply pick up ten fresh cards and retire one of
   those instead.</p>
   <p>So your ten are no longer the same ten all game. Cards you lose flow into the shared
   pile, and cards other players lost flow back to you. A hand you drafted carefully will
-  drift, and what it drifts toward is whatever the table has been throwing away.</p>
+  drift, and what it drifts toward is whatever the table has been throwing away — including
+  the cards people have spent out of their victory rows, which sink to the bottom of the
+  pile and come back much later.</p>
   <p class="fine">Every player refills to exactly ten and every discarded card goes to the
   same pile, so the pile always holds enough. If it is ever empty when you must draw, you
   are already holding ten.</p>
@@ -1215,9 +1228,17 @@ HTML = f"""<!doctype html>
   <p class="lede">An optional module. Everything in sections 01 to 11 still applies.</p>
 
   <p>Your victory row scores at the end and does nothing before it, which is a strange
-  thing for five slots sitting in front of you all game. Perks give them a job: a perk
-  <strong>wakes up when its slot holds a card</strong>, and works for the rest of the
-  game until you spend the card underneath it.</p>
+  thing for five slots sitting in front of you all game. Perks give them a job.</p>
+  <p><strong>Exactly one perk runs at a time</strong>, and you choose which at every
+  recycle (§09), from whichever of your perks your row is deep enough to reach <em>at that
+  moment</em>. A deep row does not run four perks — it chooses from four. Depth buys you
+  <strong>options, not power</strong>.</p>
+  <p>Once armed, a perk <strong>keeps running until your next recycle even if you spend
+  the card that unlocked it</strong>. So the cost of spending a victory card arrives at the
+  next recycle, as a shallower menu, rather than switching something off in the middle of
+  the turn you spent it on. You are never left mid-move wondering what you just lost.</p>
+  <p>Recycles come round roughly every three or four rounds, so a perk is a decision you
+  revisit two or three times a game rather than one you make once and forget.</p>
 
   <h3>Setup</h3>
   <ol class="seq">

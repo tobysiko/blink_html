@@ -399,6 +399,26 @@ modes = re.search(r'OBJECTIVES_MODE = \[[^\]]*\]\s*\n?\s*\.includes\(opts\.objec
 check(bool(modes) and modes.group(1) == "off",
       "map objectives are no longer off by default in the engine")
 
+# HOW MANY PERKS RUN AT ONCE, and does the book say the same number.
+#
+# v0.26 runs exactly one, armed at the recycle. The old rule ran every perk
+# whose slot the row reached, so a full row ran four - and the difference is
+# invisible in a rulebook that just says a perk "wakes up when its slot holds
+# a card", which is true under both and complete under neither.
+perk_rule = re.search(r'PERK_RULE = opts\.perkRule === "depth" \? "depth" : "(\w+)"', js)
+check(bool(perk_rule), "cannot find the engine's PERK_RULE default")
+if perk_rule and perk_rule.group(1) == "one":
+    check(re.search(r"exactly one perk runs at a time", rules, re.I),
+          "the engine runs one perk at a time and the rulebook does not say so")
+    check(re.search(r"keeps running until your next recycle", rules, re.I),
+          "the rulebook does not say an armed perk survives losing the card "
+          "that unlocked it \u2014 which is the whole point of the change")
+    check(not re.search(r"works for the rest of the\s+game until you spend the card", rules, re.I),
+          "the rulebook still describes the v0.25 perk rule (a perk runs until "
+          "you spend the card under it)")
+
+
+
 # 13 — perks. Every number here is one the engine owns.
 deal = re.search(r"const PERK_DEAL = (\d+);", js)
 slots = re.search(r"const PERK_SLOTS = \[([\d, ]+)\];", js)
@@ -811,3 +831,16 @@ print("\n".join("FAIL: " + f for f in fails) if fails else
       + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, B in reach, and a duel defended at "
       + "/".join(defence[k] for k in ("plains", "ocean", "forest", "mountain")))
 sys.exit(1 if fails else 0)
+
+# THE RECYCLE IS A PHASE NOW, and the figure that draws it has to exist. A
+# section that promises a flow chart and prints nothing is worse than a
+# section that never mentioned one. This sits at the bottom of the file
+# because `figs` is not loaded until well below where the rest of the perk and
+# objective checks live, and a NameError in a checker reads exactly like a
+# failing check to anyone running it.
+if "The recycle" in rules:
+    check("recycle" in figs,
+          "\u00a709 is called The recycle but there is no recycle figure to draw it")
+    check(re.search(r"collect what your board has earned", rules, re.I),
+          "\u00a709 no longer says what the recycle is FOR \u2014 it reads as a "
+          "housekeeping list again")

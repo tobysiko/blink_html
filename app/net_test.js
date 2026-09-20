@@ -455,6 +455,12 @@ function clickThrough(p) {
     }
     return took('turn: nothing playable, ended it', click(btn(/^End turn/)));
   }
+  if (w.eval('REQ && REQ.type') === 'perk') {
+    /* Matched on the request rather than the sentence, because this one
+     * arrives in whatever language the page is set to. */
+    const b = qa('#prompt button').find((x) => !x.disabled);
+    return took('perk: armed one', b && click(b));
+  }
   if (/Give up|Retire a card|spend one extra|shared pile/.test(t))
     return click(qa('#hand button.want')[0] || qa('#hand button')[0]);
   if (/Take a card/.test(t)) return click(q('.slot.hot') || btn(/Cancel/));

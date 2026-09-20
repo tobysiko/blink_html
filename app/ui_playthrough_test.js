@@ -175,6 +175,13 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         if (h) click(h); else click(btn(/Stop/));
       } else if (/Secret objective/.test(t)) {
         note('objective'); click(q('.objpick button'));
+      } else if (/Arm a perk/.test(t)) {
+        /* v0.26 arms exactly one perk per recycle, so this prompt appears two
+         * or three times a game per seat - more often than almost anything
+         * else the driver answers. */
+        note('perk');
+        const b = [...q('#prompt').querySelectorAll('button')].find((x) => !x.disabled);
+        if (b) click(b);
       } else if (/Fall back/.test(t)) {
         /* WHERE A BEATEN UNIT RETREATS TO — asked on somebody else's turn, and
          * only when more than one neighbouring tile of yours has room. v0.26
@@ -223,7 +230,14 @@ const cases = [[11, 3, 0, 'abc', 'secret'], [12, 3, 1, 'abd', 'open'],
                [15, 4, 1, 'abd', 'off', { startlayout: 'homelands' }],
                [16, 2, 0, 'abc', 'off', { startlayout: 'homelands' }],
                [17, 3, 0, 'abc', 'off', { handsetup: 'draft' }],
-               [18, 4, 2, 'abc', 'off', { handsetup: 'mulligan' }]];
+               [18, 4, 2, 'abc', 'off', { handsetup: 'mulligan' }],
+               /* PERKS ON, because v0.26 asks a question at every recycle and
+                * nothing in this file had ever seen it. Perks are off by
+                * default, so every DOM driver could answer every prompt the
+                * app can raise and still never meet the newest one - which is
+                * how a half-built prompt ships. Two or three arm per seat per
+                * game, so one case covers it well. */
+               [19, 3, 0, 'abc', 'showone', { perks: 'on', income: 'both' }]];
 let done = 0, bad = 0;
 const allKinds = {};
 /* A watchdog, because the failure this file just had was silence: if a game

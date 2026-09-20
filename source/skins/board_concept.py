@@ -237,11 +237,11 @@ def coin(cx, cy, r=3.4):
 
 
 DEFS = '''<defs>
-<pattern id="wv" width="6.93" height="12" patternUnits="userSpaceOnUse">
-  <g fill="none" stroke="#FFFFFF" stroke-width=".45" opacity=".55">
-    <polygon points="3.46,-2 6.93,0 6.93,4 3.46,6 0,4 0,0"/>
-    <polygon points="0,4 3.46,6 3.46,10 0,12 -3.46,10 -3.46,6"/>
-    <polygon points="6.93,4 10.39,6 10.39,10 6.93,12 3.46,10 3.46,6"/>
+<pattern id="wv" width="8.66" height="15" patternUnits="userSpaceOnUse">
+  <g fill="none" stroke="#FFFFFF" stroke-width=".38" opacity=".34">
+    <polygon points="4.33,-2.5 8.66,0 8.66,5 4.33,7.5 0,5 0,0"/>
+    <polygon points="0,5 4.33,7.5 4.33,12.5 0,15 -4.33,12.5 -4.33,7.5"/>
+    <polygon points="8.66,5 12.99,7.5 12.99,12.5 8.66,15 4.33,12.5 4.33,7.5"/>
   </g>
 </pattern>
 </defs>'''

@@ -195,6 +195,9 @@ def back():
     first → highest total wins → winner's die
     = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
     lost: set a card aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Income → feed →
+    arm ONE perk (from what your row reaches now; it runs till the next recycle even if
+    you spend the card) → take your discard back and draw to ten → carry on.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
   <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher

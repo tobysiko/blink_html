@@ -1041,6 +1041,101 @@ def setup_maps():
 F["setup_maps"] = setup_maps()
 
 
+
+# ------------------------------------------------------ the recycle phase
+def recycle():
+    """WHAT HAPPENS WHEN YOUR HAND RUNS OUT, as a flow rather than a list.
+
+    Recycle used to be a footnote - feed, pick your discard up, draw to ten -
+    and v0.26 turned it into the phase where two separate things are MANAGED:
+    the perk you will run until the next one, and (under the income rules) the
+    coins your board pays you. A player who treats it as "pick my cards up"
+    now misses a decision, which is exactly the kind of step that gets skipped
+    at a table until somebody notices four rounds later.
+
+    Drawn left to right because the order is the whole point: income lands
+    before the bill so it can pay it, the perk is armed AFTER the row has
+    finished changing, and the hand comes back last.
+
+    The two dashed boxes are MODULE steps. They are dashed rather than absent
+    because a player running the modules needs to see where they sit in the
+    order, and a player not running them needs to see that the base game is
+    the solid boxes and nothing else.
+    """
+    W, H = 624, 222
+    INK, SOFT, RULE = "#1C1F1D", "#5A5F59", "#CDC7B8"
+    GOLD, PAPER = "#C9992B", "#FBFAF6"
+    b = ""
+
+    def box(x, y, w, h, dashed=False, accent=None):
+        dash = ' stroke-dasharray="6 4"' if dashed else ""
+        return (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="7" '
+                f'fill="{PAPER}" stroke="{accent or RULE}" stroke-width="1.6"{dash}/>')
+
+    def arrow(x1, y, x2):
+        return (f'<path d="M {x1} {y} L {x2 - 7} {y}" stroke="{SOFT}" '
+                f'stroke-width="1.6" fill="none"/>'
+                f'<path d="M {x2 - 7} {y - 4.5} L {x2} {y} L {x2 - 7} {y + 4.5} Z" '
+                f'fill="{SOFT}"/>')
+
+    # ---- the trigger, across the top
+    b += box(0, 0, W, 34, accent=GOLD)
+    b += label(14, 22, "YOUR LAST HAND CARD IS PLAYED", 12, anchor="start", cls="fig-key")
+    b += label(W - 14, 22,
+               "at once, mid-turn — not at the end of it", 10,
+               anchor="end", cls="fig-label")
+
+    # ---- four steps
+    BW, BH, TOP, GAP = 141, 104, 58, 20
+    steps = [
+        ("1", "INCOME", "your tiles, and your open objective", "module", GOLD),
+        ("2", "FEED", "the coins on your tier's food slots", "", None),
+        ("3", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
+        ("4", "REFILL", "take your discard back, draw to ten", "", None),
+    ]
+    for i, (n, title, detail, tag, accent) in enumerate(steps):
+        x = i * (BW + GAP)
+        b += box(x, TOP, BW, BH, dashed=bool(tag), accent=accent)
+        b += f'<circle cx="{x + 20}" cy="{TOP + 22}" r="11" fill="{accent or INK}"/>'
+        b += label(x + 20, TOP + 26, n, 12, cls="fig-num")
+        b += label(x + 38, TOP + 27, title, 12, anchor="start", cls="fig-key")
+        # detail, wrapped by hand: two short lines beat one clipped one
+        words, line, lines = detail.split(), "", []
+        for wd in words:
+            trial = (line + " " + wd).strip()
+            if len(trial) > 22:
+                lines.append(line); line = wd
+            else:
+                line = trial
+        lines.append(line)
+        for j, ln in enumerate(lines[:3]):
+            b += label(x + 14, TOP + 52 + j * 15, ln, 10, anchor="start")
+        if tag:
+            b += label(x + BW - 12, TOP + BH - 11, tag, 9, anchor="end", cls="fig-fine")
+        if i < len(steps) - 1:
+            b += arrow(x + BW + 3, TOP + BH / 2, x + BW + GAP - 3)
+
+    # ---- and back out again
+    #
+    # A band, matching the trigger band at the top, so the figure opens and
+    # closes the same way and the eye knows the flow has ended. The first
+    # version left the arrow pointing down into white space with the sentence
+    # floating beside it, which read as two unrelated marks.
+    cx = 3 * (BW + GAP) + BW / 2          # the centre of the REFILL box
+    y0, y1 = TOP + BH + 3, TOP + BH + 22
+    b += (f'<path d="M {cx} {y0} L {cx} {y1 - 7}" stroke="{SOFT}" '
+          f'stroke-width="1.6" fill="none"/>'
+          f'<path d="M {cx - 4.5} {y1 - 7} L {cx} {y1} L {cx + 4.5} {y1 - 7} Z" fill="{SOFT}"/>')
+    b += box(0, y1 + 4, W, 30)
+    b += label(W / 2, y1 + 24,
+               "carry on with your turn \u2014 your map phase and your research "
+               "are still in front of you", 10)
+    return svg(W, H, b, vb=f"-2 -2 {W + 4} {H + 4}")
+
+
+F["recycle"] = recycle()
+
+
 if __name__ == "__main__":
     import json, pathlib
     pathlib.Path("figs.json").write_text(json.dumps(F))

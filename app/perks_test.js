@@ -11,10 +11,21 @@ const E = require('./engine.js');
 const fail = [];
 const ok = (c, what) => { if (!c) fail.push(what); };
 
+/* A player with n cards in the row, the given perks assigned, and whatever
+ * those perks make live ARMED.
+ *
+ * v0.26 split "live" into two questions that used to be one. The row still
+ * decides which perks you can REACH (perkChoices, needs = 6 - slot, unchanged
+ * and tested below); arming decides which single one is RUNNING. Nearly every
+ * test in this file is about the first question, so the helper answers the
+ * second the way a recycle would and gets out of the way. The arming rule has
+ * its own block at the bottom. */
 const withRow = (n, dealt, band) => {
   const p = new E.Player(0, E.BANDS, dealt);
   for (let i = 0; i < n; i++) p.vrow.push({ r: 5 + i, s: 'plains' });
   if (band) for (let j = 0; j < band; j++) p.reserve[j] = 0;
+  const menu = p.perkChoices();
+  if (menu.length) p.armPerk(menu[menu.length - 1]);
   return p;
 };
 
@@ -39,6 +50,50 @@ for (const [slot, needs] of [[1, 5], [2, 4], [3, 3], [4, 2]]) {
     ok(p.hasPerk('roads') === (n >= needs),
        `a perk on slot ${slot} is ${p.hasPerk('roads') ? 'live' : 'dead'} at ${n} cards`);
   }
+}
+
+// ------------------------------------------- ONE AT A TIME, ARMED AT RECYCLE
+// v0.26. Depth buys OPTIONS, not power: a full row does not run five perks,
+// it chooses from five.
+{
+  const deep = withRow(5, { 1: 'roads', 2: 'navigation', 3: 'granary', 4: 'coinage' });
+  const menu = deep.perkChoices();
+  ok(menu.length === 4, `a full row reaches ${menu.length} perks, not 4`);
+  const live = menu.filter((id) => deep.hasPerk(id));
+  ok(live.length === 1,
+     `${live.length} perks are running at once — v0.26 runs exactly one`);
+
+  /* Arming is a choice among what the row reaches, and only that. */
+  ok(deep.armPerk('roads') === 'roads', 'a perk on the menu could not be armed');
+  ok(deep.hasPerk('roads') && !deep.hasPerk('granary'),
+     'arming one perk did not switch the other off');
+  ok(deep.armPerk('siegecraft') === null,
+     'a perk that is not on the menu was armed anyway');
+  ok(deep.hasPerk('roads'), 'a refused arming switched off the perk already running');
+  ok(deep.armPerk(null) === null && !deep.hasPerk('roads'),
+     'declining did not leave the player with no perk');
+
+  /* A SHALLOW ROW REACHES LESS. Slot 4 needs two cards, slot 1 needs five. */
+  const shallow = withRow(2, { 1: 'roads', 4: 'coinage' });
+  ok(shallow.perkChoices().length === 1, 'a two-card row reached more than slot 4');
+  ok(shallow.armPerk('roads') === null, 'a row of two armed the perk on slot 1');
+}
+
+// ------------------------- AN ARMED PERK SURVIVES LOSING THE CARD THAT PAID
+// The cost of spending a victory card lands at the NEXT recycle, as a
+// shallower menu — not in the middle of the turn as a perk going dark. That
+// was the whole complaint about the old rule.
+{
+  const p = withRow(2, { 4: 'roads' });
+  ok(p.hasPerk('roads'), 'Roads was not armed by a row deep enough to reach it');
+  p.vrow.pop();                                  // spent for its effect
+  ok(p.perkChoices().length === 0, 'a one-card row still reaches slot 4');
+  ok(p.hasPerk('roads'),
+     'spending the card switched the armed perk off mid-turn');
+  /* ...and the bill arrives at the recycle: the menu is empty, so nothing arms. */
+  ok(p.armPerk(p.perkChoices()[0]) === null,
+     'a row that reaches nothing still armed something at the recycle');
+  ok(!p.hasPerk('roads'), 'the perk survived a recycle its row could not pay for');
 }
 
 // ------------------------------------------------------ the deal is FAIR
