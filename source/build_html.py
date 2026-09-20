@@ -553,7 +553,7 @@ HTML = f"""<!doctype html>
     holding you back is that units on the map are units you cannot lose without losing
     ground.</p>
   </div>
-  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — your free moves — 1, 2, 3, 4, 5 — the rank you may research, and the wall your coins hold at. You read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, research up to 14.')}
+  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — your free moves — 1, 2, 3, 4, 5 — the rank you may research, and the wall your coins hold at. Four numbers, and you read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, research up to 14, a wall at 12.')}
 
   <h3>Declare</h3>
   <p>Once every meld has been turned over, each player may spend one card from their victory
@@ -945,7 +945,7 @@ HTML = f"""<!doctype html>
   how many units it holds and how hard it is to take — never by how much of it exists.</p>
 </section>
 
-<section>
+<section id="recycle">
   <div class="h2"><span class="num">09</span><h2>The recycle</h2></div>
   <p>You play with a hand of <strong>ten cards</strong>. Cards leave it for good in two
   ways — <b>set aside</b> when you match the winner's count and lose, which sends a card you
@@ -955,16 +955,17 @@ HTML = f"""<!doctype html>
   immediately, in the middle of your turn, before you do anything else. Do not wait for the
   end of the turn: pick everything back up straight away, and you still have your full map
   phase and your research in front of you.</p>
-  <p>It is worth slowing down for. A recycle is not only picking your cards up: it is the
-  one moment in the game where you <strong>collect what your board has earned</strong> and
-  <strong>choose which perk you will run</strong> until the next one. Both are easy to skip
-  and expensive to skip — a perk you forgot to arm is a perk you did not have for three
+  <p>In the base game a recycle is exactly that and nothing else: pick your cards back up
+  and carry on. <strong>The modules are what make it a phase.</strong> If you are playing
+  with either of them, this is the one moment where you
+  <strong>collect what your board has earned</strong> and
+  <strong>choose which perk you will run</strong> until the next one — and both are easy to
+  skip and expensive to skip. A perk you forgot to arm is a perk you did not have for three
   rounds.</p>
-  {fig('recycle', 'The recycle, in order. Income lands before the bill so it can pay it; the perk is armed after your row has finished changing, so the menu is what the row reaches at that moment; the hand comes back last. The dashed steps belong to modules — leave them out and the base game is the two solid boxes.')}
+  {fig('recycle', 'The recycle, in order. The perk is armed after your victory row has finished changing, so the menu is what the row reaches at that moment, and the hand comes back last. The dashed steps belong to modules: leave both out and a recycle is simply picking your cards back up.')}
   <ol class="seq">
     <li><strong>Collect your income</strong>, if you are playing with one of the income
     rules. Nothing in the base game pays here.</li>
-    <li><strong>Feed your population</strong> (below).</li>
     <li><strong>Arm a perk</strong>, if you are playing with perks (§13) — exactly one,
     from whatever your victory row reaches at this moment.</li>
     <li><strong>Take back everything you have played</strong> — your whole personal

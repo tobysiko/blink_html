@@ -782,7 +782,12 @@ F["market"] = market()
 def board():
     b = ""
     PAD = 20
-    W = 520
+    # 520 when a FOOD column sat between the wall and the moves chip; the
+    # column is gone, so the figure is narrower rather than the same width with
+    # a hole in it. check_figs caught the difference immediately - a board
+    # drawn at the old width overflowed the print column by 13px once the note
+    # under it grew a few words.
+    W = 470
     # column anchors
     chip_x = PAD + 6
     name_x = chip_x + 34
@@ -793,7 +798,12 @@ def board():
     # board was missing a column the board itself prints.
     cap_x = slots_x0 + 132          # the rank cap, as a card's index corner
     wall_x = slots_x0 + 184         # the tier's wall, two under its rank cap
-    feed_x = W - PAD - 116          # feed coin column
+    # THE FOOD COLUMN LEFT THE GAME IN v0.26. This figure is a PICTURE OF THE
+    # PLAYER BOARD, and it kept its own copy of the column after board_a4.py
+    # dropped it - so for one build the printed board had four numbers a tier
+    # and the drawing of that board in the rulebook had five. This project's
+    # notes already record "every representation of the board missing a
+    # different column"; this is the same fault with the columns reversed.
     moves_x = W - PAD - 52          # free-move column
 
     def rank_corner(cx, cy, n):
@@ -830,7 +840,6 @@ def board():
     b += label(PAD, y, "RESERVE", 12, anchor="start", cls="fig-step")
     b += label(cap_x, y, "BUY UP TO", 11, cls="fig-step")
     b += label(wall_x, y, "WALL", 11, cls="fig-step")
-    b += label(feed_x, y, "FOOD", 11, anchor="start", cls="fig-step")
     b += label(moves_x, y, "MOVES", 11, anchor="start", cls="fig-step")
 
     # (label, meld limit, units, food coins, free moves) — units are 2/3/5/5/5
@@ -881,24 +890,23 @@ def board():
         # the highest rank this tier may buy, and the wall it defends at
         b += rank_corner(cap_x, by, cap)
         b += shield(wall_x, by, wall)
-        # feed coins
-        if coins:
-            # 15, not 17: at four coins the last one touched the MOVES chip.
-            for c in range(coins):
-                b += gold(feed_x + 6 + c * 15, by)
-        else:
-            b += label(feed_x + 8, by + 3, "free", 9, anchor="start", cls="fig-label")
         # free-move chip
         b += (f'<rect x="{moves_x + 4}" y="{by-11}" width="20" height="22" rx="3" '
               f'fill="#FBFAF6" stroke="#8A837A" stroke-width="1.2"/>')
         b += label(moves_x + 14, by + 3, str(moves), 12, cls="fig-strong")
         y += band_h
 
-    # ---- upkeep note, its own full-width line ----
+    # ---- the one note the ladder still needs ----
     y += 6
-    b += label(PAD, y, "Each recycle your people eat your current tier's coins "
-               "only \u2014 food is not cumulative.", 8.5, anchor="start",
-               cls="fig-label")
+    # TWO SHORT LINES, NOT ONE LONG ONE. The viewBox auto-fits to the drawn
+    # content and fig_bounds measures TEXT, so a note a dozen words longer
+    # widened the whole figure past the print column - which check_figs caught
+    # as "overflows column by 13px" on a change that had only deleted things.
+    b += label(PAD, y, "Read your topmost tier that still holds units.", 8.5,
+               anchor="start", cls="fig-label")
+    y += 13
+    b += label(PAD, y, "Nothing is cumulative. Growing costs you nothing.", 8.5,
+               anchor="start", cls="fig-label")
     y += 13
     b += label(PAD, y, "Free moves refresh every turn.", 8.5, anchor="start",
                cls="fig-label")

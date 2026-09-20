@@ -847,14 +847,6 @@ check("three tiles in a row" not in rules,
 check("a bend counts exactly as a straight line" in rules,
       "the rulebook no longer says a bent objective counts the same as a straight one")
 
-print("\n".join("FAIL: " + f for f in fails) if fails else
-      "rulebook agrees with the engine: tiers "
-      + "/".join(str(u) for u in UNITS)
-      + ", caps " + "/".join(str(c) for c in CAPS)
-      + ", meld limits " + "/".join(str(m) for m in MELD)
-      + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, B in reach, and a duel defended at "
-      + "/".join(defence[k] for k in ("plains", "ocean", "forest", "mountain")))
-sys.exit(1 if fails else 0)
 
 # THE RECYCLE IS A PHASE NOW, and the figure that draws it has to exist. A
 # section that promises a flow chart and prints nothing is worse than a
@@ -906,8 +898,48 @@ if econ and econ.group(1) == "lean":
         check(hits <= allowed,
               f"the {name} mentions food or ascension {hits} times and v0.26 "
               f"removed both (at most {allowed} allowed here)")
-        check(not re.search(r"\bstarve|\bupkeep\b|per recycle", txt, re.I),
-              f"the {name} still describes an upkeep, which v0.26 removed")
+        # `feed` IS ON THIS LIST BECAUSE IT WAS NOT. The first version of this
+        # block searched for "food", "ascension", "starve" and "upkeep", and
+        # both the rulebook and the aid went on telling players to FEED THEIR
+        # POPULATION at every recycle - one as step 2 of the recycle list,
+        # pointing at a passage that had been deleted. The rule was removed
+        # from the engine, the columns, the table and the prose, and the one
+        # word that survived was the imperative a player actually reads.
+        check(not re.search(r"\bstarve|\bupkeep\b|per recycle|\bfeed(s|ing)?\b",
+                            txt, re.I),
+              f"the {name} still tells a player to feed, starve or pay upkeep, "
+              f"which v0.26 removed")
+
+# PERKS ARE A MODULE, AND EVERY SURFACE HAS TO SAY SO.
+#
+# The engine deals none unless asked (`dealPerks(rng, n, opts.perks)` with no
+# perks is null), the setup page opens OFF, and section 13 is headed "An
+# optional module". What drifts is the places that describe the RECYCLE:
+# arming a perk is two thirds of that phase when the modules are on and none
+# of it when they are not, and both the rulebook's recycle list and the player
+# aid had started teaching it as an ordinary step.
+#
+# Checked by wording rather than by structure because that is where it went
+# wrong: the rule was never base, the prose just stopped mentioning it was not.
+# ANCHORED ON THE SECTION ID, not on the first place the word appears. The
+# first "Perks" in the book is in the CONTENTS line, and so is the first "The
+# recycle" - so a naive find() reads the table of contents and then a thousand
+# characters of section 01, which contains neither the claim nor its negation.
+# Both checks passed on a rulebook with the wording deliberately removed.
+check(re.search(r"optional module", perk_sec, re.I),
+      "\u00a713 no longer calls perks an optional module")
+recyc = section(raw_rules, "recycle")
+check(bool(recyc), "the rulebook has no recycle section to check")
+if recyc:
+    check(re.search(r"if you are playing with perks", recyc, re.I),
+          "the recycle no longer says arming a perk is only for tables playing "
+          "with the perks module")
+    check(re.search(r"base game a recycle is", recyc, re.I),
+          "the recycle no longer says what the BASE game does at this moment, "
+          "so a table with no modules cannot tell which steps are theirs")
+check(re.search(r"modules only", aid_txt, re.I),
+      "the player aid lists the recycle steps without marking which belong "
+      "to modules")
 
 if "The recycle" in rules:
     check("recycle" in figs,
@@ -915,3 +947,21 @@ if "The recycle" in rules:
     check(re.search(r"collect what your board has earned", rules, re.I),
           "\u00a709 no longer says what the recycle is FOR \u2014 it reads as a "
           "housekeeping list again")
+
+# ---------------------------------------------------------------- the verdict
+#
+# THIS HAS TO BE THE LAST THING IN THE FILE.
+#
+# It was not. `sys.exit` sat two thirds of the way down, and four blocks of
+# checks added after it - the recycle figure, the draft schedule, the economy
+# and the perks module - were never executed once. They were not wrong; they
+# never ran, and a check that never runs prints exactly what a check that
+# passes prints. Anything new goes ABOVE this line.
+print("\n".join("FAIL: " + f for f in fails) if fails else
+      "rulebook agrees with the engine: tiers "
+      + "/".join(str(u) for u in UNITS)
+      + ", caps " + "/".join(str(c) for c in CAPS)
+      + ", meld limits " + "/".join(str(m) for m in MELD)
+      + ", the highest-total trick, research twice a turn, effect A adding the card\u2019s rank, the lowest-card retire, B in reach, and a duel defended at "
+      + "/".join(defence[k] for k in ("plains", "ocean", "forest", "mountain")))
+sys.exit(1 if fails else 0)
