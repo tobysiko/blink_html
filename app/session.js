@@ -118,6 +118,7 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
+      income: o.income === "crossroads" ? "crossroads" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",

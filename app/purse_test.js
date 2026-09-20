@@ -73,7 +73,13 @@ const ok = (c, what) => { if (!c) fail.push(what); };
   const seen = new Set();
   for (const n of [2, 3, 4]) {
     for (let s = 0; s < 45; s++) {
-      const opts = s % 3 === 0 ? { deck: 'abd' } : s % 3 === 1 ? { combat: 'gold' } : {};
+      /* The rotation exists so that every declared reason gets a game it can
+       * actually fire in. `crossroads` joined it rather than the exempt list
+       * below: it is off by default, so a sample of printed-rule games would
+       * report it dead - which is true of the sample and false of the rule,
+       * and is exactly the shape of a check that cries wolf. */
+      const opts = [{ deck: 'abd' }, { combat: 'gold' }, {},
+                    { income: 'crossroads' }][s % 4];
       const done = E.playOut(n, (s * 40503) % 2147483647, opts);
       for (const k of Object.keys(done.stats)) {
         const m = /^gold_(in|out)_(.+)$/.exec(k);

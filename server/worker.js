@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-19T21:36:49Z
+ * Built 2026-09-20T08:51:16Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -78,6 +78,7 @@ const GOLD_REASONS = [
   // coming in
   "lost_trick", "docked", "bonus_gold", "ascension", "cashed", "unplaceable",
   "held_back", "no_units", "effect_c", "frontier", "called_off", "reclaimed",
+  "crossroads",
   // going out
   "food", "upgrade", "fortify", "attack",
   // coming in, but only under the SPOILS variant (see Game.SPOILS)
@@ -1445,6 +1446,32 @@ class Game {
     /* WHEN EFFECT A IS DECLARED. "afterReveal" is v0.26 and printed; "blind"
      * is the v0.25 rule, kept so its measurements reproduce. */
     this.A_TIMING = opts.aTiming === "blind" ? "blind" : "afterReveal";
+    /* INCOME, AND WHY THERE IS A SWITCH FOR IT.
+     *
+     * Toby played v0.26-ish at a table on 19 Sep and reported three things at
+     * once: gold was the binding constraint, nobody fortified, and nobody's
+     * victory row had cards in it. The sim says the same thing and names the
+     * cause. Under the LEAN economy - no food bill, no ascension coins, which
+     * is what the v0.26 board concept assumes - income falls from 90.3 gold a
+     * game to 53.8 across four seats, and nothing replaced ascension's 24.8.
+     * Fortifying is what gets cut: it is the only wholly discretionary spend,
+     * and freeing up money moves it 6.8 -> 13.4 with no rule change at all.
+     *
+     *   "off"        - printed. Nothing pays income.
+     *   "crossroads" - Toby's proposal, untested: one tile of yours that
+     *                  touches an OCCUPIED tile of each of the other three
+     *                  terrains pays 1 gold per unit of yours standing on it,
+     *                  once each recycle.
+     *
+     * Measured incidentally - bots are not trying for it - at 5.38 gold per
+     * seat per game, paying on 78% of recycles. That is +40% income under
+     * Lean, which is the right size; a player aiming at it does better. The
+     * rival proposal (1 gold per complete set of all four terrains) measured
+     * 1.74 and paid on only 41% of recycles, so it is not built.
+     *
+     * CADENCE IS PART OF THE RULE. At recycle (3.2 a game) it is the size
+     * above; per ROUND it would pay up to 36 a game and drown the economy. */
+    this.INCOME = opts.income === "crossroads" ? "crossroads" : "off";
     /* THE LEAN ECONOMY (measured 3 Sep, 400 games x 4 seats).
      *
      * Ascension pays 26.6 gold a game and food takes 31.8 back, so the two
@@ -1817,6 +1844,43 @@ class Game {
       this.inc("spent_out_of_game");
     }
     return card;
+  }
+
+  /* THE CROSSROADS: what a tile of yours pays, if anything.
+   *
+   * A tile qualifies when you have a unit on it and it touches, for each of
+   * the three terrains it is not, at least one tile of that terrain with a
+   * unit standing on it. THE UNIT MAY BE ANYONE'S - that is the whole point
+   * of the rule rather than an oversight. Your income depends on your
+   * neighbours being there and staying there, which gives a table a concrete
+   * reason not to drive everyone off. The measured result is already that
+   * fighting costs you points (22.6 against 29.9 for a table that does not);
+   * this puts that on the board instead of in a spreadsheet.
+   *
+   * It pays 1 gold per unit of YOURS on the tile, so Plains (holds 3) is the
+   * obvious site and stacking it is the obvious play - which pulls against
+   * objectives, that want you spread out, and against retreat, which also
+   * wants Plains free. That tension is probably the interesting part.
+   *
+   * THE ENGINE TAKES THE BEST QUALIFYING TILE RATHER THAN ASKING.  The design
+   * as Toby described it has you NOMINATE a tile, which is a different game:
+   * a nomination is a commitment, it needs a marker on the board, and an
+   * opponent can see it and come for it. A bot would nominate greedily, which
+   * is exactly "the best qualifying tile", so the two versions measure
+   * identically and only the nominated one needs a component and a prompt.
+   * This is the cheap half; the interesting half is a decision for a table. */
+  crossroadsPay(p) {
+    if (this.INCOME !== "crossroads") return 0;
+    let best = 0;
+    for (const t of this.m.tiles.values()) {
+      const mine = t.units.filter((u) => u === p.i).length;
+      if (!mine || mine <= best) continue;          // cannot beat what we have
+      const others = TER.filter((x) => x !== t.terrain);
+      const near = t.neighbours();
+      if (others.every((x) => near.some((nb) => nb.terrain === x && nb.units.length)))
+        best = mine;
+    }
+    return best;
   }
 
   // --- setup ---------------------------------------------------
@@ -4318,6 +4382,17 @@ class Game {
   }
 
   *_recycle(p) {
+    /* Income lands BEFORE the bill, so it can pay it. Paying it afterwards
+     * would hand a player gold in the same breath as taking a unit off the map
+     * for being short, which is the kind of ordering nobody notices until it
+     * happens at a table. */
+    {
+      const pay = this.crossroadsPay(p);
+      if (pay) {
+        this.inc("crossroads_paid");
+        this.purse(p, pay, "crossroads", "board", { n: pay });
+      }
+    }
     let owed = p.food();
     if (this.DECK === "abd") {
       /* No take-gold effect: the row cannot be eaten. Gold comes from cashing a
@@ -4628,6 +4703,7 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
+      income: o.income === "crossroads" ? "crossroads" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: o.objectiveScoring === "perMiddle" ? "perMiddle" : "once",

@@ -240,6 +240,7 @@ function startGame(force) {
                              growLimits: $("#grow-limits").value === "grow",
                              perks: $("#perks") && $("#perks").value === "on",
                              fortify: $("#fortify") ? $("#fortify").value : undefined,
+    income: $("#income") ? $("#income").value : undefined,
                              loss: $("#loss") ? $("#loss").value : undefined,
                              startLayout: $("#startlayout")
                                ? $("#startlayout").value : undefined,
@@ -3523,6 +3524,7 @@ function netRules() {
     growLimits: $("#grow-limits").value === "grow",
     perks: $("#perks") && $("#perks").value === "on",
     fortify: $("#fortify") ? $("#fortify").value : undefined,
+    income: $("#income") ? $("#income").value : undefined,
     loss: $("#loss") ? $("#loss").value : undefined,
     startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
     objectiveScoring: $("#objscoring") ? $("#objscoring").value : undefined,
