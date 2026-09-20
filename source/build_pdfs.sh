@@ -38,6 +38,7 @@ python3 build_variants.py
 python3 build_perks.py          # proposal: victory row perk tokens
 python3 build_aid.py            # the player aid, four to a page
 python3 build_aid.py --bw
+python3 build_aid_visual.py     # the A4 pictorial aid: stages and decisions
 python3 board_a4.py
 python3 board_blank.py
 
@@ -166,6 +167,7 @@ board() {
 board board_a4.svg        Blink-player-board-A4.pdf
 board board_a4-bw.svg     Blink-player-board-A4-bw.pdf
 board board_blank.svg     Blink-player-board-blank.pdf
+board Blink-aid-visual.svg Blink-aid-visual.pdf
 
 # A PDF THAT LOOKS RIGHT AND IS EMPTY. This used to compare file sizes against
 # 8 kB, which is the shape of only one failure - a renderer that quit before

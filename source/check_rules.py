@@ -396,6 +396,9 @@ def section(html_src, sid):
 raw_rules = (HERE / RULES_HTML).read_text(encoding="utf8")
 obj_sec = section(raw_rules, "objectives")
 perk_sec = section(raw_rules, "perks")
+sys.path.insert(0, str(HERE))
+from aid_data import card_uses as _cu          # noqa: E402
+card_uses_for_check = _cu("", "", "", "")
 check(bool(obj_sec), "the rulebook has no map objectives section")
 check(bool(perk_sec), "the rulebook has no perks section")
 
@@ -937,6 +940,47 @@ if recyc:
     check(re.search(r"base game a recycle is", recyc, re.I),
           "the recycle no longer says what the BASE game does at this moment, "
           "so a table with no modules cannot tell which steps are theirs")
+# THE A4 PICTORIAL AID, against the engine.
+#
+# It is a SECOND rendering of the folded card's facts - the two share
+# aid_data.py so they cannot say different things - plus the A/B/C table,
+# which it generates by ASKING app/engine.js at build time rather than by
+# repeating it. This block checks the parts it draws itself.
+vis_file = HERE / "Blink-aid-visual.svg"
+check(vis_file.exists(),
+      "the pictorial aid has not been built - run: python3 build_aid_visual.py")
+if vis_file.exists():
+    # A GENERATED FILE OLDER THAN WHAT GENERATES IT IS LAST WEEK'S ANSWER.
+    # Found the hard way: a deliberately broken aid_data.py made the builder
+    # exit, the SVG on disk stayed as it was, and every check below happily
+    # passed the PREVIOUS build. Exactly the failure the DOM tests had with a
+    # stale play page, in a different file.
+    _vis_age = vis_file.stat().st_mtime
+    for _src in ("build_aid_visual.py", "aid_data.py"):
+        _f = HERE / _src
+        check(not _f.exists() or _f.stat().st_mtime <= _vis_age + 1,
+              f"Blink-aid-visual.svg is older than {_src} - it is not this "
+              f"version of the sheet; run: python3 build_aid_visual.py")
+    vis = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ",
+                                    vis_file.read_text(encoding="utf8")))
+    # the five beats, in order
+    beats = ["LAY", "REVEAL", "DECLARE", "RANK", "MAP"]
+    at = [vis.find(x) for x in beats]
+    check(all(i >= 0 for i in at) and at == sorted(at),
+          "the pictorial aid does not show the five beats of a round in order")
+    # the three questions it exists to answer
+    for want in ["A CARD IN YOUR MELD", "A COIN", "A VICTORY-ROW CARD"]:
+        check(want in vis, f"the pictorial aid no longer asks about {want}")
+    # every card use, every coin use
+    for key, _c, _d in card_uses_for_check:
+        check(key in vis, f"the pictorial aid is missing the card option {key}")
+    # the A/B/C numbers, read from the engine the same way the sheet does
+    for band_c in ("2g", "3g", "4g", "5g"):
+        check(band_c in vis, f"the pictorial aid does not price C at {band_c}")
+    # and it must not describe rules v0.26 removed
+    check(not re.search(r"\bfood\b|\bascension\b|\bfeed(s|ing)?\b", vis, re.I),
+          "the pictorial aid still mentions food, ascension or feeding")
+
 check(re.search(r"modules only", aid_txt, re.I),
       "the player aid lists the recycle steps without marking which belong "
       "to modules")

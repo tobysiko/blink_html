@@ -48,43 +48,13 @@ W, H = 88.0, 63.0                 # finished card, mm -- a poker card sideways
 PER_PAGE = 4                      # 4 x 63mm = 252mm, inside an A4 text height
 
 # ---- the turn, as the table meets it -------------------------------------
-# (key, colour, what, detail)
-CARD_USES = [
-    ("SETTLE",  GOLD,   "a unit from your top tier"),
-    ("EXPLORE", FOREST, "a new tile \u00b7 must touch TWO \u00b7 rank 10 or under pays 1 gold"),
-    ("ATTACK",  "#C0392B", "a duel \u00b7 your rank vs their card + the ground"),
-    ("CASH",    STONE,  "1 gold"),
-]
+# THE TABLES LIVE IN aid_data.py, because the A4 pictorial sheet renders the
+# same facts and two copies of them would drift. This file decides how they
+# LOOK on a folded card; it does not decide what they say.
+from aid_data import FREE, TIERS, card_uses, terrain      # noqa: E402
 
-FREE = [
-    ("MOVE", "your tier",
-     "land: across your own units \u00b7 sea: across empty Ocean \u00b7 never an attack."),
-    ("WATER", "first sea move",
-     "one free tile of ANY terrain, anywhere \u00b7 touch-two applies, reach does not."),
-    ("RESEARCH", "",
-     "twice \u00b7 1 gold then 2 \u00b7 draw onto the highest rank \u00b7 retire your lowest \u00b7 "
-     "buy at or under your cap."),
-    ("FORTIFY", "1 gold",
-     "a coin on a unit \u00b7 it defends at your tier's WALL, or a better card from hand."),
-    ("GOLD", "",
-     "free \u00b7 shift coins between reserve and walls."),
-    ("COLONY", "",
-     "one a turn \u00b7 spend a victory card on its B effect."),
-]
-
-TIERS = [
-    # tier, units, meld, moves, rank cap, WALL (= cap - 2)
-    # FOOD AND ASCENSION LEFT THE GAME IN v0.26, and the two columns went with
-    # them. Growing costs nothing now, so there is no price to read off a tier.
-    ("Tribe",        "2", "2", "1", "12", "10"),
-    ("Settlement",   "3", "3", "2", "14", "12"),
-    ("Kingdom",      "5", "4", "3", "16", "14"),
-    ("Empire",       "5", "5", "4", "18", "16"),
-    ("Civilization", "5", "6", "5", "20", "18"),
-]
-
-TERRAIN = [("Plains", GOLD, "holds 3"), ("Forest", FOREST, "2 · +1 defence"),
-           ("Ocean", OCEAN, "1 · sea road"), ("Mountain", STONE, "1 · +2 defence")]
+CARD_USES = card_uses(GOLD, FOREST, "#C0392B", STONE)
+TERRAIN = terrain(GOLD, FOREST, OCEAN, STONE)
 
 CSS = f"""
 @page {{ size: A4; margin: 9mm 8mm; }}
