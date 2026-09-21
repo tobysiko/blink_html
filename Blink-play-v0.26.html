@@ -1512,9 +1512,9 @@
     <div class="field">
       <label for="spoils" data-i18n="setup.spoils">A won duel pays</label>
       <select id="spoils">
-        <option value="none" selected data-i18n="setup.spoils.none"></option>
-        <option value="ground" data-i18n="setup.spoils.ground"></option>
+        <option value="ground" selected data-i18n="setup.spoils.ground"></option>
         <option value="gold" data-i18n="setup.spoils.gold"></option>
+        <option value="none" data-i18n="setup.spoils.none"></option>
       </select>
       <p class="hint" id="spoils-hint" data-i18n="setup.spoils.note"></p>
     </div>
@@ -1735,7 +1735,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"f64afd4f67","branch":"main","dirty":true,"built":"2026-09-21T16:25:38Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"89d5edbfa9","branch":"main","dirty":true,"built":"2026-09-21T18:22:21Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1845,8 +1845,8 @@ en: {
   "setup.economy.lean": "Lean \u2014 nobody eats and climbing pays nothing",
   "setup.economy.note": "(measured as very nearly a closed loop: ascension pays 26.6 gold a game and food takes 31.8 back, and a player reached a recycle short of it in 0.1% of them)",
   "setup.spoils": "A won duel pays",
-  "setup.spoils.none": "Nothing \u2014 the ground only (printed rule)",
-  "setup.spoils.ground": "1 gold \u2014 only when the fight takes the ground",
+  "setup.spoils.none": "Nothing \u2014 the ground only (the rule before v0.26)",
+  "setup.spoils.ground": "1 gold \u2014 only when the fight takes the ground (printed rule)",
   "setup.spoils.gold": "1 gold \u2014 for every duel won",
   "mast.eyebrow": "A meld-building civilization game \u00b7 2\u20134\u00a0players \u00b7 45\u201390\u00a0min",
   "mast.sub": "Climbing the ladder of civilization",
@@ -1867,7 +1867,7 @@ en: {
   "setup.aside.turn": "On your map turn \u2014 printed rule",
   "setup.aside.trick": "Right after the trick \u2014 clockwise from the winner, before the map opens",
   "setup.aside.note": "(the same cards reach the same piles either way; what changes is that everyone chooses blind, instead of the last player choosing after watching three turns)",
-  "setup.spoils.note": "(a bot forbidden to attack still outscores one that fights by 2 points; a coin for winning is the smallest rule measured that reverses it)",
+  "setup.spoils.note": "(without it, refusing to fight is worth about nine points of win rate at a four-player table \u2014 an attack costs you a card whether it works or not)",
   "setup.perks": "Victory row perks",
   "setup.perks.off": "Off",
   "setup.perks.on": "On — one perk per row slot, drawn from the seed",
@@ -2541,8 +2541,8 @@ de: {
   "setup.economy.lean": "Schlank \u2014 niemand isst, und der Aufstieg zahlt nichts",
   "setup.economy.note": "(gemessen ein fast geschlossener Kreis: die Aufstiegspr\u00e4mie zahlt 26,6 Gold je Partie, die Nahrung nimmt 31,8 zur\u00fcck \u2014 und nur in 0,1% der Handerneuerungen fehlte einem Spieler das Geld daf\u00fcr)",
   "setup.spoils": "Ein gewonnenes Duell zahlt",
-  "setup.spoils.none": "Nichts \u2014 nur das Land (gedruckte Regel)",
-  "setup.spoils.ground": "1 Gold \u2014 nur wenn der Kampf das Land einnimmt",
+  "setup.spoils.none": "Nichts \u2014 nur das Land (Regel vor v0.26)",
+  "setup.spoils.ground": "1 Gold \u2014 nur wenn der Kampf das Land einnimmt (gedruckte Regel)",
   "setup.spoils.gold": "1 Gold \u2014 f\u00fcr jedes gewonnene Duell",
   "mast.eyebrow": "Ein Kombinations-Aufbauspiel \u00b7 2\u20134\u00a0Spieler \u00b7 45\u201390\u00a0Min.",
   "mast.sub": "Die Leiter der Zivilisation hinauf",
@@ -2563,7 +2563,7 @@ de: {
   "setup.aside.turn": "In deinem Kartenzug \u2014 gedruckte Regel",
   "setup.aside.trick": "Direkt nach dem Stich \u2014 im Uhrzeigersinn ab dem Gewinner, bevor die Karte er\u00f6ffnet wird",
   "setup.aside.note": "(so oder so landen dieselben Karten auf denselben Stapeln; neu ist, dass alle blind w\u00e4hlen, statt dass der Letzte erst drei Z\u00fcge zusieht)",
-  "setup.spoils.note": "(ein Bot, der nicht angreifen darf, liegt trotzdem 2 Punkte vor einem, der k\u00e4mpft; eine M\u00fcnze f\u00fcrs Gewinnen ist die kleinste gemessene Regel, die das umkehrt)",
+  "setup.spoils.note": "(ohne sie lohnt es sich am Vierertisch, gar nicht zu k\u00e4mpfen \u2014 ein Angriff kostet dich eine Karte, ob er gelingt oder nicht)",
   "setup.perks": "Boni der Siegesreihe",
   "setup.perks.off": "Aus",
   "setup.perks.on": "An \u2014 ein Bonus je Platz, aus dem Startwert gezogen",
@@ -4845,26 +4845,47 @@ class Game {
     this.FOOD_ON   = opts.food === undefined ? leanDefault : opts.food !== false;
     this.ASCEND_ON = opts.ascension === undefined ? leanDefault : opts.ascension !== false;
     /* SPOILS - what winning a duel pays, beyond the ground itself.
+     * PRINTED AS OF v0.26: "ground".
      *
-     * Combat is the busiest thing in Blink and the least rewarding: about one
-     * duel per player turn, 17.6 tiles changing hands a game, and a bot
-     * forbidden to attack still scores 2.0 points MORE than one that fights.
+     * Combat is the busiest thing in Blink and, until this rule, the least
+     * rewarding: about one duel per player turn, 17.6 tiles changing hands a
+     * game, and the card you spend on an attack gone whether it worked or not.
      * DUEL_TAKE above is what makes combat frequent - switch it off and duels
-     * fall from 50.6 a game to 11.7 - but it is not what makes it pay: the gap
-     * is -2.1 without it and -2.0 with it. Volume without reward.
+     * fall from 50.6 a game to 11.7 - but it is not what makes it pay.
      *
-     *   none   - printed rule.
-     *   gold   - a won duel pays 1 gold. Measured: fighters go from winning
-     *            48.7% of head-to-heads to 65.7%, which is very probably an
-     *            OVERcorrection - two thirds is too dominant for a variant
-     *            meant to make fighting viable rather than compulsory.
-     *   ground - the narrowed version: 1 gold only when the duel actually
-     *            empties the tile and you settle it. Same idea, fewer payouts,
-     *            and it pays for the fight that changed the map rather than for
-     *            every scratch. This is the one to try first.
+     * WHY IT IS PRINTED. Measured as the win-rate cost of refusing to fight,
+     * seat 0 against the same seeds with and without the right to attack, so
+     * seat bias cancels. Negative means fighting pays:
+     *
+     *                        2p      3p      4p
+     *     spoils: none      -10       0      +9      <- peace pays at a full table
+     *     spoils: ground    -13     -14      -4      <- fighting pays everywhere
+     *
+     * The inversion at four players is not a tuning accident, it is the shape
+     * of the incentive: an attack is a PRIVATE COST buying a PUBLIC GOOD. You
+     * spend the card, the leader loses the unit, and the rest of the table
+     * gets that for free. At two players you capture all of it; at four you
+     * capture a third and the card was still yours. A coin for the fight that
+     * actually changed the map is what pays that card back.
+     *
+     * Things that do NOT fix it, all measured: aiming at the leader (makes it
+     * worse - it intensifies the same costly public good); removing killed
+     * units from the game rather than returning them to the reserve
+     * (`kills: "out"`, barely moves); paying for every duel won; letting the
+     * winner keep their card; flatter terrain defence.
+     *
+     *   ground - PRINTED: 1 gold, only when the duel empties the tile and you
+     *            settle it. It pays for the fight that changed the map rather
+     *            than for every scratch, and it is one clause on the end of
+     *            the line that already says the winner takes the ground.
+     *   gold   - 1 gold for every duel won. Measured at a head-to-head win
+     *            rate of 65.7% for fighters, which is an OVERcorrection: two
+     *            thirds is compulsory, not viable.
+     *   none   - the pre-v0.26 rule. Reproduces every measurement taken before
+     *            the spoils were printed.
      */
     this.SPOILS = ["none", "gold", "ground"].includes(opts.spoils)
-      ? opts.spoils : "none";
+      ? opts.spoils : "ground";
     /* WHEN THE SET-ASIDE IS RESOLVED.
      *
      *   "turn"  - printed: at the top of each player's own map turn.
@@ -8318,7 +8339,7 @@ function newSession(opts, rand) {
       attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
       food: o.food !== false,
       ascension: o.ascension !== false,
-      spoils: ["ground", "gold"].includes(o.spoils) ? o.spoils : "none",
+      spoils: ["none", "gold"].includes(o.spoils) ? o.spoils : "ground",
       asideTiming: o.asideTiming === "trick" ? "trick" : "turn",
       tileSupply: [8, 11, 15].includes(Number(o.tileSupply)) ? Number(o.tileSupply) : 15,
     },

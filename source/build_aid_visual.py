@@ -29,7 +29,9 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from aid_data import ROUND, COIN_USES, VROW_USES, FREE, card_uses, terrain  # noqa: E402
+from aid_data import (ROUND, COIN_USES, VROW_USES, FREE, card_uses, terrain,
+                      MELD, FLOW, FLOW_ASIDE, RECYCLE, OBJECTIVES,
+                      INCOME)                                       # noqa: E402
 from version import VTAG                                                     # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -57,53 +59,39 @@ def T(x, y, s, size=3.4, anchor="start", col=INK, weight="400", mono=False,
             f'text-anchor="{anchor}"{sp}{it}>{esc(s)}</text>')
 
 
-def text_w(s, size, weight="400", spacing=0.0):
-    """Rough advance width in mm.
+# THE REAL ADVANCE WIDTHS, read straight out of the faces this sheet is set
+# in. See gen_metrics.py for how the table is made and why it replaced a
+# guessed one: the guess was right on average and wrong per character - "W" is
+# 0.891 em and it said 0.72 - so a capital-heavy line overran its box while
+# the arithmetic said it fitted. Every text-outside-its-border bug on this
+# sheet, and there have been three rounds of them, came from that gap.
+_METRICS = json.loads((HERE / "font_metrics.json").read_text(encoding="utf8"))
 
-    There is no text engine here, so every wrapped line and every heading used
-    to be a GUESSED character count - and the first build of this sheet had
-    text running out of nine different boxes, headings sitting on top of their
-    own subtitles, and one sentence cut off mid-word.
 
-    A single average per weight was not enough either: the second build still
-    ran every SECTION HEADING into its own subtitle, because headings are bold
-    ALL-CAPS and capitals in this family are half again as wide as lowercase.
-    Per-character classes cost nothing and are right to within a percent or
-    two, which is all a layout needs.
+def text_w(s, size, weight="400", spacing=0.0, mono=False):
+    """Advance width in mm, from the font's own metrics.
+
+    `weight` 700 is measured against the 600 face on purpose: only 400, 500
+    and 600 exist as files, so 600 is what a renderer actually uses for 700.
     """
-    bold = 1.06 if weight in ("600", "700") else 1.0
+    face = "mono400" if mono else ("sans600" if weight in ("600", "700") else "sans400")
+    tbl = _METRICS[face]["w"]
+    dflt = _METRICS[face]["default"]
     total = 0.0
     for ch in s:
-        if ch == " ":
-            k = 0.27
-        elif ch.isupper():
-            k = 0.72
-        elif ch.isdigit():
-            k = 0.56
-        elif ch in ".,:;'\u2019!|":
-            k = 0.26
-        elif ch in "\u2014\u2013\u2192":
-            k = 0.62
-        elif ch in "ijlt":
-            k = 0.28
-        elif ch in "mw":
-            k = 0.82
-        else:
-            k = 0.53
-        total += size * k * bold + spacing
-    # A FEW PER CENT OF HEADROOM. Measured widths came out about 4% short
-    # against the real font, which is invisible on a heading and shows up as a
-    # word touching the border on every fourth wrapped line. Cheaper to add it
-    # here once than to pad twelve call sites.
-    return total * 1.07
+        total += size * tbl.get(ch, dflt) + spacing
+    # A HAIR OF HEADROOM, and no more. The widths above are exact; this covers
+    # hinting and the renderer's own rounding, which move a long line by well
+    # under a percent. It is NOT a fudge factor for a bad estimate any more.
+    return total * 1.01
 
 
-def split(s, w_mm, size, weight="400"):
+def split(s, w_mm, size, weight="400", mono=False):
     """The lines `s` breaks into inside `w_mm`."""
     lines, line = [], ""
     for word in s.split():
         t = (line + " " + word).strip()
-        if text_w(t, size, weight) > w_mm - 0.6 and line:
+        if text_w(t, size, weight, mono=mono) > w_mm - 0.6 and line:
             lines.append(line); line = word
         else:
             line = t
@@ -112,10 +100,10 @@ def split(s, w_mm, size, weight="400"):
 
 
 def wrap(x, y, s, w_mm, size=3.0, col=SOFT, lead=None, anchor="start",
-         weight="400"):
+         weight="400", mono=False):
     """Returns (svg, lines_used). Width is MILLIMETRES, not characters."""
     lead = lead or size * 1.30
-    lines = split(s, w_mm, size, weight)
+    lines = split(s, w_mm, size, weight, mono)
     out = "".join(T(x, y + i * lead, ln, size, anchor=anchor, col=col,
                     weight=weight) for i, ln in enumerate(lines))
     return out, len(lines)
@@ -164,6 +152,38 @@ def minicard(x, y, w=6.4, h=9.0, col=LINE, fill=PAPER, label=None):
         out += T(x + w / 2, y + h / 2 + 1.4, label, 3.6, anchor="middle",
                  col=col, weight="600")
     return out
+
+
+def tick(cx, cy, r=1.8, col="#37704A"):
+    """A DRAWN tick, not U+2713.
+
+    The latin subset of IBM Plex these documents embed has no U+2713 and no
+    U+2717, so a tick set as text depended on the renderer silently borrowing
+    some other font for that one character - and printed as an empty box
+    wherever it could not. Two paths cost nothing and always print.
+    """
+    return (f'<path d="M{cx - r:.2f} {cy - r * 0.15:.2f} '
+            f'L{cx - r * 0.25:.2f} {cy + r * 0.72:.2f} '
+            f'L{cx + r:.2f} {cy - r * 0.85:.2f}" fill="none" stroke="{col}" '
+            f'stroke-width="{r * 0.42:.2f}" stroke-linecap="round" '
+            f'stroke-linejoin="round"/>')
+
+
+def cross(cx, cy, r=1.6, col="#C0392B"):
+    """A DRAWN cross - see tick() for why it is not U+2717."""
+    return (f'<path d="M{cx - r:.2f} {cy - r:.2f} L{cx + r:.2f} {cy + r:.2f} '
+            f'M{cx + r:.2f} {cy - r:.2f} L{cx - r:.2f} {cy + r:.2f}" '
+            f'fill="none" stroke="{col}" stroke-width="{r * 0.44:.2f}" '
+            f'stroke-linecap="round"/>')
+
+
+def up_arrow(cx, cy, h=3.2, col="#256A8C"):
+    """A DRAWN up arrow - U+2191 is not in the subset either."""
+    w = h * 0.42
+    return (f'<path d="M{cx:.2f} {cy + h / 2:.2f} L{cx:.2f} {cy - h / 2:.2f} '
+            f'M{cx - w:.2f} {cy - h / 2 + w:.2f} L{cx:.2f} {cy - h / 2:.2f} '
+            f'L{cx + w:.2f} {cy - h / 2 + w:.2f}" fill="none" stroke="{col}" '
+            f'stroke-width="0.65" stroke-linecap="round" stroke-linejoin="round"/>')
 
 
 def arrow(x1, y, x2, col=FAINT):
@@ -221,7 +241,7 @@ def option_box(x, y, w, key, detail, accent, icon, keycol=None, right=None,
         # were drawn from opposite ends of the same 30 mm and overlapped into
         # "RESEARCH, then 2" - a price that read as part of the word.
         need = (text_w(key, key_size, "700", 0.2)
-                + text_w(right, 3.1, "700") + 3)
+                + text_w(right, 3.1, "700", mono=True) + 6)
         if need <= w - (tx - x) - 3:
             out += T(x + w - 3, y + 4.6, right, 3.1, anchor="end", col=GOLD,
                      weight="700", mono=True)
@@ -270,9 +290,35 @@ def sheet():
         if i < len(ROUND) - 1:
             b += arrow(x + bw + 0.4, top + bh / 2, x + bw + 2.6)
     y = top + bh + 3.8
-    b += T(M, y, "Your hand runs out mid-turn? Recycle at once — take your discard "
-                 "back and draw to ten — then carry on.", 3.0, col=SOFT, italic=True)
+    b += T(M, y, "Your hand runs out mid-turn? Recycle at once — the back of this "
+                 "sheet says what that means.", 3.0, col=SOFT, italic=True)
     y += 7.5
+
+    # ================================================== 1b. WHAT MAY I LAY?
+    # The single largest omission on the one-page sheet: Blink is a
+    # trick-taker and nothing on the aid said what a legal meld is. A player
+    # could read the whole sheet and still not know they may lay 2-3-3-4-4.
+    b += head(M, y, "WHAT MAY I LAY?", "one meld, face down, every round")
+    y += 4.8
+    mh = 19.0
+    b += panel(M, y, W - 2 * M, mh, accent=GOLD)
+    b += T(M + 4, y + 6.4, MELD["rule"], 4.4, weight="700", col=GOLD)
+    b += T(M + 4 + text_w(MELD["rule"], 4.4, "700") + 4, y + 6.4,
+           "· " + MELD["free"], 3.1, col=SOFT)
+    # the worked example, in the mono face, with a tick and a cross
+    ex = M + 4
+    b += tick(ex + 1.8, y + 12.2, 1.8, FOREST)
+    b += T(ex + 5, y + 13.4, MELD["ok"], 3.6, mono=True, weight="600")
+    # MEASURED IN THE MONO FACE, because that is what these are set in. Sans
+    # metrics are narrower, so "2-2-4-4" and "(no 3)" printed touching.
+    ex2 = ex + 5 + text_w(MELD["ok"], 3.6, "600", mono=True) + 9
+    b += cross(ex2 + 1.6, y + 12.2, 1.6, RED)
+    b += T(ex2 + 5, y + 13.4, MELD["bad"], 3.6, mono=True, weight="600", col=SOFT)
+    b += T(ex2 + 5 + text_w(MELD["bad"], 3.6, "600", mono=True) + 3, y + 13.4,
+           "(" + MELD["why"] + ")", 3.0, col=RED)
+    b += T(W - M - 4, y + 6.4, MELD["cap"], 3.1, anchor="end", col=SOFT)
+    b += T(W - M - 4, y + 13.4, MELD["win"], 3.1, anchor="end", col=INK, weight="600")
+    y += mh + 7.5
 
     # ================================================== 2. THE THREE DECISIONS
     b += head(M, y, "WHAT ARE MY OPTIONS?", "one of these, never all of them")
@@ -335,7 +381,7 @@ def sheet():
 
     def ic_research(cx, cy_):
         return (minicard(cx - 3.2, cy_ - 4.5, 6.4, 9.0, col=OCEAN)
-                + T(cx, cy_ + 1.6, "↑", 5.0, anchor="middle", col=OCEAN, weight="700"))
+                + up_arrow(cx, cy_, 3.4, OCEAN))
 
     def ic_fortify(cx, cy_):
         return hexgon(cx, cy_, 4.0, "#EFE3C4", GOLD) + coin(cx, cy_ - 0.2, 2.0)
@@ -376,7 +422,7 @@ def sheet():
             f'stroke="{LINE}" stroke-width="0.4"/>'
     body += T(x + 3, cy + 4.4, "THEN IT LEAVES THE ROW", 3.0, weight="700", col=RED)
     w, n = wrap(x + 3, cy + 8.2,
-                "− 1 point · your centre card may drop · a shallower perk "
+                "– 1 point · your centre card may drop · a shallower perk "
                 "menu next recycle. It goes to the BOTTOM of the shared pile: nothing "
                 "leaves the game.", iw, 2.7, SOFT)
     body += w
@@ -390,11 +436,224 @@ def sheet():
     return b, ctop + ch
 
 
+# THE FREE ACTIONS THIS SHEET DOES NOT REPEAT.
+#
+# RESEARCH and FORTIFY are both PRICED IN COINS and are already spelled out, in
+# full, in the "A COIN" column. COLONY is effect B and is already in the
+# victory-row column. GOLD (shifting coins between reserve and walls) is
+# already the closing note of the coin column.
+#
+# All four were printed twice on the one-page sheet, word for word, about 60mm
+# apart - a third of the lower half was a second copy of the upper half. A
+# player aid that says a thing twice is not being thorough, it is making the
+# reader check whether the two copies agree.
+#
+# What is left here is what genuinely has no other home: the two ways a unit
+# moves without a card.
+FREE_ONLY = ("MOVE", "WATER")
+
+
+def free_actions():
+    return [f for f in FREE if f[0] in FREE_ONLY]
+
+
+def _page(body, y, label, note):
+    """Close a page: rule, footer, guard, and the wrapped SVG."""
+    body += f'<path d="M{M} {y} L{W - M} {y}" stroke="{LINE}" stroke-width="0.4"/>'
+    body += T(M, y + 4.4, "Blink · deep-diversions.com/blink", 2.8, col=FAINT)
+    body += T(W - M, y + 4.4, note, 2.8, anchor="end", col=FAINT)
+    bottom = y + 6
+    if bottom > H - M:
+        raise SystemExit(f"!! {label} runs past the page: "
+                         f"{bottom:.1f}mm > {H - M:.1f}mm")
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" '
+            f'viewBox="0 0 {W} {H}">'
+            f'<rect width="{W}" height="{H}" fill="{PAPER}"/>{body}</svg>'), bottom
+
+
+def back():
+    """SIDE TWO: how the cards move, and what the map is worth.
+
+    Side one answers "what do I do with this card, right now". This side
+    answers the two questions that outlast a turn: where does a card GO, and
+    what am I building towards. They were on neither sheet.
+    """
+    b = ""
+    y = M + 6
+    b += T(M, y, "BLINK", 8.5, weight="700", spacing="0.4")
+    b += T(M + text_w("BLINK", 8.5, "700", 0.4) + 5, y,
+           "the card loop · the recycle · what the map scores", 4.0, col=SOFT)
+    b += T(W - M, y, f"rules {VTAG}", 3.4, anchor="end", col=FAINT, mono=True)
+    y += 3.0
+    b += f'<path d="M{M} {y} L{W - M} {y}" stroke="{INK}" stroke-width="0.7"/>'
+    y += 8.5
+
+    # ============================================= 1. WHERE YOUR CARDS GO
+    # Measured: 10.6 cards a game reach the shared pile and 10.2 are drawn back
+    # out by OTHER players - 96% recirculated. It is the only system in Blink
+    # with no physical tell on the table, and a player who does not know it
+    # hoards cards they would have got back anyway.
+    b += head(M, y, "WHERE YOUR CARDS GO", "almost nothing leaves the game")
+    y += 5.0
+    n = len(FLOW)
+    fw = (W - 2 * M - (n - 1) * 5.5) / n
+    fh = 0
+    for key, mid, sub in FLOW:
+        fh = max(fh, 10.5 + len(split(mid, fw - 6, 2.9)) * 3.8
+                 + 1.4 + len(split(sub, fw - 6, 2.6)) * 3.3 + 2.6)
+    for i, (key, mid, sub) in enumerate(FLOW):
+        x = M + i * (fw + 5.5)
+        b += panel(x, y, fw, fh, accent=GOLD if i in (0, n - 1) else None)
+        b += T(x + 3, y + 6.0, key, 3.4, weight="700", spacing="0.2")
+        w1, n1 = wrap(x + 3, y + 11.0, mid, fw - 6, 2.9, INK)
+        b += w1
+        b += wrap(x + 3, y + 11.0 + n1 * 3.8 + 1.4, sub, fw - 6, 2.6, FAINT)[0]
+        if i < n - 1:
+            b += arrow(x + fw + 0.6, y + fh / 2, x + fw + 4.9, col=GOLD)
+    # the loop closes: an arrow from the last box back under the row to the first
+    ly = y + fh + 3.2
+    b += (f'<path d="M{M + (n - 1) * (fw + 5.5) + fw / 2} {y + fh} '
+          f'L{M + (n - 1) * (fw + 5.5) + fw / 2} {ly} L{M + fw / 2} {ly} '
+          f'L{M + fw / 2} {y + fh}" fill="none" stroke="{GOLD}" '
+          f'stroke-width="0.5" stroke-dasharray="1.6 1.4"/>')
+    y = ly + 4.6
+    # A FIXED SECOND COLUMN, not label-width + a gap. text_w() is an estimate
+    # and it ran short here, so the label and its answer overprinted each
+    # other on all three lines. A column cannot collide.
+    col2 = M + 62
+    for label, where in FLOW_ASIDE:
+        b += T(M + 3, y, label, 3.0, weight="600")
+        b += T(col2, y, where, 3.0, col=SOFT)
+        y += 4.4
+    y += 4.0
+
+    # ============================================= 2. THE RECYCLE
+    b += head(M, y, "THE RECYCLE", "the moment your hand runs out")
+    y += 5.0
+    rw = (W - 2 * M - 3 * 4) / 4
+    rh = 0
+    for key, tag, what in RECYCLE:
+        rh = max(rh, 16.0 + len(split(what, rw - 7, 2.9)) * 3.8 + 2.4)
+    for i, (key, tag, what) in enumerate(RECYCLE):
+        x = M + i * (rw + 4)
+        module = tag == "modules only"
+        b += panel(x, y, rw, rh, accent=None if module else GOLD,
+                   fill=PANEL if module else PAPER)
+        b += T(x + 3, y + 6.0, key, 3.4, weight="700", spacing="0.2",
+               col=SOFT if module else INK)
+        # ON ITS OWN LINE. Right-aligned beside the key, "modules only" ran
+        # straight through "2 · ARM A PERK" - the longest key on the row.
+        b += T(x + 3, y + 10.2, tag, 2.7, col=FAINT if module else GOLD, mono=True)
+        b += wrap(x + 3, y + 15.4, what, rw - 7, 2.9, SOFT if module else INK)[0]
+        if i < len(RECYCLE) - 1:
+            b += arrow(x + rw + 0.4, y + rh / 2, x + rw + 3.6)
+    y += rh + 3.4
+    b += T(M, y, "Greyed steps are MODULES ONLY — a base game recycles by refilling, "
+                 "and nothing else.", 3.0, col=SOFT, italic=True)
+    y += 8.0
+
+    # ============================================= 3. THE MAP, AND WHAT IT PAYS
+    b += head(M, y, "MAP OBJECTIVES", "the only points about the SHAPE of what you hold")
+    y += 5.0
+    ow = (W - 2 * M - 5) * 0.56
+    iw2 = (W - 2 * M - 5) - ow
+    otop = y
+
+    ob = ""
+    cy = y + 6.2
+    ob += T(M + 4, cy, OBJECTIVES["show"], 3.8, weight="700", col=GOLD)
+    cy += 5.2
+    iwrap = ow - 13          # the panel is 4mm of padding a side; leave headroom
+    for k in ("what", "bend", "deal"):
+        w1, n1 = wrap(M + 4, cy, OBJECTIVES[k], iwrap, 2.9, INK if k == "what" else SOFT)
+        ob += w1; cy += n1 * 3.8 + 1.8
+    cy += 1.0
+    # WRAPPED, not a single line: "2 points for every arrangement you hold at
+    # the end" is longer than the panel and ran off its right edge.
+    w1, n1 = wrap(M + 4, cy, OBJECTIVES["score"], iwrap, 3.4, INK, weight="700")
+    ob += w1; cy += n1 * 4.4 + 1.2
+    w1, n1 = wrap(M + 4, cy, OBJECTIVES["twice"], iwrap, 2.9, SOFT)
+    ob += w1; cy += n1 * 3.8 + 1.4
+    w1, n1 = wrap(M + 4, cy, OBJECTIVES["cost"], iwrap, 2.9, RED)
+    ob += w1; cy += n1 * 3.8 + 2.4
+    oh = cy - otop
+
+    ib = ""
+    ix = M + ow + 5
+    cy2 = otop + 6.2
+    ib += T(ix + 4, cy2, "INCOME", 3.8, weight="700", col=SOFT)
+    ib += T(ix + iw2 - 4, cy2, "modules only", 2.7, anchor="end", col=FAINT, mono=True)
+    cy2 += 5.0
+    for key, what in INCOME:
+        ib += T(ix + 4, cy2, key, 3.0, weight="600", col=SOFT)
+        cy2 += 3.9
+        w1, n1 = wrap(ix + 4, cy2, what, iw2 - 11, 2.8, FAINT)
+        ib += w1; cy2 += n1 * 3.6 + 2.0
+    ih = cy2 - otop
+    h = max(oh, ih) + 1.5
+    b += panel(M, otop, ow, h, accent=GOLD) + ob
+    b += panel(ix, otop, iw2, h, fill=PANEL) + ib
+    y = otop + h + 8.0
+
+    # ============================================= 5. free, and only what is new
+    b += head(M, y, "FREE", "no card · any order · on your own turn")
+    y += 4.5
+    acts = free_actions()
+    fw2 = (W - 2 * M - (len(acts)) * 3) / (len(acts) + 1)
+    rowh = 0
+    for key, when, detail in acts:
+        rowh = max(rowh, 7.4 + len(split(detail, fw2 - 6, 2.6)) * 3.3 + 1.4)
+    rowh = max(rowh, 7.4 + 3 * 3.3 + 1.4)
+    for i, (key, when, detail) in enumerate(acts):
+        fx = M + i * (fw2 + 3)
+        b += panel(fx, y, fw2, rowh)
+        b += T(fx + 3, y + 4.9, key, 3.4, weight="700", spacing="0.2")
+        if when:
+            b += T(fx + fw2 - 3, y + 4.9, when, 2.9, anchor="end", col=GOLD, mono=True)
+        b += wrap(fx + 3, y + 8.8, detail, fw2 - 6, 2.6, SOFT)[0]
+    # and a pointer rather than a second copy
+    fx = M + len(acts) * (fw2 + 3)
+    b += panel(fx, y, fw2, rowh, fill=PANEL)
+    b += T(fx + 3, y + 4.9, "RESEARCH · FORTIFY", 3.2, weight="700", col=SOFT)
+    b += wrap(fx + 3, y + 8.8,
+              "both cost coins — priced in full on the front, under A COIN. "
+              "COLONY is effect B, in the victory-row column.",
+              fw2 - 8, 2.6, FAINT)[0]
+    y += rowh + 8.0
+
+    # ============================================= 6. the terrain, at last
+    # CUT FROM THE ONE-PAGE SHEET FOR ROOM, and the footer used to send the
+    # reader to the folded card for it. It is the table you actually look up
+    # mid-turn - how many units fit, and what the ground is worth to a
+    # defender - and side two has the space the single sheet never had.
+    b += head(M, y, "THE GROUND", "what each terrain holds, and what it is worth to defend")
+    y += 4.8
+    ter = terrain(GOLD, FOREST, OCEAN, STONE)
+    tww = (W - 2 * M - 3 * 4) / 4
+    th = 13.0
+    for i, (name, colr, note) in enumerate(ter):
+        tx = M + i * (tww + 4)
+        b += panel(tx, y, tww, th)
+        b += hexgon(tx + 6.5, y + 6.6, 3.4, colr)
+        b += T(tx + 12.5, y + 6.0, name, 3.4, weight="700")
+        b += T(tx + 12.5, y + 10.4, note, 2.9, col=SOFT)
+    y += th + 3.0
+
+    return _page(b, y, "side two",
+                 "side one carries the round, the meld rule and your options")
+
+
+
+
+
 def build():
     b, y = sheet()
-    y += 7
+    y += 7.0
 
-    # ================================================== 3. A, B and C, priced
+    # THE PRICES BELONG BESIDE THE COLUMN THEY PRICE. A, B and C are the three
+    # boxes of the victory-row column directly above this table; on the back
+    # they were a page-turn away from the only thing that reads them, and the
+    # two sides came out 226mm and 273mm.
     b += head(M, y, "WHAT A, B AND C ARE WORTH", "by the rank of the card you spend")
     y += 4.5
     rows = effect_bands()
@@ -402,12 +661,12 @@ def build():
     tw = W - 2 * M
     colx = [M + 3, M + 26, M + 66, M + 140]
     b += f'<rect x="{M}" y="{y}" width="{tw}" height="6" rx="1.6" fill="{PANEL}"/>'
-    for cxx, h in zip(colx, ["RANK", "A · the trick", "B · the map", "C · gold"]):
-        b += T(cxx, y + 4.2, h, 3.2, weight="700", spacing="0.2")
+    for cxx, hd in zip(colx, ["RANK", "A · the trick", "B · the map", "C · gold"]):
+        b += T(cxx, y + 4.2, hd, 3.2, weight="700", spacing="0.2")
     y += 6
     for i, (band, r) in enumerate(zip(bands, rows)):
         if i % 2:
-            b += (f'<rect x="{M}" y="{y}" width="{tw}" height="7" fill="{PANEL}" '
+            b += (f'<rect x="{M}" y="{y}" width="{tw}" height="6" fill="{PANEL}" '
                   f'fill-opacity="0.5"/>')
         b += T(colx[0], y + 4.2, band, 3.2, mono=True, weight="600")
         b += T(colx[1], y + 4.2, r["a"], 3.2)
@@ -416,45 +675,19 @@ def build():
         y += 6
     b += T(M, y + 4.2, "A is declared AFTER every meld is face up, leader first. "
                        "One effect per player per round.", 3.0, col=SOFT, italic=True)
-    y += 9.5
+    y += 9.0
 
-    # ================================================== 4. free actions
-    b += head(M, y, "FREE", "no card · any order · on your own turn")
-    y += 4.5
-    fw = (W - 2 * M - 2 * 3) / 3
-    rowh = 0
-    for key, when, detail in FREE:
-        rowh = max(rowh, 7.4 + len(split(detail, fw - 6, 2.6)) * 3.3 + 1.4)
-    for i, (key, when, detail) in enumerate(FREE):
-        fx = M + (i % 3) * (fw + 3)
-        fy = y + (i // 3) * (rowh + 2.5)
-        b += panel(fx, fy, fw, rowh)
-        b += T(fx + 3, fy + 4.9, key, 3.4, weight="700", spacing="0.2")
-        if when:
-            b += T(fx + fw - 3, fy + 4.9, when, 2.9, anchor="end", col=GOLD, mono=True)
-        b += wrap(fx + 3, fy + 8.8, detail, fw - 6, 2.6, SOFT)[0]
-    y += 2 * (rowh + 2.5) + 2
-
-    # THE TERRAIN STRIP IS NOT HERE ON PURPOSE. It is reference, not a
-    # decision, it is already on the folded card, and with every box on this
-    # sheet sized from its own text there was no longer room for both. The
-    # footer says where it lives.
-    b += f'<path d="M{M} {y} L{W - M} {y}" stroke="{LINE}" stroke-width="0.4"/>'
-    b += T(M, y + 4.4, "Blink · deep-diversions.com/blink", 2.8, col=FAINT)
-    b += T(W - M, y + 4.4,
-           "the folded card carries the tier ladder and the meld rule",
-           2.8, anchor="end", col=FAINT)
-
-    bottom = y + 6
-    if bottom > H - M:
-        raise SystemExit(f"!! the sheet runs past the page: {bottom:.1f}mm > {H - M:.1f}mm")
-    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}mm" height="{H}mm" '
-           f'viewBox="0 0 {W} {H}">'
-           f'<rect width="{W}" height="{H}" fill="{PAPER}"/>{b}</svg>')
-    (HERE / "Blink-aid-visual.svg").write_text(svg, encoding="utf8")
-    print(f"  Blink-aid-visual.svg  (A4 portrait, content ends at "
-          f"{bottom:.0f}mm of {H:.0f})")
-    return svg
+    b += T(M, y, "TURN OVER for where your cards go, the recycle, and what the "
+                 "map scores.", 3.2, col=SOFT, italic=True)
+    y += 3.0
+    front, fb = _page(b, y, "side one",
+                      "side two carries the card loop, the recycle and the objectives")
+    (HERE / "Blink-aid-visual.svg").write_text(front, encoding="utf8")
+    rear, rb = back()
+    (HERE / "Blink-aid-visual-2.svg").write_text(rear, encoding="utf8")
+    print(f"  Blink-aid-visual.svg    (A4 side 1, ends at {fb:.0f}mm of {H:.0f})")
+    print(f"  Blink-aid-visual-2.svg  (A4 side 2, ends at {rb:.0f}mm of {H:.0f})")
+    return front
 
 
 if __name__ == "__main__":

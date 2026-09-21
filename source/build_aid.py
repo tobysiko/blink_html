@@ -163,16 +163,16 @@ def back():
   <p class="note first">Read your top tier that still holds units, and nothing is
     cumulative. Growing costs you nothing.</p>
   <div class="ter">{ter}</div>
-  <p class="note"><b>Round.</b> Melds face down → turn over together → Declare A, leader
-    first → highest total wins → winner's die
-    = meld size, and leads; others 2/3/4 → spend in that order. Matched the winner and
+  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
+    first · highest total wins · winner's die
+    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
     lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
     back, draw to ten, carry on. <i>Modules only:</i> collect income, and arm ONE perk
     (from what your row reaches now; it runs till the next recycle even if you spend the
     card).</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
-    2-3-3-4-4 ✓ · 2-2-4-4 ✗ (no 3).</p>
+    2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
   <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
     wins; level goes to the card matching the ground, else the defender. Clear the last
     unit and the tile is yours.</p>
@@ -191,7 +191,15 @@ def main():
 <style>{CSS}</style></head>
 <body><div class="sheet">{sheet}</div></body></html>"""
     name = "Blink-player-aid-bw.html" if BW else "Blink-player-aid.html"
-    pathlib.Path(name).write_text(html, encoding="utf-8")
+    # BESIDE THIS SCRIPT, not in whatever directory it was run from. Every
+    # other builder here resolves its output from __file__; this one wrote to
+    # the cwd, so running it from the repo root and running it from source/
+    # produced two files of the same name in two places, and check_rules.py
+    # reads the one in source/. A rebuild from the root therefore looked
+    # successful, printed the right filename, and left the checked copy a day
+    # stale - which is this project's signature failure with a third instance.
+    out = pathlib.Path(__file__).resolve().parent / name
+    out.write_text(html, encoding="utf-8")
     print(f"  {name}  ({PER_PAGE} aids, {W:.0f}x{H:.0f}mm folded)")
 
 

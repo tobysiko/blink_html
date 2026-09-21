@@ -27,7 +27,8 @@ const ok = (c, what) => { if (!c) fail.push(what); };
   ok(g.ECONOMY === 'lean',    'the printed economy is no longer lean');
   ok(g.FOOD_ON === false,     'food is on by default, and v0.26 removed it');
   ok(g.ASCEND_ON === false,   'the ascension reward is on by default, and v0.26 removed it');
-  ok(g.SPOILS === 'none',     'spoils were not off by default');
+  ok(g.SPOILS === 'ground',   'the printed spoils are no longer "ground" — v0.26 '
+                            + 'prints a coin for the duel that TAKES a tile');
   /* NOTHING IS OWED, at any tier. */
   const p = g.P[0];
   const row = g.BANDS.map((_, i) => { p.reserve = p.reserve.map((_, j) => j < i ? 0 : 1);
@@ -50,7 +51,12 @@ const ok = (c, what) => { if (!c) fail.push(what); };
                                         return q.food(); });
   ok(frow.join() === '0,1,2,3,4',
      'economy:"full" no longer owes 0/1/2/3/4: ' + frow.join('/'));
-  ok(!(full.stats.gold_in_spoils || 0),     'a default game paid spoils');
+  /* The spoils are independent of the economy switch: "full" restores food and
+   * ascension, not the pre-v0.26 combat rule. Use spoils:"none" for that. */
+  ok((full.stats.gold_in_spoils || 0) > 0,
+     'economy:"full" stopped paying spoils — the two switches are not related');
+  const noSpoils = E.playOut(4, 11, { spoils: 'none' });
+  ok(!(noSpoils.stats.gold_in_spoils || 0), 'spoils:"none" still paid spoils');
 }
 
 // ------------------------------------------------------------ food switched off
@@ -108,9 +114,20 @@ function duel(opts, defenders) {
 }
 
 {
+  /* THE PRINTED RULE, both halves of it. A duel that empties a tile you then
+   * settle pays a coin; the same win over a stack that still has defenders on
+   * it pays nothing. The second half is the rule - paying for every duel won
+   * is a different and measurably worse game (fighters at 65.7% head to head)
+   * and it would pass any test that only checked the first half. */
   const d = duel({}, 1);
-  ok(d.took,        'the attacker won and did not take the emptied ground');
-  ok(d.gained === 0, 'the printed rule paid ' + d.gained + ' gold for a won duel');
+  ok(d.took,         'the attacker won and did not take the emptied ground');
+  ok(d.gained === 1, 'the printed rule paid ' + d.gained + ' gold for taking a tile');
+}
+{
+  const d = duel({}, 2);
+  ok(!d.took,        'a tile with 2 defenders changed hands on one won duel');
+  ok(d.gained === 0,
+     'the printed rule paid ' + d.gained + ' for a duel that took no ground');
 }
 {
   const d = duel({ spoils: 'gold' }, 1);

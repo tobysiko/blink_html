@@ -1677,26 +1677,47 @@ class Game {
     this.FOOD_ON   = opts.food === undefined ? leanDefault : opts.food !== false;
     this.ASCEND_ON = opts.ascension === undefined ? leanDefault : opts.ascension !== false;
     /* SPOILS - what winning a duel pays, beyond the ground itself.
+     * PRINTED AS OF v0.26: "ground".
      *
-     * Combat is the busiest thing in Blink and the least rewarding: about one
-     * duel per player turn, 17.6 tiles changing hands a game, and a bot
-     * forbidden to attack still scores 2.0 points MORE than one that fights.
+     * Combat is the busiest thing in Blink and, until this rule, the least
+     * rewarding: about one duel per player turn, 17.6 tiles changing hands a
+     * game, and the card you spend on an attack gone whether it worked or not.
      * DUEL_TAKE above is what makes combat frequent - switch it off and duels
-     * fall from 50.6 a game to 11.7 - but it is not what makes it pay: the gap
-     * is -2.1 without it and -2.0 with it. Volume without reward.
+     * fall from 50.6 a game to 11.7 - but it is not what makes it pay.
      *
-     *   none   - printed rule.
-     *   gold   - a won duel pays 1 gold. Measured: fighters go from winning
-     *            48.7% of head-to-heads to 65.7%, which is very probably an
-     *            OVERcorrection - two thirds is too dominant for a variant
-     *            meant to make fighting viable rather than compulsory.
-     *   ground - the narrowed version: 1 gold only when the duel actually
-     *            empties the tile and you settle it. Same idea, fewer payouts,
-     *            and it pays for the fight that changed the map rather than for
-     *            every scratch. This is the one to try first.
+     * WHY IT IS PRINTED. Measured as the win-rate cost of refusing to fight,
+     * seat 0 against the same seeds with and without the right to attack, so
+     * seat bias cancels. Negative means fighting pays:
+     *
+     *                        2p      3p      4p
+     *     spoils: none      -10       0      +9      <- peace pays at a full table
+     *     spoils: ground    -13     -14      -4      <- fighting pays everywhere
+     *
+     * The inversion at four players is not a tuning accident, it is the shape
+     * of the incentive: an attack is a PRIVATE COST buying a PUBLIC GOOD. You
+     * spend the card, the leader loses the unit, and the rest of the table
+     * gets that for free. At two players you capture all of it; at four you
+     * capture a third and the card was still yours. A coin for the fight that
+     * actually changed the map is what pays that card back.
+     *
+     * Things that do NOT fix it, all measured: aiming at the leader (makes it
+     * worse - it intensifies the same costly public good); removing killed
+     * units from the game rather than returning them to the reserve
+     * (`kills: "out"`, barely moves); paying for every duel won; letting the
+     * winner keep their card; flatter terrain defence.
+     *
+     *   ground - PRINTED: 1 gold, only when the duel empties the tile and you
+     *            settle it. It pays for the fight that changed the map rather
+     *            than for every scratch, and it is one clause on the end of
+     *            the line that already says the winner takes the ground.
+     *   gold   - 1 gold for every duel won. Measured at a head-to-head win
+     *            rate of 65.7% for fighters, which is an OVERcorrection: two
+     *            thirds is compulsory, not viable.
+     *   none   - the pre-v0.26 rule. Reproduces every measurement taken before
+     *            the spoils were printed.
      */
     this.SPOILS = ["none", "gold", "ground"].includes(opts.spoils)
-      ? opts.spoils : "none";
+      ? opts.spoils : "ground";
     /* WHEN THE SET-ASIDE IS RESOLVED.
      *
      *   "turn"  - printed: at the top of each player's own map turn.

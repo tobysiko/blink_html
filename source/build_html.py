@@ -769,8 +769,10 @@ HTML = f"""<!doctype html>
     &mdash; which can cost them a tier.
     If the losing unit was the <strong>last</strong> one on the tile, <strong>the ground
     changes hands</strong>: place a unit from your board on it at once, from
-    your top occupied tier as usual. No unit in reserve, or defenders still
-    standing, and the tile is simply left empty.
+    your top occupied tier as usual, and <strong>take 1 gold</strong> from the
+    supply — the spoils. No unit in reserve, or defenders still standing,
+    and the tile is simply left empty (and there are no spoils: the coin is for
+    the fight that actually takes the ground, not for every scratch).
     <br><b>Defender wins</b> — nothing happens; the attack is spent for
     nothing.</li>
   </ol>
@@ -788,6 +790,16 @@ HTML = f"""<!doctype html>
   ground rather than people. The attacker spends nothing beyond the card already on the
   tile: an attack costs exactly what settling costs, and buys a fight instead of a
   certainty.</p>
+
+  <div class="note">
+    <span class="tag">Why a won tile pays a coin</span>
+    <p>Because the card is gone either way. Settle with a card and you have a unit;
+    attack with the same card and you may have nothing at all. Worse, at a full table
+    the good you do by knocking the leader back is shared by everyone sitting there,
+    while the card was only yours — so the patient player who never throws a punch
+    quietly wins. The coin is what pays that card back, and it is deliberately narrow:
+    it arrives only on the duel that empties a tile and puts your unit on it.</p>
+  </div>
 
   <table>
     <thead><tr><th>Attacking into</th><th>Defence bonus</th><th>What it means</th></tr></thead>
@@ -821,7 +833,7 @@ HTML = f"""<!doctype html>
   of them — a whole meld can be cashed. This is not a fallback for cards that found no
   terrain: gold is tight, it buys fortresses and research (§07), and winning play
   turns cards into coins constantly. Every card asks the same question — people, or
-  gold?</p>
+  gold? A card sent to war asks it twice: it can come back as both.</p>
 </section>
 
 <section>
@@ -1440,7 +1452,14 @@ separately</footer></div>
 # The path is still relative, so `python3 build_html.py` from source/ behaves
 # exactly as it always has and build_pdfs.sh is unaffected.
 if __name__ == "__main__":
-    out = pathlib.Path("./" + RULES_HTML)
+    # BESIDE THIS SCRIPT. It used to be "./" + RULES_HTML, which is relative to
+    # the directory the builder was RUN from, so `python3 source/build_html.py`
+    # from the repo root wrote a second rulebook at the root and left the one
+    # in source/ - the copy check_rules.py reads - untouched. The rebuild
+    # printed a filename and a byte count and looked entirely successful.
+    # Resolving from __file__ gives the identical path when run from source/,
+    # so build_pdfs.sh is unaffected; it just no longer depends on the cwd.
+    out = pathlib.Path(__file__).resolve().parent / RULES_HTML
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(HTML, encoding="utf-8")
     print("wrote", out, len(HTML), "bytes")

@@ -21,7 +21,7 @@ def card_uses(GOLD, FOREST, RED, STONE):
     return [
         ("SETTLE",  GOLD,   "a unit from your top tier"),
         ("EXPLORE", FOREST, "a new tile · must touch TWO · rank 10 or under pays 1 gold"),
-        ("ATTACK",  RED,    "a duel · your rank vs their card + the ground"),
+        ("ATTACK",  RED,    "a duel · your rank vs card + ground · take it: +1 gold"),
         ("CASH",    STONE,  "1 gold"),
     ]
 
@@ -73,7 +73,12 @@ ROUND = [
 
 # WHAT A COIN CAN DO. (key, price, what)
 COIN_USES = [
-    ("RESEARCH", "1 → 2", "take a card at or under your tier's cap into your discard"),
+    # "1 then 2", not "1 → 2": U+2192 is NOT in the IBM Plex latin subset
+    # the PDFs embed, so it depended on the renderer quietly substituting
+    # some other font for that one character - and printed as an empty box
+    # wherever it could not. Nothing on either aid may use a glyph the
+    # face lacks; check_rules.py refuses one now.
+    ("RESEARCH", "1 then 2", "take a card at or under your tier's cap into your discard"),
     ("FORTIFY",  "1",         "stand it on a unit · it defends at your tier's WALL"),
     ("KEEP",     "—",    "gold breaks a tie at the end of the game"),
 ]
@@ -84,4 +89,77 @@ VROW_USES = [
     ("A", "in the DECLARE step", "add its rank to your meld's total this trick"),
     ("B", "in your map phase", "found a colony — new tiles and units from the supply"),
     ("C", "at any moment", "take 2–5 gold, by its rank band"),
+]
+
+# ---------------------------------------------------------------- new in v0.26
+# The A4 sheet grew a second side for these. The folded card carries the meld
+# rule and the recycle already, in one line each; these are the same facts at
+# the length a sheet can afford.
+
+# WHAT YOU MAY LAY. The game is a trick-taker and the aid did not say this
+# anywhere - the single largest omission on the sheet.
+MELD = {
+    "rule": "ANY UNBROKEN RUN of ranks",
+    "free": "duplicates free \u00b7 suits irrelevant",
+    "ok":   "2-3-3-4-4",
+    "bad":  "2-2-4-4",
+    "why":  "no 3",
+    "cap":  "up to your tier's MELD limit",
+    # kept short deliberately: it shares a line with the rule itself
+
+    "win":  "highest TOTAL takes the trick \u2014 not the longest meld",
+}
+
+# WHERE A CARD GOES. The one system with no physical tell on the table: cards
+# leave your hand, and almost all of them come back. A player who does not know
+# this hoards.
+FLOW = [
+    ("YOUR HAND",   "ten cards",        "drawn back up every recycle"),
+    ("YOUR MELD",   "face down, then up", "what you lay for the trick"),
+    ("THE MAP",     "settle \u00b7 explore \u00b7 attack", "or cash it for 1 gold"),
+    ("YOUR DISCARD", "face up beside you", "everything you spent this cycle"),
+    # "BACK TO HAND" was 2mm wider than the box it titles - the boxes are
+    # (page - margins - gaps) / 5 and nothing was going to make it fit.
+    ("RECYCLE",     "your discard returns", "the loop closes \u2014 nothing is lost"),
+]
+
+# What does NOT come back to you, and where it goes instead.
+FLOW_ASIDE = [
+    ("Cards spent on an effect", "go to the MARKET, for anyone to research"),
+    ("A victory card you use",   "leaves the row \u2014 to the BOTTOM of the shared pile"),
+    ("Matched the winner, lost", "one card set aside, +1 gold"),
+]
+
+# THE RECYCLE, in order. Two of the three steps are modules; the sheet says so,
+# because a table playing the base game must not go looking for them.
+RECYCLE = [
+    ("WHEN", "your hand runs out", "at once, mid-turn \u2014 finish your turn after"),
+    ("1 \u00b7 INCOME", "modules only", "collect what your board has earned"),
+    ("2 \u00b7 ARM A PERK", "modules only",
+     "one, from what your row reaches NOW \u00b7 it runs till the next recycle"),
+    ("3 \u00b7 REFILL", "always", "take your discard back and draw to ten"),
+]
+
+# MAP OBJECTIVES - base game as of v0.26.
+OBJECTIVES = {
+    "what":  "three tiles you occupy: a MIDDLE terrain with one named terrain "
+             "on either side of it",
+    "bend":  "the two ends need not touch each other \u2014 a bend counts exactly "
+             "as a straight line",
+    "deal":  "two each, dealt AFTER the starting map is laid",
+    "show":  "SHOW ONE, KEEP ONE \u00b7 both score",
+    "score": "2 points for every arrangement you hold at the end",
+    "twice": "build it twice and it pays twice: each MIDDLE tile pays once, and "
+             "an end may serve two middles",
+    "cost":  "the card you show tells the table which single tile would break it",
+}
+
+# INCOME - a module, and the sheet marks it as one.
+INCOME = [
+    ("CROSSROADS", "one tile of yours touching all three other terrains pays "
+                   "1 gold per unit standing on it"),
+    ("YOUR OPEN OBJECTIVE", "pays 1 gold for each arrangement you hold \u00b7 the "
+                            "card you kept hidden pays nothing"),
+    ("BOTH STILL SCORE", "income is paid at the recycle; the points are counted "
+                         "at the end either way"),
 ]

@@ -158,16 +158,23 @@ topdf "Blink-objectives-bw.html"         "Blink-objectives-bw.pdf"
 # beside the sources meant a folder that forbids deletes (a synced or mounted
 # one) failed the whole build at the very last step, after every PDF but the
 # boards had already been made.
+# board <in.svg> [more.svg ...] <out.pdf>  - every SVG becomes one page
 board() {
   tmp="$(mktemp "${TMPDIR:-/tmp}/blink-board-XXXXXX.html")"
-  python3 wrap_svg.py "$1" "$tmp"
-  topdf "$tmp" "$2"
+  local out="${@: -1}"
+  local ins=("${@:1:$#-1}")
+  python3 wrap_svg.py "${ins[@]}" "$tmp"
+  topdf "$tmp" "$out"
   rm -f "$tmp" || true
 }
 board board_a4.svg        Blink-player-board-A4.pdf
 board board_a4-bw.svg     Blink-player-board-A4-bw.pdf
 board board_blank.svg     Blink-player-board-blank.pdf
-board Blink-aid-visual.svg Blink-aid-visual.pdf
+# ONE DOCUMENT, TWO PAGES. The pictorial aid is a two-sided sheet as of
+# v0.26; two separate PDFs would print as two sheets unless whoever is at the
+# printer gets it right, and a back that is its own file is a back that gets
+# left behind.
+board Blink-aid-visual.svg Blink-aid-visual-2.svg Blink-aid-visual.pdf
 
 # A PDF THAT LOOKS RIGHT AND IS EMPTY. This used to compare file sizes against
 # 8 kB, which is the shape of only one failure - a renderer that quit before

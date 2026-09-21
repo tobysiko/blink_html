@@ -14,7 +14,6 @@ Run after build_html.py and board_a4.py:  python3 check_rules.py
 """
 import html
 import json
-import json
 import pathlib
 import re
 import sys
@@ -1013,6 +1012,50 @@ if vis_file.exists():
     check(not re.search(r"\bfood\b|\bascension\b|\bfeed(s|ing)?\b", vis, re.I),
           "the pictorial aid still mentions food, ascension or feeding")
 
+# ---- SIDE TWO. A two-sided aid whose back is a separate file is a back that
+# goes unbuilt and unchecked; the only reason the front stayed honest this long
+# is that something read it. So the back is read too, for the four things it
+# exists to carry - none of which appeared anywhere on the one-page sheet.
+vis2_file = HERE / "Blink-aid-visual-2.svg"
+check(vis2_file.exists(),
+      "the pictorial aid's SECOND SIDE has not been built - run: "
+      "python3 build_aid_visual.py")
+if vis2_file.exists():
+    _v2age = vis2_file.stat().st_mtime
+    for _src in ("build_aid_visual.py", "aid_data.py"):
+        _f = HERE / _src
+        check(not _f.exists() or _f.stat().st_mtime <= _v2age + 1,
+              f"Blink-aid-visual-2.svg is older than {_src}; run: "
+              "python3 build_aid_visual.py")
+    vis2 = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ",
+                                      vis2_file.read_text(encoding="utf8")))
+    for want, why in (
+        ("WHERE YOUR CARDS GO", "the card loop - the one system with no tell on the table"),
+        ("THE RECYCLE", "what happens when a hand runs out"),
+        ("MAP OBJECTIVES", "the only points about the SHAPE of the map"),
+        ("INCOME", "what a board earns at a recycle"),
+    ):
+        check(want in vis2, f"side two of the pictorial aid no longer shows "
+                            f"{want} - {why}")
+    # the objectives are BASE GAME and pay per arrangement: both halves matter
+    check(re.search(r"SHOW ONE, KEEP ONE", vis2),
+          "side two does not say that one objective is shown and one kept")
+    _per = re.search(r"OBJ_PER = opts\.objectivePer === undefined \? (\d+)", js)
+    _pts = _per.group(1) if _per else "2"
+    check(re.search(rf"{_pts} points for every arrangement", vis2),
+          f"side two does not price an objective at {_pts} points an "
+          "arrangement, which is what the engine pays")
+    # income is a MODULE and must be marked as one, or a base-game table goes
+    # looking for a rule it does not have
+    check(re.search(r"modules only", vis2, re.I),
+          "side two does not mark income and perks as modules only")
+    # and the redundancy that prompted the rebuild must not creep back: the
+    # four free actions that the coin and victory-row columns already spell out
+    for dup in ("stand it on a unit", "take a card at or under"):
+        check(dup not in vis2,
+              f"side two repeats \"{dup}...\" from the front - that duplication "
+              "is what the second side was made to remove")
+
 check(re.search(r"modules only", aid_txt, re.I),
       "the player aid lists the recycle steps without marking which belong "
       "to modules")
@@ -1023,6 +1066,77 @@ if "The recycle" in rules:
     check(re.search(r"collect what your board has earned", rules, re.I),
           "\u00a709 no longer says what the recycle is FOR \u2014 it reads as a "
           "housekeeping list again")
+
+# ---------------------------------------------------------------- spoils
+#
+# THE COIN A WON TILE PAYS (§06). Caught by what the engine DEFAULTS to, not by
+# the option existing: `spoils` has had three settings for months and the
+# printed one was "none" the whole time. What matters is which one a game
+# starts with, so that is what is read.
+#
+# And the rulebook is caught by the CONDITION, not by the word "spoils": the
+# whole point of this rule is that the coin arrives only when the duel empties
+# the tile and you settle it. A book that says a won duel pays a coin would be
+# a different, measurably worse rule (fighters at 65.7% head to head), and it
+# would read as correct to any check looking for the word.
+m = re.search(r'this\.SPOILS\s*=.*?:\s*"(\w+)"', js, re.S)
+check(m, "cannot find the SPOILS default in app/engine.js")
+if m:
+    spoils = m.group(1)
+    if spoils == "none":
+        check(not re.search(r"take <strong>1 gold</strong> from the\s+supply", raw_rules),
+              "the engine pays no spoils but §06 tells players to take a coin")
+    else:
+        check(spoils == "ground",
+              f'engine pays spoils "{spoils}"; only "ground" is printed — paying for '
+              "every duel won measured at 65.7% head to head, which is compulsory "
+              "rather than viable")
+        check(re.search(r"take <strong>1 gold</strong>", raw_rules),
+              "§06 never tells the player to take the coin a won tile pays")
+        check(re.search(r"the tile is simply left empty \(and there are no spoils",
+                        raw_rules),
+              "§06 does not say the coin is withheld when the tile is emptied but "
+              "NOT taken — without that clause the book reads as paying for every "
+              "duel won, which is a different and worse rule")
+        check(re.search(r"take it: \+1 gold|\+1 gold if you take it", aid_txt),
+              "the player aid's ATTACK line does not mention the coin, so the only "
+              "thing on the table during a map phase omits the rule that makes "
+              "attacking worth doing")
+
+# ---------------------------------------------------------------- glyphs
+#
+# EVERY CHARACTER THE AIDS PRINT MUST EXIST IN THE FACE THEY ARE SET IN.
+#
+# The aids embed a LATIN SUBSET of IBM Plex - that is the whole point of
+# subsetting, and it is what keeps the print kit small. A character outside it
+# does not fail: the renderer quietly borrows some other font for that one
+# glyph, so the document looks right in a browser, looks right in the PDF on
+# the machine that made it, and prints an empty box on a machine that has no
+# suitable fallback. It also drags a third font into a PDF that check_fonts.py
+# is meanwhile certifying as Fraunces and IBM Plex only.
+#
+# Found by rendering the sheet in the REAL face for the first time: the tick,
+# the cross, the up arrow in the research icon, "1 \u2192 2" and one minus sign
+# were all outside the subset. Four of them had been shipping for weeks.
+_metrics = ROOT / "source" / "font_metrics.json"
+if _metrics.exists():
+    _m = json.loads(_metrics.read_text(encoding="utf8"))
+    _have = set()
+    for _face in _m.values():
+        _have |= set(_face["w"])
+    _have |= set(" \n\t")
+    for _name in ("Blink-aid-visual.svg", "Blink-aid-visual-2.svg"):
+        _f = HERE / _name
+        if not _f.exists():
+            continue
+        _txt = "".join(re.findall(r"<text[^>]*>(.*?)</text>", _f.read_text(encoding="utf8"), re.S))
+        _txt = html.unescape(_txt)
+        _bad = sorted({c for c in _txt if c not in _have})
+        check(not _bad,
+              f"{_name} prints " + ", ".join(f"U+{ord(c):04X} ({c})" for c in _bad)
+              + " - not in the embedded IBM Plex subset, so it depends on a "
+              "font substitution that is not guaranteed and prints as an empty "
+              "box where it does not happen. Draw it as a path instead.")
 
 # ---------------------------------------------------------------- the verdict
 #

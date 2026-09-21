@@ -128,7 +128,7 @@ function newSession(opts, rand) {
       attacksPerTurn: Number(o.attacksPerTurn) === 1 ? 1 : 0,
       food: o.food !== false,
       ascension: o.ascension !== false,
-      spoils: ["ground", "gold"].includes(o.spoils) ? o.spoils : "none",
+      spoils: ["none", "gold"].includes(o.spoils) ? o.spoils : "ground",
       asideTiming: o.asideTiming === "trick" ? "trick" : "turn",
       tileSupply: [8, 11, 15].includes(Number(o.tileSupply)) ? Number(o.tileSupply) : 15,
     },
