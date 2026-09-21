@@ -55,7 +55,8 @@ function table(styles, level, games) {
       const k = styles.indexOf(p.style);
       const own = stats[k];
       for (const key of ['killed_by_attack', 'settle', 'upgrades', 'fortified',
-                         'cards_to_gold', 'effect_b_used', 'free_move'])
+                         'cards_to_gold', 'effect_b_used', 'free_move',
+                         'duels', 'aimed_up'])
         own[key] = (own[key] || 0) + (g.stats[key] || 0) / styles.length;
     }
   }
@@ -145,18 +146,24 @@ console.log('\nstyle fingerprints — each style at a table of its own, 3p');
       kills: s.killed_by_attack / n, settles: s.settle / n, upgrades: s.upgrades / n,
       walls: s.fortified / n, cashed: s.cards_to_gold / n, colonies: s.effect_b_used / n,
       row: s.row / (n * 3), pop: s.pop / (n * 3),
+      /* WHO gets hit, not how often: the share of duels aimed at a seat above
+       * the table's midpoint. A style may be a real policy while moving no
+       * volume at all — the Tactician changes only its aim — so the
+       * fingerprint has to be able to see that or it will call a genuine
+       * policy a label. Scaled to the same order as the other columns. */
+      aim: 100 * (s.aimed_up || 0) / Math.max(1, s.duels || 0),
     };
     rows.push(row);
     if (st === 'tuned') Object.assign(base, row);
   }
-  console.log('  style       kills settles upgrades walls cashed colonies    row    pop');
+  console.log('  style       kills settles upgrades walls cashed colonies    row    pop  aim%');
   for (const r of rows)
     console.log(`  ${(E.BOT_STYLES[r.st].label || r.st).padEnd(11)}`
-      + [r.kills, r.settles, r.upgrades, r.walls, r.cashed, r.colonies, r.row, r.pop]
+      + [r.kills, r.settles, r.upgrades, r.walls, r.cashed, r.colonies, r.row, r.pop, r.aim]
         .map((x) => x.toFixed(1).padStart(6)).join(' '));
   for (const r of rows) {
     if (r.st === 'tuned') continue;
-    const moved = ['kills', 'settles', 'upgrades', 'walls', 'cashed', 'colonies', 'row', 'pop']
+    const moved = ['kills', 'settles', 'upgrades', 'walls', 'cashed', 'colonies', 'row', 'pop', 'aim']
       .filter((k) => Math.abs(r[k] - base[k]) > 0.15 * Math.max(1, base[k]));
     if (!moved.length)
       fail.push(`${r.st} plays exactly like the baseline — it is a label, not a style`);

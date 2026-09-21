@@ -1735,7 +1735,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"d148321dc7","branch":"main","dirty":true,"built":"2026-09-20T22:05:52Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"f64afd4f67","branch":"main","dirty":true,"built":"2026-09-21T16:25:38Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2395,11 +2395,13 @@ en: {
   "tier.3": "Empire", "tier.4": "Civilization",
   "style.tuned": "Balanced", "style.settler": "Settler", "style.raider": "Raider",
   "style.scholar": "Scholar", "style.merchant": "Merchant",
+  "style.tactician": "Tactician",
   "style.tuned.note": "the tuned baseline every measurement uses",
   "style.settler.note": "takes ground and holds it; fights only when the price is low",
   "style.raider.note": "prices ground in blood; cashes cards to pay for it",
   "style.scholar.note": "buys ideas early and often, and feeds the victory row",
   "style.merchant.note": "keeps the purse full, walls what it owns, waits out trouble",
+  "style.tactician.note": "plays the table: hits the leader, breaks patterns, builds its own",
 
   // ---- card effects (printed component text) --------------------------
   "fx.a.0": "Meld counts as +1 card for winning this trick",
@@ -3073,11 +3075,13 @@ de: {
   "tier.3": "Imperium", "tier.4": "Zivilisation",
   "style.tuned": "Ausgewogen", "style.settler": "Siedler", "style.raider": "Plünderer",
   "style.scholar": "Gelehrter", "style.merchant": "Händler",
+  "style.tactician": "Taktiker",
   "style.tuned.note": "die abgestimmte Grundlinie, mit der alles gemessen wurde",
   "style.settler.note": "nimmt Land und hält es; kämpft nur, wenn es billig ist",
   "style.raider.note": "bezahlt Land mit Blut und tauscht Karten ein, um es sich zu leisten",
   "style.scholar.note": "kauft früh und oft Ideen und füttert die Siegreihe",
   "style.merchant.note": "hält die Kasse voll, befestigt seinen Besitz, sitzt Ärger aus",
+  "style.tactician.note": "spielt den Tisch: greift den Führenden an, zerstört Muster, baut eigene",
 
   // ---- Karteneffekte (gedruckter Kartentext) --------------------------
   "fx.a.0": "Kombination zählt für diesen Stich als +1 Karte",
@@ -3954,7 +3958,18 @@ function cardOptions(m, card, p, gold, reachable, spaces, spare = 0) {
   const out = [];
   for (const k of Array.from(reachable).sort())
     for (const a of m.cellActions(k, card.s, p, spaces, gold, spare)) out.push([k, a]);
-  return out;
+  /* A MEASURING SEAT that has sworn off fighting. Not a weight: making attacks
+   * merely unattractive pushes every such card below CASH_THRESHOLD, so the
+   * seat cashes it for a coin and is PAID for its pacifism — which under the
+   * lean economy is a large gift and turns the measurement into a test of
+   * cashing rather than of peace. Removing the option instead leaves the card
+   * to be spent on the next real thing the bot wanted to do.
+   *
+   * NOTE `p` here is a SEAT NUMBER, not a Player — every caller passes `p.i`.
+   * The set therefore lives on the map, which is the only thing in scope.
+   * Never set in a played game; this is for the bench only. */
+  return (m.pacifists && m.pacifists.has(p))
+    ? out.filter(([, a]) => a !== "attack") : out;
 }
 
 // --------------------------------------------------------------- player
@@ -4289,6 +4304,21 @@ const TUNED = {
   // buying from the market: match what you hold, sit next to it, or chase rank
   BUY_MATCH_W: 3.0, BUY_NEAR_W: 1.5, BUY_RANK_W: 0.08,
   BUY_RANDOM: 0,           // 1 = the pre-14-Aug behaviour: buy anything affordable
+
+  /* READING THE TABLE. All four are ZERO in the tuned baseline, and that is
+   * not a placeholder - it is what makes every measurement taken before they
+   * existed still reproduce exactly. Switch them on with a style.
+   *
+   * They exist because the bot was, until now, blind to the two things a
+   * person at the table cannot help seeing: who is winning, and what shape
+   * everyone else is trying to build. A table of bots therefore never ganged
+   * up on a leader and never broke a rival's arrangement, which flattered any
+   * seat that built quietly and never threw a punch. Any number measured with
+   * these at zero is a number from a world where nobody is watching. */
+  LEADER_W: 0,             // hit the seat that is AHEAD of you, not the nearest
+  OBJ_BREAK_W: 0,          // ...and emptying a tile that is holding up their pattern
+  OBJ_HOLD_W: 0,           // put units where they build YOUR arrangement
+  OBJ_GUARD_W: 0,          // ...and wall the tiles that are already holding one
 };
 
 /* Deliberately NOT a style knob — see bots_test.js and RULEBOOK-CORRECTIONS
@@ -4331,8 +4361,36 @@ const BOT_STYLES = {
     w: { CASH_THRESHOLD: 1.35, FORTIFY_MIN_GOLD: 1, C_GOLD_PER_POINT: 1,
          ATTACK_V: 1.0, MELD_GREED: 0.18, ROUGH_V: 1.0, MAJORITY_V: 1.5 },
   },
+  /* THE ONE THAT WATCHES THE TABLE. Not a sixth flavour so much as the first
+   * bot that plays the social game: it hits whoever is ahead, empties the tile
+   * propping up a rival's face-up pattern, builds its own arrangement on
+   * purpose and walls it once it stands.
+   *
+   * Every other style here is a preference between things the bot could
+   * already see. This one adds things it could not see at all, which is why it
+   * is the style a table should be measured with before anyone concludes that
+   * a peaceful seat does well: against the other five, a player who never
+   * fights is never punished for it, because nobody is looking. */
+  tactician: {
+    label: "Tactician",
+    note: "plays the table: hits the leader, breaks patterns, builds its own",
+    /* LEADER_W is 3 rather than the 1.2 first tried: at 1.2 the style aimed
+     * 69% of its blows upward against a baseline of 60%, which is a real
+     * difference but sits inside the fingerprint test's tolerance — a policy
+     * nobody at the table could reliably notice is not yet a policy. At 3 it
+     * aims 76% upward, and mean score is unchanged (26.4 against 26.7), so the
+     * style reaches for something different without playing worse. */
+    w: { LEADER_W: 3, OBJ_BREAK_W: 0.5, OBJ_HOLD_W: 0.9, OBJ_GUARD_W: 1.5 },
+  },
 };
 const STYLE_KEYS = Object.keys(BOT_STYLES);
+
+/* Styles the MIXED bag never deals. A mixed table is the app's default and the
+ * shape most measurements were taken on, so a style that joins the bag quietly
+ * changes both. The Tactician is kept out of it deliberately: it is a
+ * measuring instrument first, and letting it into every table by default would
+ * be a change to what a player faces, made by accident. Choose it by name. */
+const MIXED_EXCLUDE = ["tactician"];
 
 /* Difficulty is NOT a worse weight vector — that produces bots that are bad in
  * strange ways. It is the chance of taking a legal option at random instead of
@@ -4366,6 +4424,16 @@ function valueCard(game, p, k, card, act) {
     }
     if (mine <= best) v += w.MAJORITY_V;               // contesting a majority
     if (t.terrain === "forest" || t.terrain === "mountain") v += w.ROUGH_V;
+    /* AND WHETHER IT BUILDS THE SHAPE I AM AFTER. Both of my own objectives —
+     * I may look at my own face-down card, and a person does. Scored on the
+     * best of them rather than the sum, so a cell that happens to serve two
+     * patterns is not double counted into a decision it should not dominate. */
+    if (w.OBJ_HOLD_W) {
+      let gain = 0;
+      for (const o of p.objectives || [])
+        gain = Math.max(gain, game.objectiveNear(p.i, k, o));
+      v += w.OBJ_HOLD_W * gain;
+    }
     return v;
   }
   if (act === "explore") {
@@ -4375,10 +4443,12 @@ function valueCard(game, p, k, card, act) {
   }
   if (act === "attack") {
     const t = m.tiles.get(k);
+    /* WHO this is, not just what it costs — zero unless a style asks for it. */
+    const bias = game.targetBias(p, t, w);
+    if (game.COMBAT === "duel") return duelValue(game, p, t, w, card, bias);
     let v = w.ATTACK_V - w.ATTACK_COST_W * ATTACK_COST[t.terrain];
     if (t.units.length === 1) v += w.ATTACK_LONE_V;
-    if (game.COMBAT === "duel") v = duelValue(game, p, t, w, card);
-    return v;
+    return v + bias;
   }
   return 0.2;
 }
@@ -4417,7 +4487,7 @@ const SPOILS_V = 0.6;
  * two players on comparable tiers hold comparable ranks. It is a crude model
  * and it is deliberately the same one _duelCard uses, so the bot commits to
  * fights on the same reasoning it picks cards for them. */
-function duelValue(game, p, t, w, card) {
+function duelValue(game, p, t, w, card, bias = 0) {
   const bonus = TERRAIN_DEFENCE[t.terrain];
   const hand = p.hand.length ? p.hand : [{ r: 10 }];
   let value = card.r, cards = 1;
@@ -4474,6 +4544,11 @@ function duelValue(game, p, t, w, card) {
   if (game.SPOILS === "gold") v += SPOILS_V;
   else if (game.SPOILS === "ground" && t.units.length === 1 && p.reserveLeft())
     v += SPOILS_V;
+  /* TARGETING RIDES ON THE ODDS. Hitting the leader is worth more than hitting
+   * the seat beside you, but not if you cannot win the duel — an attack you
+   * will lose helps the leader rather than hurting them. So the bias goes in
+   * here, with the spoils, and not onto the total afterwards. */
+  v += bias;
   return v * (0.4 + 1.2 * odds);               // and scaled by the chance of it
 }
 
@@ -4661,6 +4736,22 @@ class Game {
      * "reserve" is the v0.25 printed rule, kept so displace_test.js and every
      * measurement taken before the change still reproduce. See _takeUnit. */
     this.LOSS = opts.loss === "reserve" ? "reserve" : "displace";
+    /* WHAT A KILLED UNIT COSTS ITS OWNER.
+     *
+     *   "reserve" - printed: it goes back into the reserve and may be placed
+     *               again with any later card. Measured, this is why combat
+     *               does not pay: an attack spends a card NOW for a 57% chance
+     *               of making the victim spend one LATER, and because returns
+     *               fill the reserve from the top band down while band() reads
+     *               the lowest non-empty band, a kill usually does not even
+     *               set the victim back on the ladder. A seat forbidden to
+     *               attack outscores one that fights even at TWO players,
+     *               where every point denied is a point gained.
+     *   "out"     - the unit is gone for good. A kill becomes a permanent
+     *               point rather than a delay, which is the smallest change
+     *               that could make a fight worth its card.
+     */
+    this.KILLS = opts.kills === "out" ? "out" : "reserve";
     /* NOTHING EVER LEAVES THE GAME (v0.26). A card spent for its effect goes
      * to the bottom of the market rather than out of play. See _spendCard.
      * "removed" is the v0.25 rule and reproduces every measurement taken
@@ -5051,7 +5142,12 @@ class Game {
     if (this.events.length > 400) this.events.length = 0;
     this.events.push(Object.assign({ type }, data));
   }
-  inc(k, n) { this.stats[k] = (this.stats[k] || 0) + (n === undefined ? 1 : n); }
+  /* `_quiet` is set while a bot reads the table through score(): a speculative
+   * read must not show up in the statistics as though it had happened. */
+  inc(k, n) {
+    if (this._quiet) return;
+    this.stats[k] = (this.stats[k] || 0) + (n === undefined ? 1 : n);
+  }
   /* The log is read by a person, so the engine stores a KEY and its variables
    * rather than a sentence — the client renders it in whatever language is on.
    * Nothing in the engine may contain text a player sees. */
@@ -5409,7 +5505,7 @@ class Game {
    * anything the client asks the engine to value on their behalf is answered
    * neutrally, and no noise — a person's mistakes are their own. */
   _dealStyles() {
-    const opts = STYLE_KEYS.filter((k) => k !== "tuned");
+    const opts = STYLE_KEYS.filter((k) => k !== "tuned" && !MIXED_EXCLUDE.includes(k));
     let bag = [];
     this.P.forEach((p, i) => {
       let style = (this.SEAT_STYLES && this.SEAT_STYLES[i]) || this.BOT_STYLE;
@@ -5495,6 +5591,109 @@ class Game {
       : o.points;
   }
 
+  /* ---------------------------------------------------------------- 
+   * READING THE TABLE
+   *
+   * Three things a person sitting at the table knows for free and the bot,
+   * until v0.26, did not know at all. Each is public information only: nothing
+   * here reads a face-down objective, and `openObjectivesOf` is the gate that
+   * keeps it honest. A bot that peeked would measure a game nobody plays.
+   * ---------------------------------------------------------------- */
+
+  /* WHO IS WINNING, right now. Recomputed once a round rather than once a
+   * decision - `score()` walks every tile several times, and a person reads
+   * the table at about that rate anyway. Returns each seat's running total. */
+  standing() {
+    if (this._standingAt !== this.round) {
+      this._standingAt = this.round;
+      this._quiet = true;
+      try { this._standing = this.score().map((r) => r.total); }
+      finally { this._quiet = false; }
+    }
+    return this._standing;
+  }
+
+  /* How far AHEAD of me this seat is, as a fraction of the spread across the
+   * table: +1 the runaway leader, -1 the seat furthest behind me, 0 level or
+   * a table with no spread at all. Normalising by the spread rather than by
+   * raw points keeps the term meaningful in round 2 and in round 12, when the
+   * same 3-point gap means quite different things. */
+  relStanding(me, them) {
+    const s = this.standing();
+    const spread = Math.max(...s) - Math.min(...s);
+    if (!spread) return 0;
+    return Math.max(-1, Math.min(1, (s[them] - s[me]) / spread));
+  }
+
+  /* The objectives of `seat` that the rest of the table is ALLOWED to see.
+   * Open: the two shared cards. Showone (v0.26 printed): the one face up -
+   * this is the information that being shown actually costs you, and until
+   * now nothing in the engine ever spent it. Secret/both: nothing. */
+  openObjectivesOf(seat) {
+    if (this.OBJECTIVES_MODE === "open") return this.objectives || [];
+    if (this.OBJECTIVES_MODE === "showone") {
+      const o = this.P[seat] && this.P[seat].objOpen;
+      return o ? [o] : [];
+    }
+    return [];
+  }
+
+  /* Does cell `k` advance this pattern for this seat? 2 = occupying it
+   * completes an arrangement, 1 = it is one of the three and the rest is not
+   * there yet, 0 = it does nothing. Asked WITHOUT touching the map: the cell
+   * is tested as a middle, then as an end beside a middle already held. */
+  objectiveNear(seat, k, o) {
+    const t = this.m.tiles.get(k);
+    if (!t || !o) return 0;
+    const mine = (u) => u.owner === seat && u.units.length;
+    let best = 0;
+    if (t.terrain === o.mid) {                       // k as the middle
+      const ends = t.neighbours().filter(mine);
+      best = Math.max(best, (ends.some((x) => x.terrain === o.a) ? 1 : 0)
+                          + (ends.some((x) => x.terrain === o.b) ? 1 : 0));
+    }
+    for (const u of t.neighbours()) {                // k as an end
+      if (u.terrain !== o.mid || !mine(u)) continue;
+      const ends = u.neighbours().filter(mine).filter((x) => x !== t);
+      const needA = t.terrain === o.a && !ends.some((x) => x.terrain === o.a);
+      const needB = t.terrain === o.b && !ends.some((x) => x.terrain === o.b);
+      if (!needA && !needB) continue;
+      const other = needA ? ends.some((x) => x.terrain === o.b)
+                          : ends.some((x) => x.terrain === o.a);
+      best = Math.max(best, other ? 2 : 1);
+    }
+    return best;
+  }
+
+  /* Is this tile of mine currently HOLDING UP an arrangement? Used to decide
+   * what to wall, and - read against a rival, through their open card only -
+   * what is worth emptying. */
+  objectiveTiles(seat, objs) {
+    const out = new Set();
+    for (const o of objs || []) for (const trio of this.objectiveHits(seat, o))
+      for (const key of trio) out.add(key);
+    return out;
+  }
+
+  /* What targeting adds to the value of attacking this tile. Zero unless a
+   * style has switched it on, and deliberately a single method so that both
+   * combat rules get the same bias and neither can drift from the other. */
+  targetBias(p, t, w) {
+    if (t.owner === null || t.owner === p.i) return 0;
+    let v = 0;
+    if (w.LEADER_W) v += w.LEADER_W * this.relStanding(p.i, t.owner);
+    /* Breaking a pattern needs the tile EMPTIED, not merely bloodied - a stack
+     * of two goes on holding the arrangement after it loses one unit. So this
+     * rides on the same condition as ATTACK_LONE_V, and is worth what the
+     * arrangement is worth under whichever scoring rule is on. */
+    if (w.OBJ_BREAK_W && t.units.length === 1) {
+      const open = this.openObjectivesOf(t.owner);
+      if (open.length && this.objectiveTiles(t.owner, open).has(t.key))
+        v += w.OBJ_BREAK_W * (this.OBJ_SCORING === "perInstance" ? this.OBJ_PER : 1);
+    }
+    return v;
+  }
+
   /* HOW CLOSE, AND WHERE. The same search as before, but it reports the best
    * partial match instead of only yes or no: the middle you occupy that has
    * the most of what the card asks for, the tiles that count so far, and the
@@ -5560,6 +5759,7 @@ class Game {
     if (!this._handsSettled) yield* this._handSetup();
     if (this.START === "homelands" && !this._homelandsLaid) yield* this._layHomelands();
     this.round += 1;
+    this._standingAt = null;        // the table has changed; read it again
     const order = [];
     for (let k = 0; k < this.n; k++) order.push((this.leader + k) % this.n);
     /* Who lays cards in what order — the leader first, then clockwise. Public
@@ -6156,7 +6356,8 @@ class Game {
             this.purse(p, -cost, "attack", cell, { terrain: t.terrain });
             const victim = this.m.removeUnit(cell);
             if (victim === null) { this.inc("absorbed_by_fortification"); continue; }
-            this.P[victim].returnUnit();
+            if (this.KILLS === "reserve") this.P[victim].returnUnit();
+            else this.inc("killed_for_good");
             this.fx("unit-out", { seat: victim, from: cell });
             this.inc("killed_by_attack"); this.inc("conquest_kill");
             if (maySettle && !t.units.length && p.takeUnit()) {
@@ -6514,7 +6715,9 @@ class Game {
       }
       this.inc("displace_nowhere");
     }
-    this.inc("killed_by_attack"); this.P[victim].returnUnit();
+    this.inc("killed_by_attack");
+    if (this.KILLS === "reserve") this.P[victim].returnUnit();
+    else this.inc("killed_for_good");
     this.fx("unit-out", { seat: victim, from: cell });
   }
 
@@ -6769,6 +6972,16 @@ class Game {
      * defender pays out of hand — and a wall has no hand to pay from. */
     if (spent && (!this.DUEL_KEEP || attackerWins)) spend(d, spent);
     this.inc("duels");
+    /* WHERE THE BLOW LANDED, relative to the table. Purely observational — no
+     * rule reads it — but it is the only dimension on which a targeting style
+     * differs from the baseline at all, and without it the style fingerprint
+     * in bots_test.js cannot tell a Tactician from a Balanced bot. */
+    {
+      const st = this.standing();
+      const mid = (Math.max(...st) + Math.min(...st)) / 2;
+      const def = d ? d.i : tile.owner;
+      if (def !== null && def !== undefined && st[def] > mid) this.inc("aimed_up");
+    }
     this.inc("duel_on_" + tile.terrain);
     if (attackerWins) this.inc("duel_won_on_" + tile.terrain);
     /* Everything the table needs to replay the fight in its head: who, where,
@@ -7640,6 +7853,10 @@ class Game {
   // --- gold on the map ------------------------------------------
   /* Tiles worth protecting: a coin is only worth spending where losing the
    * unit actually costs something, and only if a rival next door can pay. */
+  /* The tiles of mine currently completing an arrangement, cached for the one
+   * pass of fortifyCandidates that asks. */
+  _objGuard(p) { return this.objectiveTiles(p.i, p.objectives || []); }
+
   fortifyCandidates(p) {
     const out = [];
     for (const [k, t] of this.m.tiles) {
@@ -7663,6 +7880,11 @@ class Game {
        * replaced — it built the same 2.6 walls a game whether the world was
        * dangerous or not. */
       if (this.COMBAT === "duel") v += p.w.WALL_DETERRENCE;
+      /* AND WALL WHAT IS ALREADY SCORING. A tile holding up an arrangement is
+       * worth more than its unit: losing it costs the pattern too. Zero unless
+       * a style asks for it. Both of my objectives count — it is my own board
+       * I am defending, so nothing hidden is being read here. */
+      if (p.w.OBJ_GUARD_W && this._objGuard(p).has(k)) v += p.w.OBJ_GUARD_W;
       if (v > 0) out.push([v, k]);
     }
     out.sort((a, b) => b[0] - a[0]);

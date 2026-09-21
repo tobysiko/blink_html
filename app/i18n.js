@@ -657,11 +657,13 @@ en: {
   "tier.3": "Empire", "tier.4": "Civilization",
   "style.tuned": "Balanced", "style.settler": "Settler", "style.raider": "Raider",
   "style.scholar": "Scholar", "style.merchant": "Merchant",
+  "style.tactician": "Tactician",
   "style.tuned.note": "the tuned baseline every measurement uses",
   "style.settler.note": "takes ground and holds it; fights only when the price is low",
   "style.raider.note": "prices ground in blood; cashes cards to pay for it",
   "style.scholar.note": "buys ideas early and often, and feeds the victory row",
   "style.merchant.note": "keeps the purse full, walls what it owns, waits out trouble",
+  "style.tactician.note": "plays the table: hits the leader, breaks patterns, builds its own",
 
   // ---- card effects (printed component text) --------------------------
   "fx.a.0": "Meld counts as +1 card for winning this trick",
@@ -1335,11 +1337,13 @@ de: {
   "tier.3": "Imperium", "tier.4": "Zivilisation",
   "style.tuned": "Ausgewogen", "style.settler": "Siedler", "style.raider": "Plünderer",
   "style.scholar": "Gelehrter", "style.merchant": "Händler",
+  "style.tactician": "Taktiker",
   "style.tuned.note": "die abgestimmte Grundlinie, mit der alles gemessen wurde",
   "style.settler.note": "nimmt Land und hält es; kämpft nur, wenn es billig ist",
   "style.raider.note": "bezahlt Land mit Blut und tauscht Karten ein, um es sich zu leisten",
   "style.scholar.note": "kauft früh und oft Ideen und füttert die Siegreihe",
   "style.merchant.note": "hält die Kasse voll, befestigt seinen Besitz, sitzt Ärger aus",
+  "style.tactician.note": "spielt den Tisch: greift den Führenden an, zerstört Muster, baut eigene",
 
   // ---- Karteneffekte (gedruckter Kartentext) --------------------------
   "fx.a.0": "Kombination zählt für diesen Stich als +1 Karte",
