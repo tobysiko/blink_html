@@ -129,6 +129,12 @@ pin Blink-player-board-A4.pdf        blink-player-board
 pin Blink-player-board-A4-bw.pdf     blink-player-board-bw
 pin Blink-player-aid.pdf             blink-player-aid
 pin Blink-player-aid-bw.pdf          blink-player-aid-bw
+# THE A4 PICTORIAL AID, two sides in one document as of v0.26. It was built by
+# build_pdfs.sh and checked by check_rules.py for weeks and published by
+# nothing - the print kit on the site simply did not contain it, which is the
+# quiet kind of gap that only shows up when somebody prints the kit and asks
+# where the diagram went.
+pin Blink-aid-visual.pdf             blink-aid-visual
 pin Blink-first-game.pdf             blink-first-game
 pin Blink-first-game-bw.pdf          blink-first-game-bw
 pin Blink-card-effects.pdf           blink-card-effects
