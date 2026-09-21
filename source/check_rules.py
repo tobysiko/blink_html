@@ -1102,6 +1102,16 @@ if m:
               "the player aid's ATTACK line does not mention the coin, so the only "
               "thing on the table during a map phase omits the rule that makes "
               "attacking worth doing")
+        # AND THE FIGURE. A reader believes a diagram without checking it
+        # against the text, so a combat figure that shows a fight paying
+        # nothing teaches the rule that was replaced. This one drew the duel,
+        # the ground changing hands, and no coin at all for the whole of the
+        # day the rule was printed.
+        _cf = figs.get("combat", "") if isinstance(figs, dict) else ""
+        _cft = html.unescape(re.sub(r"<[^>]+>", " ", _cf))
+        check("gold" in _cft.lower(),
+              "the combat figure does not show the coin a won tile pays - the "
+              "figure teaches the rule, and this one teaches the pre-v0.26 one")
 
 # ---------------------------------------------------------------- glyphs
 #
@@ -1137,6 +1147,72 @@ if _metrics.exists():
               + " - not in the embedded IBM Plex subset, so it depends on a "
               "font substitution that is not guaranteed and prints as an empty "
               "box where it does not happen. Draw it as a path instead.")
+
+# -------------------------------------------------- every printed document
+#
+# THE RULEBOOK WAS GUARDED AND ITS COMPANIONS WERE NOT.
+#
+# check_rules watched the rulebook, the board and the two player aids for rules
+# v0.26 removed, and said nothing about the other five documents in the same
+# print kit. So while the rulebook was correct, "Your first game" - the booklet
+# a new player reads BEFORE the rulebook - was still telling them to put
+# ascension coins on their printed spots and to pre-place food on their band's
+# slots, on a board that has neither any more. It was published as v0.26 on the
+# site. The card-effects sheet still explained effect C as something you take
+# "when feeding falls short", and still described effect A as declared blind.
+#
+# A companion document is not a lesser document: it is the one people read
+# first, and it is in the same kit under the same version number. Every built
+# HTML file is read here now, and the archived rulebooks are skipped by name
+# because a frozen version is SUPPOSED to describe the rules of its own day.
+GONE = re.compile(r"\bfood\b|\bascension\b|\bfeed(s|ing)?\b|\bstarv\w+|"
+                  r"\bupkeep\b|per recycle\b", re.I)
+# Documents allowed to name a removed rule, and why.
+GONE_OK = {
+    # the variants catalogue exists to describe optional rules, and the full
+    # economy is still one of them - it just has to say so, which is checked
+    # separately below.
+    "Blink-variants.html",
+    # the perk tokens print one perk, Granary, whose whole effect is an economy
+    # the base game no longer has. It is out of the playable pool and the token
+    # says so in its own text, which is checked just below.
+    "Blink-perk-tokens.html",
+    # NOT PART OF THE KIT. build_pdfs.sh does not run build_deck_spec.py and
+    # nothing prints this; it is a v0.24-era proposal about effect D, left on
+    # disk. It is skipped rather than repaired because repairing it would imply
+    # it is current, and it is not.
+    "Blink-deck-with-D.html",
+}
+for _doc in sorted(HERE.glob("Blink-*.html")):
+    _n = _doc.name
+    if _n in GONE_OK or re.search(r"-v0\.\d+(-bw)?\.html$", _n):
+        continue            # archived rulebooks describe their own day's rules
+    if _n.startswith(RULES_HTML.rsplit(".", 1)[0]):
+        continue            # the current rulebook has its own checks above
+    _t = html.unescape(re.sub(r"<[^>]+>", " ", _doc.read_text(encoding="utf8")))
+    _hits = sorted({m.group(0).lower() for m in GONE.finditer(_t)})
+    check(not _hits,
+          f"{_n} still describes rules v0.26 removed ({', '.join(_hits)}) - it "
+          "ships in the same kit under the same version number as the rulebook")
+
+# The Granary token must say it is inert in the printed game, or it is a card
+# that gets dealt and does nothing.
+_pt = HERE / "Blink-perk-tokens.html"
+if _pt.exists():
+    _ptt = html.unescape(re.sub(r"<[^>]+>", " ", _pt.read_text(encoding="utf8")))
+    if re.search(r"granary", _ptt, re.I):
+        check(re.search(r"FULL ECONOMY ONLY", _ptt),
+              "the Granary perk token still reads as a live perk, and its whole "
+              "effect is an upkeep the printed game does not have")
+
+# And the variants catalogue, which MAY name them, must scope them as options.
+_var = HERE / "Blink-variants.html"
+if _var.exists():
+    _vt = html.unescape(re.sub(r"<[^>]+>", " ", _var.read_text(encoding="utf8")))
+    if re.search(r"\bfood\b|\bstarv\w+", _vt, re.I):
+        check(re.search(r"needs the full economy", _vt, re.I),
+              "Blink-variants.html describes starvation without saying that the "
+              "printed economy is lean and nothing can starve in it")
 
 # ---------------------------------------------------------------- the verdict
 #

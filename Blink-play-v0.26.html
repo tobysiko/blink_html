@@ -1735,7 +1735,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"917e76c627","branch":"main","dirty":true,"built":"2026-09-21T19:52:41Z"};
+const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"197246e819","branch":"main","dirty":true,"built":"2026-09-21T20:08:23Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -3405,7 +3405,17 @@ const PERKS = {
   diplomacy:    { name: "Diplomacy", once: true, todo: true },
   scholarship:  { name: "Scholarship", once: true },
   foresight:    { name: "Foresight", once: true, todo: true },
-  granary:      { name: "Granary", once: false },
+  /* GRANARY IS OUT OF THE POOL UNTIL IT DOES SOMETHING. Its whole effect is
+   * food() - 1, and v0.26 prints the lean economy where food() is always zero,
+   * so it was a live card that could be dealt to a player and then do
+   * precisely nothing for the rest of the game. `todo` is what keeps an
+   * unwired perk out of the bag, and an unwired perk is exactly what this is
+   * now - the rule it modifies left the game.
+   *
+   * It still works under `economy: "full"`, which is why the effect stays
+   * rather than being deleted. Giving it something to do under the lean
+   * economy is a design decision, not a repair. */
+  granary:      { name: "Granary", once: false, todo: true },
   coinage:      { name: "Coinage", once: true },
   tribute:      { name: "Tribute", once: true },
   markets:      { name: "Markets", once: true, todo: true },

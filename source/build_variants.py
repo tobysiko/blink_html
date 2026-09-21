@@ -170,6 +170,10 @@ HTML = f"""<!doctype html>
       </tbody>
     </table>
     <p>Mountain and Ocean stay low throughout: hostile ground never becomes comfortable.</p>
+    <p class="note"><b>This half needs the full economy.</b> v0.26 prints the lean one
+    — no food and no ascension — so nothing can starve and the cull below can never
+    fire. Switch the economy back to <code>full</code> to play it as written; the
+    population limits themselves work either way.</p>
     <p><b>If starvation drops your band, your cities shed the difference.</b> After you
     return units for missing food, every tile of yours holding more than your
     <em>new</em> limit sends the surplus back to the reserve. Famine hits the crowded
@@ -407,9 +411,10 @@ HTML = f"""<!doctype html>
     full strength. Concentrating gives you one large awakening and a dominance score;
     spreading gives you four modest ones. That the choice is forced by the unit supply,
     rather than by a rule, is the part worth keeping.</p>
-    <p><b>What to watch for.</b> It double-dips: dominance already pays for massing on a
-    terrain, and these pay again on the same count, in a game where the leader already
-    finishes 15 to 19 points clear. Expedition is the one to suspect — map size feeds
+    <p><b>What to watch for.</b> It double-dips with any terrain-majority scoring you have
+    switched on — dominance is no longer in the base game, but where it is used it pays
+    for massing on a terrain and these pay again on the same count, in a game where the
+    leader already finishes 15 to 19 points clear. Expedition is the one to suspect — map size feeds
     everything downstream. And Study taking cards for nothing may distort the victory row,
     which is also points.</p>
     <p><b>Open questions.</b> Should an awakening spend the units — exhaust them, or return

@@ -141,16 +141,19 @@ HTML = f"""<!doctype html>
    '<td class="scale">earned &nbsp; abrupt &nbsp; nobody noticed it coming</td></tr>'
    '</table>' + LINES(1))}
 
-{q(5, "Food and the coin shuffle",
-   "Coins sit on your band's food slots and your people eat them at each recycle; "
-   "you may move coins between reserve, food and fortifications freely on your turn.",
+{q(5, "The coin a won tile pays",
+   "Win a duel, empty the tile, move in — take 1 gold. A duel that kills one unit off a "
+   "stack of two pays nothing. It is the newest rule in the game and the reason attacking "
+   "is worth the card it costs.",
    '<table class="tick">'
-   '<tr><td class="k">did anyone starve (return units)?</td>'
-   '<td class="scale">yes, ___ times &nbsp; never</td></tr>'
-   '<tr><td class="k">pre-placing food on the slots was…</td>'
-   '<td class="scale">clear &nbsp; fiddly &nbsp; forgotten &nbsp; pointless</td></tr>'
-   '<tr><td class="k">anyone pull coins off a fortification to eat?</td>'
-   '<td class="scale">yes &nbsp; no</td></tr></table>')}
+   '<tr><td class="k">did anyone attack for the coin rather than the ground?</td>'
+   '<td class="scale">yes &nbsp; no &nbsp; hard to tell</td></tr>'
+   '<tr><td class="k">was “only when you TAKE the tile” remembered?</td>'
+   '<td class="scale">always &nbsp; mostly &nbsp; kept slipping</td></tr>'
+   '<tr><td class="k">did fighting feel worth doing?</td>'
+   '<td class="scale">yes &nbsp; still not &nbsp; too tempting now</td></tr>'
+   '<tr><td class="k">how tight was gold overall?</td>'
+   '<td class="scale">broke &nbsp; tight &nbsp; comfortable &nbsp; swimming</td></tr></table>')}
 
 <div class="grid2">
   <div>

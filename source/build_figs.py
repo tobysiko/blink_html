@@ -641,11 +641,23 @@ def combat():
     b += label(ax + 20, ty - 12, "home", 9, anchor="start", cls="fig-attack")
     b += label(centre, ty + R + TER["forest"]["h"] + 17, "yours now", 10,
                cls="fig-step")
+    # ...AND THE COIN (v0.26). The spoils are the newest rule in the game and
+    # the whole reason attacking is worth its card, and this figure - the one
+    # a reader believes without checking - showed a fight that paid nothing.
+    # Drawn beside the tile it was won on, because that is the condition: the
+    # coin arrives when the ground changes hands, not when a duel is won.
+    gx = centre + R + 10
+    gy = ty + TER["forest"]["h"] / 2
+    b += (f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="10" fill="#F5E2AE" '
+          f'stroke="#C9992B" stroke-width="2"/>'
+          f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="5" fill="none" '
+          f'stroke="#C9992B" stroke-width="1.4"/>')
+    b += label(gx + 20, gy + 4, "+1 gold", 10, anchor="start", cls="fig-step")
     b += label(centre, ty + R + TER["forest"]["h"] + 38,
-               "Higher total wins \u2014 and clearing the LAST",
+               "Higher total wins. Clearing the LAST defender",
                11, cls="fig-strong")
     b += label(centre, ty + R + TER["forest"]["h"] + 53,
-               "defender takes the ground.", 11, cls="fig-strong")
+               "takes the ground \u2014 and pays a coin.", 11, cls="fig-strong")
     return svg(0, 0, b, vb="auto")
 
 

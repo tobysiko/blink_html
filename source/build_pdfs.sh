@@ -42,9 +42,6 @@ python3 build_aid_visual.py     # the A4 pictorial aid: stages and decisions
 python3 board_a4.py
 python3 board_blank.py
 
-# the printed numbers must still be the numbers the game is played with
-python3 check_rules.py
-
 # print-and-play card decks
 python3 build_cards.py
 python3 build_cards.py --bw
@@ -54,6 +51,15 @@ python3 build_objcards.py --bw
 # black-and-white booklets, derived from the HTML just built, so they can never
 # lag behind the colour ones
 python3 build_bw.py
+
+# THE CHECKS RUN LAST, once every document exists in its final form.
+#
+# check_rules.py used to run here-ish, BEFORE build_bw.py, so it read the
+# black-and-white booklets from the PREVIOUS run: on the day food and
+# ascension came out of the companion documents it passed on the colour ones
+# and never saw that their b/w twins still had the removed rules in them. A
+# check that runs before the thing it checks is a check on last week.
+python3 check_rules.py
 
 # THE TYPEFACES GO INSIDE THE DOCUMENT before anything is printed. Every builder
 # above links Fraunces and IBM Plex from Google Fonts, so without this step the

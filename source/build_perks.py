@@ -82,8 +82,14 @@ PERKS = [
     ("spend", "Foresight",
      "Look at the top card of the upgrade deck before deciding whether to "
      "research."),
+    # GRANARY IS PARKED. Its effect is "pay one less food", and v0.26 prints
+    # the lean economy, where there is no food to pay - it was a token that
+    # could be dealt and then do nothing at all. It is out of the playable
+    # pool in the engine (PERKS.granary.todo) and printed here only as what it
+    # is: a perk waiting for an economy that is no longer the printed one.
     ("standing", "Granary",
-     "Pay one less food each recycle, to a minimum of none."),
+     "FULL ECONOMY ONLY. Pay one gold less at each recycle, to a minimum of "
+     "none. Does nothing in the printed game, which has no upkeep."),
     ("spend", "Coinage", "One cashed card pays 2 gold instead of 1."),
     ("spend", "Tribute",
      "Take 1 extra gold whenever your meld ranks last."),

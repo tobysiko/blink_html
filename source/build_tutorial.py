@@ -51,8 +51,10 @@ HTML = f"""<!doctype html>
   <p>The walkthrough is written for <strong>three players</strong> — we'll call them
   <b>Ada</b>, <b>Bex</b> and <b>Cy</b>; substitute your own names. At two or four players
   everything works the same way; the setup table in the rulebook covers the differences.</p>
-  <p>Two things to leave in the box for now: the <b>map objectives</b> and <b>personal
-  objectives</b> modules. They're good, and they're for your third game.</p>
+  <p>One thing to leave in the box for now: the <b>perks</b> module. It is good, and it is
+  for your third game. The <b>map objectives</b> stay in — they are part of the base
+  game now, two cards each and one line of scoring, and leaving them out takes away the only
+  points that are about the SHAPE of what you hold.</p>
   <p>Once you've played, the rulebook is the reference — every section number in these pages
   points into it.</p>
 </section>
@@ -90,10 +92,11 @@ HTML = f"""<!doctype html>
     <span class="n">Step 3 · your board</span>
     <h3>Load all twenty units, top tier first</h3>
     <p>Take a player board and fill all five tiers — <b>2, 3, 5, 5, 5</b> from the top. Every unit
-    you'll ever place is here. Put the <b>ascension coins</b> on their printed spots: 1, 2, 3, 4.</p>
-    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints four numbers: the meld you may play, your free moves, the gold your people cost to feed, and the highest rank you may buy. Right now that is Tribe — melds of two, one free move, food free, cap 12.')}
-    <div class="say"><b>Say this out loud:</b> this board is the engine. Emptying a tier makes you stronger and
-    more expensive at the same moment — and pays you a one-off ascension coin for doing it.</div>
+    you'll ever place is here. That is the whole board: no coins to pre-place, nothing owed.</p>
+    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints what you may do: the meld you may play, your free moves, the highest rank you may buy, and the rank a coin on one of your units defends at. Right now that is Tribe — melds of two, one free move, cap 12, walls at 10.')}
+    <div class="say"><b>Say this out loud:</b> this board is the engine, and climbing it is pure
+    gain — a longer meld, another free move, better cards within reach. Growing costs you
+    nothing at all. What it spends is units, and units on the map are points.</div>
   </div>
 
   <div class="step">
@@ -226,10 +229,9 @@ HTML = f"""<!doctype html>
     unit: across your own connected units onto a free tile beside them, or across open Ocean.
     Never onto a rival.</li>
     <li><b>Your top tier empties fast.</b> Tribe holds only two units and setup already
-    spent one, so the first unit you settle clears it — take the <b>1 ascension coin</b> from
-    the Settlement row. Your meld limit goes to <b>3</b>, your
-    free moves to <b>2</b> — and your food bill starts at <b>1 gold</b> per recycle. You pay
-    whatever your current band shows and nothing more.</li>
+    spent one, so the first unit you settle clears it — and you are a Settlement. Your
+    meld limit goes to <b>3</b>, your free moves to <b>2</b>, your rank cap to <b>14</b>.
+    Nothing is owed for it: climbing is free, and the only price is the units it took.</li>
   </ul>
 </section>
 
@@ -261,15 +263,16 @@ HTML = f"""<!doctype html>
   <div class="say"><b>The frontier pays.</b> Explore with a card of <b>rank 10 or under</b>
   — anything from your starting deck — and take <b>1 gold</b>. Your weakest cards are worth
   something on the edge of the map. Once you start buying upgrades, that tap closes.</div>
-  <p>Gold also pays for: fortifying a unit against one attack (1) — a coin on a unit stops an
-  attack outright, with no duel at all — researching, and, from the moment you empty your first
-  band, <b>feeding your people</b>.
-  Put the coins on your band's food slots during your turn; when your hand recycles, that is
-  what your people eat.</p>
-  <div class="say"><b>A warning worth hearing early:</b> expanding fast is how you lose your
-  first game. Every band you empty moves you onto a costlier row — free, then 1, then 2, then 3
-  gold every time your hand recycles, and you pay only the row you are on. Losing tricks pays you
-  a coin per unused card, so falling a little behind is how you stay fed.</div>
+  <p>Gold also pays for <b>fortifying</b> (1) and <b>researching</b> (1, then 2). A coin
+  stood on one of your units is a <b>wall</b>: it does not stop an attack, it answers one.
+  The wall defends at the rank your tier prints — 10 at Tribe — instead of a card from
+  your hand, so a single low card thrown at it simply bounces. Nothing else is owed, ever:
+  your people cost you nothing to keep, and no bill ever falls due.</p>
+  <div class="say"><b>A warning worth hearing early:</b> coins are the tight thing in this
+  game, not units. Fortifying, researching and founding colonies all want gold and there is no
+  steady income — you make it by cashing cards you would rather have played, by exploring
+  with low ones, and by winning a fight that takes a tile. Losing a trick pays you a coin per
+  unused card, so coming last is not nothing.</div>
 </section>
 
 <section>
@@ -277,8 +280,10 @@ HTML = f"""<!doctype html>
   <p>You know enough. Play to the end — the game finishes when someone places their last unit
   or a suit's advanced deck runs out, then you finish the round and play one more.</p>
   <p>At the end, count: <b>1 point per unit on the map</b>, plus the <b>centre card of your
-  victory row</b> (once you have three or more), plus <b>3 points for each terrain where you
-  have the most units</b>. Gold breaks ties.</p>
+  victory row</b> (once you have three or more), plus <b>2 points for every arrangement</b>
+  either of your objective cards asks for — a middle terrain with one named terrain on
+  either side of it, all three tiles yours. Build the shape twice and it pays twice. Gold
+  breaks ties.</p>
   <p>Then read the rulebook. It will take twenty minutes and it will make sense, because you've
   already seen every part of it move.</p>
 </section>
@@ -287,7 +292,7 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">✦</span><h2>Six things first-timers get wrong</h2></div>
   <dl class="wrong">
     <dt>Treating gold as a fallback.</dt>
-    <dd>Cashing good cards on purpose is how food, fortresses and research get paid for.
+    <dd>Cashing good cards on purpose is how fortresses, research and colonies get paid for.
     The strongest players convert constantly. (§06)</dd>
     <dt>Trying to win every trick.</dt>
     <dd>Coming last pays you a gold, and you'll need it. Deliberately playing a single is a

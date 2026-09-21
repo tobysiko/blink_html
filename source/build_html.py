@@ -814,7 +814,7 @@ HTML = f"""<!doctype html>
         <td>High ground. Expensive to take and worth holding.</td></tr>
     </tbody>
   </table>
-  {fig('combat', 'Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel, and your unit stays on your board until the tile is empty — clearing a stack takes as many won duels as there are defenders, and the last one takes the ground.')}
+  {fig('combat', 'Attacking is not moving a unit across the map. A card spent on a rival tile declares a duel, and your unit stays on your board until the tile is empty — clearing a stack takes as many won duels as there are defenders, and the last one takes the ground and pays a coin.')}
 
   <div class="note">
     <span class="tag">Why your hand matters twice</span>

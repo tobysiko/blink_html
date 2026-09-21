@@ -237,7 +237,17 @@ const PERKS = {
   diplomacy:    { name: "Diplomacy", once: true, todo: true },
   scholarship:  { name: "Scholarship", once: true },
   foresight:    { name: "Foresight", once: true, todo: true },
-  granary:      { name: "Granary", once: false },
+  /* GRANARY IS OUT OF THE POOL UNTIL IT DOES SOMETHING. Its whole effect is
+   * food() - 1, and v0.26 prints the lean economy where food() is always zero,
+   * so it was a live card that could be dealt to a player and then do
+   * precisely nothing for the rest of the game. `todo` is what keeps an
+   * unwired perk out of the bag, and an unwired perk is exactly what this is
+   * now - the rule it modifies left the game.
+   *
+   * It still works under `economy: "full"`, which is why the effect stays
+   * rather than being deleted. Giving it something to do under the lean
+   * economy is a design decision, not a repair. */
+  granary:      { name: "Granary", once: false, todo: true },
   coinage:      { name: "Coinage", once: true },
   tribute:      { name: "Tribute", once: true },
   markets:      { name: "Markets", once: true, todo: true },

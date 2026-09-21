@@ -94,10 +94,11 @@ HTML = f"""<!doctype html>
     <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
     <tbody>{band_rows()}</tbody>
   </table>
-  <p><strong>A</strong> is declared in the <em>declare step</em> at the top of the round, before
-  any meld is played — blind, knowing only your own hand. <strong>B</strong> is used during your
-  own map phase, when the board in front of you is already settled. <strong>C</strong> may be
-  taken at any moment, even mid-payment when feeding falls short.</p>
+  <p><strong>A</strong> is declared in the <em>declare step</em>, AFTER every meld is face up
+  and in leader order — you can see what you are trying to beat, and so can the player after
+  you. <strong>B</strong> is used during your own map phase, when the board in front of you is
+  already settled. <strong>C</strong> may be taken at any moment, including in the middle of
+  paying for something else.</p>
 </section>
 
 <section>
@@ -121,8 +122,8 @@ HTML = f"""<!doctype html>
     <span class="tag">Two tiles, one unit</span>
     <p>Ranks <b>11&ndash;15</b> lay two tiles but take only <b>one</b> unit from your board:
     settle and fortify that one, and leave the second tile as open ground. Units come from
-    the topmost tier holding any, so a colony still empties your board and still raises your
-    food bill.</p>
+    the topmost tier holding any, so a colony still empties your board — which costs you
+    nothing to keep, but does move you up a tier whether you wanted it yet or not.</p>
   </div>
 
   <h3>What “add this card’s rank” means — effect A</h3>
