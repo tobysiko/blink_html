@@ -53,7 +53,9 @@ function check() {
     /* `food` is NOT in this list: the printed economy has no feeds column, so
      * demanding a heading for it is demanding the column back. It is checked
      * on the full-economy page at the end of this file, where it exists. */
-    for (const cls of ['mlim', 'tname', 'uslots', 'mv', 'capcol']) {
+    /* `mv` is NOT here either: movement comes from the meld, so the ladder has
+     * no moves column to label. */
+    for (const cls of ['mlim', 'tname', 'uslots', 'capcol']) {
       const cell = head.querySelector('.' + cls);
       ok(cell && txt(cell).length > 0,
          `the \`${cls}\` column has no heading — its numbers mean nothing on sight`);
@@ -113,8 +115,9 @@ function check() {
     const corner = row && row.querySelector('.capcol .rankix b');
     ok(corner && txt(corner) === String(cap),
        `${name} buys up to ${cap}; its rank corner shows "${corner && txt(corner)}"`);
-    ok(row && row.querySelector('.mv .movestride svg'),
-       `${name} has no stride arrow beside its move count`);
+    /* The stride arrow went with the moves column - see the four-number
+     * ladder above. What stays is the shared vocabulary that survives: a meld
+     * is a fan, a rank cap is a card's index corner, a wall is a shield. */
     ok(row && row.querySelector('.tname .lead'),
        `${name} does not reach across to its own reserve row`);
   });
@@ -183,10 +186,24 @@ function check() {
   /* `\b` is no use against "1mv" — there is no word boundary between a digit
    * and a letter. The number is what matters, so pull the digits out. */
   const digits = (s) => (s.match(/\d+/g) || []).map(Number);
-  E.BANDS.forEach(([name, , , , moves, , cap], j) => {
-    const mv = txt(body[j] && body[j].querySelector('.mv'));
-    ok(digits(mv).includes(moves),
-       `${name} gets ${moves} free move(s); its row shows "${mv}"`);
+  /* THE LADDER IS FOUR NUMBERS. v0.26 ties movement to the MELD - each card
+   * you play carries one - so the tier no longer grants moves and a MOVES
+   * column would be a number that decides nothing. What the ladder still says
+   * is: how many cards you may meld, how many units you hold, how high you may
+   * buy, and what a coin on one of your units defends at.
+   *
+   * This block used to require a move count in every row, which is the same
+   * shape of mistake as the feeds column above: the rule left the game and the
+   * test went on demanding its display. */
+  ok(!d.querySelector('.tiers .mv'),
+     'the board still draws a MOVES column, and v0.26 pays movement out of the '
+     + 'meld rather than the tier');
+  ok(!!d.querySelector('.tiers.nomove'),
+     'the tier table is not marked .nomove, so the grid keeps an empty column '
+     + 'where the moves used to be');
+  ok(!/\bmoves?\b/i.test(txt(head)),
+     `a column heading still offers movement: "${txt(head)}"`);
+  E.BANDS.forEach(([name, , , , , , cap], j) => {
     const cp = txt(body[j] && body[j].querySelector('.capcol'));
     ok(digits(cp).includes(cap),
        `${name} may buy up to rank ${cap}; its row shows "${cp}"`);
@@ -199,7 +216,7 @@ function check() {
   const cols = head ? [...head.children].map((c) => txt(c)).join(' · ') : '—';
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
     : `player board: ${body.length} tiers under headings [${cols}], `
-      + 'every move limit and rank cap legible as a number, no feeding column '
+      + 'every meld limit and rank cap legible as a number, no feeding column '
       + 'under the printed economy, and the full economy still drawing one');
   if (fail.length) process.exit(1);
   return checkFullEconomy();

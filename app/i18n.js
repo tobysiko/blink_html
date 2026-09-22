@@ -347,7 +347,7 @@ en: {
   /* v0.26 prints the lean economy: nothing is fed, so the board does not say
      so. Kept as its own string rather than an empty {food} so the separators
      do not collapse into a row of middots. */
-  "board.foldNowLean": "{tier} \u00b7 {units} units \u00b7 {moves} moves \u00b7 cap {cap}",
+  "board.foldNowLean": "{tier} \u00b7 {units} units \u00b7 cap {cap}",
   "board.foldMarket": "{n} on offer \u00b7 {deck} in the deck",
   "fx.when.a": "card phase \u00b7 declared before any meld",
   "fx.when.b": "map phase",
@@ -1043,7 +1043,7 @@ de: {
   "discard.empty": "in diesem Durchgang noch nichts gespielt",
   "sec.hold": "Karte gedr\u00fcckt halten zum Lesen",
   "board.foldNow": "{tier} \u00b7 {units} Einheiten \u00b7 Nahrung {food} \u00b7 {moves} Z\u00fcge",
-  "board.foldNowLean": "{tier} \u00b7 {units} Einheiten \u00b7 {moves} Z\u00fcge \u00b7 Limit {cap}",
+  "board.foldNowLean": "{tier} \u00b7 {units} Einheiten \u00b7 Limit {cap}",
   "board.foldMarket": "{n} im Angebot \u00b7 {deck} im Stapel",
   "fx.when.a": "Kartenphase \u00b7 vor allen Kombinationen angesagt",
   "fx.when.b": "Spielplanphase",

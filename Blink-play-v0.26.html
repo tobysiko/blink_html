@@ -820,6 +820,12 @@
      not keep a track for it - an empty column still takes its gap, and the
      row would sit with a hole in it where a removed rule used to be. */
   .tiers.nofood .tier-row{grid-template-columns:34px 26px 26px 84px 1fr 40px}
+  /* v0.26 also takes MOVES off the ladder - movement comes from the meld - so
+     the printed ladder is four numbers and the grid has one track fewer
+     again. Both columns are independent switches, so all four combinations
+     have to lay out. */
+  .tiers.nomove .tier-row{grid-template-columns:34px 26px 26px 84px 1fr auto}
+  .tiers.nofood.nomove .tier-row{grid-template-columns:34px 26px 26px 84px 1fr}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}
@@ -1777,7 +1783,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"49fdf82d3d","branch":"main","dirty":true,"built":"2026-09-22T16:26:17Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"b22b01514f","branch":"main","dirty":true,"built":"2026-09-22T20:33:05Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2127,7 +2133,7 @@ en: {
   /* v0.26 prints the lean economy: nothing is fed, so the board does not say
      so. Kept as its own string rather than an empty {food} so the separators
      do not collapse into a row of middots. */
-  "board.foldNowLean": "{tier} \u00b7 {units} units \u00b7 {moves} moves \u00b7 cap {cap}",
+  "board.foldNowLean": "{tier} \u00b7 {units} units \u00b7 cap {cap}",
   "board.foldMarket": "{n} on offer \u00b7 {deck} in the deck",
   "fx.when.a": "card phase \u00b7 declared before any meld",
   "fx.when.b": "map phase",
@@ -2823,7 +2829,7 @@ de: {
   "discard.empty": "in diesem Durchgang noch nichts gespielt",
   "sec.hold": "Karte gedr\u00fcckt halten zum Lesen",
   "board.foldNow": "{tier} \u00b7 {units} Einheiten \u00b7 Nahrung {food} \u00b7 {moves} Z\u00fcge",
-  "board.foldNowLean": "{tier} \u00b7 {units} Einheiten \u00b7 {moves} Z\u00fcge \u00b7 Limit {cap}",
+  "board.foldNowLean": "{tier} \u00b7 {units} Einheiten \u00b7 Limit {cap}",
   "board.foldMarket": "{n} im Angebot \u00b7 {deck} im Stapel",
   "fx.when.a": "Kartenphase \u00b7 vor allen Kombinationen angesagt",
   "fx.when.b": "Spielplanphase",
@@ -4798,6 +4804,29 @@ class Game {
      *
      * "reserve" is the v0.25 printed rule, kept so displace_test.js and every
      * measurement taken before the change still reproduce. See _takeUnit. */
+    /* WHERE MOVEMENT COMES FROM. v0.26 prints "meld".
+     *
+     *   "meld"   - EACH CARD YOU PLAY CARRIES A MOVEMENT. A three-card meld
+     *              moves three times; a single moves once. Movement is no
+     *              longer an allowance the board hands you for having climbed,
+     *              it is something the cards in front of you are worth, which
+     *              is the whole point: a big meld buys a big turn, and the
+     *              trick you won it with already cost you the cards.
+     *
+     *              This is the movement half of folding explore and movement
+     *              into the card. A card still makes one PLACEMENT - populate
+     *              or explore - and now the same turn carries a movement per
+     *              card as well, so settling and then walking somewhere is one
+     *              meld's work rather than a settle plus an allowance.
+     *
+     *   "ladder" - the pre-v0.26 rule: a fixed allowance per tier, 1 at Tribe
+     *              to 5 at Civilization, regardless of what you played. Kept
+     *              so every measurement taken before this reproduces.
+     *
+     * The consequence on the components is that the free-moves column leaves
+     * the tier ladder, which becomes four numbers rather than six.
+     */
+    this.CARD_MOVES = opts.cardMoves === "ladder" ? "ladder" : "meld";
     this.LOSS = opts.loss === "reserve" ? "reserve" : "displace";
     /* WHAT A KILLED UNIT COSTS ITS OWNER.
      *
@@ -6275,8 +6304,13 @@ class Game {
     /* moveBase is the tier's own allowance. Roads lifts `moves` above it, and
      * the token is spent at the moment a move is taken that the tier alone
      * could not have paid for — not merely for holding the perk. */
-    const st = { cards: use.slice(), moves: p.freeMoves(),
-                 moveBase: p.bands[p.band()][4],
+    /* ONE MOVEMENT PER CARD PLAYED, under the printed rule. `moveBase` is what
+     * the turn is worth before any perk tops it up, so the Roads perk is still
+     * spent only on a move the meld alone could not have paid for. */
+    const meldMoves = this.CARD_MOVES === "meld" ? use.length : p.freeMoves();
+    const meldBase = this.CARD_MOVES === "meld" ? use.length : p.bands[p.band()][4];
+    const st = { cards: use.slice(), moves: meldMoves + (p.perkReady("roads") ? 1 : 0),
+                 moveBase: meldBase,
                  researches: 0, researchesPaid: 0,
                  bUsed: false, waterUsed: false };
     /* Refill only once the meld is fully resolved. Recycling while cards are
@@ -10978,6 +11012,11 @@ const wallLadder = () => G && ["wall", "wallonly"].includes(G.FORTIFY || "wall")
  * otherwise: an empty column is not neutral, it is a thing a player at a table
  * looks at and asks about. */
 const foodLadder = () => !!(G && G.FOOD_ON);
+/* DOES THE BOARD STILL HAND OUT MOVEMENT? v0.26 ties movement to the meld -
+ * each card you play carries one - so the tier ladder no longer grants it and
+ * the column is a number that decides nothing. The ladder becomes four:
+ * meld limit, units, rank cap, wall. `cardMoves: "ladder"` puts it back. */
+const moveLadder = () => !!(G && G.CARD_MOVES === "ladder");
 const wallOf = (cap) => G && G.WALL_BY_CAP === false
   ? G.WALL_RANK
   : Math.max(1, cap + (G && G.WALL_OFFSET !== undefined ? G.WALL_OFFSET : -2));
@@ -11277,8 +11316,8 @@ function renderPlayer() {
                                food: p.food(), moves: now[4] })
         : t("board.foldNowLean", { tier: tierName(p.band()),
                                    units: p.reserve[p.band()],
-                                   moves: now[4], cap: now[6] })}</span></summary>
-    <div class="tiers${foodLadder() ? "" : " nofood"}">
+                                   cap: now[6] })}</span></summary>
+    <div class="tiers${foodLadder() ? "" : " nofood"}${moveLadder() ? "" : " nomove"}">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
         <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
@@ -11288,7 +11327,8 @@ function renderPlayer() {
         <span class="uslots">${t("board.colUnits")}</span>
         ${foodLadder() ? `<span class="food" title="${t("board.foodPer")}">${
           t("board.colFood")}</span>` : ""}
-        <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
+        ${moveLadder() ? `<span class="mv" title="${t("board.freeMoves")}">${
+          t("board.colMove")}</span>` : ""}
       </div>`;
 
   for (let j = 0; j < bands.length; j++) {
@@ -11337,7 +11377,8 @@ function renderPlayer() {
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
       ${foodLadder() ? `<span class="food" title="${foodTip}">${coins}</span>` : ""}
-      <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
+      ${moveLadder() ? `<span class="mv" title="${t("board.freeMoves")}">${
+        stride(moves)}</span>` : ""}
     </div>`;
   }
   /* The fold closes here and not lower: the feeding note below it is the one

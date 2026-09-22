@@ -80,8 +80,20 @@ const has = (a, k) => a.includes(k);
 /* "The first time each turn that you move by sea, you may immediately explore
  *  one tile of any terrain you like." A sea move starts AND ends on Ocean —
  *  stepping onto the water from land is an ordinary land move. */
-function turnRun(g, seat, answers) {
-  const it = g._humanTurn(g.P[seat], []);
+/* THE MELD PAYS FOR THE MOVES (v0.26). This used to hand the turn an empty
+ * meld, because movement was an allowance the tier gave you and the cards you
+ * played had nothing to do with it. Now each card carries one movement, so an
+ * empty meld is a turn that cannot move at all - every case in this file
+ * silently stopped testing anything, and the first one to notice was a
+ * TypeError three assertions later rather than a failure at the move.
+ *
+ * So the meld is now part of the fixture: enough cards to pay for the moves
+ * the case scripts. They are never spent on the map by these answers, which
+ * is fine - unspent meld cards become gold and nothing here reads the purse. */
+function turnRun(g, seat, answers, meldSize) {
+  const n = meldSize === undefined ? 4 : meldSize;
+  const meld = Array.from({ length: n }, (_, i) => ({ r: i + 2, s: 'plains' }));
+  const it = g._humanTurn(g.P[seat], meld);
   const seen = [];
   let r = it.next();
   while (!r.done) {

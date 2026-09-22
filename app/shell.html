@@ -820,6 +820,12 @@
      not keep a track for it - an empty column still takes its gap, and the
      row would sit with a hole in it where a removed rule used to be. */
   .tiers.nofood .tier-row{grid-template-columns:34px 26px 26px 84px 1fr 40px}
+  /* v0.26 also takes MOVES off the ladder - movement comes from the meld - so
+     the printed ladder is four numbers and the grid has one track fewer
+     again. Both columns are independent switches, so all four combinations
+     have to lay out. */
+  .tiers.nomove .tier-row{grid-template-columns:34px 26px 26px 84px 1fr auto}
+  .tiers.nofood.nomove .tier-row{grid-template-columns:34px 26px 26px 84px 1fr}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}

@@ -1755,6 +1755,11 @@ const wallLadder = () => G && ["wall", "wallonly"].includes(G.FORTIFY || "wall")
  * otherwise: an empty column is not neutral, it is a thing a player at a table
  * looks at and asks about. */
 const foodLadder = () => !!(G && G.FOOD_ON);
+/* DOES THE BOARD STILL HAND OUT MOVEMENT? v0.26 ties movement to the meld -
+ * each card you play carries one - so the tier ladder no longer grants it and
+ * the column is a number that decides nothing. The ladder becomes four:
+ * meld limit, units, rank cap, wall. `cardMoves: "ladder"` puts it back. */
+const moveLadder = () => !!(G && G.CARD_MOVES === "ladder");
 const wallOf = (cap) => G && G.WALL_BY_CAP === false
   ? G.WALL_RANK
   : Math.max(1, cap + (G && G.WALL_OFFSET !== undefined ? G.WALL_OFFSET : -2));
@@ -2054,8 +2059,8 @@ function renderPlayer() {
                                food: p.food(), moves: now[4] })
         : t("board.foldNowLean", { tier: tierName(p.band()),
                                    units: p.reserve[p.band()],
-                                   moves: now[4], cap: now[6] })}</span></summary>
-    <div class="tiers${foodLadder() ? "" : " nofood"}">
+                                   cap: now[6] })}</span></summary>
+    <div class="tiers${foodLadder() ? "" : " nofood"}${moveLadder() ? "" : " nomove"}">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
         <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
@@ -2065,7 +2070,8 @@ function renderPlayer() {
         <span class="uslots">${t("board.colUnits")}</span>
         ${foodLadder() ? `<span class="food" title="${t("board.foodPer")}">${
           t("board.colFood")}</span>` : ""}
-        <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
+        ${moveLadder() ? `<span class="mv" title="${t("board.freeMoves")}">${
+          t("board.colMove")}</span>` : ""}
       </div>`;
 
   for (let j = 0; j < bands.length; j++) {
@@ -2114,7 +2120,8 @@ function renderPlayer() {
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
       ${foodLadder() ? `<span class="food" title="${foodTip}">${coins}</span>` : ""}
-      <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
+      ${moveLadder() ? `<span class="mv" title="${t("board.freeMoves")}">${
+        stride(moves)}</span>` : ""}
     </div>`;
   }
   /* The fold closes here and not lower: the feeding note below it is the one

@@ -79,7 +79,10 @@ function board(spec) {
 
   /* And it resolves: the tile appears, the unit is on it, the water is empty. */
   const target = cells[0];
-  const it = g._humanTurn(p, []);
+  /* THE MELD PAYS FOR THE MOVE (v0.26). An empty meld is a turn with no
+   * movement at all now, so landfall was never reached and the failure
+   * surfaced three assertions later as "landfall laid a undefined tile". */
+  const it = g._humanTurn(p, [{ r: 4, s: 'ocean' }, { r: 5, s: 'ocean' }]);
   let r = it.next();
   let guard = 0;
   while (!r.done && guard++ < 20) {

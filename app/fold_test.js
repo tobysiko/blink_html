@@ -91,8 +91,15 @@ function run() {
       if (!fed && !/cap/i.test(b))
         fail.push(`with no feeding cost to show, the folded tier table should `
           + `carry the rank cap instead: "${b}"`);
-      if (!/move/i.test(b))
+      /* Movement left the ladder in v0.26 - it comes from the meld now - so the
+         folded summary carries the rank cap in its place. Read from the game,
+         like the feeding line above it. */
+      const laddered = w.eval('!!(G && G.CARD_MOVES === "ladder")');
+      if (laddered && !/move/i.test(b))
         fail.push(`the folded tier table drops the moves: "${b}"`);
+      if (!laddered && /move/i.test(b))
+        fail.push(`the folded tier table still offers moves, and the tier no `
+          + `longer grants any: "${b}"`);
 
       /* A step that wants a card OUT of the market opens it. */
       w.eval('REQ = { type: "buy", seat: ME, options: [0, 1] }; renderMarket();');

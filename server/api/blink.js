@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-22T16:26:20Z
+ * Built 2026-09-22T20:33:07Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1584,6 +1584,29 @@ class Game {
      *
      * "reserve" is the v0.25 printed rule, kept so displace_test.js and every
      * measurement taken before the change still reproduce. See _takeUnit. */
+    /* WHERE MOVEMENT COMES FROM. v0.26 prints "meld".
+     *
+     *   "meld"   - EACH CARD YOU PLAY CARRIES A MOVEMENT. A three-card meld
+     *              moves three times; a single moves once. Movement is no
+     *              longer an allowance the board hands you for having climbed,
+     *              it is something the cards in front of you are worth, which
+     *              is the whole point: a big meld buys a big turn, and the
+     *              trick you won it with already cost you the cards.
+     *
+     *              This is the movement half of folding explore and movement
+     *              into the card. A card still makes one PLACEMENT - populate
+     *              or explore - and now the same turn carries a movement per
+     *              card as well, so settling and then walking somewhere is one
+     *              meld's work rather than a settle plus an allowance.
+     *
+     *   "ladder" - the pre-v0.26 rule: a fixed allowance per tier, 1 at Tribe
+     *              to 5 at Civilization, regardless of what you played. Kept
+     *              so every measurement taken before this reproduces.
+     *
+     * The consequence on the components is that the free-moves column leaves
+     * the tier ladder, which becomes four numbers rather than six.
+     */
+    this.CARD_MOVES = opts.cardMoves === "ladder" ? "ladder" : "meld";
     this.LOSS = opts.loss === "reserve" ? "reserve" : "displace";
     /* WHAT A KILLED UNIT COSTS ITS OWNER.
      *
@@ -3061,8 +3084,13 @@ class Game {
     /* moveBase is the tier's own allowance. Roads lifts `moves` above it, and
      * the token is spent at the moment a move is taken that the tier alone
      * could not have paid for — not merely for holding the perk. */
-    const st = { cards: use.slice(), moves: p.freeMoves(),
-                 moveBase: p.bands[p.band()][4],
+    /* ONE MOVEMENT PER CARD PLAYED, under the printed rule. `moveBase` is what
+     * the turn is worth before any perk tops it up, so the Roads perk is still
+     * spent only on a move the meld alone could not have paid for. */
+    const meldMoves = this.CARD_MOVES === "meld" ? use.length : p.freeMoves();
+    const meldBase = this.CARD_MOVES === "meld" ? use.length : p.bands[p.band()][4];
+    const st = { cards: use.slice(), moves: meldMoves + (p.perkReady("roads") ? 1 : 0),
+                 moveBase: meldBase,
                  researches: 0, researchesPaid: 0,
                  bUsed: false, waterUsed: false };
     /* Refill only once the meld is fully resolved. Recycling while cards are
