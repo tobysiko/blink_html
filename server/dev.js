@@ -62,11 +62,19 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname.replace(/\/+$/, '') || '/';
   if (req.method === 'OPTIONS') { res.writeHead(204, CORS); return res.end(); }
 
-  if (p === '/' || p === '/health')
-    return send(res, 200, { ok: true, service: 'blink-sessions (dev)',
-                            protocol: S.SESSION_PROTOCOL,
-                            store: hub ? hub.store.kind : 'starting',
-                            rooms: hub ? hub.size : 0 });
+  if (p === '/' || p === '/health') {
+    /* Probes the store, exactly as the deployed one does - see vercel.src.js.
+     * A dev health check that answers differently from the real one is how a
+     * broken store looks fine locally. */
+    const probe = hub ? await hub.store.ping() : { ok: false, kind: 'starting' };
+    return send(res, probe.ok ? 200 : 503,
+                { ok: probe.ok, service: 'blink-sessions (dev)',
+                  protocol: S.SESSION_PROTOCOL,
+                  store: probe.ok ? probe.kind
+                                  : `${probe.kind}${probe.why ? ' — ' + probe.why : ''}`,
+                  storeMs: probe.ms,
+                  rooms: hub ? hub.size : 0 });
+  }
 
   if (p === '/session' && req.method === 'POST') {
     const s = await hub.create(await body(req));

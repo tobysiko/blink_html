@@ -63,6 +63,25 @@ tunnel, and the path `net_test.js` exercises on every run.
    - *No high availability.* If the Redis is down, tables cannot be opened or
      joined. Solo and hot-seat play are unaffected — they never touch it.
 
+   - *It is DELETED FOR INACTIVITY.* This one bit on 22 Sep 2026: Vercel
+     warned that the free store would be removed because nothing had touched
+     it. Blink's Redis is idle by nature — no command is sent until two people
+     open a table together, which between playtests is never, and `/health`
+     was reporting `store.kind`, a string, rather than asking the store
+     anything. So the service looked healthy while the database aged out
+     underneath it.
+
+     `/health` now does a real round-trip (SET then GET of `blink:heartbeat`,
+     one hour TTL), and `vercel.json` runs a daily cron against it. That keeps
+     the database alive and makes the health check able to fail, which it
+     could not before. A Hobby plan allows one cron a day, ±59 minutes, which
+     is far inside the inactivity window.
+
+     If it is ever deleted anyway: Storage → Marketplace → any Redis, which
+     sets `REDIS_URL` again. Nothing is lost — a table expires in two days and
+     the free plan has no persistence, so this is a feature outage, never a
+     data loss.
+
 2. **Add the dependencies** to the site's `package.json`:
 
    ```

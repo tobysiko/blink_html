@@ -63,6 +63,8 @@ function memoryStore() {
   return {
     kind: "memory",
     raw: null,                             // nowhere to keep a report on a laptop
+    /* Nothing to reach, so it is always reachable. */
+    async ping() { return { ok: true, kind: "memory" }; },
     async create(s) { room(s.code).s = s; return s; },
     async get(code) { return room(code).s; },
     /* Single-threaded node: read-modify-write cannot be interleaved here, so
@@ -112,6 +114,35 @@ function redisStore(client, sub) {
      * is NOT here: a free Redis has no persistence, so nothing that would be
      * missed after a restart may be kept in it. */
     raw: client,
+
+    /* A REAL ROUND-TRIP, for two jobs that turn out to be the same job.
+     *
+     * 1. Health was reporting `store.kind`, which is a string decided when
+     *    this object was built. It said "redis" whether or not there was a
+     *    Redis at the other end - a health check that cannot fail is not a
+     *    health check, and the one thing it is asked is exactly the thing it
+     *    was not testing.
+     * 2. A free Redis is DELETED FOR INACTIVITY, and Blink's is idle by
+     *    nature: nothing touches it until two people open a table together.
+     *    A command that actually reaches the server is what keeps it alive.
+     *
+     * So this writes a key and reads it back rather than PINGing: a PING is
+     * answered by the proxy in front of some hosted Redises and proves less
+     * than it looks. The key expires on its own and is never read by anything
+     * else. */
+    async ping() {
+      const t0 = Date.now();
+      const key = "blink:heartbeat";
+      const token = String(t0);
+      try {
+        await client.set(key, token, { EX: 3600 });
+        const back = await client.get(key);
+        if (back !== token) return { ok: false, kind: "redis", why: "read back a different value" };
+        return { ok: true, kind: "redis", ms: Date.now() - t0 };
+      } catch (e) {
+        return { ok: false, kind: "redis", why: (e && e.message) || String(e) };
+      }
+    },
 
     async create(s) {
       await client.set(KEY(s.code), JSON.stringify(s), { EX: TTL_SECONDS });

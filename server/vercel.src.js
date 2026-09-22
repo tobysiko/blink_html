@@ -78,13 +78,30 @@ const server = http.createServer(async (req, res) => {
      *
      * Names only. Never the URL: a Discord webhook is a credential, and this
      * endpoint is public. */
-    if (p === "/" || p === "/health")
-      return reply(res, 200, { ok: true, service: "blink-sessions",
-                               protocol: SESSION_PROTOCOL, store: hub.store.kind,
-                               reports: process.env.BLOB_READ_WRITE_TOKEN
-                                 ? "stored" : "not stored — set BLOB_READ_WRITE_TOKEN",
-                               notify: process.env.BLINK_NOTIFY_URL
-                                 ? "on" : "off — set BLINK_NOTIFY_URL" });
+    /* HEALTH ASKS THE STORE, rather than reporting how it was configured.
+     *
+     * `store.kind` is decided when the store object is built, so this used to
+     * answer "redis" whether or not a Redis existed at the other end. The one
+     * question a health endpoint is asked was the one it did not test.
+     *
+     * The round-trip doubles as the KEEPALIVE. A free Redis is deleted for
+     * inactivity, and Blink's is idle by nature - nothing touches it until two
+     * people open a table together, which between playtests is never. A daily
+     * cron hitting this endpoint is enough to keep it, and needs no second
+     * route to maintain. `ok` is now false when the store cannot answer, so
+     * this is also the thing to alert on. */
+    if (p === "/" || p === "/health") {
+      const probe = await hub.store.ping();
+      return reply(res, probe.ok ? 200 : 503, {
+        ok: probe.ok, service: "blink-sessions",
+        protocol: SESSION_PROTOCOL,
+        store: probe.ok ? probe.kind : `${probe.kind} — UNREACHABLE: ${probe.why}`,
+        storeMs: probe.ms,
+        reports: process.env.BLOB_READ_WRITE_TOKEN
+          ? "stored" : "not stored — set BLOB_READ_WRITE_TOKEN",
+        notify: process.env.BLINK_NOTIFY_URL
+          ? "on" : "off — set BLINK_NOTIFY_URL" });
+    }
 
     if (p === "/session" && req.method === "POST") {
       const s = await hub.create(await readBody(req));

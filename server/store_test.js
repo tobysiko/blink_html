@@ -41,6 +41,28 @@ function fakeSock(name) {
            last: (t) => [...got].reverse().find((m) => m.t === t) };
 }
 
+/* AN ANSWER THIS REQUEST WOULD ACCEPT.
+ *
+ * Every call site here used to send `{pick: 0}` to anything that was not a
+ * turn, which assumed every other request offers an `options` array to pick
+ * from. The v0.26 draft does not - it carries a POOL and a count of cards to
+ * pass - so `legalAnswer` refused the very first answer of every game with
+ * session.illegal, and this whole file failed from move zero down, reporting
+ * eight separate symptoms of one stale assumption.
+ *
+ * The real client is unaffected: ui.js sends the array of positions and
+ * encodeAnswer wraps it as {raw}, which is legal. It was only ever this test
+ * that was speaking an older dialect. Asking the REQUEST what it will take,
+ * rather than assuming, is what stops that happening again. */
+function anyAnswer(req) {
+  if (!req) return null;
+  if (req.type === 'turn') return { kind: 'end' };
+  if (req.options) return { pick: 0 };
+  if (req.type === 'draft')                     // pass the first `pass` cards
+    return { raw: Array.from({ length: req.pass }, (_, k) => k) };
+  return { raw: null };                         // mulligan and friends: decline
+}
+
 async function main() {
   // ============================================ 1. two instances, one table
   const store = memoryStore();
@@ -92,7 +114,7 @@ async function main() {
     const [hub, sock] = at.req.seat === tobySeat ? [A, toby] : [B, anna];
     const step = live.log.length;
     await hub.handle(code, sock, { t: 'answer', step,
-      token: at.req.type === 'turn' ? { kind: 'end' } : { pick: 0 } });
+      token: anyAnswer(at.req) });
     const heardA = toby.last('answer'), heardB = anna.last('answer');
     if (!heardA || heardA.step !== step) {
       fail.push(`move ${i} (seat ${at.req.seat}) never reached the host's instance`);
@@ -138,11 +160,15 @@ async function main() {
    * the player whose turn it is; the other is not — and neither has any way to
    * know the other is mid-flight. */
   redis.raceOnce();
+  /* The answer has to be one the request would ACCEPT, or both arms are
+   * refused for being nonsense and the race proves nothing - which is exactly
+   * what happened once the draft arrived. */
+  const raceTok = anyAnswer(S.sessionAdvance(live0, E).req);
   const [first, second] = await Promise.all([
     rstore.update(r.code, (sess) =>
-      S.sessionAnswer(sess, E, actor.player.token, 0, { pick: 0 })),
+      S.sessionAnswer(sess, E, actor.player.token, 0, raceTok)),
     rstore.update(r.code, (sess) =>
-      S.sessionAnswer(sess, E, other.player.token, 0, { pick: 0 })),
+      S.sessionAnswer(sess, E, other.player.token, 0, raceTok)),
   ]);
   const after = await rstore.get(r.code);
   ok(after.log.length === 1,
@@ -162,11 +188,12 @@ async function main() {
   const seat2 = whose(now);
   const who2 = seat2 === p1.player.seat ? p1 : p2;
   const len = now.log.length;
+  const tapTok = anyAnswer(S.sessionAdvance(now, E).req);
   const both = await Promise.all([
     rstore.update(r.code, (sess) =>
-      S.sessionAnswer(sess, E, who2.player.token, len, { pick: 0 })),
+      S.sessionAnswer(sess, E, who2.player.token, len, tapTok)),
     rstore.update(r.code, (sess) =>
-      S.sessionAnswer(sess, E, who2.player.token, len, { pick: 0 })),
+      S.sessionAnswer(sess, E, who2.player.token, len, tapTok)),
   ]);
   const end = await rstore.get(r.code);
   ok(end.log.length === len + 1,
@@ -195,7 +222,7 @@ async function main() {
   const atNow = S.sessionAdvance(liveNow, E);
   const move = await rstore.update(r.code, (sess) =>
     S.sessionAnswer(sess, E, actorNow.token, liveNow.log.length,
-      atNow.req.type === 'turn' ? { kind: 'end' } : { pick: 0 }));
+      anyAnswer(atNow.req)));
   ok(move.ok, 'the costed move was refused: ' + move.why);
   const perMove = redis.cmds;
   ok(perMove <= 2, `a move now costs ${perMove} Redis commands before the publish, `
@@ -209,12 +236,53 @@ async function main() {
   ok(redis.dups === 0,
      `a move opened ${redis.dups} new connections — the free plan allows 30 in total`);
 
+  // ======================================= 4. health actually asks the store
+  /* `store.kind` is decided when the store is built, so a health check reading
+   * it answered "redis" whether or not a Redis existed at the other end - the
+   * one question it is asked was the one it did not test. ping() does a real
+   * round-trip, and it is also what keeps a FREE Redis from being deleted for
+   * inactivity: Blink's is idle by nature, because nothing touches it until
+   * two people open a table together. A daily cron hits /health for exactly
+   * this reason, so the round-trip has to keep working or the database
+   * quietly ages out. */
+  {
+    const pingSub = { on() {}, async subscribe() {}, async unsubscribe() {} };
+    const pingClient = (o = {}) => {
+      const kv = new Map();
+      return {
+        async set(k, v) { if (o.dead) throw new Error('connection refused'); kv.set(k, v); },
+        async get(k) { return o.wrong ? 'not-what-was-written' : (kv.get(k) ?? null); },
+        duplicate() { return this; },
+      };
+    };
+    const okPing = await redisStore(pingClient(), pingSub).ping();
+    ok(okPing.ok && okPing.kind === 'redis',
+       'ping said a healthy store was unhealthy: ' + JSON.stringify(okPing));
+    ok(typeof okPing.ms === 'number', 'ping does not report a round-trip time');
+
+    const deadPing = await redisStore(pingClient({ dead: true }), pingSub).ping();
+    ok(deadPing.ok === false,
+       'ping said an UNREACHABLE store was healthy - which is the whole failure '
+       + 'this replaced');
+    ok(/refused/.test(deadPing.why || ''), 'ping does not say why it failed');
+
+    /* A store that answers but returns the wrong thing is not healthy either,
+     * and a PING would have called it fine. */
+    const wrongPing = await redisStore(pingClient({ wrong: true }), pingSub).ping();
+    ok(wrongPing.ok === false,
+       'ping accepted a store that read back a different value than it wrote');
+
+    ok((await memoryStore().ping()).ok === true,
+       'the memory store, which cannot be unreachable, reported unhealthy');
+  }
+
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
     : `store: two instances over one table stayed in step for ${moves} moves and `
       + `agreed on who sits where; a double tap across two instances collided `
       + `${redis.retries} time(s) in the store and still played exactly one move; `
       + `a move costs ${perMove} commands plus one publish, opens no new `
-      + `connection, and a refusal costs nothing`);
+      + `connection, a refusal costs nothing, and health does a real `
+      + `round-trip that fails when the store is unreachable`);
   process.exit(fail.length ? 1 : 0);
 }
 

@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-21T20:08:24Z
+ * Built 2026-09-22T15:36:58Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -5648,6 +5648,8 @@ function memoryStore() {
   return {
     kind: "memory",
     raw: null,                             // nowhere to keep a report on a laptop
+    /* Nothing to reach, so it is always reachable. */
+    async ping() { return { ok: true, kind: "memory" }; },
     async create(s) { room(s.code).s = s; return s; },
     async get(code) { return room(code).s; },
     /* Single-threaded node: read-modify-write cannot be interleaved here, so
@@ -5697,6 +5699,35 @@ function redisStore(client, sub) {
      * is NOT here: a free Redis has no persistence, so nothing that would be
      * missed after a restart may be kept in it. */
     raw: client,
+
+    /* A REAL ROUND-TRIP, for two jobs that turn out to be the same job.
+     *
+     * 1. Health was reporting `store.kind`, which is a string decided when
+     *    this object was built. It said "redis" whether or not there was a
+     *    Redis at the other end - a health check that cannot fail is not a
+     *    health check, and the one thing it is asked is exactly the thing it
+     *    was not testing.
+     * 2. A free Redis is DELETED FOR INACTIVITY, and Blink's is idle by
+     *    nature: nothing touches it until two people open a table together.
+     *    A command that actually reaches the server is what keeps it alive.
+     *
+     * So this writes a key and reads it back rather than PINGing: a PING is
+     * answered by the proxy in front of some hosted Redises and proves less
+     * than it looks. The key expires on its own and is never read by anything
+     * else. */
+    async ping() {
+      const t0 = Date.now();
+      const key = "blink:heartbeat";
+      const token = String(t0);
+      try {
+        await client.set(key, token, { EX: 3600 });
+        const back = await client.get(key);
+        if (back !== token) return { ok: false, kind: "redis", why: "read back a different value" };
+        return { ok: true, kind: "redis", ms: Date.now() - t0 };
+      } catch (e) {
+        return { ok: false, kind: "redis", why: (e && e.message) || String(e) };
+      }
+    },
 
     async create(s) {
       await client.set(KEY(s.code), JSON.stringify(s), { EX: TTL_SECONDS });
@@ -5996,13 +6027,30 @@ const server = http.createServer(async (req, res) => {
      *
      * Names only. Never the URL: a Discord webhook is a credential, and this
      * endpoint is public. */
-    if (p === "/" || p === "/health")
-      return reply(res, 200, { ok: true, service: "blink-sessions",
-                               protocol: SESSION_PROTOCOL, store: hub.store.kind,
-                               reports: process.env.BLOB_READ_WRITE_TOKEN
-                                 ? "stored" : "not stored — set BLOB_READ_WRITE_TOKEN",
-                               notify: process.env.BLINK_NOTIFY_URL
-                                 ? "on" : "off — set BLINK_NOTIFY_URL" });
+    /* HEALTH ASKS THE STORE, rather than reporting how it was configured.
+     *
+     * `store.kind` is decided when the store object is built, so this used to
+     * answer "redis" whether or not a Redis existed at the other end. The one
+     * question a health endpoint is asked was the one it did not test.
+     *
+     * The round-trip doubles as the KEEPALIVE. A free Redis is deleted for
+     * inactivity, and Blink's is idle by nature - nothing touches it until two
+     * people open a table together, which between playtests is never. A daily
+     * cron hitting this endpoint is enough to keep it, and needs no second
+     * route to maintain. `ok` is now false when the store cannot answer, so
+     * this is also the thing to alert on. */
+    if (p === "/" || p === "/health") {
+      const probe = await hub.store.ping();
+      return reply(res, probe.ok ? 200 : 503, {
+        ok: probe.ok, service: "blink-sessions",
+        protocol: SESSION_PROTOCOL,
+        store: probe.ok ? probe.kind : `${probe.kind} — UNREACHABLE: ${probe.why}`,
+        storeMs: probe.ms,
+        reports: process.env.BLOB_READ_WRITE_TOKEN
+          ? "stored" : "not stored — set BLOB_READ_WRITE_TOKEN",
+        notify: process.env.BLINK_NOTIFY_URL
+          ? "on" : "off — set BLINK_NOTIFY_URL" });
+    }
 
     if (p === "/session" && req.method === "POST") {
       const s = await hub.create(await readBody(req));
