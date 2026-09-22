@@ -299,7 +299,15 @@ def build():
     # numbers on any row are two apart, which is the whole rule without a
     # sentence. It costs 17 mm, taken from the tier-name gap and the reserve
     # one below — see the two subtractions there.
-    wall_x0 = cap_x0 + 20 if WALL else cap_x0
+    # BUY UP TO and WALL sat 20 mm apart, which put their headings a single
+    # space apart: across the table the row was headed "BUY UP TO WALL", one
+    # phrase naming one thing, when they are two ranks two apart. The gap only
+    # had to be that tight because MOVES needed the width at the far end of the
+    # row; without it there is room to say they are two columns. The full board
+    # (--food --moves) keeps the old 20, because the width is still spoken for
+    # there and MOVES falls off the sheet at 26.
+    _UPKEEP = FOOD or MOVES
+    wall_x0 = cap_x0 + (20 if _UPKEEP else 26) if WALL else cap_x0
     name_x0 = (wall_x0 + 16) if WALL else (cap_x0 + 19)
     # The row has to end inside the margin with MOVES' heading on it, so the
     # gaps are spent from a budget rather than guessed. Widening the name gap
@@ -312,6 +320,27 @@ def build():
     # coins used to be and the board looks like it lost something.
     moves_x0 = food_x0 + food_w + (10 if FOOD else 0)
     sep_x    = slots_x0 + slots_w + (4 if WALL else 6)   # units | upkeep
+
+    # IS THERE ANYTHING TO THE RIGHT OF THE RESERVE? Food and moves were both
+    # columns out there, and v0.26 has neither - so the row ran to the right
+    # margin anyway and left 76 mm of empty panel past the last unit slot, with
+    # the units|upkeep rule drawn down the middle of the void. From across the
+    # table that reads as a column somebody forgot to print, which is a worse
+    # board than a narrower one.
+    #
+    # So the row ends where its content ends, and the ladder is then CENTRED on
+    # the sheet instead of pinned to the left margin with a hole on the right.
+    # Every x above is band_x plus a constant, so centring is one shift applied
+    # to all of them - no second layout to keep in step with the first. With
+    # --food or --moves this is a no-op and the board is exactly as it was.
+    UPKEEP = _UPKEEP
+    band_r = (PW - M - 2) if UPKEEP else (slots_x0 + slots_w + 4)
+    shift  = 0.0 if UPKEEP else max(0.0, ((PW - M - 2) - band_r) / 2)
+    if shift:
+        meld_x0 += shift; cap_x0 += shift; wall_x0 += shift
+        name_x0 += shift; slots_x0 += shift
+        food_x0 += shift; moves_x0 += shift; sep_x += shift
+        band_x += shift; band_r += shift
 
     s.append(T(meld_x0, top, "MELD", 3.6, anchor="start", col=SOFT, mono=True,
                spacing="0.4"))
@@ -356,7 +385,7 @@ def build():
         # band background
         active = False      # a blank board: nothing pre-filled
         s.append(f'<rect x="{band_x-2}" y="{band_top:.2f}" '
-                 f'width="{PW-M-(band_x-2)-2}" '
+                 f'width="{band_r-(band_x-2):.2f}" '
                  f'height="{band_h}" rx="2.4" fill="{PANEL if i%2==0 else PAPER}" '
                  f'stroke="{LINE}" stroke-width="0.4"/>')
         # FOOD is the number that ambushes people — it comes due on a recycle,
@@ -440,10 +469,12 @@ def build():
              f'stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round"/>')
 
     # One rule down the row: to its left is what you hold, to its right what
-    # holding it costs you every recycle.
-    s.append(f'<line x1="{sep_x}" y1="{row_y-BAND_H/2:.2f}" x2="{sep_x}" '
-             f'y2="{y-1.5-BAND_H/2:.2f}" '
-             f'stroke="{LINE}" stroke-width="0.4"/>')
+    # holding it costs you every recycle. With nothing on the right there is no
+    # division to draw, and the line became the right-hand wall of an empty box.
+    if UPKEEP:
+        s.append(f'<line x1="{sep_x}" y1="{row_y-BAND_H/2:.2f}" x2="{sep_x}" '
+                 f'y2="{y-1.5-BAND_H/2:.2f}" '
+                 f'stroke="{LINE}" stroke-width="0.4"/>')
 
     # The column glosses used to be squeezed in here as two 3.3 mm lines that
     # could not take a third without landing on the round order. They are a
