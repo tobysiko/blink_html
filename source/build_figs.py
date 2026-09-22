@@ -816,7 +816,7 @@ def board():
     # and the drawing of that board in the rulebook had five. This project's
     # notes already record "every representation of the board missing a
     # different column"; this is the same fault with the columns reversed.
-    moves_x = W - PAD - 52          # free-move column
+    moves_x = W - PAD - 52          # (retired with the free-move column)
 
     def rank_corner(cx, cy, n):
         """The rank cap as the INDEX CORNER OF A CARD - the same glyph the
@@ -852,7 +852,11 @@ def board():
     b += label(PAD, y, "RESERVE", 12, anchor="start", cls="fig-step")
     b += label(cap_x, y, "BUY UP TO", 11, cls="fig-step")
     b += label(wall_x, y, "WALL", 11, cls="fig-step")
-    b += label(moves_x, y, "MOVES", 11, anchor="start", cls="fig-step")
+    # MOVES IS NOT DRAWN. Movement comes from the meld in v0.26 - one per card
+    # played - so the ladder is four numbers and this figure has to agree with
+    # the board it illustrates. The note above this line records the last time
+    # these two disagreed by a column; the remedy is the same, which is that
+    # both are driven from the same decision rather than each remembering.
 
     # (label, meld limit, units, food coins, free moves) — units are 2/3/5/5/5
     # as of v0.23. This figure had its own copy of the column and kept the v0.22
@@ -902,10 +906,7 @@ def board():
         # the highest rank this tier may buy, and the wall it defends at
         b += rank_corner(cap_x, by, cap)
         b += shield(wall_x, by, wall)
-        # free-move chip
-        b += (f'<rect x="{moves_x + 4}" y="{by-11}" width="20" height="22" rx="3" '
-              f'fill="#FBFAF6" stroke="#8A837A" stroke-width="1.2"/>')
-        b += label(moves_x + 14, by + 3, str(moves), 12, cls="fig-strong")
+        # (no free-move chip: see MOVES above)
         y += band_h
 
     # ---- the one note the ladder still needs ----
@@ -920,8 +921,11 @@ def board():
     b += label(PAD, y, "Nothing is cumulative. Growing costs you nothing.", 8.5,
                anchor="start", cls="fig-label")
     y += 13
-    b += label(PAD, y, "Free moves refresh every turn.", 8.5, anchor="start",
-               cls="fig-label")
+    # The ladder no longer carries movement, so this note cannot go on saying
+    # free moves refresh - there is nothing on the ladder to refresh. It names
+    # where movement DOES come from, which is the meld, one step per card.
+    b += label(PAD, y, "Moves come from your meld: one per card.", 8.5,
+               anchor="start", cls="fig-label")
 
     # ---- GOLD row ----
     y += 24

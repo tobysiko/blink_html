@@ -269,7 +269,7 @@ img,svg{filter:none}
     once. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
     explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
-    your free actions: your band's free moves, and gold spent on fortresses and
+    your free actions: the movement your meld carries, and gold spent on fortresses and
     research.</li>
     <li><b>Grow.</b> Units leave your board in tiers. Each tier you empty lets you play a
     bigger meld, move further, research a higher rank and hold a taller wall.</li>
@@ -468,8 +468,8 @@ img,svg{filter:none}
   <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
   on its own. Under a total, one big card is a play, not a waste.</p>
   <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
-  played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
-  instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
+  played is <strong>set aside</strong>: it pays her 1 gold and goes to her own discard
+  instead of acting on the map — she will meld it again next recycle. She picks which. Cy played only one — fewer than the winner —
   so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
 
   <figure><div class="figbox"><svg class="fig" width="511.5" height="238.6" viewBox="-67 -13 478 223" xmlns="http://www.w3.org/2000/svg" role="img"><defs>
@@ -509,7 +509,7 @@ img,svg{filter:none}
     ranking last. The card itself he also cashes, for a second gold: nothing on the map is
     worth reaching for yet, and he is banking toward an upgrade.</li>
   </ul>
-  <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
+  <p>Each also had <strong>one movement</strong> — their single card carried it — but with one or two
   units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
   happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
   to build the ground first. To finish the round they check the end trigger — no one has
@@ -550,16 +550,16 @@ img,svg{filter:none}
   <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 3, then 5,
   then 5, then a final 5 — and you always take units from the <b>topmost tier that still
   holds any</b>. That tier is your current tier, and it prints the four numbers that govern
-  your game: the size of meld you may play, the free moves you get each turn, the highest
+  your game: the size of meld you may play, the highest
   card rank you may buy from the market, and the wall your fortifications hold at.</p>
   <table>
-    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Rank cap</th><th>Wall</th></tr></thead>
+    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Rank cap</th><th>Wall</th></tr></thead>
     <tbody>
-      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
-      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
     </tbody>
   </table>
   <p>Read them off the topmost tier that still holds units — one rule, no counting, and
@@ -592,7 +592,7 @@ img,svg{filter:none}
 <pattern id="h-ocean" width="8" height="6" patternUnits="userSpaceOnUse">
   <rect width="8" height="6" fill="#fff"/>
   <path d="M0 3 q2 -2.2 4 0 t4 0" fill="none" stroke="#000" stroke-width=".6"/></pattern>
-</defs><rect x="8" y="6" width="454" height="364" rx="12" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/><text x="20.00" y="24.00" text-anchor="start" class="fig-step" font-size="12">RESERVE</text><text x="266.00" y="24.00" text-anchor="middle" class="fig-step" font-size="11">BUY UP TO</text><text x="318.00" y="24.00" text-anchor="middle" class="fig-step" font-size="11">WALL</text><text x="398.00" y="24.00" text-anchor="start" class="fig-step" font-size="11">MOVES</text><rect x="20" y="38" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="43.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="59.00" text-anchor="middle" class="fig-strong" font-size="15">2</text><text x="39.00" y="69.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="54.00" text-anchor="start" class="fig-step" font-size="11">Tribe</text><text x="60.00" y="66.00" text-anchor="start" class="fig-label" font-size="8">2 units</text><ellipse cx="143" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="167" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><path d="M255.0 66.0 L255.0 50.6 Q255.0 48.0 257.6 48.0 L277.0 48.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="63.00" text-anchor="middle" class="fig-strong" font-size="12">12</text><path d="M307.0 45.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 51.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="60.00" text-anchor="middle" class="fig-strong" font-size="12">10</text><rect x="402" y="46.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="412.00" y="60.00" text-anchor="middle" class="fig-strong" font-size="12">1</text><rect x="20" y="84" width="430" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="89.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="105.00" text-anchor="middle" class="fig-strong" font-size="15">3</text><text x="39.00" y="115.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="100.00" text-anchor="start" class="fig-step" font-size="11">Settlement</text><text x="60.00" y="112.00" text-anchor="start" class="fig-label" font-size="8">3 units</text><ellipse cx="143" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><path d="M255.0 112.0 L255.0 96.6 Q255.0 94.0 257.6 94.0 L277.0 94.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="109.00" text-anchor="middle" class="fig-strong" font-size="12">14</text><path d="M307.0 91.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 97.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="106.00" text-anchor="middle" class="fig-strong" font-size="12">12</text><rect x="402" y="92.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="412.00" y="106.00" text-anchor="middle" class="fig-strong" font-size="12">2</text><rect x="20" y="130" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="135.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="15">4</text><text x="39.00" y="161.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="146.00" text-anchor="start" class="fig-step" font-size="11">Kingdom</text><text x="60.00" y="158.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 158.0 L255.0 142.6 Q255.0 140.0 257.6 140.0 L277.0 140.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="155.00" text-anchor="middle" class="fig-strong" font-size="12">16</text><path d="M307.0 137.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 143.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="152.00" text-anchor="middle" class="fig-strong" font-size="12">14</text><rect x="402" y="138.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="412.00" y="152.00" text-anchor="middle" class="fig-strong" font-size="12">3</text><rect x="20" y="176" width="430" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="181.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="197.00" text-anchor="middle" class="fig-strong" font-size="15">5</text><text x="39.00" y="207.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="192.00" text-anchor="start" class="fig-step" font-size="11">Empire</text><text x="60.00" y="204.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 204.0 L255.0 188.6 Q255.0 186.0 257.6 186.0 L277.0 186.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="201.00" text-anchor="middle" class="fig-strong" font-size="12">18</text><path d="M307.0 183.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 189.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="198.00" text-anchor="middle" class="fig-strong" font-size="12">16</text><rect x="402" y="184.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="412.00" y="198.00" text-anchor="middle" class="fig-strong" font-size="12">4</text><rect x="20" y="222" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="227.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="243.00" text-anchor="middle" class="fig-strong" font-size="15">6</text><text x="39.00" y="253.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="238.00" text-anchor="start" class="fig-step" font-size="11">Civilization</text><text x="60.00" y="250.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 250.0 L255.0 234.6 Q255.0 232.0 257.6 232.0 L277.0 232.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="247.00" text-anchor="middle" class="fig-strong" font-size="12">20</text><path d="M307.0 229.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 235.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="244.00" text-anchor="middle" class="fig-strong" font-size="12">18</text><rect x="402" y="230.0" width="20" height="22" rx="3" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><text x="412.00" y="244.00" text-anchor="middle" class="fig-strong" font-size="12">5</text><text x="20.00" y="274.00" text-anchor="start" class="fig-label" font-size="8.5">Read your topmost tier that still holds units.</text><text x="20.00" y="287.00" text-anchor="start" class="fig-label" font-size="8.5">Nothing is cumulative. Growing costs you nothing.</text><text x="20.00" y="300.00" text-anchor="start" class="fig-label" font-size="8.5">Free moves refresh every turn.</text><text x="20.00" y="324.00" text-anchor="start" class="fig-step" font-size="11">GOLD</text><circle cx="78.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="78.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="96.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="96.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="114.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="114.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="132.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="132.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="150.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="150.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="168.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="168.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="20.00" y="354.00" text-anchor="start" class="fig-step" font-size="10">VICTORY ROW</text><rect x="112" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="146" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="180" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="214" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="248" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/></svg></div><figcaption>The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — your free moves — 1, 2, 3, 4, 5 — the rank you may research, and the wall your coins hold at. Four numbers, and you read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, research up to 14, a wall at 12.</figcaption></figure>
+</defs><rect x="8" y="6" width="454" height="364" rx="12" fill="#FFFFFF" stroke="#2D2D2D" stroke-width="2"/><text x="20.00" y="24.00" text-anchor="start" class="fig-step" font-size="12">RESERVE</text><text x="266.00" y="24.00" text-anchor="middle" class="fig-step" font-size="11">BUY UP TO</text><text x="318.00" y="24.00" text-anchor="middle" class="fig-step" font-size="11">WALL</text><rect x="20" y="38" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="43.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="59.00" text-anchor="middle" class="fig-strong" font-size="15">2</text><text x="39.00" y="69.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="54.00" text-anchor="start" class="fig-step" font-size="11">Tribe</text><text x="60.00" y="66.00" text-anchor="start" class="fig-label" font-size="8">2 units</text><ellipse cx="143" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><ellipse cx="167" cy="57.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><path d="M255.0 66.0 L255.0 50.6 Q255.0 48.0 257.6 48.0 L277.0 48.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="63.00" text-anchor="middle" class="fig-strong" font-size="12">12</text><path d="M307.0 45.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 51.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="60.00" text-anchor="middle" class="fig-strong" font-size="12">10</text><rect x="20" y="84" width="430" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="89.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="105.00" text-anchor="middle" class="fig-strong" font-size="15">3</text><text x="39.00" y="115.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="100.00" text-anchor="start" class="fig-step" font-size="11">Settlement</text><text x="60.00" y="112.00" text-anchor="start" class="fig-label" font-size="8">3 units</text><ellipse cx="143" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="105.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="103.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="103.0" rx="9" ry="4" fill="none" stroke="#666666" stroke-width="1.3" stroke-dasharray="3 3"/><path d="M255.0 112.0 L255.0 96.6 Q255.0 94.0 257.6 94.0 L277.0 94.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="109.00" text-anchor="middle" class="fig-strong" font-size="12">14</text><path d="M307.0 91.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 97.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="106.00" text-anchor="middle" class="fig-strong" font-size="12">12</text><rect x="20" y="130" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="135.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="151.00" text-anchor="middle" class="fig-strong" font-size="15">4</text><text x="39.00" y="161.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="146.00" text-anchor="start" class="fig-step" font-size="11">Kingdom</text><text x="60.00" y="158.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="151.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="149.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 158.0 L255.0 142.6 Q255.0 140.0 257.6 140.0 L277.0 140.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="155.00" text-anchor="middle" class="fig-strong" font-size="12">16</text><path d="M307.0 137.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 143.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="152.00" text-anchor="middle" class="fig-strong" font-size="12">14</text><rect x="20" y="176" width="430" height="38" rx="6" fill="#F1F1F1" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="181.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="197.00" text-anchor="middle" class="fig-strong" font-size="15">5</text><text x="39.00" y="207.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="192.00" text-anchor="start" class="fig-step" font-size="11">Empire</text><text x="60.00" y="204.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="197.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="195.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 204.0 L255.0 188.6 Q255.0 186.0 257.6 186.0 L277.0 186.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="201.00" text-anchor="middle" class="fig-strong" font-size="12">18</text><path d="M307.0 183.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 189.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="198.00" text-anchor="middle" class="fig-strong" font-size="12">16</text><rect x="20" y="222" width="430" height="38" rx="6" fill="#E3E3E3" stroke="#C7C7C7" stroke-width="1"/><rect x="26" y="227.0" width="26" height="28" rx="3.5" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.4"/><text x="39.00" y="243.00" text-anchor="middle" class="fig-strong" font-size="15">6</text><text x="39.00" y="253.00" text-anchor="middle" class="fig-label" font-size="8">cards</text><text x="60.00" y="238.00" text-anchor="start" class="fig-step" font-size="11">Civilization</text><text x="60.00" y="250.00" text-anchor="start" class="fig-label" font-size="8">5 units</text><ellipse cx="143" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="143" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="167" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="167" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="191" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="191" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="215" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="215" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><ellipse cx="239" cy="243.0" rx="9" ry="4" fill="#1A1A1A"/><ellipse cx="239" cy="241.0" rx="9" ry="4" fill="#1A1A1A" stroke="#FFFFFF" stroke-width="1.1"/><path d="M255.0 250.0 L255.0 234.6 Q255.0 232.0 257.6 232.0 L277.0 232.0" fill="none" stroke="#2D2D2D" stroke-width="1.2" stroke-linecap="round"/><text x="267.00" y="247.00" text-anchor="middle" class="fig-strong" font-size="12">20</text><path d="M307.0 229.0 h22.0 v10.1 q0 9.6 -11.0 13.9 q-11.0 -4.3 -11.0 -13.9 Z" fill="#FAFAFA" stroke="#2D2D2D" stroke-width="1.2"/><path d="M307.0 235.2 h22.0" stroke="#C7C7C7" stroke-width="0.8" fill="none"/><text x="318.00" y="244.00" text-anchor="middle" class="fig-strong" font-size="12">18</text><text x="20.00" y="274.00" text-anchor="start" class="fig-label" font-size="8.5">Read your topmost tier that still holds units.</text><text x="20.00" y="287.00" text-anchor="start" class="fig-label" font-size="8.5">Nothing is cumulative. Growing costs you nothing.</text><text x="20.00" y="300.00" text-anchor="start" class="fig-label" font-size="8.5">Moves come from your meld: one per card.</text><text x="20.00" y="324.00" text-anchor="start" class="fig-step" font-size="11">GOLD</text><circle cx="78.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="78.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="96.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="96.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="114.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="114.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="132.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="132.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="150.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="150.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><circle cx="168.00" cy="320.00" r="7.5" fill="#FFFFFF" stroke="#000000" stroke-width="1.4"/><circle cx="168.00" cy="320.00" r="3.6" fill="none" stroke="#000000" stroke-width="1"/><text x="20.00" y="354.00" text-anchor="start" class="fig-step" font-size="10">VICTORY ROW</text><rect x="112" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="146" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="180" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="214" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/><rect x="248" y="339" width="30" height="22" rx="2.5" fill="#FAFAFA" stroke="#000000" stroke-width="1.2"/></svg></div><figcaption>The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — the rank you may research, and the wall your coins hold at. Four numbers, and you read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, research up to 14, a wall at 12. Movement is not on this ladder: every card you play carries one.</figcaption></figure>
 
   <h3>Declare</h3>
   <p>Once every meld has been turned over, each player may spend one card from their victory
@@ -657,8 +657,9 @@ img,svg{filter:none}
   <ul>
     <li><strong>Match the winner's card count and lose, and one of your played cards is
     set aside.</strong> You choose which. It is not spent on the map — instead it pays you
-    <strong>1 gold</strong> and goes face down onto the <strong>shared pile</strong> (§09),
-    where it becomes part of somebody's next hand. Play as many cards as the winner and
+    <strong>1 gold</strong> and goes into <strong>your own discard</strong> (§09), so it
+    comes back to you when your hand next recycles. What it costs you is this turn, not the
+    card. Play as many cards as the winner and
     you must give one up; play <em>fewer</em> and nothing happens, because you are already
     below the winner's count.</li>
     <li><strong>The player whose meld ranked last takes 1 gold.</strong> Only that one
@@ -668,9 +669,10 @@ img,svg{filter:none}
   <p>Nothing is docked from your hand, and there is no winner's bonus card: the winner's
   advantage is that they act first and that every card they played reaches the map.</p>
   <p>A meld you have resolved goes face up into your <strong>personal discard</strong>, in
-  front of you. That pile is not lost — it becomes your next hand when your current hand
-  runs out (§09). The one card that leaves your economy for good is the card you set aside:
-  it goes to the shared pile, and the next player to run out of cards may well draw it.</p>
+  front of you — and so does the card you set aside. That pile is not lost: it becomes
+  your next hand when your current hand runs out (§09). <strong>A card from your meld
+  never leaves you.</strong> The only cards that do are the ones you spend from your
+  victory row, which go to the market (§10).</p>
   <p>When all players have finished, hand the lead to the trick winner and begin a new
   round.</p>
 </section>
@@ -925,10 +927,12 @@ img,svg{filter:none}
   <p>Besides the cards, your map phase carries three kinds of free action. They cost no
   card, and you may weave them between your card plays in any order.</p>
 
-  <h3>Free moves</h3>
-  <p>Your current tier prints your free moves — <strong>Tribe 1, Settlement 2, Kingdom 3,
-  Empire 4, Civilization 5</strong> — and you may use up to that many each map phase. Each
-  move takes one of your units:</p>
+  <h3>Movement</h3>
+  <p><strong>Every card you play carries one movement.</strong> Lay a three-card meld and
+  you may move three times this map phase; lay a single and you move once. The movement
+  does not have to be spent by the card that paid for it, and a card that has already made
+  a placement still counts — what you played is what your turn is worth. Each move takes
+  one of your units:</p>
   <ul>
     <li><strong>By land</strong> — move a unit any distance <strong>across tiles occupied by
     your units</strong>, stepping off at the end onto an adjacent free tile with room under
@@ -951,17 +955,17 @@ img,svg{filter:none}
   <p>That is the whole difference between a voyage and a card. A card acts beside your own
   civilization; a ship brings back news of ground you have never stood on. The sea is how
   a civilization finds land it had no card for — and sometimes finds it on somebody else's
-  doorstep. Once per turn, however many sea moves your tier allows.</p>
+  doorstep. Once per turn, however many sea moves your meld pays for.</p>
   <div class="note">
     <span class="tag">A sea move starts on the water</span>
     <p>Read the second bullet above literally: a sea move is made by <em>a unit standing on
     Ocean</em>. Stepping onto an empty Ocean tile <strong>from land</strong> is an ordinary
     land move — it is how you reach the water, and it pays nothing.</p>
-    <p>So the advantage costs two moves: one to put a unit out to sea, one to sail it. A
-    <strong>Tribe has only one free move</strong> and cannot do both in the same turn — it
-    must leave a unit on the water and collect the tile next turn. Getting a boat out early
-    is an investment, and that is the point: the ocean pays the civilizations that have
-    already committed to it.</p>
+    <p>So the advantage costs two moves: one to put a unit out to sea, one to sail it.
+    <strong>A single card cannot do both</strong>, because it carries one movement — you
+    need a meld of at least two, or a unit already waiting on the water. Getting a boat
+    out early is an investment, and that is the point: the ocean pays the players whose
+    melds are long enough to commit to it.</p>
     <p>Touch-two still holds — §06 has no bridges, and a voyage does not get to build one.
     If the map has no legal space at all, or the terrain you want has run out, the
     advantage is simply <strong>not spent</strong>: sail again later in the same turn and
@@ -1058,10 +1062,10 @@ img,svg{filter:none}
 
 <section id="recycle">
   <div class="h2"><span class="num">09</span><h2>The recycle</h2></div>
-  <p>You play with a hand of <strong>ten cards</strong>. Cards leave it for good in two
-  ways — <b>set aside</b> when you match the winner's count and lose, which sends a card you
-  already played to the shared pile (§04), and <b>retired</b> to your victory row when you
-  research (§10) — so the hand is topped back up rather than merely recycled.</p>
+  <p>You play with a hand of <strong>ten cards</strong>, and it is a closed loop: every
+  card you play comes back. A card leaves your hand for good in one way only —
+  <b>retired</b> to your victory row when you research (§10), and research hands you a
+  card for your discard in the same breath, so the ten holds.</p>
   <p>The moment you play your <strong>last hand card</strong>, your hand <b>recycles</b> —
   immediately, in the middle of your turn, before you do anything else. Do not wait for the
   end of the turn: pick everything back up straight away, and you still have your full map
@@ -1095,14 +1099,21 @@ img,svg{filter:none}
     <li><strong>Arm a perk</strong>, if you are playing with perks (§13) — exactly one,
     from whatever your victory row reaches at this moment.</li>
     <li><strong>Take back everything you have played</strong> — your whole personal
-    discard — and then <strong>draw from the shared pile</strong> until you hold ten
-    again. The shared pile is the face-down stack in the middle of the table, beside the
-    market. It is <em>not</em> empty at the start: it holds every starting card nobody
-    drafted (§03), which is twenty-four at two players, fourteen at three and four at
-    four. Cards join it as they are <em>set aside</em> by melds that matched the winner
-    and lost (§04) and as victory cards are spent for their effects (§10). Shuffle it
-    before drawing if it has not been shuffled since cards were added.</li>
+    discard, including any card you set aside. That is your new hand, and it is ten
+    cards, because nothing you play ever leaves you. Research is the one thing that
+    takes a card out of your hand, and it hands you one for your discard in the same
+    breath, so the ten holds.</li>
   </ol>
+  <div class="note">
+    <span class="tag">The market is not part of this</span>
+    <p>The face-down stack in the middle is the <strong>market</strong>, and you do not
+    draw from it to refill. It starts as the cards nobody drafted (§03) — twenty-four at
+    two players, fourteen at three, four at four — and it grows as victory cards are
+    spent for their effects and as full rows bump their lowest card (§10). It is
+    shuffled once, at setup, and never again: what you bury there comes round in its own
+    time, which is the one thing about it you can know. <strong>Trade</strong> is what
+    draws from it (§10).</p>
+  </div>
   <p>Then carry on with your turn. Because the refill is immediate, playing your whole hand
   never costs you your research — you simply pick up ten fresh cards and retire one of
   those instead.</p>
@@ -1438,14 +1449,17 @@ img,svg{filter:none}
     <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
     <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom,
     Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
-    it prints your meld limit, your free moves, your rank cap and your wall.</dd>
+    it prints your meld limit, your rank cap and your wall. It does not print
+    movement: every card you play carries one.</dd>
     <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
-    matched the winner's count and lost. You refill your hand from it (§09).</dd>
+    spent for their effects and bumped from full victory rows. Trade draws from it
+    (§10).</dd>
     <dt>Set aside</dt><dd>The card you give up for matching the trick winner's card count
     and losing. You choose which of your played cards it is; it pays you 1 gold instead of
-    acting on the map, and goes to the shared pile (§04).</dd>
-    <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
-    across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
+    acting on the map, and goes to <b>your own discard</b> — you meld it again next
+    recycle (§04).</dd>
+    <dt>Movement</dt><dd>One per card you play. By land across your own network, or by
+    sea across open Ocean. Never an attack (§07).</dd>
     <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
     playing with them, then take your personal discard back as your new hand and draw up to
     ten from the shared pile (§09).</dd>
@@ -1459,7 +1473,7 @@ img,svg{filter:none}
   <div class="cols">
     <div>
       <h3>Reserve bands</h3>
-      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds, free moves,
+      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds,
       rank cap, wall: <b>Tribe</b> 2, 1, 12, 10. <b>Settlement</b> 3, 2, 14, 12.
       <b>Kingdom</b> 4, 3, 16, 14. <b>Empire</b> 5, 4, 18, 16.
       <b>Civilization</b> 6, 5, 20, 18. Read them off your current tier only, and nothing
@@ -1508,8 +1522,8 @@ img,svg{filter:none}
       matching the card's suit. The supply is open; if that terrain has run out, the card
       takes gold.</p>
       <h3>Free actions, your turn</h3>
-      <p><b>Moves</b> (tier number, 1–5): by land across your own connected units onto a
-      free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
+      <p><b>Moves</b> (one per card in your meld): by land across your own connected units
+      onto a free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
       <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
       of ANY terrain, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
       between reserve and fortifications; research spending is one-way. ·
@@ -1536,8 +1550,8 @@ img,svg{filter:none}
       No cards in hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — collect any income, arm a perk if you are
-      playing with them, take back your discard, then draw from the <b>shared pile</b> up
-      to ten. Carry on with the turn.</p>
+      playing with them, then <b>take your discard back as your new hand</b>. It is ten
+      cards: nothing you play ever leaves you. Carry on with the turn.</p>
       <h3>Victory-card effects</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the

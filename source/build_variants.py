@@ -147,8 +147,9 @@ HTML = f"""<!doctype html>
     five tiers of meld diagrams describe a distinction with no consequence. If v0.21
     playtests as flat, this is the first thing to try restoring, possibly only at the
     larger melds.</p>
-    <p>Note that this variant also restores <b>shift</b>, which the base game replaced
-    with free moves. Running both is untested and probably too much movement.</p>
+    <p>Note that this variant also restores <b>shift</b>, and the base game already
+    gives one movement per card played. Running both is untested and probably too much
+    movement.</p>
   </div>'''
 )}
 

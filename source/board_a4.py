@@ -19,6 +19,11 @@ WALL = "--no-wall" not in sys.argv
 # Growing costs nothing now, so the board has nothing to print about the price
 # of a tier. `--food` puts the column back for a v0.25 board.
 FOOD = "--food" in sys.argv
+# MOVES LEFT THE LADDER IN v0.26: movement comes from the meld - one per card
+# you play - so a per-tier allowance is a number that decides nothing. The
+# printed board is four columns; `--moves` puts the fifth back for anyone
+# playing `cardMoves: "ladder"`.
+MOVES = "--moves" in sys.argv
 WALL_OFFSET = -2                 # a wall holds two under what you may buy
 
 # ---- page ----------------------------------------------------------------
@@ -341,7 +346,8 @@ def build():
     # "MV" was two letters nobody had to guess at once they had learned them,
     # which is a poor bargain on a board a stranger picks up.
     moves_cx = (moves_x0 + PW - M - 2) / 2      # centred in what is left
-    s.append(T(moves_cx, top, "MOVES", 4.2, col=SOFT, mono=True, spacing="0.6"))
+    if MOVES:
+        s.append(T(moves_cx, top, "MOVES", 4.2, col=SOFT, mono=True, spacing="0.6"))
 
     y = row_y
     for i, (name, limit, n, coins, moves, asc, cap) in enumerate(BANDS):
@@ -409,12 +415,13 @@ def build():
         # The box is what made this read as another meld chip from across the
         # table; drifting left in a column two hands wide is what made it read
         # as an afterthought.
-        s.append(T(moves_cx - 4.5, y+2.4, str(moves), 7.5, weight="600"))
-        ax = moves_cx + 0.5
-        s.append(f'<path d="M{ax:.1f} {y:.1f} l7 0 M{ax+4.6:.1f} {y-2.6:.1f} '
-                 f'l2.6 2.6 l-2.6 2.6" fill="none" stroke="{SOFT}" '
-                 f'stroke-width="0.8" stroke-linecap="round" '
-                 f'stroke-linejoin="round"/>')
+        if MOVES:
+            s.append(T(moves_cx - 4.5, y+2.4, str(moves), 7.5, weight="600"))
+            ax = moves_cx + 0.5
+            s.append(f'<path d="M{ax:.1f} {y:.1f} l7 0 M{ax+4.6:.1f} {y-2.6:.1f} '
+                     f'l2.6 2.6 l-2.6 2.6" fill="none" stroke="{SOFT}" '
+                     f'stroke-width="0.8" stroke-linecap="round" '
+                     f'stroke-linejoin="round"/>')
         y += band_h + 1.5
 
     # THE DIRECTION OF TRAVEL, once, down the whole reserve: you always take
@@ -513,8 +520,8 @@ def build():
         ("INITIATIVE",  "a die in its corner: still to act"),
         ("MELD",        "cards you may play in a round"),
         ("BUY UP TO",   "highest rank you may take"),
-        ("MOVES",       "free moves each turn"),
-    ] + ([("FOOD",      "pay these slots each recycle"),
+    ] + ([("MOVES",     "free moves each turn")] if MOVES else []) \
+      + ([("FOOD",      "pay these slots each recycle"),
           ("ASCENSION", "coins printed there, taken once")] if FOOD else []) + [
         ("RESERVE",     "empties from the top band down"),
         ("VICTORY ROW", "retired cards, fills rightwards"),

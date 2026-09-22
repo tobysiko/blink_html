@@ -49,7 +49,7 @@ PERKS = [
      "At rank 11+, you choose which card."),
     ("spend", "Displacement",
      "Move one enemy unit to a legal adjacent tile, instead of one of your "
-     "own free moves."),
+     "own movements."),
     ("spend", "Terracing",
      "One of your tiles may hold one unit above its terrain limit."),
     ("spend", "Pioneering",
@@ -57,7 +57,7 @@ PERKS = [
     ("spend", "Salvage",
      "Take the card set aside against you into your hand, and discard one of "
      "yours to the shared pile instead."),
-    ("spend", "Roads", "One extra free move."),
+    ("spend", "Roads", "One extra movement each turn."),
     ("standing", "Navigation",
      "Your water advantage triggers on EVERY sea move, not only the first."),
     ("spend", "Ramparts",

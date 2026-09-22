@@ -49,14 +49,19 @@ FREE = [
 ]
 
 TIERS = [
-    # tier, units, meld, moves, rank cap, WALL (= cap - 2)
-    # FOOD AND ASCENSION LEFT THE GAME IN v0.26, and the two columns went with
-    # them. Growing costs nothing now, so there is no price to read off a tier.
-    ("Tribe",        "2", "2", "1", "12", "10"),
-    ("Settlement",   "3", "3", "2", "14", "12"),
-    ("Kingdom",      "5", "4", "3", "16", "14"),
-    ("Empire",       "5", "5", "4", "18", "16"),
-    ("Civilization", "5", "6", "5", "20", "18"),
+    # tier, units, meld, rank cap, WALL (= cap - 2)
+    #
+    # FOUR NUMBERS, not six. Food and ascension left the game in v0.26, and so
+    # did free moves: MOVEMENT COMES FROM THE MELD now - each card you play
+    # carries one - so a moves column on the ladder would be a number that
+    # decides nothing. What a tier still tells you is how many cards you may
+    # meld, how many units you hold, how high you may buy, and what a coin on
+    # one of your units defends at.
+    ("Tribe",        "2", "2", "12", "10"),
+    ("Settlement",   "3", "3", "14", "12"),
+    ("Kingdom",      "5", "4", "16", "14"),
+    ("Empire",       "5", "5", "18", "16"),
+    ("Civilization", "5", "6", "20", "18"),
 ]
 
 # THE ROUND, as the table meets it. (key, what happens, who acts)

@@ -93,10 +93,10 @@ HTML = f"""<!doctype html>
     <h3>Load all twenty units, top tier first</h3>
     <p>Take a player board and fill all five tiers — <b>2, 3, 5, 5, 5</b> from the top. Every unit
     you'll ever place is here. That is the whole board: no coins to pre-place, nothing owed.</p>
-    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints what you may do: the meld you may play, your free moves, the highest rank you may buy, and the rank a coin on one of your units defends at. Right now that is Tribe — melds of two, one free move, cap 12, walls at 10.')}
+    {fig('board', 'Your reserve empties from the top band down. The tier you are currently drawing from prints what you may do: the meld you may play, the highest rank you may buy, and the rank a coin on one of your units defends at. Right now that is Tribe — melds of two, cap 12, walls at 10. Movement is not on the ladder: every card you play carries one.')}
     <div class="say"><b>Say this out loud:</b> this board is the engine, and climbing it is pure
-    gain — a longer meld, another free move, better cards within reach. Growing costs you
-    nothing at all. What it spends is units, and units on the map are points.</div>
+    gain — a longer meld, which is also more movement, and better cards within reach. Growing
+    costs you nothing at all. What it spends is units, and units on the map are points.</div>
   </div>
 
   <div class="step">
@@ -225,12 +225,13 @@ HTML = f"""<!doctype html>
     their owners' discards, back in your hand next time it recycles. Taking a tile always takes more than one turn. (You
     won't manage it this round — the Mountain is in the way, which is why it's there, and it
     defends at +2.)</li>
-    <li><b>Your free move.</b> Once per turn at Tribe — no card needed — you may move one
-    unit: across your own connected units onto a free tile beside them, or across open Ocean.
-    Never onto a rival.</li>
+    <li><b>Your movement comes from the meld.</b> Every card you played this round lets you
+    move one unit: across your own connected units onto a free tile beside them, or across open
+    Ocean. Never onto a rival. A meld of two moves twice; a single moves once.</li>
     <li><b>Your top tier empties fast.</b> Tribe holds only two units and setup already
     spent one, so the first unit you settle clears it — and you are a Settlement. Your
-    meld limit goes to <b>3</b>, your free moves to <b>2</b>, your rank cap to <b>14</b>.
+    meld limit goes to <b>3</b> — which is three movements on a full meld — and your rank
+    cap to <b>14</b>.
     Nothing is owed for it: climbing is free, and the only price is the units it took.</li>
   </ul>
 </section>

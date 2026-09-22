@@ -5,13 +5,14 @@ Deliberately NOT a general feedback form (there is one of those already). This
 sheet asks only the questions the v0.21 redesign left open and the simulator
 could not answer:
 
-  1. free moves      the sim could not validate the allowance at all
+  1. meld movement   v0.26 took movement off the ladder and tied it to the
+                     meld, one step per card; never played
   2. meld shape      shapes no longer reach the map; do they still feel worth
                      building?
   3. trick reward    winner +1 card, last place +1 gold — NEW in v0.21,
                      never played; plus the voluntary cashing rate
   4. end trigger     the sim says the market clock always fires first
-  5. food            reallocation is new and untested
+  5. tile coin       the coin a won tile pays
 
 Reuses the rulebook CSS so it looks like the rest of the set.
 """
@@ -89,15 +90,17 @@ HTML = f"""<!doctype html>
   actually stuck on; everything else can wait for the feedback form.
 </div>
 
-{q(1, "Free moves — the big unknown",
-   "Each turn your band gives you 1–4 free moves (land across your own units, or sea). "
-   "Tick roughly how many you actually used, and say what for.",
+{q(1, "Movement out of the meld — the big unknown",
+   "Movement is no longer printed on your board. Every card you play this round lets you "
+   "move one unit. Tick how that felt at the table.",
    '<table class="tick">'
    '<tr><td class="k">moves used per turn, typically</td>'
-   '<td class="scale">none &nbsp; 1 &nbsp; 2 &nbsp; 3 &nbsp; 4 &nbsp; wanted more</td></tr>'
+   '<td class="scale">none &nbsp; 1 &nbsp; 2 &nbsp; 3 &nbsp; 4+ &nbsp; wanted more</td></tr>'
    '<tr><td class="k">mostly used to…</td>'
    '<td class="scale">reinforce &nbsp; escape &nbsp; claim ground &nbsp; didn&rsquo;t bother</td></tr>'
-   '<tr><td class="k">did anyone forget they had them?</td>'
+   '<tr><td class="k">did a long meld ever feel like too much movement?</td>'
+   '<td class="scale">yes &nbsp; no</td></tr>'
+   '<tr><td class="k">did anyone forget the moves their meld had bought?</td>'
    '<td class="scale">yes &nbsp; no</td></tr></table>'
    + LINES(1))}
 

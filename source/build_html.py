@@ -320,7 +320,7 @@ HTML = f"""<!doctype html>
     once. The highest total wins the trick.</li>
     <li><b>Map phase.</b> In initiative order, spend your meld — each card settles a unit,
     explores a new tile, attacks a rival, or is cashed for gold. Alongside the cards you have
-    your free actions: your band's free moves, and gold spent on fortresses and
+    your free actions: the movement your meld carries, and gold spent on fortresses and
     research.</li>
     <li><b>Grow.</b> Units leave your board in tiers. Each tier you empty lets you play a
     bigger meld, move further, research a higher rank and hold a taller wall.</li>
@@ -500,7 +500,7 @@ HTML = f"""<!doctype html>
     ranking last. The card itself he also cashes, for a second gold: nothing on the map is
     worth reaching for yet, and he is banking toward an upgrade.</li>
   </ul>
-  <p>Each also had <strong>one free move</strong> — the Tribe stride — but with one or two
+  <p>Each also had <strong>one movement</strong> — their single card carried it — but with one or two
   units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
   happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
   to build the ground first. To finish the round they check the end trigger — no one has
@@ -526,16 +526,16 @@ HTML = f"""<!doctype html>
   <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 3, then 5,
   then 5, then a final 5 — and you always take units from the <b>topmost tier that still
   holds any</b>. That tier is your current tier, and it prints the four numbers that govern
-  your game: the size of meld you may play, the free moves you get each turn, the highest
+  your game: the size of meld you may play, the highest
   card rank you may buy from the market, and the wall your fortifications hold at.</p>
   <table>
-    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Free moves</th><th>Rank cap</th><th>Wall</th></tr></thead>
+    <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Rank cap</th><th>Wall</th></tr></thead>
     <tbody>
-      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">1</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
-      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">2</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
-      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">3</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
-      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
-      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">5</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
+      <tr><td>Tribe</td><td class="num-cell">2</td><td class="num-cell">2</td><td class="num-cell">12</td><td class="num-cell">10</td></tr>
+      <tr><td>Settlement</td><td class="num-cell">3</td><td class="num-cell">3</td><td class="num-cell">14</td><td class="num-cell">12</td></tr>
+      <tr><td>Kingdom</td><td class="num-cell">5</td><td class="num-cell">4</td><td class="num-cell">16</td><td class="num-cell">14</td></tr>
+      <tr><td>Empire</td><td class="num-cell">5</td><td class="num-cell">5</td><td class="num-cell">18</td><td class="num-cell">16</td></tr>
+      <tr><td>Civilization</td><td class="num-cell">5</td><td class="num-cell">6</td><td class="num-cell">20</td><td class="num-cell">18</td></tr>
     </tbody>
   </table>
   <p>Read them off the topmost tier that still holds units — one rule, no counting, and
@@ -553,7 +553,7 @@ HTML = f"""<!doctype html>
     holding you back is that units on the map are units you cannot lose without losing
     ground.</p>
   </div>
-  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — your free moves — 1, 2, 3, 4, 5 — the rank you may research, and the wall your coins hold at. Four numbers, and you read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, two free moves, research up to 14, a wall at 12.')}
+  {fig('board', 'The reserve empties from the top band down. Each tier you clear raises the meld you may play — 2, 3, 4, 5, 6 — the rank you may research, and the wall your coins hold at. Four numbers, and you read only the row you are on. Here Tribe is spent and Settlement half-emptied: melds of three, research up to 14, a wall at 12. Movement is not on this ladder: every card you play carries one.')}
 
   <h3>Declare</h3>
   <p>Once every meld has been turned over, each player may spend one card from their victory
@@ -843,10 +843,12 @@ HTML = f"""<!doctype html>
   <p>Besides the cards, your map phase carries three kinds of free action. They cost no
   card, and you may weave them between your card plays in any order.</p>
 
-  <h3>Free moves</h3>
-  <p>Your current tier prints your free moves — <strong>Tribe 1, Settlement 2, Kingdom 3,
-  Empire 4, Civilization 5</strong> — and you may use up to that many each map phase. Each
-  move takes one of your units:</p>
+  <h3>Movement</h3>
+  <p><strong>Every card you play carries one movement.</strong> Lay a three-card meld and
+  you may move three times this map phase; lay a single and you move once. The movement
+  does not have to be spent by the card that paid for it, and a card that has already made
+  a placement still counts — what you played is what your turn is worth. Each move takes
+  one of your units:</p>
   <ul>
     <li><strong>By land</strong> — move a unit any distance <strong>across tiles occupied by
     your units</strong>, stepping off at the end onto an adjacent free tile with room under
@@ -869,17 +871,17 @@ HTML = f"""<!doctype html>
   <p>That is the whole difference between a voyage and a card. A card acts beside your own
   civilization; a ship brings back news of ground you have never stood on. The sea is how
   a civilization finds land it had no card for — and sometimes finds it on somebody else's
-  doorstep. Once per turn, however many sea moves your tier allows.</p>
+  doorstep. Once per turn, however many sea moves your meld pays for.</p>
   <div class="note">
     <span class="tag">A sea move starts on the water</span>
     <p>Read the second bullet above literally: a sea move is made by <em>a unit standing on
     Ocean</em>. Stepping onto an empty Ocean tile <strong>from land</strong> is an ordinary
     land move — it is how you reach the water, and it pays nothing.</p>
-    <p>So the advantage costs two moves: one to put a unit out to sea, one to sail it. A
-    <strong>Tribe has only one free move</strong> and cannot do both in the same turn — it
-    must leave a unit on the water and collect the tile next turn. Getting a boat out early
-    is an investment, and that is the point: the ocean pays the civilizations that have
-    already committed to it.</p>
+    <p>So the advantage costs two moves: one to put a unit out to sea, one to sail it.
+    <strong>A single card cannot do both</strong>, because it carries one movement — you
+    need a meld of at least two, or a unit already waiting on the water. Getting a boat
+    out early is an investment, and that is the point: the ocean pays the players whose
+    melds are long enough to commit to it.</p>
     <p>Touch-two still holds — §06 has no bridges, and a voyage does not get to build one.
     If the map has no legal space at all, or the terrain you want has run out, the
     advantage is simply <strong>not spent</strong>: sail again later in the same turn and
@@ -1318,7 +1320,8 @@ HTML = f"""<!doctype html>
     <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
     <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom,
     Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
-    it prints your meld limit, your free moves, your rank cap and your wall.</dd>
+    it prints your meld limit, your rank cap and your wall. It does not print
+    movement: every card you play carries one.</dd>
     <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
     spent for their effects and bumped from full victory rows. Trade draws from it
     (§10).</dd>
@@ -1326,8 +1329,8 @@ HTML = f"""<!doctype html>
     and losing. You choose which of your played cards it is; it pays you 1 gold instead of
     acting on the map, and goes to <b>your own discard</b> — you meld it again next
     recycle (§04).</dd>
-    <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
-    across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
+    <dt>Movement</dt><dd>One per card you play. By land across your own network, or by
+    sea across open Ocean. Never an attack (§07).</dd>
     <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
     playing with them, then take your personal discard back as your new hand and draw up to
     ten from the shared pile (§09).</dd>
@@ -1341,7 +1344,7 @@ HTML = f"""<!doctype html>
   <div class="cols">
     <div>
       <h3>Reserve bands</h3>
-      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds, free moves,
+      <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds,
       rank cap, wall: <b>Tribe</b> 2, 1, 12, 10. <b>Settlement</b> 3, 2, 14, 12.
       <b>Kingdom</b> 4, 3, 16, 14. <b>Empire</b> 5, 4, 18, 16.
       <b>Civilization</b> 6, 5, 20, 18. Read them off your current tier only, and nothing
@@ -1390,8 +1393,8 @@ HTML = f"""<!doctype html>
       matching the card's suit. The supply is open; if that terrain has run out, the card
       takes gold.</p>
       <h3>Free actions, your turn</h3>
-      <p><b>Moves</b> (tier number, 1–5): by land across your own connected units onto a
-      free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
+      <p><b>Moves</b> (one per card in your meld): by land across your own connected units
+      onto a free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
       <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
       of ANY terrain, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
       between reserve and fortifications; research spending is one-way. ·

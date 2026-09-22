@@ -53,6 +53,10 @@ FOOD = [b[3] for b in bands]
 MOVES = [b[4] for b in bands]
 ASC = [b[5] for b in bands]
 CAPS = [b[6] for b in bands]
+# The wall a tier's ground holds at is two under its rank cap. Defined here,
+# beside the rest of the ladder, because the tier-table checks below need it -
+# it used to be defined 550 lines down next to the board figure.
+WALLS = [c - 2 for c in CAPS]
 check(sum(UNITS) == 20, f"the five tiers hold {sum(UNITS)} units, not 20")
 
 py = (ROOT / "sim" / "engine.py").read_text(encoding="utf8")
@@ -72,17 +76,21 @@ rules = text_of(HERE / RULES_HTML)
 # 1. the tier table, in order. Under the full economy Tribe's food cell reads
 # "free"; under lean (v0.26) the column is gone and the row is four numbers.
 _TRIBE_FULL = r"Tribe (\d+) (\d+) (\d+) free (\d+)"
+# FOUR NUMBERS AS OF v0.26: units, meld limit, rank cap, wall. Free moves left
+# the ladder with the fold - movement comes from the meld, one per card played.
+# This pattern has now been wrong twice by counting columns, so the width is
+# derived from what the engine prints rather than written down here.
 _TRIBE_LEAN = r"Tribe (\d+) (\d+) (\d+) (\d+)"
 row = (re.search(_TRIBE_LEAN, rules)
        if re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "lean"', js)
        else re.search(_TRIBE_FULL, rules))
 check(bool(row), "cannot find the Tribe row of the tier table")
 if row:
-    u, ml, mv, cap = (int(x) for x in row.groups())
+    u, ml, cap, wall = (int(x) for x in row.groups())
     check(u == UNITS[0], f"Tribe prints {u} units, engine has {UNITS[0]}")
     check(ml == MELD[0], f"Tribe prints meld limit {ml}, engine has {MELD[0]}")
-    check(mv == MOVES[0], f"Tribe prints {mv} free moves, engine has {MOVES[0]}")
     check(cap == CAPS[0], f"Tribe prints rank cap {cap}, engine has {CAPS[0]}")
+    check(wall == WALLS[0], f"Tribe prints wall {wall}, engine has {WALLS[0]}")
 # The FOOD column left the table in v0.26, so the row is one number shorter.
 # Reading it positionally without noticing that is how a checker ends up
 # comparing the rank cap against the food column and reporting a cap of 18.
@@ -93,14 +101,16 @@ for i, name in enumerate(["Settlement", "Kingdom", "Empire", "Civilization"], st
     check(bool(r), f"cannot find the {name} row of the tier table")
     if r:
         vals = [int(x) for x in r.groups()]
-        u, ml, mv = vals[0], vals[1], vals[2]
-        cap = vals[3] if _LEAN_ROW else vals[4]
+        u, ml = vals[0], vals[1]
+        # lean: units, meld, cap, wall.  full: units, meld, food, cap, wall.
+        cap = vals[2] if _LEAN_ROW else vals[3]
+        wall = vals[3] if _LEAN_ROW else vals[4]
         check(u == UNITS[i], f"{name} prints {u} units, engine has {UNITS[i]}")
         check(ml == MELD[i], f"{name} prints meld limit {ml}, engine has {MELD[i]}")
-        check(mv == MOVES[i], f"{name} prints {mv} moves, engine has {MOVES[i]}")
         if not _LEAN_ROW:
-            check(vals[3] == FOOD[i], f"{name} prints food {vals[3]}, engine has {FOOD[i]}")
+            check(vals[2] == FOOD[i], f"{name} prints food {vals[2]}, engine has {FOOD[i]}")
         check(cap == CAPS[i], f"{name} prints cap {cap}, engine has {CAPS[i]}")
+        check(wall == WALLS[i], f"{name} prints wall {wall}, engine has {WALLS[i]}")
 
 # WHICH ECONOMY IS PRINTED. Read here because four separate checks below
 # change shape with it; the paragraph that enforces its absence is at the
@@ -595,7 +605,6 @@ figs = json.load(open(HERE / "figs.json"))
 # not the cap, so a reader who checked one against the other found neither
 # complete. Nothing above catches that, because each document was internally
 # consistent. This asks all of them for the whole ladder.
-WALLS = [c - 2 for c in CAPS]
 board_fig = figs.get("board", "")
 fig_nums = re.findall(r"<text[^>]*>([^<]*)</text>", board_fig)
 for cap, wall in zip(CAPS, WALLS):
@@ -610,7 +619,9 @@ for cap, wall in zip(CAPS, WALLS):
 _raw_for_table = (HERE / RULES_HTML).read_text(encoding="utf8")
 tier_table = _raw_for_table[_raw_for_table.find("<th>Tier</th>"):]
 tier_table = tier_table[:tier_table.find("</table>")]
-_HEADS = ["Units", "Meld limit", "Free moves", "Rank cap", "Wall"]
+# NO "Free moves" HEADING: movement comes from the meld in v0.26, so a column
+# for it on the ladder would be a number that decides nothing.
+_HEADS = ["Units", "Meld limit", "Rank cap", "Wall"]
 if not LEAN:
     _HEADS.insert(3, "Food per recycle")
 for head in _HEADS:

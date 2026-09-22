@@ -147,16 +147,16 @@ def front():
 
 def back():
     rows = "".join(
-        f'<tr><td class="n">{n}</td><td>{u}</td><td>{m}</td><td>{mv}</td>'
+        f'<tr><td class="n">{n}</td><td>{u}</td><td>{m}</td>'
         f'<td>{c}</td><td>{w}</td></tr>'
-        for n, u, m, mv, c, w in TIERS)
+        for n, u, m, c, w in TIERS)
     ter = "".join(f'<span><i style="background:{c}"></i>{n} {d}</span>'
                   for n, c, d in TERRAIN)
     return f"""<div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
   <table>
-    <tr><th class="n">Tier</th><th>Units</th><th>Meld</th><th>Moves</th>
+    <tr><th class="n">Tier</th><th>Units</th><th>Meld</th>
         <th>Cap</th><th>Wall</th></tr>
     {rows}
   </table>
