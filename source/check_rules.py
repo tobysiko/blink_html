@@ -116,6 +116,12 @@ for i, name in enumerate(["Settlement", "Kingdom", "Empire", "Civilization"], st
 # change shape with it; the paragraph that enforces its absence is at the
 # bottom of the file with the other v0.26 blocks.
 LEAN = bool(re.search(r'ECONOMY = opts\.economy === "full" \? "full" : "lean"', js))
+# WHERE MOVEMENT COMES FROM. Off the ladder as of v0.26: the engine reads
+# opts.cardMoves and defaults to "meld", one step per card played. The board
+# then prints no MOVES column, so it must not gloss the term either - and the
+# check below asked for the gloss unconditionally, which failed the build on a
+# board that was right. Read from the engine so there is one source for it.
+MELD_MOVES = bool(re.search(r'CARD_MOVES = opts\.cardMoves === "ladder" \? "ladder" : "meld"', js))
 
 # 2. setup and quick reference repeat the unit counts; they must agree
 setup = "/".join(str(u) for u in UNITS)
@@ -517,7 +523,9 @@ check(re.search(r"1 (gold )?then 2|1 then 2 gold", aid_txt),
       f"the aid does not print the 1-then-2 research price (engine default "
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
 # The board's job is now to name its own parts, so THAT is what is pinned.
-_TERMS = ["MELD", "BUY UP TO", "MOVES", "RESERVE", "VICTORY ROW"]
+_TERMS = ["MELD", "BUY UP TO", "RESERVE", "VICTORY ROW"]
+if not MELD_MOVES:
+    _TERMS += ["MOVES"]
 if not LEAN:
     _TERMS += ["FOOD", "ASCENSION"]
 for term in _TERMS:

@@ -165,11 +165,23 @@ topdf "Blink-objectives-bw.html"         "Blink-objectives-bw.pdf"
 # one) failed the whole build at the very last step, after every PDF but the
 # boards had already been made.
 # board <in.svg> [more.svg ...] <out.pdf>  - every SVG becomes one page
+# THIS USED TO BE WRITTEN IN BASH under a #!/bin/sh shebang: ${@: -1} and
+# ${@:1:$#-1} are bash array slices, and `local` is not POSIX either. On macOS
+# /bin/sh IS bash, so it ran; on Linux, where /bin/sh is dash, the whole script
+# died with "Syntax error: ( unexpected" at the very last step - after all
+# seventeen document PDFs had already been rendered, so the failure looked like
+# it had nothing to do with the boards. Rotating the arguments is POSIX and
+# needs no arrays: the output is the last one, everything before it is an input.
 board() {
   tmp="$(mktemp "${TMPDIR:-/tmp}/blink-board-XXXXXX.html")"
-  local out="${@: -1}"
-  local ins=("${@:1:$#-1}")
-  python3 wrap_svg.py "${ins[@]}" "$tmp"
+  n=$#
+  i=1
+  while [ $i -lt $n ]; do
+    set -- "$@" "$1"; shift
+    i=$((i + 1))
+  done
+  out="$1"; shift
+  python3 wrap_svg.py "$@" "$tmp"
   topdf "$tmp" "$out"
   rm -f "$tmp" || true
 }
