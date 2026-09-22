@@ -75,10 +75,24 @@ function run() {
       const b = brd.querySelector('.foldnow').textContent.trim();
       if (!/\d/.test(m)) fail.push(`the folded market says nothing countable: "${m}"`);
       if (!/\d/.test(b)) fail.push(`the folded tier table says no numbers: "${b}"`);
-      /* The two numbers a player most needs off the board and cannot deduce
-         from anything else on screen: the feeding cost and the move allowance. */
-      if (!/feed/i.test(b) || !/move/i.test(b))
-        fail.push(`the folded tier table drops the feed or the moves: "${b}"`);
+      /* The numbers a player most needs off the board and cannot deduce from
+         anything else on screen. Under the printed economy that is the move
+         allowance and the rank cap; the feeding cost was one of them until
+         v0.26 removed food from the game, and this line went on demanding the
+         word "feed" in a summary that should no longer contain it. Which one
+         to expect is read from the GAME rather than assumed, so the check
+         follows the rules instead of a version. */
+      const fed = w.eval('!!(G && G.FOOD_ON)');
+      if (fed && !/feed/i.test(b))
+        fail.push(`the folded tier table drops the feeding cost: "${b}"`);
+      if (!fed && /feed/i.test(b))
+        fail.push(`the folded tier table still mentions feeding, and there is `
+          + `nothing to feed: "${b}"`);
+      if (!fed && !/cap/i.test(b))
+        fail.push(`with no feeding cost to show, the folded tier table should `
+          + `carry the rank cap instead: "${b}"`);
+      if (!/move/i.test(b))
+        fail.push(`the folded tier table drops the moves: "${b}"`);
 
       /* A step that wants a card OUT of the market opens it. */
       w.eval('REQ = { type: "buy", seat: ME, options: [0, 1] }; renderMarket();');

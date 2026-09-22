@@ -1580,6 +1580,41 @@ function cardBtn(c, cls, attr, size) {
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</button>`;
 }
 
+/* YOUR DISCARD, face up, the way it lies in front of you at a table.
+ *
+ * It was drawn nowhere. That is a gap in the one place the game is hardest to
+ * read: cards leave your hand constantly and almost all of them come back, and
+ * the single card that does NOT come back - the one set aside for matching the
+ * winner\u2019s count and losing - goes to the SHARED pile instead. On screen
+ * both looked the same, because the only thing distinguishing them was an
+ * animation that had already finished. A player reasonably reads a card
+ * leaving their meld as a card lost, and plays more tightly than the rules
+ * ask.
+ *
+ * So it is drawn as what it is: your next hand, sitting there, counted. Quiet
+ * and unclickable, because it is read rather than played from - the moment it
+ * becomes clickable it is a second hand, and there is already one of those.
+ * The last card is the one you most recently spent, so it is drawn at full
+ * strength while the rest fade back. */
+function drawDiscard(p) {
+  const box = $("#discard");
+  if (!box) return;
+  const d = (p && p.discard) || [];
+  /* Hidden before the first card rather than shown empty: an empty frame at
+   * the start of a game is a thing to wonder about, and there is nothing to
+   * say yet. */
+  box.hidden = !d.length;
+  if (!d.length) { box.innerHTML = ""; return; }
+  const cards = d.slice().sort(cardSortUI);
+  const newest = d[d.length - 1];
+  box.innerHTML =
+    `<span class="dlab">${t("discard.label")} <b>${d.length}</b></span>`
+    + `<span class="dstack">`
+    + cards.map((c) => cardBtn(c, c === newest ? "newest" : "", "tabindex=\"-1\"", "mini")).join("")
+    + `</span>`
+    + `<span class="dnote">${t("discard.note")}</span>`;
+}
+
 /* ---- reading a card ----------------------------------------------------
  * The face on the table is 60 px wide: a rank, a terrain and one line saying
  * what the card is worth. The three printed effects and the moment each of
@@ -1713,6 +1748,13 @@ const wallShield = (n) =>
  * the coin costs the attacker a second card instead - so the column is only
  * shown when there is something true to put in it. */
 const wallLadder = () => G && ["wall", "wallonly"].includes(G.FORTIFY || "wall");
+/* IS THERE ANYTHING TO FEED? v0.26 prints the lean economy - no food, no
+ * ascension - so the board's feeds column is a column of zeroes explaining a
+ * rule that left the game, and the warning under it warns about nothing. Both
+ * stay for `economy: "full"`, which is still a real option, and both are gone
+ * otherwise: an empty column is not neutral, it is a thing a player at a table
+ * looks at and asks about. */
+const foodLadder = () => !!(G && G.FOOD_ON);
 const wallOf = (cap) => G && G.WALL_BY_CAP === false
   ? G.WALL_RANK
   : Math.max(1, cap + (G && G.WALL_OFFSET !== undefined ? G.WALL_OFFSET : -2));
@@ -2007,9 +2049,13 @@ function renderPlayer() {
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
     <details class="fold boardfold"${foldOpen("board") ? " open" : ""}>
     <summary class="seclab">${t("sec.board")}<span class="foldnow">${
-      t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
-                           food: p.food(), moves: now[4] })}</span></summary>
-    <div class="tiers">
+      foodLadder()
+        ? t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
+                               food: p.food(), moves: now[4] })
+        : t("board.foldNowLean", { tier: tierName(p.band()),
+                                   units: p.reserve[p.band()],
+                                   moves: now[4], cap: now[6] })}</span></summary>
+    <div class="tiers${foodLadder() ? "" : " nofood"}">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
         <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
@@ -2017,7 +2063,8 @@ function renderPlayer() {
           wallLadder() ? t("board.colWall") : ""}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
-        <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
+        ${foodLadder() ? `<span class="food" title="${t("board.foodPer")}">${
+          t("board.colFood")}</span>` : ""}
         <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
       </div>`;
 
@@ -2066,7 +2113,7 @@ function renderPlayer() {
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
-      <span class="food" title="${foodTip}">${coins}</span>
+      ${foodLadder() ? `<span class="food" title="${foodTip}">${coins}</span>` : ""}
       <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
     </div>`;
   }
@@ -2077,14 +2124,21 @@ function renderPlayer() {
   /* And say the bill out loud, for the tier you are actually on. A table of
    * numbers is a reference; this is the warning — the feeding cost is the one
    * rule in the game that takes something away from you without you choosing
-   * it, and it should never be the first time a player hears about it. */
-  const owe = p.food();
-  const nextFood = bands.findIndex((b) => b[3] > 0);
-  s += `<div class="foodnote${owe ? " due" : ""}">${
-    owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
-        : t("board.foodNoteFree", { tier: tierName(p.band()),
-                                    next: tierName(nextFood < 0 ? 1 : nextFood) })
-  }</div>`;
+   * it, and it should never be the first time a player hears about it.
+   *
+   * ONLY WHERE THERE IS A BILL. Under the printed economy there is none, and
+   * the note rendered anyway - "Refilling is free at Tribe. From Settlement on
+   * it costs gold." - which is a warning about a rule that left the game, sat
+   * under a column of zeroes explaining the same absent rule. */
+  if (foodLadder()) {
+    const owe = p.food();
+    const nextFood = bands.findIndex((b) => b[3] > 0);
+    s += `<div class="foodnote${owe ? " due" : ""}">${
+      owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
+          : t("board.foodNoteFree", { tier: tierName(p.band()),
+                                      next: tierName(nextFood < 0 ? 1 : nextFood) })
+    }</div>`;
+  }
 
   // victory row — five slots, pushed right, centre slot marked
   /* The row is clickable whenever a step wants a card FROM it — including the
@@ -2268,6 +2322,7 @@ function renderPlayer() {
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
   }
+  drawDiscard(p);
   /* Arranging the perks: pick one up, then pick the slot it goes in. Two taps
    * rather than a drag, because this has to work on a phone. The arrangement
    * locks itself the moment the row holds a card, so this only ever fires

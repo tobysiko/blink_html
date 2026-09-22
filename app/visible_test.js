@@ -221,8 +221,42 @@ setTimeout(() => {
     fail.push(`the frontier coin flies from "${goldFx}" — it should come off the `
       + 'new tile, not out of the furniture');
 
+  /* ---- YOUR DISCARD IS ON SCREEN ----------------------------------------
+   * It was drawn nowhere for the whole life of the app, and the gap showed at
+   * a table: cards leave your hand constantly and nearly all of them come
+   * back, while the one that does NOT - the card set aside for matching the
+   * winner's count - goes to the shared pile instead. With no discard drawn,
+   * both looked identical, and the only thing telling them apart was an
+   * animation that had already finished.
+   *
+   * Checked through the real renderer rather than by reading the DOM the page
+   * happened to be in: hidden while empty, shown and counted once there is
+   * something in it, every card inert, and the newest one marked - which
+   * matters BECAUSE the pile is sorted for reading, so position cannot say
+   * which card was just spent. */
+  {
+    const box = d.querySelector('#discard');
+    if (!box) fail.push('there is no #discard on the page at all');
+    else {
+      if (!box.hidden)
+        fail.push('the discard is showing before a single card has been played');
+      w.eval(`drawDiscard({ discard: [ {r:3,s:'plains'},{r:11,s:'ocean'},{r:7,s:'forest'} ] })`);
+      if (box.hidden) fail.push('the discard stayed hidden with three cards in it');
+      const drawn = box.querySelectorAll('.dstack .cf').length;
+      if (drawn !== 3) fail.push(`the discard drew ${drawn} cards, expected 3`);
+      const lab = (box.querySelector('.dlab') || {}).textContent || '';
+      if (!/\b3\b/.test(lab)) fail.push(`the discard does not say how many it holds: "${lab}"`);
+      if (box.querySelectorAll('.dstack .cf.newest').length !== 1)
+        fail.push('the discard does not mark the card most recently spent');
+      if (![...box.querySelectorAll('.cf')].every((x) => x.tabIndex === -1))
+        fail.push('a discard card is focusable — it is read, never played from');
+      w.eval('drawDiscard({ discard: [] })');
+      if (!box.hidden) fail.push('the discard stayed on screen after emptying');
+    }
+  }
+
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
-    : 'visible after start: map, play area, player board, hand, sidebar — '
+    : 'visible after start: map, play area, player board, hand, discard, sidebar — '
       + d.querySelectorAll('#map polygon').length + ' hexes, '
       + d.querySelectorAll('#hand button').length + ' cards in hand, '
       + d.querySelectorAll('#corners .corner').length + ' rivals in the map corners');

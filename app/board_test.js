@@ -50,7 +50,10 @@ function check() {
   ok(!!head, 'the tier table has no heading row — every number on the player '
      + 'board is unlabelled, and the meanings live in tooltips a phone cannot show');
   if (head) {
-    for (const cls of ['mlim', 'tname', 'uslots', 'food', 'mv', 'capcol']) {
+    /* `food` is NOT in this list: the printed economy has no feeds column, so
+     * demanding a heading for it is demanding the column back. It is checked
+     * on the full-economy page at the end of this file, where it exists. */
+    for (const cls of ['mlim', 'tname', 'uslots', 'mv', 'capcol']) {
       const cell = head.querySelector('.' + cls);
       ok(cell && txt(cell).length > 0,
          `the \`${cls}\` column has no heading — its numbers mean nothing on sight`);
@@ -68,28 +71,31 @@ function check() {
    *
    * What is checked here is that the count is exact and that the ascension
    * reward is finally visible at all — it was drawn nowhere before. */
-  E.BANDS.forEach(([name, , , food, , ascend], j) => {
-    const cell = body[j] && body[j].querySelector('.food');
-    const slots = cell ? cell.querySelectorAll('.cslot').length : -1;
-    if (food > 0) {
-      ok(slots === food,
-         `${name} charges ${food} to refill and draws ${slots} slot(s)`);
-      /* Food and the ascension reward are the same number at every tier, which
-       * is what lets one row of slots carry both. If that ever stops being
-       * true the whole gauge is a lie. */
-      ok(ascend === food,
-         `${name} pays ${ascend} on ascension but eats ${food} — the feed slots `
-         + 'can no longer hold the ascension coins');
-      const asc = cell.querySelectorAll('.cslot.asc').length;
-      ok(asc === food,
-         `${name} has not been reached yet, so all ${food} slots should hold an `
-         + `ascension coin; ${asc} do`);
-    } else {
-      ok(txt(cell).length > 0,
-         `${name} costs nothing to refill and its row says nothing at all — `
-         + '"free" is information too');
-    }
-  });
+  /* THE PRINTED GAME HAS NOTHING TO FEED, so the board must not have a column
+   * for it. This test used to REQUIRE the feeds column and its slots, and went
+   * on passing after v0.26 removed food from the game: BANDS still carries the
+   * old numbers, the renderer still drew a slot per unit of them, and the test
+   * still counted them and was satisfied. The board showed a column of
+   * ascension coins for a reward that no longer exists, under a heading for a
+   * bill that never comes, and the one thing watching it was enforcing that.
+   *
+   * A player asked about it at a table, which is how it was found.
+   *
+   * `economy: "full"` is still a real option and is checked below, on its own
+   * page, where the column SHOULD be there. */
+  const foodOn = w.eval('!!(G && G.FOOD_ON)');
+  ok(foodOn === false,
+     'this page started with food ON — the printed economy is lean, so the rest '
+     + 'of these checks would be testing the wrong game');
+  ok(!d.querySelector('.tiers .food'),
+     'the board still draws a FEEDS column, and v0.26 has nothing to feed');
+  ok(!d.querySelector('.foodnote'),
+     'the board still warns about the refill bill, and there is no bill');
+  ok(!!d.querySelector('.tiers.nofood'),
+     'the tier table is not marked .nofood, so the grid keeps an empty column '
+     + 'where the feeds used to be');
+  ok(!/feed|nahrung/i.test(txt(head)),
+     `a column heading still says feeding: "${txt(head)}"`);
 
   /* ONE VOCABULARY ACROSS BOTH SURFACES. A player with the A4 board on the
    * table and this open on a phone should be reading the same shapes: a meld
@@ -169,12 +175,9 @@ function check() {
        + '- one <style> block means one namespace, and the other rule wins');
   }
 
-  /* ...and the bill in words, for the tier you are on. */
-  {
-    const note = d.querySelector('.foodnote');
-    ok(!!note && txt(note).length > 0,
-       'the tier you are on does not say what feeding will cost you');
-  }
+  /* (The bill in words used to be checked here. There is no bill under the
+   * printed economy - see the block above - and the full-economy page at the
+   * end of this file is where the note is still required.) */
 
   /* ---- 3. move limit and rank cap, per tier ----------------------------- */
   /* `\b` is no use against "1mv" — there is no word boundary between a digit
@@ -189,47 +192,64 @@ function check() {
        `${name} may buy up to rank ${cap}; its row shows "${cp}"`);
   });
 
-  /* ---- 4. and YOUR bill, in a sentence ---------------------------------- */
-  /* The table is a reference. A player needs to be told in words what their
-   * own tier costs — not to work it out from a row they are not on yet.
-   *
-   * Which tier that is comes from the board itself (`.here`), not from an
-   * assumption about where a game starts. That is deliberate: it means this
-   * checks the note is DERIVED from the tier rather than a fixed line of text
-   * that happens to be right on turn one. */
-  const note = d.querySelector('.foodnote');
-  ok(!!note, 'nothing on the board states the feeding cost in words; the table '
-     + 'alone is what let it ambush people');
+  /* ---- 4. the tier you are on is marked ---------------------------------- */
   const hereIdx = body.findIndex((r) => r.classList.contains('here'));
   ok(hereIdx >= 0, 'no tier row is marked as the one you are on');
-
-  if (note && hereIdx >= 0) {
-    const noteText = txt(note);
-    const [hereName, , , hereFood] = E.BANDS[hereIdx];
-    ok(noteText.includes(hereName),
-       `you are a ${hereName} and the feeding note does not say so: "${noteText}"`);
-
-    if (hereFood > 0) {
-      ok(digits(noteText).includes(hereFood),
-         `a ${hereName} pays ${hereFood} to refill; the note says "${noteText}"`);
-      ok(note.classList.contains('due'),
-         'the tier you are on charges for refills and the note is not marked as '
-         + 'due — it reads exactly like "this is free"');
-    } else {
-      ok(!note.classList.contains('due'),
-         `refilling is free at ${hereName} but the note is flagged as a cost`);
-      /* Free now, not free later: the whole point is advance warning. */
-      const firstCharging = E.BANDS.findIndex((b) => b[3] > 0);
-      ok(firstCharging < 0 || noteText.includes(E.BANDS[firstCharging][0]),
-         'refilling is free at your tier and the note does not say which tier '
-         + `starts charging: "${noteText}"`);
-    }
-  }
 
   const cols = head ? [...head.children].map((c) => txt(c)).join(' · ') : '—';
   console.log(fail.length ? 'FAIL:\n  ' + fail.join('\n  ')
     : `player board: ${body.length} tiers under headings [${cols}], `
-      + 'every feeding cost, move limit and rank cap legible as a number, and '
-      + 'the bill for your own tier stated in words');
-  process.exit(fail.length ? 1 : 0);
+      + 'every move limit and rank cap legible as a number, no feeding column '
+      + 'under the printed economy, and the full economy still drawing one');
+  if (fail.length) process.exit(1);
+  return checkFullEconomy();
+}
+
+/* ---- 5. AND THE FULL ECONOMY STILL HAS ITS COLUMN -----------------------
+ * Removing food from the printed game must not remove the OPTION. A second
+ * page, started with economy: full, has to draw the feeds column, the slots
+ * that carry the ascension coins, and the note that states the bill - all the
+ * things checked above for their absence. Without this the lean board and a
+ * deleted feature look identical to the suite. */
+function checkFullEconomy() {
+  const dom2 = new JSDOM(fs.readFileSync(HTML, 'utf8'),
+                         { runScripts: 'dangerously', pretendToBeVisual: true });
+  const w2 = dom2.window, d2 = w2.document;
+  setTimeout(() => {
+    const sel = d2.querySelector('#economy');
+    if (sel) sel.value = 'full';
+    const st = d2.querySelector('#start');
+    if (st) st.click();
+    setTimeout(() => {
+      const f2 = [];
+      const ok2 = (c, what) => { if (!c) f2.push(what); };
+      ok2(w2.eval('!!(G && G.FOOD_ON)'),
+          'economy:full did not reach the game, so this proves nothing');
+      const rows2 = [...d2.querySelectorAll('.tier-row')]
+        .filter((r) => !r.classList.contains('head'));
+      ok2(!!d2.querySelector('.tiers .food'),
+          'economy:full draws no FEEDS column - the option has been lost, not '
+          + 'just unprinted');
+      ok2(!d2.querySelector('.tiers.nofood'),
+          'the tier table is marked .nofood under the full economy');
+      ok2(!!d2.querySelector('.foodnote'),
+          'economy:full states no refill bill in words');
+      E.BANDS.forEach(([name, , , food, , ascend], j) => {
+        if (!(food > 0)) return;
+        const cell = rows2[j] && rows2[j].querySelector('.food');
+        const slots = cell ? cell.querySelectorAll('.cslot').length : -1;
+        ok2(slots === food,
+            `under economy:full ${name} charges ${food} and draws ${slots} slot(s)`);
+        ok2(ascend === food,
+            `${name} pays ${ascend} on ascension but eats ${food} - the feed `
+            + 'slots can no longer hold the ascension coins');
+      });
+      dom2.window.close();
+      console.log(f2.length
+        ? 'FAIL:\n  ' + f2.join('\n  ')
+        : 'and economy:full still draws the feeds column, its ascension coins '
+          + 'and the bill in words');
+      process.exit(f2.length ? 1 : 0);
+    }, 900);
+  }, 400);
 }

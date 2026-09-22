@@ -127,7 +127,12 @@ FLOW = [
 FLOW_ASIDE = [
     ("Cards spent on an effect", "go to the MARKET, for anyone to research"),
     ("A victory card you use",   "leaves the row \u2014 to the BOTTOM of the shared pile"),
-    ("Matched the winner, lost", "one card set aside, +1 gold"),
+    # WHERE IT GOES IS THE POINT. Saying only "set aside, +1 gold" left the
+    # one card that actually leaves your economy looking like the two above
+    # it, which come back - and a player watching the animation could not tell
+    # whether it had gone to their own discard or to the table's.
+    ("Matched the winner, lost", "one card set aside \u2014 to the SHARED PILE, "
+                                 "+1 gold \u00b7 the only card you lose for good"),
 ]
 
 # THE RECYCLE, in order. Two of the three steps are modules; the sheet says so,

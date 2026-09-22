@@ -97,6 +97,37 @@
     font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--mut)}
   /* how to open it, said once, where the cards are */
   .sechead{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+  /* ---- your discard ----
+     A short face-up stack, the way it would sit in front of you. It is
+     deliberately quieter than the hand - dimmer, smaller, not clickable -
+     because it is a thing you READ, never a thing you play from. The cards
+     overlap so a long discard stays one object rather than becoming a second
+     hand competing with the real one for the eye. */
+  .discard{display:flex; align-items:center; gap:8px; margin-top:8px;
+    padding-top:7px; border-top:1px dashed var(--line)}
+  .discard .dlab{font-size:9.5px; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--mut); white-space:nowrap}
+  .discard .dlab b{color:var(--ink); font-size:11px; letter-spacing:0}
+  .discard .dstack{display:flex; flex-wrap:wrap; min-height:1px}
+  /* The overlap: a real pile is not laid out in a row. But a mini card is
+     rank + suit, and at -11px the suit disappeared under the next card, which
+     turned a readable pile into a row of numbers. -5px fans them enough to
+     read as a stack while leaving both glyphs of every card visible. */
+  .discard .dstack .cf{margin-left:-5px; opacity:.55; pointer-events:none;
+    background:var(--pane,#fff)}
+  .discard .dstack .cf:first-child{margin-left:0}
+  /* The newest card is the one you just spent. Worth marking BECAUSE the pile
+     is sorted for reading - position cannot tell you which one it was. */
+  .discard .dstack .cf.newest{opacity:1; box-shadow:0 0 0 2px var(--suit)}
+  .discard .dnote{font-size:9.5px; color:var(--mut); margin-left:auto;
+    text-align:right; max-width:26ch; line-height:1.3}
+  /* On a phone the row is the cards. The note explains something you only
+     need once, so it goes under them rather than squeezing the pile it is
+     explaining into a corner. */
+  @media (max-width:560px){
+    .discard{flex-wrap:wrap}
+    .discard .dnote{margin-left:0; text-align:left; max-width:none; flex-basis:100%}
+  }
   /* ---- foldable reference ----
      The market and the tier table are things you consult, not things you act
      on every turn, and on a phone they were most of the scroll between the
@@ -785,6 +816,10 @@
   .tier-row{display:grid; align-items:center; gap:7px; padding:3px 6px;
     grid-template-columns:34px 26px 26px 84px 1fr auto 40px;
     border-bottom:1px solid #E7E3D8; font-size:11px; color:var(--mut)}
+  /* The feeds column is not rendered under the lean economy, so the grid must
+     not keep a track for it - an empty column still takes its gap, and the
+     row would sit with a hole in it where a removed rule used to be. */
+  .tiers.nofood .tier-row{grid-template-columns:34px 26px 26px 84px 1fr 40px}
   .tier-row:last-child{border-bottom:none}
   .tier-row:nth-child(even){background:#F7F4EC}
   .tier-row.here{background:#E8F1E4; color:var(--ink); box-shadow:inset 3px 0 0 var(--green)}
@@ -1714,6 +1749,13 @@
         <span class="holdhint" data-i18n="sec.hold">hold a card to read it</span>
       </div>
       <div id="hand"></div>
+      <!-- YOUR DISCARD, which on a real table is lying in front of you and in
+           the app was drawn nowhere at all. It is not a bin: it is your NEXT
+           HAND, and the one card that ever leaves it for good is the one you
+           set aside for matching the winner - which goes to the shared pile
+           instead. Without this on screen those two fates look identical,
+           because the only thing telling them apart was an animation. -->
+      <div id="discard" class="discard" hidden></div>
       <div id="player"></div>
       <div id="log"></div>
       <!-- The rules, within reach of the table rather than behind a menu. -->
@@ -1735,7 +1777,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"65fc662fb9","branch":"main","dirty":true,"built":"2026-09-22T15:36:58Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"f6a7a15951","branch":"main","dirty":true,"built":"2026-09-22T16:01:28Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2077,8 +2119,15 @@ en: {
   "board.dieOut": "die lifted out of its slot \u2014 this player is finished",
   "sec.market": "Market",
   "sec.hand": "Your hand",
+  "discard.label": "Your discard",
+  "discard.note": "this is your next hand — it all comes back at the recycle",
+  "discard.empty": "nothing played yet this cycle",
   "sec.hold": "hold a card to read it",
   "board.foldNow": "{tier} \u00b7 {units} units \u00b7 feeds {food} \u00b7 {moves} moves",
+  /* v0.26 prints the lean economy: nothing is fed, so the board does not say
+     so. Kept as its own string rather than an empty {food} so the separators
+     do not collapse into a row of middots. */
+  "board.foldNowLean": "{tier} \u00b7 {units} units \u00b7 {moves} moves \u00b7 cap {cap}",
   "board.foldMarket": "{n} on offer \u00b7 {deck} in the deck",
   "fx.when.a": "card phase \u00b7 declared before any meld",
   "fx.when.b": "map phase",
@@ -2769,8 +2818,12 @@ de: {
   "board.dieOut": "W\u00fcrfel aus dem Feld genommen \u2014 dieser Spieler ist fertig",
   "sec.market": "Markt",
   "sec.hand": "Deine Hand",
+  "discard.label": "Dein Ablagestapel",
+  "discard.note": "das ist deine n\u00e4chste Hand \u2014 beim Nachziehen kommt alles zur\u00fcck",
+  "discard.empty": "in diesem Durchgang noch nichts gespielt",
   "sec.hold": "Karte gedr\u00fcckt halten zum Lesen",
   "board.foldNow": "{tier} \u00b7 {units} Einheiten \u00b7 Nahrung {food} \u00b7 {moves} Z\u00fcge",
+  "board.foldNowLean": "{tier} \u00b7 {units} Einheiten \u00b7 {moves} Z\u00fcge \u00b7 Limit {cap}",
   "board.foldMarket": "{n} im Angebot \u00b7 {deck} im Stapel",
   "fx.when.a": "Kartenphase \u00b7 vor allen Kombinationen angesagt",
   "fx.when.b": "Spielplanphase",
@@ -10739,6 +10792,41 @@ function cardBtn(c, cls, attr, size) {
     style="--suit:${TC[c.s]}">${faceInner(c, size)}</button>`;
 }
 
+/* YOUR DISCARD, face up, the way it lies in front of you at a table.
+ *
+ * It was drawn nowhere. That is a gap in the one place the game is hardest to
+ * read: cards leave your hand constantly and almost all of them come back, and
+ * the single card that does NOT come back - the one set aside for matching the
+ * winner\u2019s count and losing - goes to the SHARED pile instead. On screen
+ * both looked the same, because the only thing distinguishing them was an
+ * animation that had already finished. A player reasonably reads a card
+ * leaving their meld as a card lost, and plays more tightly than the rules
+ * ask.
+ *
+ * So it is drawn as what it is: your next hand, sitting there, counted. Quiet
+ * and unclickable, because it is read rather than played from - the moment it
+ * becomes clickable it is a second hand, and there is already one of those.
+ * The last card is the one you most recently spent, so it is drawn at full
+ * strength while the rest fade back. */
+function drawDiscard(p) {
+  const box = $("#discard");
+  if (!box) return;
+  const d = (p && p.discard) || [];
+  /* Hidden before the first card rather than shown empty: an empty frame at
+   * the start of a game is a thing to wonder about, and there is nothing to
+   * say yet. */
+  box.hidden = !d.length;
+  if (!d.length) { box.innerHTML = ""; return; }
+  const cards = d.slice().sort(cardSortUI);
+  const newest = d[d.length - 1];
+  box.innerHTML =
+    `<span class="dlab">${t("discard.label")} <b>${d.length}</b></span>`
+    + `<span class="dstack">`
+    + cards.map((c) => cardBtn(c, c === newest ? "newest" : "", "tabindex=\"-1\"", "mini")).join("")
+    + `</span>`
+    + `<span class="dnote">${t("discard.note")}</span>`;
+}
+
 /* ---- reading a card ----------------------------------------------------
  * The face on the table is 60 px wide: a rank, a terrain and one line saying
  * what the card is worth. The three printed effects and the moment each of
@@ -10872,6 +10960,13 @@ const wallShield = (n) =>
  * the coin costs the attacker a second card instead - so the column is only
  * shown when there is something true to put in it. */
 const wallLadder = () => G && ["wall", "wallonly"].includes(G.FORTIFY || "wall");
+/* IS THERE ANYTHING TO FEED? v0.26 prints the lean economy - no food, no
+ * ascension - so the board's feeds column is a column of zeroes explaining a
+ * rule that left the game, and the warning under it warns about nothing. Both
+ * stay for `economy: "full"`, which is still a real option, and both are gone
+ * otherwise: an empty column is not neutral, it is a thing a player at a table
+ * looks at and asks about. */
+const foodLadder = () => !!(G && G.FOOD_ON);
 const wallOf = (cap) => G && G.WALL_BY_CAP === false
   ? G.WALL_RANK
   : Math.max(1, cap + (G && G.WALL_OFFSET !== undefined ? G.WALL_OFFSET : -2));
@@ -11166,9 +11261,13 @@ function renderPlayer() {
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
     <details class="fold boardfold"${foldOpen("board") ? " open" : ""}>
     <summary class="seclab">${t("sec.board")}<span class="foldnow">${
-      t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
-                           food: p.food(), moves: now[4] })}</span></summary>
-    <div class="tiers">
+      foodLadder()
+        ? t("board.foldNow", { tier: tierName(p.band()), units: p.reserve[p.band()],
+                               food: p.food(), moves: now[4] })
+        : t("board.foldNowLean", { tier: tierName(p.band()),
+                                   units: p.reserve[p.band()],
+                                   moves: now[4], cap: now[6] })}</span></summary>
+    <div class="tiers${foodLadder() ? "" : " nofood"}">
       <div class="tier-row head">
         <span class="mlim" title="${t("board.meldLimit")}">${t("board.colMeld")}</span>
         <span class="capcol" title="${t("board.rankCap")}">${t("board.colCap")}</span>
@@ -11176,7 +11275,8 @@ function renderPlayer() {
           wallLadder() ? t("board.colWall") : ""}</span>
         <span class="tname">${t("board.colTier")}</span>
         <span class="uslots">${t("board.colUnits")}</span>
-        <span class="food" title="${t("board.foodPer")}">${t("board.colFood")}</span>
+        ${foodLadder() ? `<span class="food" title="${t("board.foodPer")}">${
+          t("board.colFood")}</span>` : ""}
         <span class="mv" title="${t("board.freeMoves")}">${t("board.colMove")}</span>
       </div>`;
 
@@ -11225,7 +11325,7 @@ function renderPlayer() {
       <span class="tname">${tierName(j)}<em>${units} ${t("board.units")}</em>
         <i class="lead" aria-hidden="true"></i></span>
       <span class="uslots">${pips}</span>
-      <span class="food" title="${foodTip}">${coins}</span>
+      ${foodLadder() ? `<span class="food" title="${foodTip}">${coins}</span>` : ""}
       <span class="mv" title="${t("board.freeMoves")}">${stride(moves)}</span>
     </div>`;
   }
@@ -11236,14 +11336,21 @@ function renderPlayer() {
   /* And say the bill out loud, for the tier you are actually on. A table of
    * numbers is a reference; this is the warning — the feeding cost is the one
    * rule in the game that takes something away from you without you choosing
-   * it, and it should never be the first time a player hears about it. */
-  const owe = p.food();
-  const nextFood = bands.findIndex((b) => b[3] > 0);
-  s += `<div class="foodnote${owe ? " due" : ""}">${
-    owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
-        : t("board.foodNoteFree", { tier: tierName(p.band()),
-                                    next: tierName(nextFood < 0 ? 1 : nextFood) })
-  }</div>`;
+   * it, and it should never be the first time a player hears about it.
+   *
+   * ONLY WHERE THERE IS A BILL. Under the printed economy there is none, and
+   * the note rendered anyway - "Refilling is free at Tribe. From Settlement on
+   * it costs gold." - which is a warning about a rule that left the game, sat
+   * under a column of zeroes explaining the same absent rule. */
+  if (foodLadder()) {
+    const owe = p.food();
+    const nextFood = bands.findIndex((b) => b[3] > 0);
+    s += `<div class="foodnote${owe ? " due" : ""}">${
+      owe ? t("board.foodNote", { n: owe, tier: tierName(p.band()) })
+          : t("board.foodNoteFree", { tier: tierName(p.band()),
+                                      next: tierName(nextFood < 0 ? 1 : nextFood) })
+    }</div>`;
+  }
 
   // victory row — five slots, pushed right, centre slot marked
   /* The row is clickable whenever a step wants a card FROM it — including the
@@ -11427,6 +11534,7 @@ function renderPlayer() {
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
   }
+  drawDiscard(p);
   /* Arranging the perks: pick one up, then pick the slot it goes in. Two taps
    * rather than a drag, because this has to work on a phone. The arrangement
    * locks itself the moment the row holds a card, so this only ever fires
