@@ -227,7 +227,7 @@ function run(seed, n, seat, deck, obj, cb, extra) {
 /* The last two play the homelands setup: every player builds their own corner
  * of the starting map before the first trick, so the setup phase is clicked
  * through the real DOM like everything else. */
-const cases = [[11, 3, 0, 'abc', 'secret'], [12, 3, 1, 'abd', 'open'],
+const ALL = [[11, 3, 0, 'abc', 'secret'], [12, 3, 1, 'abd', 'open'],
                [13, 4, 2, 'abd', 'both'],   [14, 2, 0, 'abc', 'off'],
                [15, 4, 1, 'abd', 'off', { startlayout: 'homelands' }],
                [16, 2, 0, 'abc', 'off', { startlayout: 'homelands' }],
@@ -240,6 +240,23 @@ const cases = [[11, 3, 0, 'abc', 'secret'], [12, 3, 1, 'abd', 'open'],
                 * how a half-built prompt ships. Two or three arm per seat per
                 * game, so one case covers it well. */
                [19, 3, 0, 'abc', 'showone', { perks: 'on', income: 'both' }]];
+
+/* NINE FULL GAMES IN ONE PROCESS takes about eleven minutes, which is longer
+ * than some shells will wait — and a run that gets killed at minute three
+ * reports nothing at all, which is the exact failure the watchdog above was
+ * added for. BLINK_UI_SEEDS=11,12,13 runs a slice, so the file can be driven
+ * in pieces and every game still reports.
+ *
+ * The cross-case assertions at the bottom (a homeland of each terrain, the
+ * draft and the mulligan) ask whether some case ever did a thing, so they are
+ * only meaningful over the whole set. On a slice they are skipped rather than
+ * failed: a shard that does not contain seed 15 has not found a bug by not
+ * placing a homeland. FULL says which we are doing. */
+const ONLY = (process.env.BLINK_UI_SEEDS || '').split(/[^0-9]+/).filter(Boolean).map(Number);
+const cases = ONLY.length ? ALL.filter((c) => ONLY.includes(c[0])) : ALL;
+const FULL = cases.length === ALL.length;
+if (!cases.length) { say('BLINK_UI_SEEDS matched no case'); process.exit(2); }
+if (!FULL) say(`slice: seeds ${cases.map((c) => c[0]).join(',')} of ${ALL.length} cases`);
 let done = 0, bad = 0;
 const allKinds = {};
 /* A watchdog, because the failure this file just had was silence: if a game
@@ -259,13 +276,15 @@ for (const [s, n, seat, deck, obj, extra] of cases) run(s, n, seat, deck, obj, (
     say('\nUI actions exercised:', allKinds);
     /* The homelands games must actually have placed something, or the two
        extra cases quietly measured nothing. */
-    for (const stage of ['forest', 'plains', 'ocean'])
-      if (!allKinds['homeland-' + stage]) {
-        say('FAIL: no homeland ' + stage + ' was ever placed through the DOM');
-        bad++;
-      }
-    for (const k of ['draft', 'mulligan'])
-      if (!allKinds[k]) { say(`FAIL: the ${k} setup never appeared in the DOM`); bad++; }
+    if (FULL) {
+      for (const stage of ['forest', 'plains', 'ocean'])
+        if (!allKinds['homeland-' + stage]) {
+          say('FAIL: no homeland ' + stage + ' was ever placed through the DOM');
+          bad++;
+        }
+      for (const k of ['draft', 'mulligan'])
+        if (!allKinds[k]) { say(`FAIL: the ${k} setup never appeared in the DOM`); bad++; }
+    }
     if (allKinds['duel-defend'] && !allKinds.duelout) {
       say('FAIL: duels were fought and the result was never shown in the prompt');
       bad++;
