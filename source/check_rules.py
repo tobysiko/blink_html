@@ -1067,6 +1067,43 @@ if "The recycle" in rules:
           "\u00a709 no longer says what the recycle is FOR \u2014 it reads as a "
           "housekeeping list again")
 
+# ------------------------------------------------ where a set-aside card goes
+#
+# A MELD CARD NEVER LEAVES ITS OWNER; only a victory-row card does. The engine
+# and the book disagreed about this for the whole of v0.26 - the engine sent
+# the set-aside card to the shared market and the book said so in six places,
+# including the glossary, while the design had reversed it because a playtester
+# found losing the card outright too harsh.
+#
+# Caught against the ENGINE rather than against a remembered rule: whichever
+# pile the engine pushes it onto is the one the book has to name.
+m = re.search(r"p\.discard\.push\(aside\)|this\.pile\.push\(aside\)", js)
+check(m, "cannot find where the engine puts a set-aside card")
+if m:
+    to_owner = m.group(0).startswith("p.discard")
+    if to_owner:
+        check(re.search(r"goes into <strong>your own discard</strong>", raw_rules),
+              "the engine returns a set-aside card to its owner's discard and §04 "
+              "does not say so")
+        check(not re.search(r"set aside[^.]{0,80}shared pile", rules, re.I),
+              "§04 still sends the set-aside card to the shared pile, which is "
+              "where it stopped going")
+        check(re.search(r"A card from your meld\s+never leaves you", raw_rules),
+              "the book never states the rule the routing follows — that a meld "
+              "card stays with its owner and only a victory-row card leaves")
+    else:
+        check(re.search(r"set aside[^.]{0,80}shared pile", rules, re.I),
+              "the engine sends the set-aside card to the shared pile and the book "
+              "says it goes to the player's own discard")
+
+# AND THE RECYCLE MUST NOT DRAW FROM A MARKET NOBODY REFILLS FROM. The market
+# is stocked once at setup and read by trade; the recycle is your own discard
+# coming back. The book told players to draw from it and to shuffle it, which
+# is the rule from before the deck split moved.
+check(not re.search(r"draw from the shared pile", rules, re.I),
+      "§09 still tells players to refill from the shared pile — the market is "
+      "stocked at setup and drawn from by trade, not by the recycle")
+
 # ---------------------------------------------------------------- spoils
 #
 # THE COIN A WON TILE PAYS (§06). Caught by what the engine DEFAULTS to, not by

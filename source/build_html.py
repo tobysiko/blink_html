@@ -474,8 +474,8 @@ HTML = f"""<!doctype html>
   <p class="fine">Note what Cy could have done: a single 17 would have beaten both of them
   on its own. Under a total, one big card is a play, not a waste.</p>
   <p>Because <strong>Ada matched Bex’s two cards and lost</strong>, one of the two cards she
-  played is <strong>set aside</strong>: it pays her 1 gold and goes to the shared pile
-  instead of acting on the map. She picks which. Cy played only one — fewer than the winner —
+  played is <strong>set aside</strong>: it pays her 1 gold and goes to her own discard
+  instead of acting on the map — she will meld it again next recycle. She picks which. Cy played only one — fewer than the winner —
   so he gives up nothing, and as the last-ranked meld he takes <strong>1 gold</strong>.</p>
 
   {fig('trick', "Round one, the moment after everything is turned over. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick and the winner's die — set to the SIZE of her meld, two cards, not to her placing. Cy's single 4 is not a mistake in principle: a lone 17 would have beaten both of them.")}
@@ -618,8 +618,9 @@ HTML = f"""<!doctype html>
   <ul>
     <li><strong>Match the winner's card count and lose, and one of your played cards is
     set aside.</strong> You choose which. It is not spent on the map — instead it pays you
-    <strong>1 gold</strong> and goes face down onto the <strong>shared pile</strong> (§09),
-    where it becomes part of somebody's next hand. Play as many cards as the winner and
+    <strong>1 gold</strong> and goes into <strong>your own discard</strong> (§09), so it
+    comes back to you when your hand next recycles. What it costs you is this turn, not the
+    card. Play as many cards as the winner and
     you must give one up; play <em>fewer</em> and nothing happens, because you are already
     below the winner's count.</li>
     <li><strong>The player whose meld ranked last takes 1 gold.</strong> Only that one
@@ -629,9 +630,10 @@ HTML = f"""<!doctype html>
   <p>Nothing is docked from your hand, and there is no winner's bonus card: the winner's
   advantage is that they act first and that every card they played reaches the map.</p>
   <p>A meld you have resolved goes face up into your <strong>personal discard</strong>, in
-  front of you. That pile is not lost — it becomes your next hand when your current hand
-  runs out (§09). The one card that leaves your economy for good is the card you set aside:
-  it goes to the shared pile, and the next player to run out of cards may well draw it.</p>
+  front of you — and so does the card you set aside. That pile is not lost: it becomes
+  your next hand when your current hand runs out (§09). <strong>A card from your meld
+  never leaves you.</strong> The only cards that do are the ones you spend from your
+  victory row, which go to the market (§10).</p>
   <p>When all players have finished, hand the lead to the trick winner and begin a new
   round.</p>
 </section>
@@ -959,10 +961,10 @@ HTML = f"""<!doctype html>
 
 <section id="recycle">
   <div class="h2"><span class="num">09</span><h2>The recycle</h2></div>
-  <p>You play with a hand of <strong>ten cards</strong>. Cards leave it for good in two
-  ways — <b>set aside</b> when you match the winner's count and lose, which sends a card you
-  already played to the shared pile (§04), and <b>retired</b> to your victory row when you
-  research (§10) — so the hand is topped back up rather than merely recycled.</p>
+  <p>You play with a hand of <strong>ten cards</strong>, and it is a closed loop: every
+  card you play comes back. A card leaves your hand for good in one way only —
+  <b>retired</b> to your victory row when you research (§10), and research hands you a
+  card for your discard in the same breath, so the ten holds.</p>
   <p>The moment you play your <strong>last hand card</strong>, your hand <b>recycles</b> —
   immediately, in the middle of your turn, before you do anything else. Do not wait for the
   end of the turn: pick everything back up straight away, and you still have your full map
@@ -981,14 +983,21 @@ HTML = f"""<!doctype html>
     <li><strong>Arm a perk</strong>, if you are playing with perks (§13) — exactly one,
     from whatever your victory row reaches at this moment.</li>
     <li><strong>Take back everything you have played</strong> — your whole personal
-    discard — and then <strong>draw from the shared pile</strong> until you hold ten
-    again. The shared pile is the face-down stack in the middle of the table, beside the
-    market. It is <em>not</em> empty at the start: it holds every starting card nobody
-    drafted (§03), which is twenty-four at two players, fourteen at three and four at
-    four. Cards join it as they are <em>set aside</em> by melds that matched the winner
-    and lost (§04) and as victory cards are spent for their effects (§10). Shuffle it
-    before drawing if it has not been shuffled since cards were added.</li>
+    discard, including any card you set aside. That is your new hand, and it is ten
+    cards, because nothing you play ever leaves you. Research is the one thing that
+    takes a card out of your hand, and it hands you one for your discard in the same
+    breath, so the ten holds.</li>
   </ol>
+  <div class="note">
+    <span class="tag">The market is not part of this</span>
+    <p>The face-down stack in the middle is the <strong>market</strong>, and you do not
+    draw from it to refill. It starts as the cards nobody drafted (§03) — twenty-four at
+    two players, fourteen at three, four at four — and it grows as victory cards are
+    spent for their effects and as full rows bump their lowest card (§10). It is
+    shuffled once, at setup, and never again: what you bury there comes round in its own
+    time, which is the one thing about it you can know. <strong>Trade</strong> is what
+    draws from it (§10).</p>
+  </div>
   <p>Then carry on with your turn. Because the refill is immediate, playing your whole hand
   never costs you your research — you simply pick up ten fresh cards and retire one of
   those instead.</p>
@@ -1311,10 +1320,12 @@ HTML = f"""<!doctype html>
     Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
     it prints your meld limit, your free moves, your rank cap and your wall.</dd>
     <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
-    matched the winner's count and lost. You refill your hand from it (§09).</dd>
+    spent for their effects and bumped from full victory rows. Trade draws from it
+    (§10).</dd>
     <dt>Set aside</dt><dd>The card you give up for matching the trick winner's card count
     and losing. You choose which of your played cards it is; it pays you 1 gold instead of
-    acting on the map, and goes to the shared pile (§04).</dd>
+    acting on the map, and goes to <b>your own discard</b> — you meld it again next
+    recycle (§04).</dd>
     <dt>Free moves</dt><dd>Your band's allowance of unit movement each map phase — by land
     across your own network, or by sea across open Ocean. Never an attack (§07).</dd>
     <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
@@ -1407,8 +1418,8 @@ HTML = f"""<!doctype html>
       No cards in hand, no research this turn.</p>
       <h3>Refilling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — collect any income, arm a perk if you are
-      playing with them, take back your discard, then draw from the <b>shared pile</b> up
-      to ten. Carry on with the turn.</p>
+      playing with them, then <b>take your discard back as your new hand</b>. It is ten
+      cards: nothing you play ever leaves you. Carry on with the turn.</p>
       <h3>Victory-card effects</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the

@@ -44,11 +44,45 @@ for (const seed of [3, 11, 29, 77, 101]) {
   ok((a.stats.docked_card || 0) === (b.stats.docked_card || 0),
      `seed ${seed}: ${a.stats.docked_card || 0} seats docked on the turn timing, `
      + `${b.stats.docked_card || 0} on the trick timing`);
-  ok((a.stats.to_shared_pile || 0) === (b.stats.to_shared_pile || 0),
-     `seed ${seed}: the shared pile was fed ${a.stats.to_shared_pile || 0} vs `
-     + `${b.stats.to_shared_pile || 0} cards`);
+  ok((a.stats.to_own_discard || 0) === (b.stats.to_own_discard || 0),
+     `seed ${seed}: ${a.stats.to_own_discard || 0} cards reached their owner's `
+     + `discard vs ${b.stats.to_own_discard || 0}`);
   ok((a.stats.gold_in_docked || 0) === (b.stats.gold_in_docked || 0),
      `seed ${seed}: the set-aside paid a different number of coins`);
+}
+
+// ------------------------------------ WHERE THE SET-ASIDE CARD ACTUALLY GOES
+/* A MELD CARD NEVER LEAVES ITS OWNER. Only a victory-row card does.
+ *
+ * This was the other way round - the set-aside went to the shared market - and
+ * nothing here or anywhere else checked it, so the routing was free to be
+ * whatever the last edit left. It cost a player at the table: watching the
+ * card fly to the middle, they reasonably asked whether it was gone for good.
+ *
+ * The change came out of the one human playtest: losing the card outright felt
+ * too harsh. You still pay for matching the leader - the card is out of this
+ * meld and out of this turn, and it returns only when your hand recycles.
+ *
+ * Checked on the cards themselves rather than on a counter, because a counter
+ * is exactly what a wrong routing would keep incrementing. */
+{
+  const g = new E.Game(4, 42, { humans: [] });
+  const it = g.playRound();
+  let r = it.next(); while (!r.done) r = it.next(null);
+  let checked = 0;
+  for (const p of g.P) {
+    if (!p.asideCard) continue;
+    checked++;
+    ok(p.discard.includes(p.asideCard),
+       `seat ${p.i}'s set-aside card is not in that player's own discard`);
+    ok(!g.pile.includes(p.asideCard),
+       `seat ${p.i}'s set-aside card went to the SHARED market - a meld card `
+       + 'never leaves its owner; only a victory-row card does');
+  }
+  ok(checked > 0, 'no seat set a card aside in this round, so nothing was tested');
+  /* And the counters agree with the cards. */
+  ok(!(g.stats.to_shared_pile || 0),
+     `${g.stats.to_shared_pile} set-aside card(s) were counted into the shared market`);
 }
 
 // -------------------------------- the card is out of the meld before it is spent

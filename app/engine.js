@@ -3296,15 +3296,26 @@ class Game {
           p.onTable = use.slice();
           spent.splice(spent.indexOf(aside), 1);
           p.asideCard = aside;
-          /* §09: the card leaves your economy for the SHARED pile — this is the
-           * tap that feeds everyone's refill. Under the old routing it went to
-           * the player's own discard and came straight back, so the shared pile
-           * was never fed and nobody ever drew from it. */
-          this.pile.push(aside);
+          /* IT GOES TO YOUR OWN DISCARD (v0.26). A meld card never leaves its
+           * owner; only a victory-row card does.
+           *
+           * It used to go to the shared market, and the comment here argued
+           * that this was necessary because the market was otherwise never
+           * fed. That was true of the deck as it stood then and is not true
+           * now: the market is stocked at setup from the split leftover (24
+           * cards at two players, 14 at three, 4 at four) and is fed by cards
+           * spent for their effect and by victory-row bumps.
+           *
+           * The reason for the change is the playtest, not the arithmetic.
+           * Matching the leader and losing the card outright felt too harsh at
+           * the table - the one FELT problem the session produced. You still
+           * pay: the card is out of this meld and out of this turn, and it
+           * comes back only when your hand next recycles. */
+          p.discard.push(aside);
           this.inc("docked_card"); this.inc("cards_to_gold");
-          this.inc("to_shared_pile");
-          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "pile" });
-          this.purse(p, 1, "docked", "pile", { cards: cards.length });
+          this.inc("to_own_discard");
+          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "discard" });
+          this.purse(p, 1, "docked", "hand", { cards: cards.length });
         } else {
           p.asideCard = null;
         }

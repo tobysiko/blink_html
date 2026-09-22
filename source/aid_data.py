@@ -120,19 +120,20 @@ FLOW = [
     ("YOUR DISCARD", "face up beside you", "everything you spent this cycle"),
     # "BACK TO HAND" was 2mm wider than the box it titles - the boxes are
     # (page - margins - gaps) / 5 and nothing was going to make it fit.
-    ("RECYCLE",     "your discard returns", "the loop closes \u2014 nothing is lost"),
+    ("RECYCLE",     "your discard IS your new hand", "ten cards \u00b7 nothing you play "
+                                                     "ever leaves you"),
 ]
 
 # What does NOT come back to you, and where it goes instead.
 FLOW_ASIDE = [
-    ("Cards spent on an effect", "go to the MARKET, for anyone to research"),
-    ("A victory card you use",   "leaves the row \u2014 to the BOTTOM of the shared pile"),
-    # WHERE IT GOES IS THE POINT. Saying only "set aside, +1 gold" left the
-    # one card that actually leaves your economy looking like the two above
-    # it, which come back - and a player watching the animation could not tell
-    # whether it had gone to their own discard or to the table's.
-    ("Matched the winner, lost", "one card set aside \u2014 to the SHARED PILE, "
-                                 "+1 gold \u00b7 the only card you lose for good"),
+    ("A victory card you spend", "leaves the row \u2014 to the MARKET"),
+    ("A card bumped from a full row", "to the MARKET as well \u00b7 trade draws from it"),
+    # WHERE IT GOES IS THE POINT, and it goes to YOUR OWN DISCARD. This line
+    # said SHARED PILE for a day, which was the engine's behaviour and the
+    # rulebook's wording and the wrong rule: the design had already reversed
+    # it, because a playtester found losing the card outright too harsh.
+    ("Matched the winner, lost", "one card set aside \u2014 into YOUR discard, +1 gold "
+                                 "\u00b7 you meld it again next recycle"),
 ]
 
 # THE RECYCLE, in order. Two of the three steps are modules; the sheet says so,
@@ -142,7 +143,7 @@ RECYCLE = [
     ("1 \u00b7 INCOME", "modules only", "collect what your board has earned"),
     ("2 \u00b7 ARM A PERK", "modules only",
      "one, from what your row reaches NOW \u00b7 it runs till the next recycle"),
-    ("3 \u00b7 REFILL", "always", "take your discard back and draw to ten"),
+    ("3 \u00b7 REFILL", "always", "take your discard back \u2014 that IS your ten"),
 ]
 
 # MAP OBJECTIVES - base game as of v0.26.
