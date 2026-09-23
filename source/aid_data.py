@@ -41,7 +41,7 @@ FREE = [
      "twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · "
      "buy at or under your cap."),
     ("FORTIFY", "1 gold",
-     "a coin on a unit · it defends at your tier's WALL, or a better card from hand."),
+     "a coin on a unit · it defends at your tier's WALL + the terrain, or a better card."),
     ("GOLD", "",
      "free · shift coins between reserve and walls."),
     ("COLONY", "",
@@ -84,7 +84,7 @@ COIN_USES = [
     # wherever it could not. Nothing on either aid may use a glyph the
     # face lacks; check_rules.py refuses one now.
     ("RESEARCH", "1 then 2", "take a card at or under your tier's cap into your discard"),
-    ("FORTIFY",  "1",         "stand it on a unit · it defends at your tier's WALL"),
+    ("FORTIFY",  "1",         "on a unit · defends at your WALL + the terrain"),
     ("KEEP",     "—",    "gold breaks a tie at the end of the game"),
 ]
 

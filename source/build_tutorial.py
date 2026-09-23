@@ -78,8 +78,9 @@ HTML = f"""<!doctype html>
     clockwise</b>. From the six you receive, <b>keep 6, pass 4</b>. Then <b>keep 8, pass 2</b>.
     Then keep the last two. You end with ten cards.</p>
     <p>Put the rest of the starting deck <b>face down in the middle</b> — that's the
-    <b>shared pile</b>. Ten cards with three players, twenty with two, none with four. You'll
-    draw from it later, when somebody's hand runs out.</p>
+    <b>market</b>. Fourteen cards with three players, twenty-four with two, four with four.
+    You never draw from it to refill: the only thing that reaches into it is
+    <b>trade</b>, later on.</p>
     <div class="say"><b>Say this out loud:</b> these ten cards are your civilization for the
     whole game. You will play them, pick them back up, and play them again. You'll only change
     them by buying better ones later — one at a time, and never more than ten.</div>
@@ -118,9 +119,10 @@ HTML = f"""<!doctype html>
     This is the <b>tile supply</b> — nothing is hidden and nothing is rationed. When you need a
     Forest, you take a Forest, until the Forests run out.</p>
     <p>Now shuffle the whole advanced deck together, face down. Deal <b>nine cards face up in a
-    3&times;3 grid</b> beside it. That is the market — a spread of ranks, not one per suit.
-    Leave a gap beside it for the <b>shared pile</b>, which starts empty.</p>
-    {fig('market', 'One shuffled deck, nine positions. Every research turns a card onto the position showing the highest rank — burying it. Nobody chooses where it lands, so the top of the market keeps sinking out of reach. Your tier&rsquo;s rank cap decides how much of the spread you can actually take; the rest is visible and out of bounds.')}
+    3&times;3 grid</b> beside it. That is the <b>innovation space</b> — a spread of ranks,
+    not one per suit — and it is where research buys from. It is not the market: the market
+    is the face-down stack you laid in step 2, and only trade reaches that.</p>
+    {fig('market', 'One shuffled deck, nine positions. Every research turns a card onto the position showing the highest rank — burying it. Nobody chooses where it lands, so the top of the innovation space keeps sinking out of reach. Your tier&rsquo;s rank cap decides how much of the spread you can actually take; the rest is visible and out of bounds.')}
   </div>
 
   <div class="step">
@@ -154,7 +156,8 @@ HTML = f"""<!doctype html>
   trick.</b> She takes die 1, Ada die 2, Cy die 3.</p>
   <p>Ada matched Bex's two cards and lost, so one of the two cards <b>she already played</b>
   is <b>set aside</b>: she chooses which, it pays her <b>1 gold</b> instead of acting on the
-  map, and it goes face down to the shared pile. Cy played fewer than the winner, so he gives
+  map, and it goes to <b>her own discard</b> — she will meld it again next recycle. Cy played
+  fewer than the winner, so he gives
   up nothing. <span class="fine">That rule counts CARDS, not the total — Ada played two and
   so did Bex.</span></p>
   <div class="say"><b>Notice:</b> Cy could have won this trick with a single card, if it had
@@ -183,8 +186,8 @@ HTML = f"""<!doctype html>
   <p><span class="seat">Ada — 2 cards, one of them set aside</span><br>
   She keeps the <b>6 of Plains</b> and sets the 5 aside. The only Plains she can reach is her
   own homeland, so she settles the 6 by <b>stacking</b> a second unit on it — Plains holds
-  three. The 5 goes face down to the shared pile and pays her <b>1 gold</b>: that is the
-  price of matching Bex's two cards and losing.</p>
+  three. The 5 goes to <b>her own discard</b> and pays her <b>1 gold</b>: that is the
+  price of matching Bex's two cards and losing — the turn, not the card.</p>
   <div class="say"><b>Notice:</b> at the start there is no Forest and no Ocean anywhere. The only
   way to use those cards is to <em>build</em> the ground first — that is what exploring is for,
   and it is why nobody's hand is dead on turn one.</div>

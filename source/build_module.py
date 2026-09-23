@@ -12,41 +12,50 @@ PF = json.loads(pathlib.Path("pattern_figs.json").read_text())
 DECK = [
     # (key, name, points, tagline, exact requirement)
     # Ordered easiest to hardest AS MEASURED ON v0.20. That ordering no longer
-    # holds: see sim/findings-v021-objectives.md. All are worth 4 for now.
-    ("foothills", "Foothills", 4,
+    # holds: see sim/findings-v021-objectives.md.
+    #
+    # TWO POINTS PER ARRANGEMENT, not four once. The cards said 4 and the
+    # booklet said "scores its full value once, or nothing"; the rulebook and
+    # the engine both said 2 for EVERY arrangement you hold. Three components
+    # in one box, two rules, and the number a player reads is the one printed
+    # on the card in their hand - so that was the one that had to move.
+    # Measured at 1.28 points a seat across both cards, with 47% of seats
+    # scoring nothing at all: repeats are rare, so 2-per is a slightly thinner
+    # objective than 4-once, not a doubling.
+    ("foothills", "Foothills", 2,
      "Where the stone gives way to soil.",
      "A mountain, next to a forest, next to a plains."),
-    ("watershed", "Watershed", 4,
+    ("watershed", "Watershed", 2,
      "Every drop from here reaches the sea.",
      "A mountain, next to a plains, next to an ocean."),
-    ("highland_rivers", "Highland Rivers", 4,
+    ("highland_rivers", "Highland Rivers", 2,
      "Snowmelt finds its way down.",
      "A mountain, next to a forest, next to an ocean."),
-    ("fjord", "Fjord", 4,
+    ("fjord", "Fjord", 2,
      "Deep water between two shoulders of rock.",
      "A mountain, next to an ocean, next to another mountain."),
-    ("mountain_pass", "Mountain Pass", 4,
+    ("mountain_pass", "Mountain Pass", 2,
      "The one way through, and everyone knows it.",
      "A plains, next to a mountain, next to another plains."),
-    ("coastal_chain", "Coastal Chain", 4,
+    ("coastal_chain", "Coastal Chain", 2,
      "Two shores and the water between.",
      "A plains, next to an ocean, next to another plains."),
-    ("clearing", "Clearing", 4,
+    ("clearing", "Clearing", 2,
      "Open sky in the middle of the wood.",
      "A forest, next to a plains, next to another forest."),
-    ("mountain_lookout", "Mountain Lookout", 4,
+    ("mountain_lookout", "Mountain Lookout", 2,
      "One peak, and the sea on either hand.",
      "An ocean, next to a mountain, next to another ocean."),
-    ("riverbank", "Riverbank", 4,
+    ("riverbank", "Riverbank", 2,
      "Soft ground, and everything grows.",
      "A plains, next to a forest, next to an ocean."),
-    ("timberline", "Timberline", 4,
+    ("timberline", "Timberline", 2,
      "The last trees before the rock.",
      "A forest, next to a mountain, next to another forest."),
-    ("river_delta", "River Delta", 4,
+    ("river_delta", "River Delta", 2,
      "Where the water spreads and slows.",
      "An ocean, next to a plains, next to a forest."),
-    ("sheltered_water", "Sheltered Water", 4,
+    ("sheltered_water", "Sheltered Water", 2,
      "Wooded on both sides, calm between.",
      "A forest, next to an ocean, next to another forest."),
 ]
@@ -128,17 +137,23 @@ HTML = f"""<!doctype html>
   </ol>
 
   <div class="note">
-    <span class="tag">Completed or not \u2014 there is no half</span>
-    <p>An objective scores its <strong>full value once</strong>, or nothing. You cannot
-    score it twice by building the pattern twice, and there is no penalty for failing.
+    <span class="tag">Build it twice and it pays twice</span>
+    <p>An objective pays <strong>2 points for every arrangement you hold</strong>, and
+    nothing if you hold none. Count each tile of the <strong>middle</strong> terrain that
+    has both its ends beside it: a tile may serve as an END for more than one
+    arrangement, but each middle pays once. There is no penalty for failing.
     Every pattern is exactly <strong>three tiles</strong>, and every tile must be one you
     <strong>occupy</strong> \u2014 a tile with at least one of your units standing on it.
     Empty tiles, and tiles held only by a rival, never count.</p>
   </div>
 
-  <p>Every objective is worth <strong>4 points</strong>. For scale, a finished game usually
-  scores somewhere between twenty and thirty, so an objective is worth roughly a fifth of a
-  good result \u2014 enough to steer a game, not enough to decide one on its own.</p>
+  <p>Every objective pays <strong>2 points for every arrangement you hold</strong>.
+  For scale, a finished game usually
+  scores somewhere between twenty and thirty. Two cards pay about
+  <strong>1.3 points a player</strong> over a whole game, and
+  <strong>slightly under half of all players score nothing at all</strong> from them \u2014
+  so an objective is a shape worth steering toward when the map offers it, and never worth
+  wrecking your position over.</p>
   <p>All twelve ask for the same thing in different terrain: <strong>three tiles you occupy
   in a chain</strong>, the middle one touching both ends. They are alike in
   shape so that the choice you make when you keep one is about <em>your hand</em>, not about

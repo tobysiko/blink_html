@@ -710,9 +710,16 @@ function uiPoint(what, arg) {
     hand: "#hand", board: ".pboard .tiers", gold: ".pb-head .purse",
     vrow: ".vslots", market: "#market", meld: "#mymeld", deck: "#deckpile",
     pile: "#pilebox",
+    /* THE NAMES SPLIT IN v0.26 AND THE DOM DID NOT. What players call the
+     * MARKET is the face-down pile that trade reaches into (#pilebox); the 3x3
+     * face-up grid you research from is the INNOVATION SPACE. The element is
+     * still id="market" because it is internal and renaming it would touch
+     * every rule in the stylesheet, but the engine now sends "innovation" and
+     * this is where the two meet. */
+    innovation: "#market",
   }[what];
   let n = pick ? $(pick) : null;
-  if (what === "market" && arg !== undefined) {
+  if ((what === "market" || what === "innovation") && arg !== undefined) {
     const slots = document.querySelectorAll("#market .slot");
     if (slots[arg]) n = slots[arg];
   }
@@ -1024,6 +1031,11 @@ function needZone() {
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
     case "retire": case "discard": case "bonus": case "duel": return "#hand";
+    /* researchTo is answered with BUTTONS, not by clicking furniture, so it
+     * lights nothing. Pointing it at the innovation space made the grid glow
+     * with nothing to click in it - which zone_test.js caught immediately, and
+     * a person would have read as "pick a slot". Like `perk` and `mulligan`,
+     * it falls through to null. */
     case "draft": case "mulligan": return "#hand";
     case "buy": return "#market";
     case "setaside": case "assault":              // the cards are already on the table
@@ -2639,6 +2651,19 @@ function renderPromptBody() {
       bar.appendChild(pick);
       pick.querySelectorAll("[data-obj]").forEach((n) =>
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
+      break;
+    }
+    case "researchTo": {
+      /* USE IT NOW, OR TURN THE HAND OVER SOONER. The card is already bought
+       * and the gold already paid; this only decides where it lands. Two
+       * buttons and no default styling on either, because neither is the safe
+       * one - into the hand it can be melded this cycle, into the discard the
+       * hand is a card shorter and recycles sooner, bringing everything back
+       * with it. */
+      ask(t("ask.researchTo",
+            { card: REQ.card.r + SUIT_LETTER[REQ.card.s] }));
+      btn(t("btn.toHand"), () => answer("hand"));
+      btn(t("btn.toDiscard"), () => answer("discard"), "alt");
       break;
     }
     case "perk": {

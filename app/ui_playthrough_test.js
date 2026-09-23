@@ -202,6 +202,15 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         note('colony-cell');
         const h = hot();
         if (h) click(h); else click(btn(/Stop here/));
+      } else if (/Where does .* go\?/.test(t)) {
+        /* WHERE A RESEARCHED CARD LANDS (v0.26): your hand, meldable this
+         * cycle, or your discard, which shortens the hand and brings the
+         * recycle sooner. Answered with buttons and nothing to click on the
+         * board. Alternated so both branches are driven through the DOM -
+         * a driver that always took one would leave the other unplayed. */
+        note('researchTo');
+        const bs = [...d.querySelectorAll('#prompt button')].filter((x) => !x.disabled);
+        if (bs.length) click(bs[steps % bs.length]);
       } else if (/Landfall/.test(t)) {
         /* A move that ends on ground that does not exist yet: the cell was
          * already chosen by the move itself, so the only question left is which

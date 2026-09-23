@@ -93,6 +93,13 @@ function autoHuman(G, req, rng) {
      * player runs with none. */
     case 'perk':
       return rng() < 0.15 ? null : pick(req.options);
+    /* WHERE A RESEARCHED CARD LANDS (v0.26): your hand, where you may meld it
+     * this cycle, or your discard, which leaves your hand a card shorter and
+     * brings the recycle sooner. Both branches are driven, because a driver
+     * that always picked one would leave the other unplayed - which is exactly
+     * how this file caught `retreat` and now `researchTo`. */
+    case 'researchTo':
+      return pick(req.options);
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

@@ -1300,11 +1300,18 @@ if _var.exists():
 for _doc, _txt in [("the rulebook", rules)] + [
         (n, text_of(HERE / n)) for n in ("Blink-first-game.html",)
         if (HERE / n).exists()]:
+    # THE PATTERNS HAVE TO BE THE CLAIM, NOT THE WORDS. A first cut matched
+    # "refills? from" and promptly failed on the corrected heading, "The market
+    # is not what you refill from" - a check that forbids a word cannot tell a
+    # rule from its denial. These are shapes that only appear when the retired
+    # rule is being asserted.
     for _pat, _what in [
-        (r"refills? from\b",            "calls the market the thing hands refill from"),
-        (r"draw up to ten from the shared", "has a recycle drawing from the shared pile"),
-        (r"pile everyone refills from",  "calls the pile the one everyone refills from"),
-        (r"flow back to you",            "still says other players' cards flow back to you"),
+        (r"where every hand\s+refills from",  "calls the market the thing every hand refills from"),
+        (r"pile everyone refills from",       "calls the pile the one everyone refills from"),
+        (r"draw up to ten from the shared",   "has a recycle drawing from the shared pile"),
+        (r"refills? to exactly ten",          "still says players refill to exactly ten"),
+        (r"flow back to you",                 "still says other players' cards flow back to you"),
+        (r"empty when you must draw",         "still tells players what to do if the pile runs out at a recycle"),
     ]:
         check(not re.search(_pat, _txt, re.I),
               f"{_doc} {_what} — the market is drawn from by TRADE only (\u00a709/\u00a710); "
@@ -1322,6 +1329,131 @@ check(re.search(r"shuffled once, at setup, and never again", rules, re.I),
 check(re.search(r'PILE_SHUFFLE = opts\.pileShuffle === "recycle" \? "recycle" : "setup"', js),
       "the engine reshuffles the market at every recycle; the rulebook prints "
       "that it is shuffled once, at setup, and never again")
+
+# ============ the four rulings of 23 Sep, and the checks that hold them ======
+#
+# Each of these was a place where the engine, the rulebook and a printed
+# component said three different things and every check passed. What follows
+# asks all the sides that disagreed.
+
+# ---- 1. TWO PILES, TWO NAMES ------------------------------------------------
+# "The market" named both the face-down stack AND the 3x3 face-up grid, often
+# in the same section: setup called the leftover pile the market in step 2 and
+# the grid the market in step 6. A player at a table cannot be told that the
+# rank cap governs what they may buy "from the market" and also that the market
+# is the thing they may not draw from.
+#
+#   MARKET           = the face-down stack. Trade reaches it. Never shuffled.
+#   INNOVATION SPACE = the 3x3 face-up grid. Research reaches it.
+check("innovation space" in rules.lower(),
+      "the rulebook never names the innovation space - the 3x3 grid research "
+      "buys from, which is NOT the market")
+for _bad, _why in [
+    (r"buy from the market",        "says the rank cap governs buying from the market"),
+    (r"3 . 3 grid\s+.{0,3}\s*the market", "still calls the 3x3 grid the market"),
+    (r"the market is always the one buried next", "buries cards in the market"),
+]:
+    check(not re.search(_bad, rules, re.I),
+          f"the rulebook {_why} - research reaches the INNOVATION SPACE; the "
+          "market is the face-down stack trade reaches")
+
+# ---- 2. A RESEARCHED CARD GOES WHERE THE PLAYER SAYS ------------------------
+# The engine put it in the hand with no choice, the handover specified the
+# discard with no choice, and the book said hand in §10 and discard in §09.
+check(re.search(r'RESEARCH_TO = \["hand", "discard"\]\.includes\(opts\.researchTo\)', js),
+      "the engine no longer offers a choice of where a researched card lands")
+check(re.search(r':\s*"choose";', js),
+      "the engine does not DEFAULT to letting the player choose where a "
+      "researched card lands")
+check(re.search(r"say where it goes: into your hand.{0,400}into your discard",
+                rules, re.S | re.I),
+      "§10 does not offer the player the choice of hand or discard")
+check(not re.search(r"straight into your hand", rules, re.I),
+      "§10 still says a researched card goes straight into your hand - it is a "
+      "choice now")
+check(not re.search(r"hands you one for your discard", rules, re.I),
+      "§09 still says research hands you a card for your discard - it is a "
+      "choice now")
+check(re.search(r"to your hand or your discard, as you choose", rules, re.I),
+      "§09 does not say the researched card goes where the player chooses")
+
+# ---- 3. A FULL VICTORY ROW BUMPS ITS LOWEST TO THE MARKET --------------------
+# Three rules at once: the engine refused the research, §10 said discard one of
+# the five permanently, §09's note said it bumps. The note won, because it is
+# the only one that keeps "nothing ever leaves the game" true.
+check("_bumpRow" in js, "the engine has no victory-row bump")
+check(not re.search(r"p\.vrow\.length >= 5\) return false", js),
+      "the engine still refuses a research outright when the victory row is full")
+check(not re.search(r"discard one of the five permanently", rules, re.I),
+      "§10 still tells players to destroy a victory card to make room - a full "
+      "row bumps its lowest to the market")
+check(re.search(r"lowest of the six goes to the bottom of the market", rules, re.I),
+      "§10 does not print the bump")
+# and the glossary must not still say a spent victory card is simply gone
+check(not re.search(r"spent once for an effect, and then are gone", rules, re.I),
+      "the glossary still says a spent victory card is gone; it sinks to the "
+      "bottom of the market")
+
+# ---- 4. AN OBJECTIVE PAYS PER ARRANGEMENT, AND THE CARD SAYS SO -------------
+# The twelve printed cards said 4 and their booklet said "full value once, or
+# nothing"; the rulebook and the engine said 2 for EVERY arrangement. The
+# number a player reads is the one on the card in their hand, so THAT is the
+# one that had to move. Read from the engine, and asked of every surface.
+_m = re.search(r"this\.OBJ_PER = opts\.objectivePer === undefined \? (\d+)", js)
+check(_m, "cannot find the objective's point value in the engine")
+if _m:
+    _per = int(_m.group(1))
+    check(re.search(rf"pays\s+<strong>{_per}</strong>\s*\n?\s*points for every such arrangement",
+                    rules) or re.search(rf"{_per}\s*\n?\s*points for every such arrangement", rules),
+          f"§12 does not say an objective pays {_per} for every arrangement")
+    _obj = HERE / "Blink-objectives-colour.html"
+    if _obj.exists():
+        _pts = set(re.findall(r'class="pts">([^<]*)<', _obj.read_text(encoding="utf8")))
+        check(_pts == {str(_per)},
+              f"the objective CARDS print {sorted(_pts)} points; the engine pays "
+              f"{_per} per arrangement - the card in a player's hand is the number "
+              "they will use")
+    _book = HERE / "Blink-map-objectives.html"
+    if _book.exists():
+        _bt = text_of(_book)
+        check(not re.search(r"full value once", _bt, re.I),
+              "the objectives booklet still says an objective scores its full "
+              "value once; it pays per arrangement")
+        check(not re.search(r"worth 4 points", _bt, re.I),
+              "the objectives booklet still prints 4 points an objective")
+
+# ---- 5. THE QUICK REFERENCE'S TIER LINE ------------------------------------
+# It printed FOUR numbers a tier under a heading naming THREE things, because
+# the free-moves column left the ladder and never left this sentence. Nothing
+# checked it: check_rules reads the tier TABLE, and this is prose.
+_qr = re.search(r"Melds, rank cap, wall:(.{0,400}?)Read them off", rules, re.S)
+check(_qr, "cannot find the quick reference's tier line")
+if _qr:
+    for _name, _meld, _cap, _wall in zip(
+            ["Tribe", "Settlement", "Kingdom", "Empire", "Civilization"],
+            MELD, CAPS, WALLS):
+        _row = re.search(rf"{_name}\s+([\d,\s]+?)\.", _qr.group(1))
+        check(_row, f"the quick reference has no line for {_name}")
+        if _row:
+            _n = [int(x) for x in re.findall(r"\d+", _row.group(1))]
+            check(_n == [_meld, _cap, _wall],
+                  f"the quick reference prints {_name} as {_n}; the heading names "
+                  f"three things and the engine has {[_meld, _cap, _wall]}")
+
+# ---- 6. A WALL IS A DEFENDER, SO THE GROUND COUNTS --------------------------
+# duelWinner adds TERRAIN_DEFENCE to whatever defends, and the wall coin is
+# passed to it as the defending card - so a Tribe's wall of 10 holds at 12 on a
+# Mountain. The book said "10 at Tribe, rising to 18" and stopped there, and
+# then reasoned from it that one dealt rank can break the lowest wall. It
+# cannot, on Forest or Mountain.
+check(re.search(r"const b = \(dCard \? dCard\.r : 0\) \+ TERRAIN_DEFENCE\[terrain\]", js),
+      "the duel no longer adds the terrain to the defender - the rulebook says "
+      "it does")
+check(re.search(r"plus the terrain's bonus, like any other defender", rules, re.I),
+      "§06 does not say the terrain's bonus is added to a wall")
+check(not re.search(r"exactly\s*\n?\s*<strong>one</strong> rank in a dealt hand", rules),
+      "§07 still claims exactly one dealt rank can break the lowest wall; on "
+      "Forest it takes a 12 and on a Mountain a 13, neither of which is dealt")
 
 # ---------------------------------------------------------------- the verdict
 #

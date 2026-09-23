@@ -70,9 +70,19 @@ function setTier(p, tier) {
    * because the over-limit cascade is not only reachable that way - combat can
    * still leave a stack over its limit, which the block above covers - and
    * because `economy: "full"` has to keep working. */
+  /* pileShuffle:'recycle' belongs with economy:'full' here, and for the same
+   * reason. This scenario is hand-built and starves a seat twice to force the
+   * cascade; the recycle used to shuffle the market every time, and that
+   * shuffle consumed the random stream the rest of the recycle drew from. When
+   * v0.26 stopped reshuffling - §09 prints "shuffled once, at setup, and never
+   * again" - the stream moved and this constructed board stopped shedding.
+   * Nothing about the cascade changed. Both options here pin the older
+   * configuration this rule belongs to, rather than the test asserting on a
+   * random draw it never meant to depend on. */
   const g = board([[0, 0, 'forest', 0, 3], [1, 0, 'forest', 0, 3], [2, 0, 'forest', 0, 3],
                    [0, 1, 'forest', 0, 3], [1, 1, 'forest', 0, 3],
-                   [3, 0, 'plains', 1, 1]], { growLimits: true, economy: 'full' });
+                   [3, 0, 'plains', 1, 1]],
+                  { growLimits: true, economy: 'full', pileShuffle: 'recycle' });
   const p = g.P[0];
   p.reserve = [0, 0, 0, 1, 4];         // Empire, 15 placed, 5 in reserve = 20
   ok(p.band() === 3, 'the hand-built board is not at Empire');

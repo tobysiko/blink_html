@@ -181,6 +181,13 @@ function run(seed, n, seat, retire, deck, obj, cb) {
       } else if (/Move —|Fortify —/.test(t)) {
         const h = q('#map .hot');
         if (h) click(h); else click(btn(/Cancel/) || btn(/Pick another/));
+      } else if (/Where does .* go\?/.test(t)) {
+        /* WHERE A RESEARCHED CARD LANDS (v0.26). Two buttons and no furniture
+         * to click, so this lights no zone - which is what the zone assertion
+         * in this file is for. Alternate between them so neither branch goes
+         * unplayed through the real DOM. */
+        const bs = qa('#prompt button').filter((x) => !x.disabled);
+        if (bs.length) click(bs[steps % bs.length]);
       } else if (/Arm a perk/.test(t)) {
         const b = qa('#prompt button').find((x) => !x.disabled);
         if (b) click(b);

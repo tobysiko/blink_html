@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-23T04:33:18Z
+ * Built 2026-09-23T06:15:44Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2006,6 +2006,20 @@ class Game {
      * round again, but not soon. That only holds if the pile is not reshuffled
      * under you - see PILE_SHUFFLE at the recycle. */
     this.TRADE = opts.trade === "off" ? "off" : "on";
+    /* WHERE A RESEARCHED CARD LANDS - and it is the PLAYER'S choice, which is
+     * the point of it.
+     *
+     * Into your HAND: you may meld it this cycle. Into your DISCARD: it waits
+     * for the next recycle, but your hand is one card shorter, so the recycle
+     * comes sooner and everything else in your discard comes back with it.
+     * Use it now, or turn the whole hand over faster. Both keep your ten
+     * intact; only the timing moves.
+     *
+     * "hand" is what the engine did before this was a choice, so every
+     * measurement taken until now reproduces exactly under it. "discard" is
+     * the v0.26 handover's rule, printed nowhere and kept measurable. */
+    this.RESEARCH_TO = ["hand", "discard"].includes(opts.researchTo)
+      ? opts.researchTo : "choose";
     /* IS THE SHARED PILE SHUFFLED, AND WHEN? Two rules that have been in this
      * project at the same time without meeting:
      *
@@ -2022,10 +2036,11 @@ class Game {
      *   burial is randomised away before your next turn and trade becomes a
      *   blind draw with no memory in it at all.
      *
-     * Defaulting to "recycle" deliberately: it is what every measurement in
-     * candidate-versions.md and combat-economics.md was taken under, and this
-     * is a rules decision, not a bug to fix quietly. */
-    this.PILE_SHUFFLE = opts.pileShuffle === "setup" ? "setup" : "recycle";
+     * THE RULEBOOK HAD ALREADY DECIDED THIS and the engine had not been told:
+     * §09 prints "It is shuffled once, at setup, and never again". "recycle" is
+     * kept only so the older measurements can be reproduced - it is not a rule
+     * anyone can read off a component. */
+    this.PILE_SHUFFLE = opts.pileShuffle === "recycle" ? "recycle" : "setup";
     /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
      * different one to each seat; `botLevel` is easy | normal | hard. Both are
      * policy, never rules: no style may do anything a person could not. */
@@ -4201,7 +4216,6 @@ class Game {
   }
 
   *_upgradeOnce(p, price) {
-    if (p.vrow.length >= 5) return false;
     if (p.gold < price) { this.inc("upgrade_no_gold"); return false; }
     if (!p.hand.length) { this.inc("upgrade_no_card_to_retire"); return false; }
     /* Wait for the hand to run short, so the card retired is a high one. A
@@ -4231,7 +4245,8 @@ class Game {
     const k = this._chooseBuy(p, avail, pool);
     const retire = yield* this._pickRetire(p);
     if (retire === null) return false;
-    this._completeResearch(p, k, retire, price);
+    this._completeResearch(p, k, retire, price,
+                           this._botResearchTo(p, this.gridTop(k)));
     return true;
   }
 
@@ -4274,21 +4289,59 @@ class Game {
   }
 
   /* 3. retire, pay, take. The card you buy goes STRAIGHT INTO YOUR HAND. */
-  _completeResearch(p, k, retire, cost) {
+  /* A FULL VICTORY ROW BUMPS ITS LOWEST CARD, it does not block the research.
+   *
+   * Three rules were in the project at once: the engine refused to research at
+   * all with five cards in the row, §10 told players to discard one of the five
+   * permanently, and §09's note said a full row bumps its lowest to the market.
+   * The note is the rule now. Nothing ever leaves the game, so the bumped card
+   * sinks to the bottom of the market and somebody may trade it back - and a
+   * full row stops being a dead end that quietly switches research off.
+   *
+   * The card just retired is a candidate: if it is the lowest of the six, it is
+   * the one that goes, which is exactly what "your lowest" means. */
+  _bumpRow(p) {
+    if (p.vrow.length <= 5) return null;
+    const low = p.vrow.slice().sort(cardSort)[0];
+    p.vrow.splice(p.vrow.indexOf(low), 1);
+    this._pileBury([low]);
+    this.inc("row_bumped");
+    this.fx("card", { seat: p.i, card: low, from: "vrow", to: "pile" });
+    this.say("log.rowBumped", { seat: p.i, card: low.r + SUIT_LETTER[low.s] });
+    return low;
+  }
+
+  /* `to` is "hand" or "discard" - see RESEARCH_TO. Into the hand it can be
+   * melded this cycle; into the discard the hand is one card shorter, so the
+   * recycle arrives sooner and the card comes back with everything else. */
+  _completeResearch(p, k, retire, cost, to) {
     const price = cost === undefined ? 1 : cost;
+    const dest = to === "discard" ? "discard" : "hand";
     const buy = this.gridTop(k);
     p.hand.splice(p.hand.indexOf(retire), 1);
     p.vrow.push(retire);
     this.fx("card", { seat: p.i, card: retire, from: "hand", to: "vrow" });
+    this._bumpRow(p);
     this.inc("upgrades");
-    this.purse(p, -price, "upgrade", "market", { card: buy.r, price });
+    this.purse(p, -price, "upgrade", "innovation", { card: buy.r, price });
     if (price > 1) this.inc("research_repeat"); // a second or later one this turn
     this.grid[k].pop();
-    p.hand.push(buy);
-    this.fx("card", { seat: p.i, card: buy, from: "market", to: "hand", slot: k });
+    p[dest].push(buy);
+    this.inc("research_to_" + dest);
+    this.fx("card", { seat: p.i, card: buy, from: "innovation", to: dest, slot: k });
     for (let j = 0; j < this.grid.length; j++)
       if (!this.grid[j].length && this.deck.length) this.grid[j].push(this.deck.pop());
     return buy;
+  }
+
+  /* WHERE THE BOT PUTS IT. Not a coin flip and not always the old branch: a
+   * card that connects to nothing in hand cannot be melded this cycle anyway,
+   * so taking it into the hand only delays the recycle. Same orphan test trade
+   * uses, for the same reason - melds are unbroken runs. */
+  _botResearchTo(p, buy) {
+    if (this.RESEARCH_TO !== "choose") return this.RESEARCH_TO;
+    return Game._orphans(p.hand.concat([buy])).some((c) => c === buy)
+      ? "discard" : "hand";
   }
 
   /* The same research, asked step by step. Returns true if it completed — a
@@ -4314,13 +4367,13 @@ class Game {
   }
   canResearch(p, st) {
     if (((st && st.researches) || 0) >= this.RESEARCH_MAX) return false;
-    return p.vrow.length < 5 && p.hand.length > 0
-      && p.gold >= this.researchCost(st);
+    /* A full victory row is not a reason to refuse: it bumps its lowest card to
+     * the market and the research goes ahead (_bumpRow). */
+    return p.hand.length > 0 && p.gold >= this.researchCost(st);
   }
   researchBlocked(p, st) {
     if (((st && st.researches) || 0) >= this.RESEARCH_MAX)
       return this.RESEARCH_MAX === 1 ? "why.research.done" : "why.research.max";
-    if (p.vrow.length >= 5) return "why.research.rowFull";
     if (!p.hand.length) return "why.research.noCard";
     if (p.gold < this.researchCost(st)) return "why.research.gold";
     return null;
@@ -4422,11 +4475,13 @@ class Game {
 
   *_researchHuman(p, cost) {
     const price = cost === undefined ? 1 : cost;
-    if (p.vrow.length >= 5 || p.gold < price || !p.hand.length) return false;
+    /* A FULL ROW NO LONGER REFUSES. It bumps its lowest card to the bottom of
+     * the market instead - see _bumpRow. */
+    if (p.gold < price || !p.hand.length) return false;
     const drew = this._drawOntoGrid();
 
-    /* Check the market BEFORE asking for a card, so nobody gives one up only to
-     * find there is nothing they may take. */
+    /* Check the innovation space BEFORE asking for a card, so nobody gives one
+     * up only to find there is nothing they may take. */
     const avail = this.buyable(p);
     if (!avail.length) {
       this.inc("upgrade_blocked_by_cap");
@@ -4441,7 +4496,17 @@ class Game {
     const k = yield { type: "buy", seat: p.i, options: avail, retire, drew,
                       cost: price };
     if (k === null || k === undefined) return false;
-    const buy = this._completeResearch(p, k, retire, price);
+    /* USE IT NOW, OR TURN THE HAND OVER SOONER. Asked only when the rule leaves
+     * it open; with researchTo pinned there is nothing to ask and no prompt to
+     * sit through. The card is already chosen, so an unanswered prompt takes
+     * the hand rather than unwinding a research that has happened. */
+    let dest = this.RESEARCH_TO;
+    if (dest === "choose") {
+      const ans = yield { type: "researchTo", seat: p.i, card: this.gridTop(k),
+                          options: ["hand", "discard"], cost: price };
+      dest = ans === "discard" ? "discard" : "hand";
+    }
+    const buy = this._completeResearch(p, k, retire, price, dest);
     this.say("log.researched", { out: retire.r + SUIT_LETTER[retire.s],
                                  in: buy.r + SUIT_LETTER[buy.s] });
     return true;
@@ -5180,13 +5245,22 @@ class Game {
       }
     }
 
-    /* §09: take back everything you played, then draw from the SHARED pile up
-     * to ten. Under PILE_SHUFFLE "recycle" the pile is shuffled first, so what
-     * comes back is whatever the table has been throwing away rather than your
-     * own cards in order; under "setup" it is never shuffled again after the
-     * deal, which is what makes a card you buried in a trade findable later.
-     * See PILE_SHUFFLE in the constructor — the two rules want opposite
-     * things and only one of them can be printed. */
+    /* §09: TAKE YOUR DISCARD BACK AND THAT IS YOUR HAND. It is ten cards,
+     * because nothing you play ever leaves you - what you spend on the map, and
+     * what you set aside for matching the leader, both land in your own
+     * discard. You draw NOTHING from the market here.
+     *
+     * The top-up below is a leftover of the version where a player who matched
+     * the leader gave their set-aside card to the SHARED pile: that hand came
+     * back one card short and this is what made it ten again. v0.26 sends the
+     * set-aside to the owner's own discard instead, so under the printed rule
+     * every hand is already ten and the loop never runs once - measured across
+     * whole games at two, three and four players.
+     *
+     * It is kept, not deleted, because trickRule "bonus" still takes a card out
+     * of a hand and into the pile, and that variant genuinely needs topping up.
+     * `recycle_topup` counts it, so a rule change that quietly starts drawing
+     * from the market shows up as a number instead of as a feeling. */
     p.hand = p.discard; p.discard = [];
     if (this.pile.length && this.PILE_SHUFFLE === "recycle")
       this.rng.shuffle(this.pile);
@@ -5194,7 +5268,7 @@ class Game {
     while (p.hand.length < 10 && this.pile.length) {
       const c = this.pile.pop();
       p.hand.push(c);
-      this.inc("drawn_from_pile"); drew++;
+      this.inc("drawn_from_pile"); this.inc("recycle_topup"); drew++;
       this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
     }
     this.say("log.recycle", { back: p.hand.length - drew, drew });

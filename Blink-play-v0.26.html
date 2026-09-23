@@ -1783,7 +1783,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"57393bdf9d","branch":"main","dirty":true,"built":"2026-09-23T04:33:18Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"7778b13e84","branch":"main","dirty":true,"built":"2026-09-23T06:15:43Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1994,7 +1994,7 @@ en: {
 
   "step.meld": "playing a meld", "step.turn": "the map turn",
   "step.bonus": "the winner's extra card", "step.discard": "giving up a card",
-  "step.setaside": "setting a card aside", "step.buy": "taking from the market",
+  "step.setaside": "setting a card aside", "step.buy": "taking from the innovation space",
   "step.retire": "retiring a card", "step.effectA": "declaring A",
   "step.feed": "a famine", "step.waterexplore": "the water advantage",
   "step.conquest": "a conquest", "step.objective": "choosing an objective",
@@ -2123,7 +2123,7 @@ en: {
   "hud.order": "Initiative",
   "board.dieWin": "the winner's die \u2014 set to the {n} cards in the winning meld",
   "board.dieOut": "die lifted out of its slot \u2014 this player is finished",
-  "sec.market": "Market",
+  "sec.market": "Innovation space",
   "sec.hand": "Your hand",
   "discard.label": "Your discard",
   "discard.note": "this is your next hand — it all comes back at the recycle",
@@ -2314,7 +2314,7 @@ en: {
   "ask.retire.lowest": "<b>Give up your lowest card</b> <span class=\"muted\">— rank {low}, lit below. {more}It becomes a victory card.</span>",
   "ask.retire.lowest.more": "You hold {n}; choose the suit you need least. ",
   "ask.retire.any": "<b>Give up a card</b> <span class=\"muted\">— any card, lit below; it becomes a victory card.</span>",
-  "ask.buy": "<b>Take a card</b> at or below rank {cap} — click a lit market slot.",
+  "ask.buy": "<b>Take a card</b> at or below rank {cap} — click a lit slot in the innovation space.",
   "ask.declare": "<b>Declare</b> <span class=\"muted\">— spend a victory card on <b>A</b> before anyone's meld is seen, or skip</span>",
   "ask.famine": "<b>Famine</b> <span class=\"muted\">— you owe {owed} and hold {gold}. Cash a lit victory card below for gold, or take the loss: each gold short sends a unit home from the map.</span>",
   "ask.objective": "<b>Secret objective.</b> You were dealt two. Keep one — it stays hidden all game and scores <b>4 points</b> at the end if you have built it. Every chain is three tiles <b>you occupy</b>, the middle touching both ends.",
@@ -2365,15 +2365,15 @@ en: {
   "res.preview": "2 choices · 1 gold · once per turn",
   "res.complete": "complete",
   "res.step": "step {n} of 2",
-  "res.drew": "The market drew {card} — it covers the highest rank showing, position {slot}. Automatic; not your choice.",
+  "res.drew": "The innovation space drew {card} — it covers the highest rank showing, position {slot}. Automatic; not your choice.",
   "res.step1.lowest": "Give up your <b>lowest</b> card — it goes to your victory row",
   "res.step1.any": "Give up a card from your hand — it goes to your victory row",
   "res.step1.done": "gave up {card}",
   "res.step2": "Take one face-up card at or below rank <b>{cap}</b> — it goes into your hand",
   "res.step2.done": "took {card}",
-  "res.cost": "Costs <b>1 gold</b> (you have {gold}). Beginning draws a card onto the market and uses your research for this turn, even if you take nothing.",
+  "res.cost": "Costs <b>1 gold</b> (you have {gold}). Beginning draws a card onto the innovation space and uses your research for this turn, even if you take nothing.",
   "res.blocked": "<span class=\"bad\">Nothing on the grid was at or below rank {cap}.</span> The draw stays on the grid and this was one of your researches — but you bought nothing, so the next one still costs 1.",
-  "res.blind": "<b>Nothing on the market is at or below your cap of {cap} right now.</b> The draw covers the highest position and may land something you can take — or it may not, and either way this is one of your researches.",
+  "res.blind": "<b>Nothing in the innovation space is at or below your cap of {cap} right now.</b> The draw covers the highest position and may land something you can take — or it may not, and either way this is one of your researches.",
   "res.done": "Research complete. Your research for this turn is used.",
   "res.running": "Costs 1 gold · your one research this turn.",
   "btn.beginResearch": "Begin research",
@@ -2438,7 +2438,11 @@ en: {
   "fx.duel.won": "{a} v {b} \u2014 won",
   "fx.duel.held": "{a} v {b} \u2014 held",
   "log.researched": "Researched: retired {out}, took {in}.",
-  "log.noBuy": "Nothing on the market is at or below your rank cap.",
+  "log.noBuy": "Nothing in the innovation space is at or below your rank cap.",
+  "log.rowBumped": "Seat {seat}'s victory row was full: {card} was bumped to the bottom of the market.",
+  "ask.researchTo": "<b>Where does {card} go?</b> Into your <b>hand</b> and you may meld it this cycle. Into your <b>discard</b> and your hand is a card shorter, so it recycles sooner — and the card comes back with everything else.",
+  "btn.toHand": "To my hand",
+  "btn.toDiscard": "To my discard",
   "log.water": "Water advantage — a free tile.",
   "log.waterNone": "Water advantage — but the map has nowhere legal to lay a tile, so it keeps.",
   "log.colony": "Colony founded — {n} tile(s).",
@@ -2516,7 +2520,7 @@ en: {
   "end.final": "FINAL ROUND — this is the extra round the trigger grants. The game ends when it is over.",
   "end.why": "Triggered by: {why}. Everything still scores: units on the map, your victory row, terrain majorities.",
   "end.lastUnit": "last unit placed",
-  "end.marketThin": "the market thinned to one layer",
+  "end.marketThin": "the innovation space thinned to one layer",
 },
 
 de: {
@@ -2705,7 +2709,7 @@ de: {
 
   "step.meld": "Kombination legen", "step.turn": "der Kartenzug",
   "step.bonus": "die Extrakarte des Siegers", "step.discard": "Karte abgeben",
-  "step.setaside": "Karte beiseitelegen", "step.buy": "aus dem Markt nehmen",
+  "step.setaside": "Karte beiseitelegen", "step.buy": "aus dem Innovationsfeld nehmen",
   "step.retire": "Karte ausmustern", "step.effectA": "A ansagen",
   "step.feed": "eine Hungersnot", "step.waterexplore": "der Wasservorteil",
   "step.conquest": "eine Eroberung", "step.objective": "Ziel wählen",
@@ -2830,7 +2834,7 @@ de: {
   "hud.order": "Initiative",
   "board.dieWin": "der Siegerw\u00fcrfel \u2014 zeigt die {n} Karten des Sieger-Melds",
   "board.dieOut": "W\u00fcrfel aus dem Feld genommen \u2014 dieser Spieler ist fertig",
-  "sec.market": "Markt",
+  "sec.market": "Innovationsfeld",
   "sec.hand": "Deine Hand",
   "discard.label": "Dein Ablagestapel",
   "discard.note": "das ist deine n\u00e4chste Hand \u2014 beim Nachziehen kommt alles zur\u00fcck",
@@ -3009,7 +3013,7 @@ de: {
   "ask.retire.lowest": "<b>Gib deine niedrigste Karte ab</b> <span class=\"muted\">— Wert {low}, unten hervorgehoben. {more}Sie wird zur Siegkarte.</span>",
   "ask.retire.lowest.more": "Du hast {n} davon; wähle die Farbe, die du am wenigsten brauchst. ",
   "ask.retire.any": "<b>Eine Karte abgeben</b> <span class=\"muted\">— beliebig, unten hervorgehoben; sie wird zur Siegkarte.</span>",
-  "ask.buy": "<b>Nimm eine Karte</b> mit Wert {cap} oder darunter — klicke ein hervorgehobenes Marktfeld.",
+  "ask.buy": "<b>Nimm eine Karte</b> mit Wert {cap} oder darunter — klicke ein hervorgehobenes Feld im Innovationsfeld.",
   "ask.declare": "<b>Ansagen</b> <span class=\"muted\">— eine Siegkarte für <b>A</b> ausgeben, bevor irgendeine Kombination zu sehen ist, oder überspringen</span>",
   "ask.famine": "<b>Hungersnot</b> <span class=\"muted\">— du schuldest {owed} und hast {gold}. Tausche unten eine hervorgehobene Siegkarte gegen Gold, oder nimm den Verlust hin: für jedes fehlende Gold kehrt eine Einheit von der Karte zurück.</span>",
   "ask.objective": "<b>Geheimes Ziel.</b> Du hast zwei erhalten. Behalte eines — es bleibt das ganze Spiel verdeckt und bringt am Ende <b>4 Punkte</b>, wenn du es gebaut hast. Jede Kette besteht aus drei Feldern, die <b>du besetzt</b>, wobei das mittlere beide Enden berührt.",
@@ -3057,15 +3061,15 @@ de: {
   "res.preview": "2 Entscheidungen · 1 Gold · einmal pro Zug",
   "res.complete": "abgeschlossen",
   "res.step": "Schritt {n} von 2",
-  "res.drew": "Der Markt zieht {card} — sie deckt den höchsten offenen Wert zu, Position {slot}. Automatisch, nicht deine Wahl.",
+  "res.drew": "Das Innovationsfeld zieht {card} — sie deckt den höchsten offenen Wert zu, Position {slot}. Automatisch, nicht deine Wahl.",
   "res.step1.lowest": "Gib deine <b>niedrigste</b> Karte ab — sie kommt in deine Siegreihe",
   "res.step1.any": "Gib eine Handkarte ab — sie kommt in deine Siegreihe",
   "res.step1.done": "{card} abgegeben",
   "res.step2": "Nimm eine offene Karte mit Wert <b>{cap}</b> oder darunter — sie kommt auf deine Hand",
   "res.step2.done": "{card} genommen",
-  "res.cost": "Kostet <b>1 Gold</b> (du hast {gold}). Der Beginn zieht eine Karte auf den Markt und verbraucht deine Forschung für diesen Zug, auch wenn du nichts nimmst.",
-  "res.blocked": "<span class=\"bad\">Nichts auf dem Markt lag bei Wert {cap} oder darunter.</span> Die gezogene Karte bleibt liegen, das war eine deiner Forschungen — aber du hast nichts gekauft, die nächste kostet weiterhin 1.",
-  "res.blind": "<b>Zurzeit liegt nichts auf dem Markt bei Wert {cap} oder darunter.</b> Der Zug deckt die höchste Position ab und bringt vielleicht etwas Erreichbares — vielleicht auch nicht, und so oder so ist das eine deiner Forschungen.",
+  "res.cost": "Kostet <b>1 Gold</b> (du hast {gold}). Der Beginn zieht eine Karte ins Innovationsfeld und verbraucht deine Forschung für diesen Zug, auch wenn du nichts nimmst.",
+  "res.blocked": "<span class=\"bad\">Nichts im Innovationsfeld lag bei Wert {cap} oder darunter.</span> Die gezogene Karte bleibt liegen, das war eine deiner Forschungen — aber du hast nichts gekauft, die nächste kostet weiterhin 1.",
+  "res.blind": "<b>Zurzeit liegt nichts im Innovationsfeld bei Wert {cap} oder darunter.</b> Der Zug deckt die höchste Position ab und bringt vielleicht etwas Erreichbares — vielleicht auch nicht, und so oder so ist das eine deiner Forschungen.",
   "res.done": "Forschung abgeschlossen. Deine Forschung für diesen Zug ist verbraucht.",
   "res.running": "Kostet 1 Gold · deine einzige Forschung in diesem Zug.",
   "btn.beginResearch": "Forschung beginnen",
@@ -3130,7 +3134,11 @@ de: {
   "fx.duel.won": "{a} v {b} \u2014 gewonnen",
   "fx.duel.held": "{a} v {b} \u2014 gehalten",
   "log.researched": "Geforscht: {out} abgegeben, {in} genommen.",
-  "log.noBuy": "Nichts auf dem Markt liegt bei deiner Wertobergrenze oder darunter.",
+  "log.noBuy": "Nichts im Innovationsfeld liegt bei deiner Wertobergrenze oder darunter.",
+  "log.rowBumped": "Die Siegreihe von Platz {seat} war voll: {card} wandert unter den Markt.",
+  "ask.researchTo": "<b>Wohin mit {card}?</b> Auf die <b>Hand</b> und du kannst sie in diesem Durchlauf ausspielen. In den <b>Ablagestapel</b> und deine Hand ist eine Karte kürzer, geht also früher durch — und die Karte kommt mit allem anderen zurück.",
+  "btn.toHand": "Auf die Hand",
+  "btn.toDiscard": "In die Ablage",
   "log.water": "Vorteil zur See — ein Gratisfeld.",
   "log.waterNone": "Vorteil zur See — aber die Karte hat keine erlaubte Lücke; er bleibt erhalten.",
   "log.colony": "Kolonie gegründet — {n} Feld(er).",
@@ -3203,7 +3211,7 @@ de: {
   "end.final": "LETZTE RUNDE — dies ist die Zusatzrunde nach dem Auslöser. Danach endet das Spiel.",
   "end.why": "Ausgelöst durch: {why}. Alles zählt weiter: Einheiten auf der Karte, deine Siegreihe, Geländemehrheiten.",
   "end.lastUnit": "letzte Einheit gesetzt",
-  "end.marketThin": "der Markt ist auf eine Lage geschrumpft",
+  "end.marketThin": "das Innovationsfeld ist auf eine Lage geschrumpft",
 },
 };
 
@@ -5242,6 +5250,20 @@ class Game {
      * round again, but not soon. That only holds if the pile is not reshuffled
      * under you - see PILE_SHUFFLE at the recycle. */
     this.TRADE = opts.trade === "off" ? "off" : "on";
+    /* WHERE A RESEARCHED CARD LANDS - and it is the PLAYER'S choice, which is
+     * the point of it.
+     *
+     * Into your HAND: you may meld it this cycle. Into your DISCARD: it waits
+     * for the next recycle, but your hand is one card shorter, so the recycle
+     * comes sooner and everything else in your discard comes back with it.
+     * Use it now, or turn the whole hand over faster. Both keep your ten
+     * intact; only the timing moves.
+     *
+     * "hand" is what the engine did before this was a choice, so every
+     * measurement taken until now reproduces exactly under it. "discard" is
+     * the v0.26 handover's rule, printed nowhere and kept measurable. */
+    this.RESEARCH_TO = ["hand", "discard"].includes(opts.researchTo)
+      ? opts.researchTo : "choose";
     /* IS THE SHARED PILE SHUFFLED, AND WHEN? Two rules that have been in this
      * project at the same time without meeting:
      *
@@ -5258,10 +5280,11 @@ class Game {
      *   burial is randomised away before your next turn and trade becomes a
      *   blind draw with no memory in it at all.
      *
-     * Defaulting to "recycle" deliberately: it is what every measurement in
-     * candidate-versions.md and combat-economics.md was taken under, and this
-     * is a rules decision, not a bug to fix quietly. */
-    this.PILE_SHUFFLE = opts.pileShuffle === "setup" ? "setup" : "recycle";
+     * THE RULEBOOK HAD ALREADY DECIDED THIS and the engine had not been told:
+     * §09 prints "It is shuffled once, at setup, and never again". "recycle" is
+     * kept only so the older measurements can be reproduced - it is not a rule
+     * anyone can read off a component. */
+    this.PILE_SHUFFLE = opts.pileShuffle === "recycle" ? "recycle" : "setup";
     /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
      * different one to each seat; `botLevel` is easy | normal | hard. Both are
      * policy, never rules: no style may do anything a person could not. */
@@ -7437,7 +7460,6 @@ class Game {
   }
 
   *_upgradeOnce(p, price) {
-    if (p.vrow.length >= 5) return false;
     if (p.gold < price) { this.inc("upgrade_no_gold"); return false; }
     if (!p.hand.length) { this.inc("upgrade_no_card_to_retire"); return false; }
     /* Wait for the hand to run short, so the card retired is a high one. A
@@ -7467,7 +7489,8 @@ class Game {
     const k = this._chooseBuy(p, avail, pool);
     const retire = yield* this._pickRetire(p);
     if (retire === null) return false;
-    this._completeResearch(p, k, retire, price);
+    this._completeResearch(p, k, retire, price,
+                           this._botResearchTo(p, this.gridTop(k)));
     return true;
   }
 
@@ -7510,21 +7533,59 @@ class Game {
   }
 
   /* 3. retire, pay, take. The card you buy goes STRAIGHT INTO YOUR HAND. */
-  _completeResearch(p, k, retire, cost) {
+  /* A FULL VICTORY ROW BUMPS ITS LOWEST CARD, it does not block the research.
+   *
+   * Three rules were in the project at once: the engine refused to research at
+   * all with five cards in the row, §10 told players to discard one of the five
+   * permanently, and §09's note said a full row bumps its lowest to the market.
+   * The note is the rule now. Nothing ever leaves the game, so the bumped card
+   * sinks to the bottom of the market and somebody may trade it back - and a
+   * full row stops being a dead end that quietly switches research off.
+   *
+   * The card just retired is a candidate: if it is the lowest of the six, it is
+   * the one that goes, which is exactly what "your lowest" means. */
+  _bumpRow(p) {
+    if (p.vrow.length <= 5) return null;
+    const low = p.vrow.slice().sort(cardSort)[0];
+    p.vrow.splice(p.vrow.indexOf(low), 1);
+    this._pileBury([low]);
+    this.inc("row_bumped");
+    this.fx("card", { seat: p.i, card: low, from: "vrow", to: "pile" });
+    this.say("log.rowBumped", { seat: p.i, card: low.r + SUIT_LETTER[low.s] });
+    return low;
+  }
+
+  /* `to` is "hand" or "discard" - see RESEARCH_TO. Into the hand it can be
+   * melded this cycle; into the discard the hand is one card shorter, so the
+   * recycle arrives sooner and the card comes back with everything else. */
+  _completeResearch(p, k, retire, cost, to) {
     const price = cost === undefined ? 1 : cost;
+    const dest = to === "discard" ? "discard" : "hand";
     const buy = this.gridTop(k);
     p.hand.splice(p.hand.indexOf(retire), 1);
     p.vrow.push(retire);
     this.fx("card", { seat: p.i, card: retire, from: "hand", to: "vrow" });
+    this._bumpRow(p);
     this.inc("upgrades");
-    this.purse(p, -price, "upgrade", "market", { card: buy.r, price });
+    this.purse(p, -price, "upgrade", "innovation", { card: buy.r, price });
     if (price > 1) this.inc("research_repeat"); // a second or later one this turn
     this.grid[k].pop();
-    p.hand.push(buy);
-    this.fx("card", { seat: p.i, card: buy, from: "market", to: "hand", slot: k });
+    p[dest].push(buy);
+    this.inc("research_to_" + dest);
+    this.fx("card", { seat: p.i, card: buy, from: "innovation", to: dest, slot: k });
     for (let j = 0; j < this.grid.length; j++)
       if (!this.grid[j].length && this.deck.length) this.grid[j].push(this.deck.pop());
     return buy;
+  }
+
+  /* WHERE THE BOT PUTS IT. Not a coin flip and not always the old branch: a
+   * card that connects to nothing in hand cannot be melded this cycle anyway,
+   * so taking it into the hand only delays the recycle. Same orphan test trade
+   * uses, for the same reason - melds are unbroken runs. */
+  _botResearchTo(p, buy) {
+    if (this.RESEARCH_TO !== "choose") return this.RESEARCH_TO;
+    return Game._orphans(p.hand.concat([buy])).some((c) => c === buy)
+      ? "discard" : "hand";
   }
 
   /* The same research, asked step by step. Returns true if it completed — a
@@ -7550,13 +7611,13 @@ class Game {
   }
   canResearch(p, st) {
     if (((st && st.researches) || 0) >= this.RESEARCH_MAX) return false;
-    return p.vrow.length < 5 && p.hand.length > 0
-      && p.gold >= this.researchCost(st);
+    /* A full victory row is not a reason to refuse: it bumps its lowest card to
+     * the market and the research goes ahead (_bumpRow). */
+    return p.hand.length > 0 && p.gold >= this.researchCost(st);
   }
   researchBlocked(p, st) {
     if (((st && st.researches) || 0) >= this.RESEARCH_MAX)
       return this.RESEARCH_MAX === 1 ? "why.research.done" : "why.research.max";
-    if (p.vrow.length >= 5) return "why.research.rowFull";
     if (!p.hand.length) return "why.research.noCard";
     if (p.gold < this.researchCost(st)) return "why.research.gold";
     return null;
@@ -7658,11 +7719,13 @@ class Game {
 
   *_researchHuman(p, cost) {
     const price = cost === undefined ? 1 : cost;
-    if (p.vrow.length >= 5 || p.gold < price || !p.hand.length) return false;
+    /* A FULL ROW NO LONGER REFUSES. It bumps its lowest card to the bottom of
+     * the market instead - see _bumpRow. */
+    if (p.gold < price || !p.hand.length) return false;
     const drew = this._drawOntoGrid();
 
-    /* Check the market BEFORE asking for a card, so nobody gives one up only to
-     * find there is nothing they may take. */
+    /* Check the innovation space BEFORE asking for a card, so nobody gives one
+     * up only to find there is nothing they may take. */
     const avail = this.buyable(p);
     if (!avail.length) {
       this.inc("upgrade_blocked_by_cap");
@@ -7677,7 +7740,17 @@ class Game {
     const k = yield { type: "buy", seat: p.i, options: avail, retire, drew,
                       cost: price };
     if (k === null || k === undefined) return false;
-    const buy = this._completeResearch(p, k, retire, price);
+    /* USE IT NOW, OR TURN THE HAND OVER SOONER. Asked only when the rule leaves
+     * it open; with researchTo pinned there is nothing to ask and no prompt to
+     * sit through. The card is already chosen, so an unanswered prompt takes
+     * the hand rather than unwinding a research that has happened. */
+    let dest = this.RESEARCH_TO;
+    if (dest === "choose") {
+      const ans = yield { type: "researchTo", seat: p.i, card: this.gridTop(k),
+                          options: ["hand", "discard"], cost: price };
+      dest = ans === "discard" ? "discard" : "hand";
+    }
+    const buy = this._completeResearch(p, k, retire, price, dest);
     this.say("log.researched", { out: retire.r + SUIT_LETTER[retire.s],
                                  in: buy.r + SUIT_LETTER[buy.s] });
     return true;
@@ -8416,13 +8489,22 @@ class Game {
       }
     }
 
-    /* §09: take back everything you played, then draw from the SHARED pile up
-     * to ten. Under PILE_SHUFFLE "recycle" the pile is shuffled first, so what
-     * comes back is whatever the table has been throwing away rather than your
-     * own cards in order; under "setup" it is never shuffled again after the
-     * deal, which is what makes a card you buried in a trade findable later.
-     * See PILE_SHUFFLE in the constructor — the two rules want opposite
-     * things and only one of them can be printed. */
+    /* §09: TAKE YOUR DISCARD BACK AND THAT IS YOUR HAND. It is ten cards,
+     * because nothing you play ever leaves you - what you spend on the map, and
+     * what you set aside for matching the leader, both land in your own
+     * discard. You draw NOTHING from the market here.
+     *
+     * The top-up below is a leftover of the version where a player who matched
+     * the leader gave their set-aside card to the SHARED pile: that hand came
+     * back one card short and this is what made it ten again. v0.26 sends the
+     * set-aside to the owner's own discard instead, so under the printed rule
+     * every hand is already ten and the loop never runs once - measured across
+     * whole games at two, three and four players.
+     *
+     * It is kept, not deleted, because trickRule "bonus" still takes a card out
+     * of a hand and into the pile, and that variant genuinely needs topping up.
+     * `recycle_topup` counts it, so a rule change that quietly starts drawing
+     * from the market shows up as a number instead of as a feeling. */
     p.hand = p.discard; p.discard = [];
     if (this.pile.length && this.PILE_SHUFFLE === "recycle")
       this.rng.shuffle(this.pile);
@@ -8430,7 +8512,7 @@ class Game {
     while (p.hand.length < 10 && this.pile.length) {
       const c = this.pile.pop();
       p.hand.push(c);
-      this.inc("drawn_from_pile"); drew++;
+      this.inc("drawn_from_pile"); this.inc("recycle_topup"); drew++;
       this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
     }
     this.say("log.recycle", { back: p.hand.length - drew, drew });
@@ -10224,9 +10306,16 @@ function uiPoint(what, arg) {
     hand: "#hand", board: ".pboard .tiers", gold: ".pb-head .purse",
     vrow: ".vslots", market: "#market", meld: "#mymeld", deck: "#deckpile",
     pile: "#pilebox",
+    /* THE NAMES SPLIT IN v0.26 AND THE DOM DID NOT. What players call the
+     * MARKET is the face-down pile that trade reaches into (#pilebox); the 3x3
+     * face-up grid you research from is the INNOVATION SPACE. The element is
+     * still id="market" because it is internal and renaming it would touch
+     * every rule in the stylesheet, but the engine now sends "innovation" and
+     * this is where the two meet. */
+    innovation: "#market",
   }[what];
   let n = pick ? $(pick) : null;
-  if (what === "market" && arg !== undefined) {
+  if ((what === "market" || what === "innovation") && arg !== undefined) {
     const slots = document.querySelectorAll("#market .slot");
     if (slots[arg]) n = slots[arg];
   }
@@ -10538,6 +10627,11 @@ function needZone() {
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
     case "retire": case "discard": case "bonus": case "duel": return "#hand";
+    /* researchTo is answered with BUTTONS, not by clicking furniture, so it
+     * lights nothing. Pointing it at the innovation space made the grid glow
+     * with nothing to click in it - which zone_test.js caught immediately, and
+     * a person would have read as "pick a slot". Like `perk` and `mulligan`,
+     * it falls through to null. */
     case "draft": case "mulligan": return "#hand";
     case "buy": return "#market";
     case "setaside": case "assault":              // the cards are already on the table
@@ -12153,6 +12247,19 @@ function renderPromptBody() {
       bar.appendChild(pick);
       pick.querySelectorAll("[data-obj]").forEach((n) =>
         n.addEventListener("click", () => answer(REQ.options[Number(n.dataset.obj)])));
+      break;
+    }
+    case "researchTo": {
+      /* USE IT NOW, OR TURN THE HAND OVER SOONER. The card is already bought
+       * and the gold already paid; this only decides where it lands. Two
+       * buttons and no default styling on either, because neither is the safe
+       * one - into the hand it can be melded this cycle, into the discard the
+       * hand is a card shorter and recycles sooner, bringing everything back
+       * with it. */
+      ask(t("ask.researchTo",
+            { card: REQ.card.r + SUIT_LETTER[REQ.card.s] }));
+      btn(t("btn.toHand"), () => answer("hand"));
+      btn(t("btn.toDiscard"), () => answer("discard"), "alt");
       break;
     }
     case "perk": {

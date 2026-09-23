@@ -323,19 +323,19 @@ HTML = f"""<!doctype html>
     your free actions: the movement your meld carries, and gold spent on fortresses and
     research.</li>
     <li><b>Grow.</b> Units leave your board in tiers. Each tier you empty lets you play a
-    bigger meld, move further, research a higher rank and hold a taller wall.</li>
+    bigger meld, research a higher rank and hold a taller wall.</li>
   </ol>
   <p>The game ends when someone places their last unit. Most points wins: one per unit on
   the map, plus your victory row, plus the two <strong>map objectives</strong> you were
   dealt &mdash; kinds of place, sung down the generations, that you score by holding.</p>
-  {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game; the market beside it is where cards are bought; every meld played goes to the play area and stays there until it is spent. Your own board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
+  {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game; the innovation space beside it is where research buys cards; every meld played goes to the play area and stays there until it is spent. Your own board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
 
   <div class="contents">
     <span class="tag">Contents</span>
     <p><b>01</b> The idea · <b>02</b> Components · <b>03</b> Setup ·
     <b>✦</b> A worked round · <b>04</b> The round ·
     <b>05</b> Melds · <b>06</b> Spending your meld · <b>07</b> Free actions ·
-    <b>08</b> Terrain · <b>09</b> The recycle · <b>10</b> Research and the market ·
+    <b>08</b> Terrain · <b>09</b> The recycle · <b>10</b> Research and the innovation space ·
     <b>11</b> End of the game ·
     <b>12</b> Map objectives · <b>13</b> Perks ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
@@ -389,7 +389,7 @@ HTML = f"""<!doctype html>
     plus what has just reached you — and the only thing to decide is which of the ten leave.
     A card you kept in an earlier round is <em>not</em> locked: if something better arrives,
     pass the older card instead. You end with a fixed hand of <strong>ten cards</strong>. Put whatever is left of the starting deck
-    <strong>face down as the shared pile</strong> — twenty-four cards at two players,
+    <strong>face down as the market</strong> — twenty-four cards at two players,
     fourteen at three, four at four. It is not out of the game: it is the
     <strong>market</strong>, and <strong>trade</strong> is what reaches into it (§10), so
     the cards nobody drafted come back to the table later, in somebody else's hand.
@@ -417,9 +417,9 @@ HTML = f"""<!doctype html>
     may be taken at any time until that terrain runs out.</li>
 
     <li><b>Upgrade deck and market.</b> Shuffle the upgrade deck face down and deal
-    <strong>nine face up in a 3 &times; 3 grid</strong> beside it — that is the market
-    (§10). The shared pile from step 2 sits next to it, and grows as losing melds discard
-    into it (§04).</li>
+    <strong>nine face up in a 3 &times; 3 grid</strong> beside it — that is the innovation space
+    (§10). The <strong>market</strong> from step 2 sits next to it, and grows as victory
+    cards are spent and as full victory rows bump their lowest (§10).</li>
 
     <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>;
     nothing is played yet, so set it to 1.</li>
@@ -439,14 +439,14 @@ HTML = f"""<!doctype html>
   <p>The <strong>starting deck</strong> is ranks 1–11 and the <strong>upgrade deck</strong>
   ranks 12–20. They deal ten cards apiece and draft — pass six on, then four, then two,
   looking at ten cards every time — until each holds a fixed hand of ten. Fourteen
-  starting cards are left over; those go face down as the shared pile.</p>
+  starting cards are left over; those go face down as the market.</p>
   <p>Each takes a board and loads all five tiers with twenty units, and sets their
   They lay the three-player
   starting map — three Mountains in a triangle with a Plains beyond each outer face, every start
   three tiles from the others — and each puts one unit on a Plains tile of their own. The
   remaining tiles are sorted into four open piles by terrain. Finally they shuffle the
   upgrade deck and deal <strong>nine cards face up in a 3 &times; 3 grid</strong> beside
-  it &mdash; that is the market. Their Tribe rank cap is 12, so only the 12s are within
+  it &mdash; that is the innovation space. Their Tribe rank cap is 12, so only the 12s are within
   reach &mdash; exactly one rank above the starting deck &mdash; and everything above them
   is out of reach until they grow.
   Ada is chosen to start and takes the winner's die, set to 1.</p>
@@ -500,7 +500,8 @@ HTML = f"""<!doctype html>
     ranking last. The card itself he also cashes, for a second gold: nothing on the map is
     worth reaching for yet, and he is banking toward an upgrade.</li>
   </ul>
-  <p>Each also had <strong>one movement</strong> — their single card carried it — but with one or two
+  <p>Movement came out of the melds: Bex spent two cards and so had <strong>two
+  movements</strong>, Ada one and Cy one — but with one or two
   units standing exactly where they want them, nobody moved. Notice what did <em>not</em>
   happen: no Forest or Ocean tile existed to settle on, so the only way to use those suits was
   to build the ground first. To finish the round they check the end trigger — no one has
@@ -526,8 +527,10 @@ HTML = f"""<!doctype html>
   <p>Your board holds your 20 units in <strong>five tiers</strong> — 2, then 3, then 5,
   then 5, then a final 5 — and you always take units from the <b>topmost tier that still
   holds any</b>. That tier is your current tier, and it prints the four numbers that govern
-  your game: the size of meld you may play, the highest
-  card rank you may buy from the market, and the wall your fortifications hold at.</p>
+  your game: how many <strong>units</strong> it still holds, the size of
+  <strong>meld</strong> you may play, the highest card <strong>rank</strong> you may
+  research, and the <strong>wall</strong> your fortifications hold at. Movement is not one
+  of them — every card you play carries one, whatever tier you are on.</p>
   <table>
     <thead><tr><th>Tier</th><th>Units</th><th>Meld limit</th><th>Rank cap</th><th>Wall</th></tr></thead>
     <tbody>
@@ -540,7 +543,7 @@ HTML = f"""<!doctype html>
   </table>
   <p>Read them off the topmost tier that still holds units — one rule, no counting, and
   <strong>nothing cumulative</strong>. Empty a tier and every number steps up together:
-  the expansion that buys you a bigger meld also buys you a longer stride, a better card
+  the expansion that buys you a bigger meld also buys you a better card
   and a higher wall. Melds never exceed six; placing the last unit of the Civilization
   tier ends the game (§11).</p>
   <div class="note">
@@ -731,7 +734,7 @@ HTML = f"""<!doctype html>
   gold instead.</p>
   <p><strong>The frontier pays.</strong> If the card you explored with is
   <strong>rank 10 or under</strong>, take <strong>1 gold</strong> from the supply. That is
-  every card in the starting deck and none from the market: your weakest cards are worth
+  every card in the starting deck but the 11s, and nothing you ever research: your weakest cards are worth
   something on the edge of the map, and the tap closes by itself as your deck improves.
   A card too poor to fight for a trick can still open ground and pay for the wall that
   holds it.</p>
@@ -748,8 +751,9 @@ HTML = f"""<!doctype html>
   against a card from their hand.</p>
   <ol class="seq">
     <li><b>Is the defender fortified?</b> Then the coin defends: it holds at
-    <strong>the wall printed on their tier</strong> — 10 at Tribe, rising to 18 — and they
-    may still answer with a card from hand if it beats that. The higher of the two fights.
+    <strong>the wall printed on their tier</strong> — 10 at Tribe, rising to 18 —
+    <strong>plus the terrain's bonus, like any other defender</strong>. They may still
+    answer with a card from hand if it beats the coin, and the higher of the two fights.
     The coin goes to the supply either way (§07).</li>
     <li><b>Your attack is the card you spent.</b> Its rank, face up on the tile — you
     commit nothing further. Which card you send is the whole decision, and it is made
@@ -964,7 +968,7 @@ HTML = f"""<!doctype html>
 <section id="recycle">
   <div class="h2"><span class="num">09</span><h2>The recycle</h2></div>
   <p>You play with a hand of <strong>ten cards</strong>, and it is a closed loop: every
-  card you play comes back. A card leaves your hand for good in one way only —
+  card you play comes back. Only two things take a card out of it, and you pay for both —
   <b>retired</b> to your victory row when you research (§10), and research hands you a
   card for your discard in the same breath, so the ten holds.</p>
   <p>The moment you play your <strong>last hand card</strong>, your hand <b>recycles</b> —
@@ -986,12 +990,12 @@ HTML = f"""<!doctype html>
     from whatever your victory row reaches at this moment.</li>
     <li><strong>Take back everything you have played</strong> — your whole personal
     discard, including any card you set aside. That is your new hand, and it is ten
-    cards, because nothing you play ever leaves you. Research is the one thing that
-    takes a card out of your hand, and it hands you one for your discard in the same
-    breath, so the ten holds.</li>
+    cards, because nothing you play ever leaves you. Research takes one card out of your
+    hand and gives you another — to your hand or your discard, as you choose — and trade
+    swaps two for two, so your ten holds either way.</li>
   </ol>
   <div class="note">
-    <span class="tag">The market is not part of this</span>
+    <span class="tag">The market is not what you refill from</span>
     <p>The face-down stack in the middle is the <strong>market</strong>, and you do not
     draw from it to refill. It starts as the cards nobody drafted (§03) — twenty-four at
     two players, fourteen at three, four at four — and it grows as victory cards are
@@ -1026,10 +1030,13 @@ HTML = f"""<!doctype html>
 </section>
 
 <section>
-  <div class="h2"><span class="num">10</span><h2>Research and the market</h2></div>
+  <div class="h2"><span class="num">10</span><h2>Research and the innovation space</h2></div>
   <p>All advanced cards are shuffled together into a single face-down <strong>upgrade
   deck</strong>. Nine of them lie face up beside it in a <strong>3 &times; 3 grid</strong> —
-  the market.</p>
+  the <strong>innovation space</strong>. Research reaches into it, and it is not the
+  <strong>market</strong>: the market is the face-down stack beside it that
+  <strong>trade</strong> reaches (§09). Two piles, two names, and nothing crosses from
+  one to the other.</p>
 
   <p><strong>Up to twice per turn</strong>, during your map phase, you may research.
   The <strong>first research of a turn costs 1 gold, the second costs 2</strong> —
@@ -1038,19 +1045,21 @@ HTML = f"""<!doctype html>
     <li><b>Draw the top card</b> of the upgrade deck and place it face up on the grid
     position showing the <b>highest rank</b>, covering it. If two positions tie, take the
     leftmost. The covered card is out of reach until the one on top of it is taken. Nobody
-    chooses this — the tallest idea on the market is always the one buried next.</li>
+    chooses this — the tallest idea in the innovation space is always the one buried next.</li>
     <li><b>Retire the lowest-ranked card in your hand</b> into your
     <strong>victory row</strong>. If you hold several of that rank, choose which suit to
     give up. It leaves play for the rest of the game — but it scores (§11). Cards you have
     already played to the table are spent: they cannot be retired.</li>
     <li><b>Pay the price</b> — 1 gold the first time this turn, 2 the second — and take
-    <b>any visible market card whose rank is at or below
+    <b>any visible card in the innovation space whose rank is at or below
     your tier's rank cap</b> — Tribe 12, Settlement 14, Kingdom 16, Empire 18,
-    Civilization 20. It goes <strong>straight into your hand</strong> — ready to play next
-    round, not waiting on your next recycle.</li>
+    Civilization 20. Then say where it goes: into your <strong>hand</strong>, where you may
+    meld it this cycle, or into your <strong>discard</strong>, which leaves your hand a card
+    shorter so it recycles sooner and brings everything else back with it. Use it now, or
+    turn the hand over faster.</li>
     <li><b>Refill</b> any of the nine grid positions left empty from the top of the deck. Once the deck
-    is empty, positions stay empty and the market begins to thin — which is what ends the
-    game (§11).</li>
+    is empty, positions stay empty and the innovation space begins to thin. That does not
+    end the game — the only trigger is a player placing their last unit (§11).</li>
   </ol>
 
   <div class="note">
@@ -1065,9 +1074,9 @@ HTML = f"""<!doctype html>
 
   <div class="note">
     <span class="tag">The cap is a buying rule, not a holding rule</span>
-    <p>Your rank cap only applies at the moment you take a card from the market. A card
+    <p>Your rank cap only applies at the moment you take a card from the innovation space. A card
     already in your hand, your discard or your victory row is yours to keep and use however
-    it arrived — a low tier cannot reach the top of the market, but it is never forced to
+    it arrived — a low tier cannot reach the top of the innovation space, but it is never forced to
     give up what it has.</p>
   </div>
 
@@ -1087,14 +1096,16 @@ HTML = f"""<!doctype html>
     generally out-scores one that waits for the perfect card to fall.</p>
   </div>
 
-  <p>Your victory row holds at most <strong>five cards</strong>. To add a sixth, first
-  discard one of the five permanently — a card discarded this way is gone, and never
-  scores.</p>
+  <p>Your victory row holds at most <strong>five cards</strong>. Research with five
+  already there and the <strong>lowest of the six goes to the bottom of the market</strong>
+  — including the card you have just retired, if that is the lowest. A full row never
+  blocks your research, and nothing is destroyed: a bumped card lies down there with
+  everything else, and somebody may yet trade it back up.</p>
 
   <h3>Spending a victory card</h3>
   <p>Every card carries <strong>three printed effects</strong>, and a card in your victory row
   may be spent on <strong>exactly one</strong> of them. The card then goes to the
-  <strong>bottom of the shared pile</strong> — your row shrinks, and your end score with
+  <strong>bottom of the market</strong> — your row shrinks, and your end score with
   it, but the card is not gone. Nothing ever leaves the game: what you spend sinks to the
   bottom of the market, and somebody may yet trade it back into their hand — though not
   soon, because the market is never shuffled and the bottom is a long way down. The three options are always the same three kinds, growing with the
@@ -1203,11 +1214,17 @@ HTML = f"""<!doctype html>
   </ul>
   <p>There are <strong>twelve</strong> objective cards, printed in their own booklet.</p>
 
-  <h3>Three ways to play it</h3>
-  <p>Agree on one before setup.</p>
+  <h3>Four ways to play it</h3>
+  <p><strong>Show one</strong> is the printed game and the one described above; agree on
+  another before setup if your table wants it.</p>
   <table>
     <thead><tr><th>Mode</th><th>Setup</th><th>Character</th></tr></thead>
     <tbody>
+      <tr><td><strong>Show one</strong><br><em>printed</em></td>
+        <td>Deal <b>two</b> face down to each player. Show <b>one</b> and keep the other
+        hidden. <b>Both</b> score.</td>
+        <td>The printed game. You declare half of what you are building and keep half back,
+        so the table can read you a little and never completely.</td></tr>
       <tr><td><strong>Secret</strong></td>
         <td>Deal <b>two</b> face down to each player. Look at both, keep <b>one</b>, return
         the other to the box unseen.</td>
@@ -1220,7 +1237,7 @@ HTML = f"""<!doctype html>
         want, because they want the same thing you do.</td></tr>
       <tr><td><strong>Keep both</strong></td>
         <td>Deal <b>two</b> face down to each player and keep them both. Both score.</td>
-        <td>The loosest. Up to 8 points, and two shapes to steer between.</td></tr>
+        <td>The loosest: two shapes to steer between and nothing declared.</td></tr>
     </tbody>
   </table>
   <p>In every mode, objectives are revealed <strong>together</strong> at the end, after the
@@ -1231,8 +1248,10 @@ HTML = f"""<!doctype html>
     <p>Without objectives, ground is ground: you take what you can reach. With them,
     a particular empty hex beside your Forest is suddenly worth exploring
     <em>specifically</em>, and raw population stops being the only reason to hold a stretch of
-    coast. Four points is roughly a fifth of a typical score, so an objective is worth
-    steering for — but not worth wrecking your position over.</p>
+    coast. Two cards pay about a point and a half a player over a whole game, and
+    slightly under half of all players score nothing from them at all — so an objective is
+    a shape worth steering toward when the map offers it, and never worth wrecking your
+    position over.</p>
   </div>
 </section>
 
@@ -1321,9 +1340,13 @@ HTML = f"""<!doctype html>
     Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
     it prints your meld limit, your rank cap and your wall. It does not print
     movement: every card you play carries one.</dd>
-    <dt>Shared pile</dt><dd>The face-down stack of cards <em>set aside</em> by melds that
-    spent for their effects and bumped from full victory rows. Trade draws from it
-    (§10).</dd>
+    <dt>Market</dt><dd>The face-down stack in the middle. It starts as the cards nobody
+    drafted and grows with victory cards spent for their effects, cards bumped from full
+    victory rows, and cards buried by a trade. <b>Trade</b> is the only thing that draws
+    from it, and it is never shuffled after setup (§09).</dd>
+    <dt>Innovation space</dt><dd>The nine face-up cards in a 3 &times; 3 grid beside the
+    upgrade deck. <b>Research</b> takes from it, up to your tier's rank cap (§10). Not
+    the market.</dd>
     <dt>Set aside</dt><dd>The card you give up for matching the trick winner's card count
     and losing. You choose which of your played cards it is; it pays you 1 gold instead of
     acting on the map, and goes to <b>your own discard</b> — you meld it again next
@@ -1333,8 +1356,9 @@ HTML = f"""<!doctype html>
     <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
     playing with them, then take your personal discard back as your new hand. It is ten
     cards; you draw nothing from the market (§09).</dd>
-    <dt>Victory row</dt><dd>The five slots on your board holding retired cards. They score at the
-    end — or can each be spent once for an effect, and then are gone.</dd>
+    <dt>Victory row</dt><dd>The five slots on your board holding retired cards. They score
+    at the end — or can each be spent once for an effect, after which the card sinks to the
+    bottom of the market. A sixth card bumps the lowest of the five there too.</dd>
   </dl>
 </section>
 
@@ -1344,10 +1368,11 @@ HTML = f"""<!doctype html>
     <div>
       <h3>Reserve bands</h3>
       <p>Units sit in tiers of 2 / 3 / 5 / 5 / 5, emptied top-down. Melds,
-      rank cap, wall: <b>Tribe</b> 2, 1, 12, 10. <b>Settlement</b> 3, 2, 14, 12.
-      <b>Kingdom</b> 4, 3, 16, 14. <b>Empire</b> 5, 4, 18, 16.
-      <b>Civilization</b> 6, 5, 20, 18. Read them off your current tier only, and nothing
-      is cumulative. Growing costs you nothing. Placing your last unit ends the game.</p>
+      rank cap, wall: <b>Tribe</b> 2, 12, 10. <b>Settlement</b> 3, 14, 12.
+      <b>Kingdom</b> 4, 16, 14. <b>Empire</b> 5, 18, 16.
+      <b>Civilization</b> 6, 20, 18. Read them off your current tier only, and nothing
+      is cumulative. Movement is not here: every card you play carries one.
+      Growing costs you nothing. Placing your last unit ends the game.</p>
       <h3>Round</h3>
       <p>Leader lays a meld face down → everyone lays one face down → turn them all
       over together → declare A effects, leader first → highest total
@@ -1355,14 +1380,16 @@ HTML = f"""<!doctype html>
       <b>winner's die = their meld size</b> (and always first), others 2/3/4 →
       spend melds in initiative order. The winner spends every card. Anyone who
       <b>matched</b> the winner's count and lost sets one played card aside: 1 gold, and it
-      goes to the shared pile. Last place takes 1 gold.</p>
+      goes to your own discard. Last place takes 1 gold.</p>
       <h3>Combat — a duel</h3>
       <p>Win the last defender and the tile is yours: settle it at once.
-      Fortified? The coin defends at their tier's wall (10/12/14/16/18), or a better card
+      Fortified? The coin defends at their tier's wall (10/12/14/16/18) PLUS the terrain,
+      or a better card
       from their hand — see §07. Otherwise the card you spent IS the attack: <b>its rank</b> vs <b>the defender's hand card + terrain
       (Plains 0 · Ocean 0 · Forest 1 · Mountain 2)</b>. Higher wins; level goes to the
       card matching the ground, and to the <b>defender</b> if both or neither match.
-      Attacker wins, one defender goes home. Both cards to their owners' discards.</p>
+      Attacker wins, one defender falls back to an adjacent tile of its owner's with room,
+      and only goes home to their board if there is none. Both cards to their owners' discards.</p>
       <h3>Melds — one rule</h3>
       <p>Any cards whose ranks form an <b>unbroken run</b>. Duplicates of any rank are free;
       suits are irrelevant. One card is always legal.<br>
@@ -1375,7 +1402,7 @@ HTML = f"""<!doctype html>
       No units on the map? Act anywhere.</p>
       <p>The winner spends every card, and so does anyone who played FEWER. Anyone who
       MATCHED the winner's count and lost sets one played card aside — 1 gold, and the card
-      goes face down to the shared pile. The meld that ranked LAST takes 1 gold.</p>
+      goes to your own discard. The meld that ranked LAST takes 1 gold.</p>
     </div>
     <div>
       <h3>Terrain</h3>
@@ -1413,8 +1440,10 @@ HTML = f"""<!doctype html>
       <h3>Research — up to twice per turn</h3>
       <p>Draw the top upgrade card onto the position showing the <b>highest rank</b>,
       covering it (leftmost breaks a tie; nobody chooses) → retire the <b>lowest-ranked
-      card in your hand</b> to your victory row → pay → take any visible card
-      <b>at or below your tier's rank cap</b> (12/14/16/18/20, +2 a tier) → refill empty positions.
+      card in your hand</b> to your victory row (a full row bumps its lowest to the
+      market) → pay → take any visible card <b>at or below your tier's rank cap</b>
+      (12/14/16/18/20, +2 a tier) → <b>into your hand or your discard, your choice</b>
+      → refill empty positions.
       The <b>first research of your turn costs 1 gold, the second costs 2</b> — a research
       that finds nothing at or below your cap buys nothing, so it does not put the price up.
       No cards in hand, no research this turn.</p>
@@ -1428,7 +1457,7 @@ HTML = f"""<!doctype html>
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the
       GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>after the
       melds are turned over</b>, leader first; B in your own map phase; C at any moment. The card
-      goes to the <b>bottom of the shared pile</b>.</p>
+      goes to the <b>bottom of the market</b>.</p>
       <h3>Scoring</h3>
       <p>Units on the map + 1 per card in your victory row + the centre-slot rank of that row
       once it holds three or more + both of your map objectives. Gold breaks ties on the
@@ -1440,7 +1469,8 @@ HTML = f"""<!doctype html>
 </div>
 
 <div class="pad"><footer>Blink · base game · draft rules {VTAG} · Toby Siko ·
-deep-diversions.com/blink · @tobysiko.bsky.social · disaster and trade modules are published
+deep-diversions.com/blink · @tobysiko.bsky.social · the disasters and events expansion is
+published separately
 separately</footer></div>
 
 </div>
