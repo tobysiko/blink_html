@@ -74,6 +74,10 @@ const GOLD_REASONS = [
   "crossroads", "objective",
   // going out
   "food", "upgrade", "fortify", "attack",
+  /* An improvement spent sideways instead of up: trade shares research's
+     allowance and its price, but not its name in the log, because a player
+     reading back their gold wants to know which of the two they bought. */
+  "trade",
   // coming in, but only under the SPOILS variant (see Game.SPOILS)
   "spoils",
 ];
@@ -1143,6 +1147,18 @@ const TUNED = {
    * 8%. Kept as a lever because it is a real decision a person can make; NOT
    * used by any style, because a style must not be a handicap. */
   RESEARCH_MAX_HAND: 10,
+  /* TRADE, WHICH THE BOT CANNOT EVALUATE THE WAY IT EVALUATES RESEARCH. The
+   * pile is face down: there is nothing to score, and a bot that weighted the
+   * DRAW would be reading cards a person cannot see. What it can read is its
+   * own hand, and the thing a person trades away is a card that connects to
+   * nothing - melds are unbroken runs, so a rank with no neighbour and no twin
+   * held is a card that can only ever be played alone.
+   *
+   * So the policy is: trade when at least this many cards in hand are
+   * isolated, otherwise research. Two, because the trade buries two - one
+   * orphan is not worth an improvement, and the second card would have to come
+   * out of a run. */
+  TRADE_ISOLATED_MIN: 2,
   // buying from the market: match what you hold, sit next to it, or chase rank
   BUY_MATCH_W: 3.0, BUY_NEAR_W: 1.5, BUY_RANK_W: 0.08,
   BUY_RANDOM: 0,           // 1 = the pre-14-Aug behaviour: buy anything affordable
@@ -1958,6 +1974,51 @@ class Game {
      * the same failure mode the growing-population-limits variant has. */
     this.RESEARCH_MAX = this.RESEARCH_RULE === "once" ? 1
       : this.RESEARCH_RULE === "twice" ? 2 : Infinity;
+    /* TRADE: THE OTHER THING AN IMPROVEMENT CAN BE.
+     *
+     * v0.26 has two improvements a turn, the first costing 1 gold and the
+     * second 2, and each one is either a RESEARCH or a TRADE. They share one
+     * allowance: this is not a third action bolted on beside research, it is
+     * the second face of the one you already had. Research reaches UP - a card
+     * better than anything in the starting deck, at the price of retiring one
+     * of yours to the victory row. Trade reaches SIDEWAYS - two cards out of
+     * the shared pile, two of yours buried under it, nothing retired and
+     * nothing gained in rank.
+     *
+     * Take the TOP TWO of the pile into your hand and return ANY TWO to the
+     * BOTTOM. You may keep both, one or neither, but you always return two.
+     * The pile is face down, so the draw is blind: what you are buying is a
+     * chance to be rid of two cards you cannot use, not a card you have
+     * chosen. That is what makes it cheap enough to share research's price.
+     *
+     * "off" is the v0.25 game, where an improvement could only ever be a
+     * research - kept reachable so every measurement taken before this still
+     * reproduces.
+     *
+     * Thematically the pile is a used-technology market: what you bury comes
+     * round again, but not soon. That only holds if the pile is not reshuffled
+     * under you - see PILE_SHUFFLE at the recycle. */
+    this.TRADE = opts.trade === "off" ? "off" : "on";
+    /* IS THE SHARED PILE SHUFFLED, AND WHEN? Two rules that have been in this
+     * project at the same time without meeting:
+     *
+     * "recycle" - what the engine has always done. The pile is shuffled every
+     *   time a player recycles, so what comes back is whatever the table has
+     *   been throwing away rather than your own cards in the order you put
+     *   them down. That is a real thing to want, and it is why the line exists.
+     *
+     * "setup"   - what the v0.26 handover says the market is: shuffled once at
+     *   setup and never again. This is the rule trade was designed against.
+     *   The two cards you bury sink to the bottom and come round again, but
+     *   not soon - "waiting for the patent to expire" - and that is the one
+     *   private fact in the game you created yourself. Under "recycle" the
+     *   burial is randomised away before your next turn and trade becomes a
+     *   blind draw with no memory in it at all.
+     *
+     * Defaulting to "recycle" deliberately: it is what every measurement in
+     * candidate-versions.md and combat-economics.md was taken under, and this
+     * is a rules decision, not a bug to fix quietly. */
+    this.PILE_SHUFFLE = opts.pileShuffle === "setup" ? "setup" : "recycle";
     /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
      * different one to each seat; `botLevel` is easy | normal | hard. Both are
      * policy, never rules: no style may do anything a person could not. */
@@ -2994,6 +3055,14 @@ class Game {
       researchNothingInReach: this.buyable(p).length === 0,
       canResearch: this.canResearch(p, st),
       researchBlocked: this.researchBlocked(p, st),
+      /* TRADE SHARES researchCost AND researchesUsed - there is one allowance
+       * and one price, and the client must not print two. What is its own is
+       * whether the pile can pay for it: the two cards have to be there. */
+      tradeOn: this.TRADE === "on",
+      canTrade: this.canTrade(p, st),
+      tradeBlocked: this.tradeBlocked(p, st),
+      tradeTake: this.TRADE_TAKE,
+      pileLeft: this.pile.length,
       colonyCards, colonyBlocked: colonyBlocked || colonyNoRoom,
       /* Is the water advantage still on the table this turn? The client marks
        * the sea moves that would collect it. */
@@ -3216,6 +3285,16 @@ class Game {
           const price = this.researchCost(st);
           st.researches += 1;
           if (yield* this._researchHuman(p, price)) st.researchesPaid += 1;
+          break;
+        }
+        case "trade": {
+          /* Counted like a research, and for the same reason: the two cards
+           * have been drawn and seen. `researches` is the shared allowance -
+           * two improvements a turn, whichever face each one wears. */
+          if (!this.canTrade(p, st)) break;
+          const tprice = this.researchCost(st);
+          st.researches += 1;
+          if (yield* this._tradeHuman(p, tprice)) st.researchesPaid += 1;
           break;
         }
         case "colony": {
@@ -4044,11 +4123,74 @@ class Game {
       if (taken >= this.RESEARCH_MAX) return;
       const price = this.RESEARCH_RULE === "once" ? 1 : taken + 1;
       if (taken && p.gold < price + p.w.CASH_THRESHOLD) return;   // keep a cushion
-      const did = yield* this._upgradeOnce(p, price);
+      /* ONE ALLOWANCE, TWO FACES. The bot spends this improvement on whichever
+       * of the two its hand actually calls for, and a turn may be one of each.
+       * Trade first when the hand is full of orphans, because that is the only
+       * thing trade fixes; research otherwise, because it is the only thing
+       * that raises rank. If the preferred one declines, the other is tried
+       * with the same gold - an improvement refused is not an improvement
+       * spent, so the allowance is untouched either way. */
+      const wantsTrade = this._botWantsTrade(p, price);
+      let did = wantsTrade ? yield* this._tradeOnce(p, price)
+                           : yield* this._upgradeOnce(p, price);
+      if (!did)
+        did = wantsTrade ? yield* this._upgradeOnce(p, price)
+                         : yield* this._tradeOnce(p, price);
       if (!did) return;
       taken += 1;
       if (taken >= 4) return;      // a bot's stop, not a rule: no runaway loops
     }
+  }
+
+  /* A card that connects to nothing: no neighbouring rank held, and no twin.
+   * Melds are unbroken runs with duplicates free, so such a card can only ever
+   * be played on its own. Counted over a given set of cards, so the bot can
+   * ask the same question of its hand before a trade and of the enlarged hand
+   * after the draw. */
+  static _orphans(cards) {
+    const have = new Set(cards.map((c) => c.r));
+    const twins = new Set();
+    const seen = new Set();
+    for (const c of cards) {
+      if (seen.has(c.r)) twins.add(c.r);
+      seen.add(c.r);
+    }
+    return cards.filter((c) => !twins.has(c.r)
+      && !have.has(c.r - 1) && !have.has(c.r + 1));
+  }
+
+  _botWantsTrade(p, price) {
+    if (this.TRADE !== "on") return false;
+    if (this.pile.length < this.TRADE_TAKE) return false;
+    if (p.gold < price) return false;
+    return Game._orphans(p.hand).length >= p.w.TRADE_ISOLATED_MIN;
+  }
+
+  /* The bot's trade. Same shape as _upgradeOnce: it refuses BEFORE spending
+   * anything if the conditions are not there, and once the two cards are drawn
+   * it is committed. What it buries is chosen from the hand it holds AFTER the
+   * draw - the two new cards are candidates like any other, which is how a
+   * trade that drew nothing useful costs only the gold. */
+  *_tradeOnce(p, price) {
+    if (this.TRADE !== "on") return false;
+    if (p.gold < price) { this.inc("trade_no_gold"); return false; }
+    if (this.pile.length < this.TRADE_TAKE) {
+      this.inc("trade_pile_short"); return false;
+    }
+    const drew = this._pileTop(this.TRADE_TAKE);
+    for (const c of drew) {
+      p.hand.push(c);
+      this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
+    }
+    /* Orphans first, worst rank first among them; then the lowest ranks held,
+     * because a low card reaches fewer runs than a high one of the same
+     * isolation. Never more than two, and never the same card twice. */
+    const orph = Game._orphans(p.hand).sort((a, b) => a.r - b.r);
+    const rest = p.hand.filter((c) => !orph.includes(c))
+                       .sort((a, b) => a.r - b.r);
+    const give = orph.concat(rest).slice(0, this.TRADE_TAKE);
+    this._completeTrade(p, drew, give, price);
+    return true;
   }
 
   *_upgradeOnce(p, price) {
@@ -4175,6 +4317,100 @@ class Game {
     if (!p.hand.length) return "why.research.noCard";
     if (p.gold < this.researchCost(st)) return "why.research.gold";
     return null;
+  }
+
+  /* ---- trade: the other face of an improvement ----
+   *
+   * Everything about the ALLOWANCE and the PRICE is research's, deliberately:
+   * `st.researches` counts improvements of either kind and `researchCost` is
+   * what the next one costs. Two counters would be two things to keep in step,
+   * and the rule is that there is one allowance, not two.
+   *
+   * What trade needs that research does not is TWO CARDS IN THE PILE. It needs
+   * nothing of your hand: with an empty hand you would draw two and bury the
+   * same two, which is legal and pointless, and the bot does not do it. */
+  TRADE_TAKE = 2;
+  canTrade(p, st) {
+    if (this.TRADE !== "on") return false;
+    if (((st && st.researches) || 0) >= this.RESEARCH_MAX) return false;
+    return this.pile.length >= this.TRADE_TAKE
+      && p.gold >= this.researchCost(st);
+  }
+  tradeBlocked(p, st) {
+    if (this.TRADE !== "on") return "why.trade.off";
+    if (((st && st.researches) || 0) >= this.RESEARCH_MAX)
+      return this.RESEARCH_MAX === 1 ? "why.trade.done" : "why.trade.max";
+    if (this.pile.length < this.TRADE_TAKE) return "why.trade.pile";
+    if (p.gold < this.researchCost(st)) return "why.trade.gold";
+    return null;
+  }
+
+  /* THE TOP OF THE PILE IS THE END OF THE ARRAY. Hands refill with pop() and a
+   * buried card goes in with unshift(), so top = last, bottom = first. Written
+   * down here because a trade that took from the wrong end would still run,
+   * still deal two cards, and quietly hand back what was just buried. */
+  _pileTop(n) {
+    const out = [];
+    for (let i = 0; i < n && this.pile.length; i++) out.push(this.pile.pop());
+    return out;
+  }
+  _pileBury(cards) {
+    for (const c of cards) this.pile.unshift(c);
+  }
+
+  /* The two cards a trade buries if nobody chooses: the lowest ranks held.
+   * A fallback, not a rule - it exists because the draw has already happened
+   * by the time the choice is asked, so there is no clean way to back out. */
+  _tradeFallback(p) {
+    return p.hand.slice().sort((a, b) => a.r - b.r).slice(0, this.TRADE_TAKE);
+  }
+
+  _completeTrade(p, drew, give, price) {
+    for (const c of give) {
+      const i = p.hand.indexOf(c);
+      if (i >= 0) p.hand.splice(i, 1);
+    }
+    this._pileBury(give);
+    const kept = this.TRADE_TAKE - give.filter((c) => drew.includes(c)).length;
+    this.purse(p, -price, "trade", "pile", { price, kept });
+    this.inc("traded");
+    /* HOW MANY OF THE TWO DREW CARDS THE PLAYER ACTUALLY KEPT. This is the
+       measurement that says whether trade is worth its gold: a table that
+       always buries both drawn cards is paying to look, not to trade. */
+    this.inc("trade_cards_kept", kept);
+    if (!kept) this.inc("trade_kept_nothing");
+    for (const c of give)
+      this.fx("card", { seat: p.i, card: c, from: "hand", to: "pile" });
+    this.say("log.trade", { seat: p.i, cost: price, kept });
+  }
+
+  *_tradeHuman(p, cost) {
+    const price = cost === undefined ? 1 : cost;
+    if (this.pile.length < this.TRADE_TAKE || p.gold < price) return false;
+    /* THE DRAW COMMITS THE TRADE, exactly as the draw onto the grid commits a
+     * research: the two cards have been seen, and a player who could put them
+     * back after looking would be buying information for nothing. */
+    const drew = this._pileTop(this.TRADE_TAKE);
+    for (const c of drew) {
+      p.hand.push(c);
+      this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
+    }
+    const ans = yield { type: "trade", seat: p.i, options: p.hand.slice(),
+                        drew: drew.slice(), need: this.TRADE_TAKE, cost: price };
+    let give = Array.isArray(ans) ? ans.filter((c) => p.hand.includes(c)) : [];
+    /* Exactly two, and never the same card twice. Anything else - a client
+     * that sent one, a cancel, a duplicate - falls back to the lowest held,
+     * because the cards are already in hand and the pile is already two
+     * shorter. Silently accepting a short answer would let a player keep all
+     * four. */
+    give = give.filter((c, i) => give.indexOf(c) === i).slice(0, this.TRADE_TAKE);
+    if (give.length < this.TRADE_TAKE) {
+      const fill = this._tradeFallback(p).filter((c) => !give.includes(c));
+      give = give.concat(fill).slice(0, this.TRADE_TAKE);
+      this.inc("trade_fallback");
+    }
+    this._completeTrade(p, drew, give, price);
+    return true;
   }
 
   *_researchHuman(p, cost) {
@@ -4938,10 +5174,15 @@ class Game {
     }
 
     /* §09: take back everything you played, then draw from the SHARED pile up
-     * to ten. The pile is shuffled first, so what comes back is whatever the
-     * table has been throwing away — not your own cards in order. */
+     * to ten. Under PILE_SHUFFLE "recycle" the pile is shuffled first, so what
+     * comes back is whatever the table has been throwing away rather than your
+     * own cards in order; under "setup" it is never shuffled again after the
+     * deal, which is what makes a card you buried in a trade findable later.
+     * See PILE_SHUFFLE in the constructor — the two rules want opposite
+     * things and only one of them can be printed. */
     p.hand = p.discard; p.discard = [];
-    if (this.pile.length) this.rng.shuffle(this.pile);
+    if (this.pile.length && this.PILE_SHUFFLE === "recycle")
+      this.rng.shuffle(this.pile);
     let drew = 0;
     while (p.hand.length < 10 && this.pile.length) {
       const c = this.pile.pop();
