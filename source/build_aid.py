@@ -168,7 +168,7 @@ def back():
     = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
     lost: set a card aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back, draw to ten, carry on. <i>Modules only:</i> collect income, and arm ONE perk
+    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
     (from what your row reaches now; it runs till the next recycle even if you spend the
     card).</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.

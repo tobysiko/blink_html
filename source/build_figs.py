@@ -1120,7 +1120,11 @@ def recycle():
     steps = [
         ("1", "INCOME", "your tiles, and your open objective", "module", GOLD),
         ("2", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
-        ("3", "REFILL", "take your discard back, draw to ten", "", None),
+        # "draw to ten" was the previous version, where a matched meld card went
+        # to the SHARED pile and the hand came back short. It does not now: the
+        # discard IS ten, and the figure was telling a player to draw from a pile
+        # the section beside it tells them not to touch.
+        ("3", "RECYCLE", "take your discard back, all ten", "", None),
     ]
     for i, (n, title, detail, tag, accent) in enumerate(steps):
         x = i * (BW + GAP)

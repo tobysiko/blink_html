@@ -390,10 +390,10 @@ HTML = f"""<!doctype html>
     A card you kept in an earlier round is <em>not</em> locked: if something better arrives,
     pass the older card instead. You end with a fixed hand of <strong>ten cards</strong>. Put whatever is left of the starting deck
     <strong>face down as the shared pile</strong> — twenty-four cards at two players,
-    fourteen at three, four at four. It is not out of the game: it is where every hand
-    refills from (§09), so the cards nobody drafted come back to the table later, in
-    somebody else's hand. Whatever the count, there is a pile there from the first
-    round.</li>
+    fourteen at three, four at four. It is not out of the game: it is the
+    <strong>market</strong>, and <strong>trade</strong> is what reaches into it (§10), so
+    the cards nobody drafted come back to the table later, in somebody else's hand.
+    Whatever the count, there is a pile there from the first round.</li>
 
     <li><b>Take a board.</b> Fill all five tiers with your 20 units — 2, 3, 5, 5, 5 from
     the top. Your meld limit starts at <strong>2</strong>.</li>
@@ -1003,14 +1003,13 @@ HTML = f"""<!doctype html>
   <p>Then carry on with your turn. Because the refill is immediate, playing your whole hand
   never costs you your research — you simply pick up ten fresh cards and retire one of
   those instead.</p>
-  <p>So your ten are no longer the same ten all game. Cards you lose flow into the shared
-  pile, and cards other players lost flow back to you. A hand you drafted carefully will
-  drift, and what it drifts toward is whatever the table has been throwing away — including
-  the cards people have spent out of their victory rows, which sink to the bottom of the
-  pile and come back much later.</p>
-  <p class="fine">Every player refills to exactly ten and every discarded card goes to the
-  same pile, so the pile always holds enough. If it is ever empty when you must draw, you
-  are already holding ten.</p>
+  <p>So your ten stay yours. The hand you drafted in §03 is the hand you play all game,
+  and the only two things that change it are <strong>research</strong>, which swaps one of
+  your cards for a better one, and <strong>trade</strong>, which swaps two of them with the
+  market. Both cost gold and both are limited to two a turn between them, so a hand drifts
+  because you paid to make it drift — never because the deal moved underneath you.</p>
+  <p class="fine">You never draw to make up a number. Your discard IS ten cards when you
+  pick it up, because nothing you play leaves you.</p>
   <p>A unit that comes back — beaten off a tile with nowhere to fall back to (§08) — goes into the
   <strong>lowest band that still has a free slot</strong>: the band you emptied most recently.
   Only once that band is full again does the one above it begin to refill. Losing ground walks
@@ -1097,8 +1096,8 @@ HTML = f"""<!doctype html>
   may be spent on <strong>exactly one</strong> of them. The card then goes to the
   <strong>bottom of the shared pile</strong> — your row shrinks, and your end score with
   it, but the card is not gone. Nothing ever leaves the game: what you spend sinks to the
-  bottom of the pile everyone refills from, and comes back to somebody's hand eventually,
-  though not soon. The three options are always the same three kinds, growing with the
+  bottom of the market, and somebody may yet trade it back into their hand — though not
+  soon, because the market is never shuffled and the bottom is a long way down. The three options are always the same three kinds, growing with the
   card's rank:</p>
   <table>
     <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
@@ -1332,8 +1331,8 @@ HTML = f"""<!doctype html>
     <dt>Movement</dt><dd>One per card you play. By land across your own network, or by
     sea across open Ocean. Never an attack (§07).</dd>
     <dt>Recycle</dt><dd>The moment your hand empties, mid-turn: you arm a perk if you are
-    playing with them, then take your personal discard back as your new hand and draw up to
-    ten from the shared pile (§09).</dd>
+    playing with them, then take your personal discard back as your new hand. It is ten
+    cards; you draw nothing from the market (§09).</dd>
     <dt>Victory row</dt><dd>The five slots on your board holding retired cards. They score at the
     end — or can each be spent once for an effect, and then are gone.</dd>
   </dl>
@@ -1419,10 +1418,11 @@ HTML = f"""<!doctype html>
       The <b>first research of your turn costs 1 gold, the second costs 2</b> — a research
       that finds nothing at or below your cap buys nothing, so it does not put the price up.
       No cards in hand, no research this turn.</p>
-      <h3>Refilling your hand</h3>
+      <h3>Recycling your hand</h3>
       <p>Hand empty: <b>at once, mid-turn</b> — collect any income, arm a perk if you are
       playing with them, then <b>take your discard back as your new hand</b>. It is ten
-      cards: nothing you play ever leaves you. Carry on with the turn.</p>
+      cards: nothing you play ever leaves you, and you draw nothing from the market.
+      Carry on with the turn.</p>
       <h3>Victory-card effects</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the

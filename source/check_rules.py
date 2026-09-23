@@ -1119,9 +1119,22 @@ if m:
 # is stocked once at setup and read by trade; the recycle is your own discard
 # coming back. The book told players to draw from it and to shuffle it, which
 # is the rule from before the deck split moved.
+# THIS CHECK WAS TOO LITERAL AND LET THE RULE BACK IN. It asked for the exact
+# phrase "draw from the shared pile" and passed for weeks while §09's prose said
+# "cards other players lost flow back to you", "every player refills to exactly
+# ten" and "if it is ever empty when you must draw" - the same rule in four
+# other sentences, three paragraphs under a boxed note denying it. The broader
+# sweep is at the bottom of this file; this line stays as the narrow case.
 check(not re.search(r"draw from the shared pile", rules, re.I),
       "§09 still tells players to refill from the shared pile — the market is "
       "stocked at setup and drawn from by trade, not by the recycle")
+# The aid and the tutorial print the same step in fewer words, which is where a
+# retired rule survives longest: nobody rereads a card they think is settled.
+for _n in ("Blink-player-aid.html", "Blink-first-game.html"):
+    if (HERE / _n).exists():
+        check(not re.search(r"draw to ten|draw up to ten", text_of(HERE / _n), re.I),
+              f"{_n} still tells a player to draw to ten at a recycle; the "
+              "discard comes back as ten and nothing is drawn")
 
 # ---------------------------------------------------------------- spoils
 #
@@ -1269,6 +1282,46 @@ if _var.exists():
         check(re.search(r"needs the full economy", _vt, re.I),
               "Blink-variants.html describes starvation without saying that the "
               "printed economy is lean and nothing can starve in it")
+
+# ------------------------------------------- the market is not a draw pile
+#
+# THE RULEBOOK SAID BOTH THINGS AT ONCE. §09 carries a boxed note - "you do not
+# draw from it to refill" - and three paragraphs below it the prose still said
+# "cards other players lost flow back to you" and "every player refills to
+# exactly ten... if it is ever empty when you must draw". That is the previous
+# version, where a player who matched the leader gave their set-aside card to
+# the SHARED pile and came back a card short. v0.26 sends it to their own
+# discard, so nothing is ever drawn from the market at a recycle, and the
+# engine's top-up loop does not run once in a whole game.
+#
+# A contradiction inside one section is worse than either rule alone, because a
+# player will read whichever paragraph they reach first. These patterns are the
+# old rule's fingerprints; if one comes back, so has the contradiction.
+for _doc, _txt in [("the rulebook", rules)] + [
+        (n, text_of(HERE / n)) for n in ("Blink-first-game.html",)
+        if (HERE / n).exists()]:
+    for _pat, _what in [
+        (r"refills? from\b",            "calls the market the thing hands refill from"),
+        (r"draw up to ten from the shared", "has a recycle drawing from the shared pile"),
+        (r"pile everyone refills from",  "calls the pile the one everyone refills from"),
+        (r"flow back to you",            "still says other players' cards flow back to you"),
+    ]:
+        check(not re.search(_pat, _txt, re.I),
+              f"{_doc} {_what} — the market is drawn from by TRADE only (\u00a709/\u00a710); "
+              "nothing is drawn from it at a recycle")
+
+# ...and it must still say what IS true, or the note has simply been deleted.
+check(re.search(r"you do not\s+draw from it to refill", rules, re.I),
+      "\u00a709 no longer tells the player that the market is not what they refill from")
+# The pile is shuffled once. This is a rule with a visible consequence - what
+# you bury in a trade comes round in its own time - and the engine agrees only
+# because someone read the book; PILE_SHUFFLE defaulted the other way for a
+# while. Ask both sides.
+check(re.search(r"shuffled once, at setup, and never again", rules, re.I),
+      "\u00a709 no longer prints that the market is shuffled once and never again")
+check(re.search(r'PILE_SHUFFLE = opts\.pileShuffle === "recycle" \? "recycle" : "setup"', js),
+      "the engine reshuffles the market at every recycle; the rulebook prints "
+      "that it is shuffled once, at setup, and never again")
 
 # ---------------------------------------------------------------- the verdict
 #

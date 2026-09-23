@@ -198,6 +198,65 @@ for (const bad of [[], null, 'nonsense']) {
   ok(none.length === 0, 'a straight run reported orphans');
 }
 
+// ------------------- the market is not what hands refill from (v0.26)
+/* THE RULE THIS PINS. Under the printed rule a recycle draws NOTHING from the
+ * market: you take your discard back and it is already ten, because nothing you
+ * play leaves you - what you spend on the map and what you set aside for
+ * matching the leader both land in your own discard.
+ *
+ * The engine still has a top-up loop, and it should stay: trickRule "bonus"
+ * puts a hand card into the shared pile, so that variant really does come back
+ * short. What must not happen is the PRINTED game quietly drawing from the
+ * market, because §09 tells a player in a box that it does not - and a rule the
+ * book denies and the engine performs is the kind of disagreement nobody finds
+ * at a table until somebody counts their cards. */
+for (const n of [2, 3, 4]) {
+  let topup = 0;
+  for (let seed = 0; seed < 8; seed++) {
+    const g = E.playOut(n, 7100 + seed, { humans: [] });
+    topup += g.stats.recycle_topup || 0;
+  }
+  ok(topup === 0,
+     `${n}p: ${topup} cards were drawn from the market at a recycle — §09 says `
+     + 'none are, and the market is only reached by trade');
+}
+{
+  /* ...and the loop is not dead code: the variant that needs it still uses it,
+     which is why it is kept rather than deleted. */
+  let topup = 0;
+  for (let seed = 0; seed < 8; seed++) {
+    const g = E.playOut(3, 7200 + seed, { humans: [], trickRule: 'bonus' });
+    topup += g.stats.recycle_topup || 0;
+  }
+  ok(topup > 0,
+     "trickRule:'bonus' drew nothing from the pile either — that variant gives a "
+     + 'hand card away and the top-up is what makes the hand ten again');
+}
+
+// ------------------------------- the market is shuffled once, at setup
+{
+  const g = new E.Game(3, 5, { humans: [] });
+  ok(g.PILE_SHUFFLE === 'setup',
+     'the engine reshuffles the market at every recycle; §09 prints that it is '
+     + 'shuffled once, at setup, and never again');
+  ok(new E.Game(3, 5, { humans: [], pileShuffle: 'recycle' }).PILE_SHUFFLE === 'recycle',
+     'the older reshuffling rule is no longer reachable for reproducing measurements');
+  /* What never shuffling is FOR: a card you bury stays buried. Shuffle at every
+     recycle and the two cards you chose to lose are back in play in random
+     order before your next turn, which is the whole of what a person can know
+     about that pile. */
+  const p0 = g.P[0]; p0.gold = 10;
+  const it = g._tradeHuman(p0, 1);
+  let r = it.next();
+  const buried = r.value.drew.slice();
+  it.next(buried);
+  const depth = g.pile.length;
+  ok(g.pile.indexOf(buried[0]) < 2 && g.pile.indexOf(buried[1]) < 2,
+     `a buried card is ${Math.max(g.pile.indexOf(buried[0]), g.pile.indexOf(buried[1]))} `
+     + `from the bottom of a ${depth}-card market, not at the bottom`);
+}
+
 if (fail.length) { fail.forEach((f) => console.error('FAIL: ' + f)); process.exit(1); }
-console.log('trade: one allowance with research, two cards each way, 80 cards '
-          + 'in the game before and after, and the buried pair goes to the bottom');
+console.log('trade: one allowance with research, two cards each way, 80 cards in '
+          + 'the game before and after, the buried pair at the bottom of a market '
+          + 'shuffled once at setup, and not one card drawn from it at a recycle');

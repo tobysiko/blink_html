@@ -119,7 +119,7 @@ MELD = {
 # leave your hand, and almost all of them come back. A player who does not know
 # this hoards.
 FLOW = [
-    ("YOUR HAND",   "ten cards",        "drawn back up every recycle"),
+    ("YOUR HAND",   "ten cards",        "always ten — nothing you play leaves you"),
     ("YOUR MELD",   "face down, then up", "what you lay for the trick"),
     ("THE MAP",     "settle \u00b7 explore \u00b7 attack", "or cash it for 1 gold"),
     ("YOUR DISCARD", "face up beside you", "everything you spent this cycle"),

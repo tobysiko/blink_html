@@ -2015,10 +2015,11 @@ class Game {
      *   burial is randomised away before your next turn and trade becomes a
      *   blind draw with no memory in it at all.
      *
-     * Defaulting to "recycle" deliberately: it is what every measurement in
-     * candidate-versions.md and combat-economics.md was taken under, and this
-     * is a rules decision, not a bug to fix quietly. */
-    this.PILE_SHUFFLE = opts.pileShuffle === "setup" ? "setup" : "recycle";
+     * THE RULEBOOK HAD ALREADY DECIDED THIS and the engine had not been told:
+     * §09 prints "It is shuffled once, at setup, and never again". "recycle" is
+     * kept only so the older measurements can be reproduced - it is not a rule
+     * anyone can read off a component. */
+    this.PILE_SHUFFLE = opts.pileShuffle === "recycle" ? "recycle" : "setup";
     /* Who the bots are. `botStyle` is one of BOT_STYLES, or "mixed" to deal a
      * different one to each seat; `botLevel` is easy | normal | hard. Both are
      * policy, never rules: no style may do anything a person could not. */
@@ -5173,13 +5174,22 @@ class Game {
       }
     }
 
-    /* §09: take back everything you played, then draw from the SHARED pile up
-     * to ten. Under PILE_SHUFFLE "recycle" the pile is shuffled first, so what
-     * comes back is whatever the table has been throwing away rather than your
-     * own cards in order; under "setup" it is never shuffled again after the
-     * deal, which is what makes a card you buried in a trade findable later.
-     * See PILE_SHUFFLE in the constructor — the two rules want opposite
-     * things and only one of them can be printed. */
+    /* §09: TAKE YOUR DISCARD BACK AND THAT IS YOUR HAND. It is ten cards,
+     * because nothing you play ever leaves you - what you spend on the map, and
+     * what you set aside for matching the leader, both land in your own
+     * discard. You draw NOTHING from the market here.
+     *
+     * The top-up below is a leftover of the version where a player who matched
+     * the leader gave their set-aside card to the SHARED pile: that hand came
+     * back one card short and this is what made it ten again. v0.26 sends the
+     * set-aside to the owner's own discard instead, so under the printed rule
+     * every hand is already ten and the loop never runs once - measured across
+     * whole games at two, three and four players.
+     *
+     * It is kept, not deleted, because trickRule "bonus" still takes a card out
+     * of a hand and into the pile, and that variant genuinely needs topping up.
+     * `recycle_topup` counts it, so a rule change that quietly starts drawing
+     * from the market shows up as a number instead of as a feeling. */
     p.hand = p.discard; p.discard = [];
     if (this.pile.length && this.PILE_SHUFFLE === "recycle")
       this.rng.shuffle(this.pile);
@@ -5187,7 +5197,7 @@ class Game {
     while (p.hand.length < 10 && this.pile.length) {
       const c = this.pile.pop();
       p.hand.push(c);
-      this.inc("drawn_from_pile"); drew++;
+      this.inc("drawn_from_pile"); this.inc("recycle_topup"); drew++;
       this.fx("card", { seat: p.i, card: c, from: "pile", to: "hand" });
     }
     this.say("log.recycle", { back: p.hand.length - drew, drew });
