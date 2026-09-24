@@ -1783,7 +1783,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"390b06b02d","branch":"main","dirty":true,"built":"2026-09-24T19:01:33Z"};
+const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"7b41d2d100","branch":"main","dirty":true,"built":"2026-09-24T20:03:03Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2246,6 +2246,8 @@ en: {
   "ask.draft": "<b>Pass on {pass}</b> <span class=\"muted\">\u2014 {left} still to choose. These ten are yours to sort out: the {fresh} with a dotted collar have just reached you, the rest you kept earlier, and you may pass either. What stays is your hand.</span>",
   "ask.draft.first": "<b>Pass on {pass}</b> <span class=\"muted\">\u2014 {left} still to choose. Ten cards, all new. Keep four and pass six on; you will see the rest again.</span>",
   "btn.draftPass": "Pass these {n} on",
+  "ask.trade": "<b>Choose two to bury</b> <span class=\"muted\">— {n} more to pick. The two you drew are already yours to keep; the two you tap here go to the bottom of the market instead.</span>",
+  "btn.tradeGive": "Bury these {n}",
   "ask.mulligan": "<b>One do-over, if you want it</b> <span class=\"muted\">\u2014 every hand goes back, the whole starting deck is shuffled, and the table is dealt again. One each, and you live with what comes.</span>",
   "ask.mulligan.again": "<b>Your do-over, if you want it</b> <span class=\"muted\">\u2014 this hand came from somebody else\u2019s. Calling it re-deals the table again; you have one, and this is it.</span>",
   "btn.mulligan": "Take the do-over",
@@ -2351,11 +2353,14 @@ en: {
   "btn.move": "Move ({n})",
   "btn.fortifyAct": "Fortify",
   "btn.research": "Research",
+  "btn.trade": "Trade",
   /* Only shown when a research this turn has already put the price up. */
   "btn.researchAgain": "Research again — {n} 🪙",
+  "btn.tradeAgain": "Trade again — {n} 🪙",
   "btn.newGame": "New game",
   "btn.endTurnCards": "End turn ({n} card(s) → {n} gold)",
   "tip.research": "Draw a card, take one, retire one — 1 gold",
+  "tip.trade": "Draw two, blind, from the market — bury two of yours — 1 gold",
   "tip.noMoves": "no free moves left this turn",
   "tip.nowhereToGo": "no unit has anywhere to go",
   "tip.nothingToWall": "nothing to fortify",
@@ -2945,6 +2950,8 @@ de: {
   "ask.draft": "<b>Gib {pass} weiter</b> <span class=\"muted\">\u2014 noch {left} zu w\u00e4hlen. Diese zehn geh\u00f6ren dir: die {fresh} mit gepunktetem Rand sind gerade angekommen, die \u00fcbrigen hast du vorher behalten, und du darfst beide weitergeben. Was bleibt, ist deine Hand.</span>",
   "ask.draft.first": "<b>Gib {pass} weiter</b> <span class=\"muted\">\u2014 noch {left} zu w\u00e4hlen. Zehn Karten, alle neu. Behalte vier und gib sechs weiter; den Rest siehst du wieder.</span>",
   "btn.draftPass": "Diese {n} weitergeben",
+  "ask.trade": "<b>Wähle zwei zum Vergraben</b> <span class=\"muted\">— noch {n} zu wählen. Die zwei gezogenen Karten bleiben ohnehin bei dir; die zwei, die du hier antippst, wandern stattdessen unter den Markt.</span>",
+  "btn.tradeGive": "Diese {n} vergraben",
   "ask.mulligan": "<b>Ein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 alle H\u00e4nde gehen zur\u00fcck, das ganze Startdeck wird gemischt und neu ausgeteilt. Einer je Person, und was kommt, bleibt.</span>",
   "ask.mulligan.again": "<b>Dein Neuversuch, wenn du willst</b> <span class=\"muted\">\u2014 diese Hand kam schon aus einem fremden. Wer ihn nimmt, l\u00e4sst noch einmal neu geben; du hast einen, und das ist er.</span>",
   "btn.mulligan": "Neu geben",
@@ -3048,10 +3055,13 @@ de: {
   "btn.move": "Bewegen ({n})",
   "btn.fortifyAct": "Befestigen",
   "btn.research": "Forschen",
+  "btn.trade": "Handeln",
   "btn.researchAgain": "Nochmal forschen — {n} 🪙",
+  "btn.tradeAgain": "Nochmal handeln — {n} 🪙",
   "btn.newGame": "Neue Partie",
   "btn.endTurnCards": "Zug beenden ({n} Karte(n) → {n} Gold)",
   "tip.research": "Karte ziehen, eine nehmen, eine abgeben — 1 Gold",
+  "tip.trade": "Zwei blind vom Markt ziehen — zwei eigene vergraben — 1 Gold",
   "tip.noMoves": "keine freien Bewegungen mehr in diesem Zug",
   "tip.nowhereToGo": "keine Einheit kann irgendwohin",
   "tip.nothingToWall": "nichts zu befestigen",
@@ -8960,8 +8970,8 @@ function legalAnswer(g, req, tok) {
   if (tok === null || tok === undefined) return true;      // declining is legal
   if (typeof tok !== "object") return false;
   if (req.type === "turn") {
-    const kinds = ["spend", "cash", "move", "fortify", "research", "colony",
-                   "conquest", "cashRow", "end"];
+    const kinds = ["spend", "cash", "move", "fortify", "research", "trade",
+                   "colony", "conquest", "cashRow", "end"];
     if (!kinds.includes(tok.kind)) return false;
     const st = req.state, p = g.P[req.seat];
     if (tok.kind === "spend" || tok.kind === "cash")
@@ -9679,7 +9689,7 @@ let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
-           waterCell: null, colonyCell: null, perk: null, draft: [] };
+           waterCell: null, colonyCell: null, perk: null, draft: [], trade: [] };
 }
 
 const $ = (s) => document.querySelector(s);
@@ -10626,7 +10636,7 @@ function needZone() {
   if (!mine() || !REQ) return null;
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
-    case "retire": case "discard": case "bonus": case "duel": return "#hand";
+    case "retire": case "discard": case "bonus": case "duel": case "trade": return "#hand";
     /* researchTo is answered with BUTTONS, not by clicking furniture, so it
      * lights nothing. Pointing it at the innovation space made the grid glow
      * with nothing to click in it - which zone_test.js caught immediately, and
@@ -11924,15 +11934,29 @@ function renderPlayer() {
       }));
     wireCardHold();
   } else {
+  /* `mine()` gates every REQ.type read below it: REQ is null between rounds
+   * and while it is somebody else's turn, and a card of hers is still drawn
+   * here (the render runs for whoever is on screen, not only for you). */
+  const tradeMode = mine() && REQ.type === "trade";
   const handPick = mine()
-    && ["meld", "bonus", "discard", "retire", "duel"].includes(REQ.type);
-  const wanted = handPick && REQ.type !== "meld";
+    && ["meld", "bonus", "discard", "retire", "duel", "trade"].includes(REQ.type);
+  /* trade reads like meld, not like retire/discard/bonus/duel: the selection
+   * PERSISTS on the card (the "sel" ring) rather than pointing at a single
+   * target with "want", because you are building a set of two, not answering
+   * with one tap. */
+  const wanted = handPick && !tradeMode && REQ.type !== "meld";
+  const justDrawn = tradeMode ? new Set(REQ.drew || []) : null;
   $("#hand").innerHTML = p.hand.slice().sort(cardSortUI).map((c) => {
     const idx = p.hand.indexOf(c);
-    const on = SEL.meld.includes(c) ? " sel" : "";
+    const on = (SEL.meld.includes(c) || (tradeMode && SEL.trade.includes(c)))
+      ? " sel" : "";
     const playable = !handPick || REQ.type === "meld" || REQ.options.includes(c);
     const state = !handPick ? "" : !playable ? " dead" : wanted ? " want" : "";
-    return cardBtn(c, on + state, `data-hand="${idx}"`, "mid");
+    // the dotted collar draft already uses for "just reached you" — here it
+    // marks the two cards the trade drew, so a player can tell them from the
+    // eight they already had.
+    const fresh = justDrawn && justDrawn.has(c) ? " fresh" : "";
+    return cardBtn(c, on + state + fresh, `data-hand="${idx}"`, "mid");
   }).join("") || `<span class="muted small">${t("board.handEmpty")}</span>`;
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
@@ -11974,6 +11998,13 @@ function onHandCard(c) {
   if (REQ.type === "meld") {
     const i = SEL.meld.indexOf(c);
     if (i >= 0) SEL.meld.splice(i, 1); else SEL.meld.push(c);
+    render();
+    return;
+  }
+  if (REQ.type === "trade") {
+    const i = SEL.trade.indexOf(c);
+    if (i >= 0) SEL.trade.splice(i, 1);
+    else if (SEL.trade.length < REQ.need) SEL.trade.push(c);
     render();
     return;
   }
@@ -12260,6 +12291,20 @@ function renderPromptBody() {
             { card: REQ.card.r + SUIT_LETTER[REQ.card.s] }));
       btn(t("btn.toHand"), () => answer("hand"));
       btn(t("btn.toDiscard"), () => answer("discard"), "alt");
+      break;
+    }
+    case "trade": {
+      /* THE DRAW ALREADY HAPPENED — the two cards on screen with a dotted
+       * collar are the ones the market gave you, and they are yours to keep
+       * whatever you do here. This step only asks which two go back: there is
+       * no decline, because declining would mean handing back cards you have
+       * already seen for cards you have not — see _tradeHuman in the engine. */
+      const left = REQ.need - SEL.trade.length;
+      ask(t("ask.trade", { n: left }));
+      const go = btn(t("btn.tradeGive", { n: REQ.need }),
+                     () => answer(SEL.trade.slice()), "",
+                     SEL.trade.length !== REQ.need);
+      go.classList.toggle("ready", SEL.trade.length === REQ.need);
       break;
     }
     case "perk": {
@@ -12557,6 +12602,16 @@ function renderTurn(bar, ask, btn, p) {
          + (rDone && !o.canResearch ? " ✓" : ""),
        () => { RESEARCH = { stage: "preview" }; render(); }, !o.canResearch,
        o.researchBlocked ? t(o.researchBlocked) : t("tip.research"));
+  /* Trade shares research's allowance and price outright (see canTrade in the
+   * engine), so this button reads rCost/rDone off the very same numbers — a
+   * second counter here would be a second thing to keep in step. Unlike
+   * research it commits in one tap: the draw is blind, so there is nothing a
+   * preview screen could show that clicking does not already say on the
+   * button (the price). */
+  abtn(t(rCost > 1 ? "btn.tradeAgain" : "btn.trade", { n: rCost })
+         + (rDone && !o.canTrade ? " ✓" : ""),
+       () => answer({ kind: "trade" }), !o.canTrade,
+       o.tradeBlocked ? t(o.tradeBlocked) : t("tip.trade"));
   abtn(t("btn.move", { n: o.moves }),
        () => { SEL.mode = "move"; SEL.card = null; render(); },
        !o.moves || !o.moveSources.length,

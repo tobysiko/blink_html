@@ -145,9 +145,10 @@ def coin(cx, cy, r=2.4):
             + disc(cx, cy, r * 0.5, "none", "#9B7A16"))
 
 
-def minicard(x, y, w=6.4, h=9.0, col=LINE, fill=PAPER, label=None):
+def minicard(x, y, w=6.4, h=9.0, col=LINE, fill=PAPER, label=None, dash=False):
+    dasharray = ' stroke-dasharray="1.2 1"' if dash else ""
     out = (f'<rect x="{x:.2f}" y="{y:.2f}" width="{w}" height="{h}" rx="1" '
-           f'fill="{fill}" stroke="{col}" stroke-width="0.5"/>')
+           f'fill="{fill}" stroke="{col}" stroke-width="0.5"{dasharray}/>')
     if label is not None:
         out += T(x + w / 2, y + h / 2 + 1.4, label, 3.6, anchor="middle",
                  col=col, weight="600")
@@ -383,13 +384,21 @@ def sheet():
         return (minicard(cx - 3.2, cy_ - 4.5, 6.4, 9.0, col=OCEAN)
                 + up_arrow(cx, cy_, 3.4, OCEAN))
 
+    def ic_trade(cx, cy_):
+        # one drawn card, one dashed — the drawn one is what you already had a
+        # look at; the dashed one is what the market still has not shown you.
+        # Same convention ic_explore uses for a tile you have not reached yet.
+        return (minicard(cx - 4.6, cy_ - 4.0, 4.4, 8.0, col=OCEAN)
+                + minicard(cx + 0.2, cy_ - 4.0, 4.4, 8.0, col=OCEAN, dash=True))
+
     def ic_fortify(cx, cy_):
         return hexgon(cx, cy_, 4.0, "#EFE3C4", GOLD) + coin(cx, cy_ - 0.2, 2.0)
 
     def ic_keep(cx, cy_):
         return coin(cx - 1.7, cy_ + 0.6, 2.2) + coin(cx + 1.5, cy_ - 0.9, 2.2)
 
-    cicons = {"RESEARCH": ic_research, "FORTIFY": ic_fortify, "KEEP": ic_keep}
+    cicons = {"RESEARCH": ic_research, "TRADE": ic_trade, "FORTIFY": ic_fortify,
+              "KEEP": ic_keep}
     for key, price, detail in COIN_USES:
         box, h = option_box(x + 3, cy, iw, key, detail, LINE, cicons[key],
                             keycol=INK, right=price)

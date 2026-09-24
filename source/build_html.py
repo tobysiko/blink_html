@@ -1035,7 +1035,8 @@ HTML = f"""<!doctype html>
   deck</strong>. Nine of them lie face up beside it in a <strong>3 &times; 3 grid</strong> —
   the <strong>innovation space</strong>. Research reaches into it, and it is not the
   <strong>market</strong>: the market is the face-down stack beside it that
-  <strong>trade</strong> reaches (§09). Two piles, two names, and nothing crosses from
+  <strong>trade</strong> reaches — see below, and §09 for what the market itself is and
+  where it came from. Two piles, two names, and nothing crosses from
   one to the other.</p>
 
   <p><strong>Up to twice per turn</strong>, during your map phase, you may research.
@@ -1101,6 +1102,41 @@ HTML = f"""<!doctype html>
   — including the card you have just retired, if that is the lowest. A full row never
   blocks your research, and nothing is destroyed: a bumped card lies down there with
   everything else, and somebody may yet trade it back up.</p>
+
+  <h3>Trade</h3>
+  <p>The other face of an improvement. Where research reaches <strong>up</strong> — a
+  stronger card, paid for by retiring your weakest — trade reaches <strong>sideways</strong>:
+  two cards for two cards, at no cost in rank and nothing retired. It draws from the
+  <strong>market</strong>, not the innovation space, and the two piles never touch.</p>
+
+  <p>Trade costs exactly what research does, <strong>from the same allowance</strong> —
+  1 gold for the first improvement of your turn, 2 for the second, whichever face it
+  wears. Research twice, trade twice, or one of each; there is no way to do three.</p>
+  <ol class="seq">
+    <li><b>Draw the top two cards</b> of the market, blind. The market is face down and
+    stays that way until a card leaves it — nothing about its order is visible to you
+    before you commit to a draw. The two you draw land in your hand at once, face up
+    to you the moment they arrive.</li>
+    <li><b>Pay the price</b> — 1 gold the first improvement this turn, 2 the second.</li>
+    <li><b>Choose any two cards from your hand</b> — the two you just drew, two you
+    already held, or one of each — and <strong>bury them at the bottom of the
+    market</strong>, face down. Your hand is still ten: two came in, two went out.</li>
+  </ol>
+
+  <div class="note">
+    <span class="tag">The draw commits you</span>
+    <p>There is no looking and declining. The moment you draw, you have seen two cards
+    nobody else has, and handing them straight back for the two you started with would
+    be buying information for nothing. What you bury does not have to be what you drew
+    — keep the new pair and send two of your old ten down instead, if that suits your
+    hand better — but you must send exactly two, and the improvement is spent either
+    way.</p>
+  </div>
+
+  <p>What you bury comes back in its own time: the market is shuffled once, at setup,
+  and never again (§09), so it deals from the top in the order it was built — a card you
+  bury this round is what somebody eventually trades into, worn edge first. Trade
+  changes nothing about a card's rank or effects; it only changes whose hand it is in.</p>
 
   <h3>Spending a victory card</h3>
   <p>Every card carries <strong>three printed effects</strong>, and a card in your victory row

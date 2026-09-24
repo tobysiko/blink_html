@@ -137,7 +137,8 @@ function run(seed, n, seat, retire, deck, obj, cb) {
           const h = q('#map .hot');
           if (h) click(h);
           else { const c = btn(/^Cash /); if (c) click(c); }
-        } else if (btn(/^Research$/)) click(btn(/^Research$/));
+        } else if (btn(/^Trade$/) && Math.random() < 0.3) click(btn(/^Trade$/));
+        else if (btn(/^Research$/)) click(btn(/^Research$/));
         else if (qa('.vslot button.cf').length && Math.random() < 0.5) {
           // open a victory card, and take B when it is live — the colony step
           // is a map click like any other and must light the map
@@ -181,6 +182,20 @@ function run(seed, n, seat, retire, deck, obj, cb) {
       } else if (/Move —|Fortify —/.test(t)) {
         const h = q('#map .hot');
         if (h) click(h); else click(btn(/Cancel/) || btn(/Pick another/));
+      } else if (/Choose two to bury/.test(t)) {
+        /* TRADE'S GIVE-BACK (v0.26): the draw already happened - see
+         * _tradeHuman in the engine - and this only asks which two go back to
+         * the market. Selected cards carry .sel (built like the meld picker,
+         * not the single-target .want of retire/discard/bonus/duel), and the
+         * confirm button is exactly the zone assertion below expects: it only
+         * enables once #hand is what you click, so this stays inside that
+         * contract rather than reading REQ directly. */
+        const go = btn(/^Bury these/);
+        if (go) click(go);
+        else {
+          const c = qa('#hand button').find((b) => !b.disabled && !b.className.includes('sel'));
+          if (c) click(c);
+        }
       } else if (/Where does .* go\?/.test(t)) {
         /* WHERE A RESEARCHED CARD LANDS (v0.26). Two buttons and no furniture
          * to click, so this lights no zone - which is what the zone assertion

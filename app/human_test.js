@@ -32,6 +32,7 @@ function autoHuman(G, req, rng) {
       }
       if (o.cards.length && roll < 0.62) return { kind: 'cash', card: pick(o.cards).card };
       if (o.canResearch && roll < 0.72) return { kind: 'research' };
+      if (o.canTrade && roll < 0.77) return { kind: 'trade' };
       if (o.moves && o.moveSources.length && roll < 0.82) {
         const src = pick(o.moveSources);
         const dests = [...G.moveDests(p, src)];
@@ -100,6 +101,20 @@ function autoHuman(G, req, rng) {
      * how this file caught `retreat` and now `researchTo`. */
     case 'researchTo':
       return pick(req.options);
+    /* TRADE (v0.26): give back `need` cards from the hand you were just dealt
+     * two more into - the two just drawn are eligible too, same as everything
+     * else sitting there. An answer short of `need` is legal at the protocol
+     * level (the engine fills the rest from your lowest), but a driver that
+     * only ever sent a short answer would never exercise the normal path. */
+    case 'trade': {
+      const pool = req.options.slice();
+      const out = [];
+      while (out.length < req.need && pool.length) {
+        const i = Math.floor(rng() * pool.length);
+        out.push(pool.splice(i, 1)[0]);
+      }
+      return out;
+    }
     default: throw new Error('unhandled request type: ' + req.type);
   }
 }

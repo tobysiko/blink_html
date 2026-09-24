@@ -126,6 +126,8 @@ function run(seed, n, seat, deck, obj, cb, extra) {
           const s = hexBadged('Settle') || hot();
           if (s) { note('spend'); click(s); }
           else { const c = btn(/^Cash /); if (c) { note('cash'); click(c); } }
+        } else if (btn(/^Trade$/) && Math.random() < 0.3) {
+          note('trade-open'); click(btn(/^Trade$/));
         } else if (btn(/^Research$/) && Math.random() < 0.85) {
           note('research-open'); click(btn(/^Research$/));
         } else if (btn(/^Move \(/) && Math.random() < 0.5) {
@@ -202,6 +204,20 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         note('colony-cell');
         const h = hot();
         if (h) click(h); else click(btn(/Stop here/));
+      } else if (/Choose two to bury/.test(t)) {
+        /* TRADE'S GIVE-BACK (v0.26): the draw already happened - see
+         * _tradeHuman in the engine - and this only asks which two of your
+         * ten go back to the market. Selected cards carry .sel, same as the
+         * meld builder; the confirm button only enables once exactly two are
+         * chosen, so driving off it (rather than counting clicks here) stays
+         * honest about what a person actually sees. */
+        note('trade-give');
+        const go = btn(/^Bury these/);
+        if (go) click(go);
+        else {
+          const c = qa('#hand button').find((b) => !b.disabled && !b.className.includes('sel'));
+          if (c) click(c);
+        }
       } else if (/Where does .* go\?/.test(t)) {
         /* WHERE A RESEARCHED CARD LANDS (v0.26): your hand, meldable this
          * cycle, or your discard, which shortens the hand and brings the

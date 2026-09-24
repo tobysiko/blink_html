@@ -1455,6 +1455,40 @@ check(not re.search(r"exactly\s*\n?\s*<strong>one</strong> rank in a dealt hand"
       "§07 still claims exactly one dealt rank can break the lowest wall; on "
       "Forest it takes a 12 and on a Mountain a 13, neither of which is dealt")
 
+# ---- 7. TRADE HAS AN ACTUAL PROCEDURE, NOT JUST A NAME --------------------
+# The rules audit added trade to the engine and to every place it gets a
+# passing mention - the naming split, the recycle note, the research
+# cross-reference - but for a while none of those was the same as a player
+# being told HOW to take the action. A rulebook that only ever says "and
+# trade" is not different, to somebody reading it cold, from a rulebook that
+# forgot trade exists.
+# text_of() strips tags, so this checks the plain prose a player actually
+# reads, not markup - a subsection with a heading and no content would not
+# satisfy this any more than three sentences with no heading would.
+check(re.search(r"\bTrade\b.{0,20}The other face of an improvement", rules, re.S),
+      "§10 has no Trade subsection - the action is named throughout but "
+      "never taught")
+check(re.search(r"[Dd]raw the top two cards.{0,40}of the market, blind", rules, re.S),
+      "§10 does not say trade draws the market's top two, blind")
+check("bury them at the bottom of the market" in rules,
+      "§10 does not say where the two cards you give back go")
+check(re.search(r"costs exactly what research does.{0,60}same allowance", rules, re.S),
+      "§10 does not say trade shares research's price and allowance")
+
+# The tutorial met the same audit and passed it the same way research's
+# destination choice did in §10 above: the OLD, fixed-destination sentence
+# survived right next to the corrected naming, because the sweep that renamed
+# "market" to "innovation space" ran on the rulebook and never on this file.
+check("face-up market cards" not in tut,
+      'the tutorial still calls the innovation space grid "market cards" '
+      "in the upgrade paragraph")
+check("straight into your hand" not in tut,
+      "the tutorial still says a researched card always goes straight into "
+      "your hand - it is a choice now, same as §10")
+check(re.search(r"second kind of improvement.{0,20}trade", tut, re.S),
+      "the tutorial's first game never mentions trade as the other "
+      "improvement")
+
 # ---------------------------------------------------------------- the verdict
 #
 # THIS HAS TO BE THE LAST THING IN THE FILE.

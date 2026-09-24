@@ -83,7 +83,7 @@ let REP = null;                // the playtest record for the game in progress
 let SEL = blankSel();
 function blankSel() {
   return { meld: [], card: null, mode: null, moveSrc: null, vcard: null,
-           waterCell: null, colonyCell: null, perk: null, draft: [] };
+           waterCell: null, colonyCell: null, perk: null, draft: [], trade: [] };
 }
 
 const $ = (s) => document.querySelector(s);
@@ -1030,7 +1030,7 @@ function needZone() {
   if (!mine() || !REQ) return null;
   switch (REQ.type) {
     case "meld": return "#hand";                 // build it out of your hand
-    case "retire": case "discard": case "bonus": case "duel": return "#hand";
+    case "retire": case "discard": case "bonus": case "duel": case "trade": return "#hand";
     /* researchTo is answered with BUTTONS, not by clicking furniture, so it
      * lights nothing. Pointing it at the innovation space made the grid glow
      * with nothing to click in it - which zone_test.js caught immediately, and
@@ -2328,15 +2328,29 @@ function renderPlayer() {
       }));
     wireCardHold();
   } else {
+  /* `mine()` gates every REQ.type read below it: REQ is null between rounds
+   * and while it is somebody else's turn, and a card of hers is still drawn
+   * here (the render runs for whoever is on screen, not only for you). */
+  const tradeMode = mine() && REQ.type === "trade";
   const handPick = mine()
-    && ["meld", "bonus", "discard", "retire", "duel"].includes(REQ.type);
-  const wanted = handPick && REQ.type !== "meld";
+    && ["meld", "bonus", "discard", "retire", "duel", "trade"].includes(REQ.type);
+  /* trade reads like meld, not like retire/discard/bonus/duel: the selection
+   * PERSISTS on the card (the "sel" ring) rather than pointing at a single
+   * target with "want", because you are building a set of two, not answering
+   * with one tap. */
+  const wanted = handPick && !tradeMode && REQ.type !== "meld";
+  const justDrawn = tradeMode ? new Set(REQ.drew || []) : null;
   $("#hand").innerHTML = p.hand.slice().sort(cardSortUI).map((c) => {
     const idx = p.hand.indexOf(c);
-    const on = SEL.meld.includes(c) ? " sel" : "";
+    const on = (SEL.meld.includes(c) || (tradeMode && SEL.trade.includes(c)))
+      ? " sel" : "";
     const playable = !handPick || REQ.type === "meld" || REQ.options.includes(c);
     const state = !handPick ? "" : !playable ? " dead" : wanted ? " want" : "";
-    return cardBtn(c, on + state, `data-hand="${idx}"`, "mid");
+    // the dotted collar draft already uses for "just reached you" — here it
+    // marks the two cards the trade drew, so a player can tell them from the
+    // eight they already had.
+    const fresh = justDrawn && justDrawn.has(c) ? " fresh" : "";
+    return cardBtn(c, on + state + fresh, `data-hand="${idx}"`, "mid");
   }).join("") || `<span class="muted small">${t("board.handEmpty")}</span>`;
   $("#hand").querySelectorAll("[data-hand]").forEach((n) =>
     n.addEventListener("click", () => onHandCard(G.P[ME].hand[Number(n.dataset.hand)])));
@@ -2378,6 +2392,13 @@ function onHandCard(c) {
   if (REQ.type === "meld") {
     const i = SEL.meld.indexOf(c);
     if (i >= 0) SEL.meld.splice(i, 1); else SEL.meld.push(c);
+    render();
+    return;
+  }
+  if (REQ.type === "trade") {
+    const i = SEL.trade.indexOf(c);
+    if (i >= 0) SEL.trade.splice(i, 1);
+    else if (SEL.trade.length < REQ.need) SEL.trade.push(c);
     render();
     return;
   }
@@ -2664,6 +2685,20 @@ function renderPromptBody() {
             { card: REQ.card.r + SUIT_LETTER[REQ.card.s] }));
       btn(t("btn.toHand"), () => answer("hand"));
       btn(t("btn.toDiscard"), () => answer("discard"), "alt");
+      break;
+    }
+    case "trade": {
+      /* THE DRAW ALREADY HAPPENED — the two cards on screen with a dotted
+       * collar are the ones the market gave you, and they are yours to keep
+       * whatever you do here. This step only asks which two go back: there is
+       * no decline, because declining would mean handing back cards you have
+       * already seen for cards you have not — see _tradeHuman in the engine. */
+      const left = REQ.need - SEL.trade.length;
+      ask(t("ask.trade", { n: left }));
+      const go = btn(t("btn.tradeGive", { n: REQ.need }),
+                     () => answer(SEL.trade.slice()), "",
+                     SEL.trade.length !== REQ.need);
+      go.classList.toggle("ready", SEL.trade.length === REQ.need);
       break;
     }
     case "perk": {
@@ -2961,6 +2996,16 @@ function renderTurn(bar, ask, btn, p) {
          + (rDone && !o.canResearch ? " ✓" : ""),
        () => { RESEARCH = { stage: "preview" }; render(); }, !o.canResearch,
        o.researchBlocked ? t(o.researchBlocked) : t("tip.research"));
+  /* Trade shares research's allowance and price outright (see canTrade in the
+   * engine), so this button reads rCost/rDone off the very same numbers — a
+   * second counter here would be a second thing to keep in step. Unlike
+   * research it commits in one tap: the draw is blind, so there is nothing a
+   * preview screen could show that clicking does not already say on the
+   * button (the price). */
+  abtn(t(rCost > 1 ? "btn.tradeAgain" : "btn.trade", { n: rCost })
+         + (rDone && !o.canTrade ? " ✓" : ""),
+       () => answer({ kind: "trade" }), !o.canTrade,
+       o.tradeBlocked ? t(o.tradeBlocked) : t("tip.trade"));
   abtn(t("btn.move", { n: o.moves }),
        () => { SEL.mode = "move"; SEL.card = null; render(); },
        !o.moves || !o.moveSources.length,

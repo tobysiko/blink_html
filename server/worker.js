@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-24T19:01:34Z
+ * Built 2026-09-24T20:03:04Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -5716,8 +5716,8 @@ function legalAnswer(g, req, tok) {
   if (tok === null || tok === undefined) return true;      // declining is legal
   if (typeof tok !== "object") return false;
   if (req.type === "turn") {
-    const kinds = ["spend", "cash", "move", "fortify", "research", "colony",
-                   "conquest", "cashRow", "end"];
+    const kinds = ["spend", "cash", "move", "fortify", "research", "trade",
+                   "colony", "conquest", "cashRow", "end"];
     if (!kinds.includes(tok.kind)) return false;
     const st = req.state, p = g.P[req.seat];
     if (tok.kind === "spend" || tok.kind === "cash")
