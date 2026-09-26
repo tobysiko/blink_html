@@ -3214,34 +3214,37 @@ class Game {
         case "move": {
           if (st.moves <= 0) break;
 
-          /* Landfall: the destination is a cell with no tile on it yet. A move
-           * that starts on water may end on ground that does not exist —
-           * the tile is laid now and the unit steps onto it, all inside this
-           * one move action (§07).
+          /* Sailing past the edge of charted water: the destination is a cell
+           * with no tile on it yet. The new tile is always OCEAN now, laid the
+           * moment the move resolves and the unit stepping onto it - one card
+           * doing the placement and the movement together, the same fold every
+           * other terrain already gets (§07). There used to be a second
+           * question here ("which terrain?"), because this used to be able to
+           * lay ANY terrain - that was landfall onto real, undiscovered ground.
+           * It is not any more: coming ashore onto Plains/Forest/Mountain now
+           * happens the ordinary way, with a card of that terrain's own suit.
+           * This is purely the sea extending itself, so there is nothing left
+           * to ask.
            *
            * Checked against landfallCells rather than trusting the answer: the
            * client works out the same set, but a client is not the authority on
-           * where a tile may be placed. */
+           * where a tile may be placed. Kept the name landfallCells despite no
+           * longer being landfall onto land - renaming it means touching every
+           * caller and test for a purely cosmetic win; the comment here is the
+           * warning label. */
           if (!this.m.tiles.has(ans.dest)) {
             const legal = this.landfallCells(p, ans.src,
               st.waterUsed && !p.hasPerk("navigation"));
             if (!legal.includes(ans.dest)) break;
-            const terrains = TER.filter((t) => this.m.supply[t] > 0);
-            if (!terrains.length) break;
+            if (this.m.supply.ocean <= 0) break;
             /* Spent as the offer is made, not before: a voyage with nowhere to
-             * land must not lose the advantage for the rest of the turn. */
+             * extend must not lose the advantage for the rest of the turn. */
             st.waterUsed = true;
-            const terr = ans.terrain && terrains.includes(ans.terrain)
-              ? ans.terrain
-              : yield { type: "waterexplore", seat: p.i,
-                        options: [ans.dest], terrains, landfall: true };
-            const chosen = terr && terr.terrain ? terr.terrain : terr;
-            if (!chosen || !terrains.includes(chosen)) break;
-            if (!this.m.doExplore(ans.dest, chosen)) break;
+            if (!this.m.doExplore(ans.dest, "ocean")) break;
             this._doMove(p, ans.src, ans.dest);
             st.moves -= 1;
             if (st.moves < st.moveBase) p.spendPerk("roads");
-            this.inc("water_explore"); this.inc("water_landfall");
+            this.inc("water_explore");
             this.say("log.water");
             break;
           }
@@ -3251,23 +3254,25 @@ class Game {
           this._doMove(p, ans.src, ans.dest);
           st.moves -= 1;
           if (st.moves < st.moveBase) p.spendPerk("roads");
-          /* The water advantage (§07): your FIRST sea move each turn grants one
-           * free explore of ANY terrain. It is a real choice, so it is asked. */
+          /* The water advantage (§07): your FIRST sea move each turn may push
+           * one Ocean tile past the edge of charted water, and end the move
+           * there. Only ever Ocean now - it used to offer any terrain, which
+           * was landfall wearing this mechanism's clothes; real landfall is the
+           * ordinary explore+move fold with a land-suited card, not this. */
           if (fromSea && toSea && (!st.waterUsed || p.hasPerk("navigation"))) {
             const cells = this.waterExploreCells(ans.src, ans.dest);
-            const terrains = TER.filter((t) => this.m.supply[t] > 0);
-            if (cells.length && terrains.length) {
+            if (cells.length && this.m.supply.ocean > 0) {
               /* Spent only when it is actually offered. It used to be marked
                * used before this check, so sailing into open water — where
                * nothing legal is in reach — burned the advantage for the whole
                * turn without ever showing the player a choice. */
               st.waterUsed = true;
               const pick = yield { type: "waterexplore", seat: p.i,
-                                   options: cells, terrains };
+                                   options: cells, terrains: ["ocean"] };
               if (pick) {
-                this.m.doExplore(pick.cell, pick.terrain);
-                /* The ship goes ashore. Sighting land and then staying at sea
-                 * left the new tile unowned and the voyage with nothing to
+                this.m.doExplore(pick.cell, "ocean");
+                /* The ship keeps sailing. Sighting open water and then staying
+                 * put left the new tile unowned and the voyage with nothing to
                  * show for itself; landing on it is what makes the advantage
                  * read as "you found somewhere and took it". */
                 this._doMove(p, ans.dest, pick.cell);
@@ -4833,11 +4838,16 @@ class Game {
     return seen;
   }
 
-  /* ---- where a voyage may make landfall ----
+  /* ---- where a voyage may push the sea onward ----
    *
    * The other half of a move that starts on water, and NOT a tile: these are
-   * empty cells. A ship may end its move on ground that does not exist yet —
-   * the tile is laid as the move resolves and the unit steps onto it (§07).
+   * empty cells. A ship may end its move on a NEW Ocean tile, laid as the
+   * move resolves, the unit stepping onto it the moment it exists (§07).
+   * The name stayed "landfall" from when this could lay any terrain and put a
+   * unit ashore; it can't any more — this is the sea extending itself, never
+   * real ground — but renaming it means touching every caller and test for a
+   * purely cosmetic win, so the name is now a false friend and this comment
+   * is the warning label.
    *
    * Kept separate from moveDests() on purpose. That returns tiles, and three
    * different callers (the bots' mover, moveSources, the legality check) all
@@ -4851,14 +4861,14 @@ class Game {
    *     a ship moored on a lone Ocean tile can still see the shore);
    *   - the cell is a legal space, so touch-two still holds — §06's "Blink has
    *     no bridges" is structural and a voyage does not get to break it;
-   *   - there is a tile left in the supply to lay;
+   *   - there is an Ocean tile left in the supply to lay;
    *   - and the advantage has not already been taken this turn.
    */
   landfallCells(p, srcKey, waterUsed) {
     if (waterUsed) return [];
     const t = this.m.tiles.get(srcKey);
     if (!t || t.terrain !== "ocean") return [];
-    if (!TER.some((x) => this.m.supply[x] > 0)) return [];
+    if (this.m.supply.ocean <= 0) return [];
     const spaces = this.spacesFor(p);
     if (!spaces.size) return [];
     const water = this.seaGroup(srcKey);       // includes srcKey
@@ -5002,21 +5012,20 @@ class Game {
     const src = this.m.tiles.get(srcKey), dest = this.m.tiles.get(destKey);
     if (!src || !dest) return false;
     if (src.terrain !== "ocean" || dest.terrain !== "ocean") return false;
-    if (!TER.some((t) => this.m.supply[t] > 0)) return false;
+    if (this.m.supply.ocean <= 0) return false;
     return this.waterExploreCells(srcKey, destKey).length > 0;
   }
 
-  /* The first sea move each turn grants one free explore of ANY terrain (§07),
-   * on the coast the ship sailed to. A bot takes the same deal a person is
-   * offered — including going ashore — or the two would be playing different
-   * games and every measurement taken from bot play would be wrong. */
+  /* The first sea move each turn grants one free Ocean tile (§07), laid on
+   * the coast the ship sailed to. It used to grant a free tile of ANY
+   * terrain, including going ashore; a bot now takes the same Ocean-only
+   * deal a person is offered, or the two would be playing different games
+   * and every measurement taken from bot play would be wrong. */
   _waterExplore(p, srcKey, destKey) {
     const opts = this.waterExploreCells(srcKey, destKey);
     if (!opts.length) return null;
-    const avail = TER.filter((t) => this.m.supply[t] > 0);
-    if (!avail.length) return null;
-    const terr = avail.reduce((a, b) => (this.m.supply[b] > this.m.supply[a] ? b : a));
-    if (!this.m.doExplore(opts[0], terr)) return null;
+    if (this.m.supply.ocean <= 0) return null;
+    if (!this.m.doExplore(opts[0], "ocean")) return null;
     this.inc("water_explore");
     if (destKey !== undefined && destKey !== null) this._doMove(p, destKey, opts[0]);
     return opts[0];

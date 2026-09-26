@@ -36,7 +36,7 @@ FREE = [
     ("MOVE", "your tier",
      "land: across your own units · sea: across empty Ocean · never an attack."),
     ("WATER", "first sea move",
-     "one free tile of ANY terrain, anywhere · touch-two applies, reach does not."),
+     "one free Ocean tile, anywhere · touch-two applies, reach does not."),
     ("RESEARCH", "",
      "twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · "
      "buy at or under your cap."),

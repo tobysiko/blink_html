@@ -868,14 +868,16 @@ HTML = f"""<!doctype html>
 
   <h3>The water advantage</h3>
   <p><strong>The first time each turn that you move by sea</strong>, you may immediately
-  <strong>explore one tile of any terrain you like</strong> — free, and not tied to any
-  card's suit. The new tile must touch at least two tiles already on the map, as every
-  explore must (§06) — but it does <strong>not</strong> have to be within your reach. Lay
-  it anywhere the map will legally take it.</p>
+  <strong>lay one new Ocean tile</strong> — free, and not tied to any card's suit. The new
+  tile must touch at least two tiles already on the map, as every explore must (§06) — but
+  it does <strong>not</strong> have to be within your reach. Lay it anywhere the map will
+  legally take it.</p>
   <p>That is the whole difference between a voyage and a card. A card acts beside your own
-  civilization; a ship brings back news of ground you have never stood on. The sea is how
-  a civilization finds land it had no card for — and sometimes finds it on somebody else's
-  doorstep. Once per turn, however many sea moves your meld pays for.</p>
+  civilization; a ship pushes the charted sea a little further out, so a later card can act
+  on ground it could not have reached before — sometimes on somebody else's doorstep. This
+  is never how you come ashore: setting foot on real Plains, Forest or Mountain still takes
+  the ordinary explore, with a card of that terrain's own suit. Once per turn, however many
+  sea moves your meld pays for.</p>
   <div class="note">
     <span class="tag">A sea move starts on the water</span>
     <p>Read the second bullet above literally: a sea move is made by <em>a unit standing on
@@ -887,7 +889,7 @@ HTML = f"""<!doctype html>
     out early is an investment, and that is the point: the ocean pays the players whose
     melds are long enough to commit to it.</p>
     <p>Touch-two still holds — §06 has no bridges, and a voyage does not get to build one.
-    If the map has no legal space at all, or the terrain you want has run out, the
+    If the map has no legal space at all, or the supply has run out of Ocean tiles, the
     advantage is simply <strong>not spent</strong>: sail again later in the same turn and
     you may still take it.</p>
   </div>
@@ -1457,8 +1459,8 @@ HTML = f"""<!doctype html>
       <h3>Free actions, your turn</h3>
       <p><b>Moves</b> (one per card in your meld): by land across your own connected units
       onto a free adjacent tile, or by sea across unoccupied Ocean. Never an attack. ·
-      <b>Water advantage</b>: your first sea move each turn lets you explore one free tile
-      of ANY terrain, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
+      <b>Water advantage</b>: your first sea move each turn lets you place one free Ocean
+      tile, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
       between reserve and fortifications; research spending is one-way. ·
       <b>One victory card on B</b> per turn.</p>
       <h3>Fortifying</h3>

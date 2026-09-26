@@ -1490,7 +1490,13 @@ function onCell(k) {
   const a = activeCells().get(k);
   if (!a) return;
   if (a.blocked) return;              // shown to explain itself, never to click
-  if (REQ.type === "waterexplore") { SEL.waterCell = k; render(); return; }
+  if (REQ.type === "waterexplore") {
+    /* Always exactly one terrain on offer now (Ocean) - answer straight off
+     * the cell click, same as colony does below when it, too, has only one
+     * terrain to offer. */
+    if (REQ.terrains.length === 1) return answer({ cell: k, terrain: REQ.terrains[0] });
+    SEL.waterCell = k; render(); return;
+  }
   if (REQ.type === "colony") {
     if (REQ.terrains.length === 1) return answer({ cell: k, terrain: REQ.terrains[0] });
     SEL.colonyCell = k; render(); return;
@@ -1502,14 +1508,9 @@ function onCell(k) {
   if (SEL.mode === "fortify") { answer({ kind: "fortify", cell: k }); return; }
   if (SEL.mode === "move") {
     if (a.act === "source") { SEL.moveSrc = k; render(); }
-    /* Landfall needs a terrain before the move can resolve, and the engine
-     * asks for it — but where the supply has only one kind of tile left there
-     * is nothing to ask, so send it and save the player a pointless tap. */
-    else if (a.act === "landfall") {
-      const left = TER.filter((x) => G.m.supply[x] > 0);
-      answer({ kind: "move", src: SEL.moveSrc, dest: k,
-               terrain: left.length === 1 ? left[0] : undefined });
-    }
+    /* Sailing onto open water and pushing a new Ocean tile past the edge of
+     * the map both resolve the same way now — the engine decides the tile,
+     * there is nothing left here to ask. */
     else answer({ kind: "move", src: SEL.moveSrc, dest: k });
     return;
   }
@@ -2779,20 +2780,18 @@ function renderPromptBody() {
       break;
     }
     case "waterexplore": {
-      /* A landfall has already had its cell chosen — that WAS the move. Asking
-       * for it a second time is the step that made the whole thing look broken:
-       * the player clicks the empty hex, and the game answers by asking them to
-       * click an empty hex. So go straight to the terrain. */
-      const cell = REQ.landfall ? REQ.options[0] : SEL.waterCell;
-      if (!cell) {
+      /* onCell answers immediately once a cell is clicked, for the ordinary
+       * one-terrain (Ocean) case - so by the time this ever renders with a
+       * cell already chosen, there is more than one terrain on offer, same
+       * as colony's own fallback below. */
+      if (!SEL.waterCell) {
         ask(t("ask.water"));
         btn(t("btn.skip"), () => answer(null), "alt");
       } else {
-        ask(t(REQ.landfall ? "ask.landTerrain" : "ask.terrain"));
+        ask(t("ask.terrain"));
         for (const terr of REQ.terrains)
-          btn(TL[terr], () => answer({ cell, terrain: terr }), "terr " + terr);
-        if (!REQ.landfall)
-          btn(t("btn.back"), () => { SEL.waterCell = null; render(); }, "alt");
+          btn(TL[terr], () => answer({ cell: SEL.waterCell, terrain: terr }), "terr " + terr);
+        btn(t("btn.back"), () => { SEL.waterCell = null; render(); }, "alt");
       }
       break;
     }

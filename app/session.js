@@ -261,9 +261,12 @@ function encodeAnswer(g, req, a) {
     const st = req.state, p = g.P[req.seat], o = { kind: a.kind };
     if (a.kind === "spend") { o.i = st.cards.indexOf(a.card); o.cell = a.cell; o.act = a.act; }
     else if (a.kind === "cash") o.i = st.cards.indexOf(a.card);
-    /* `terrain` only appears on a landfall — a move onto a cell with no tile —
-     * and it has to be carried, or a replay lays a different tile than the game
-     * did and every board downstream of it disagrees. */
+    /* `terrain` used to appear on a landfall — a move onto a cell with no
+     * tile — where it named the terrain a voyage chose to lay. The rule
+     * changed: that move now always lays Ocean and the engine no longer reads
+     * this field at all. Still carried through if a client sends it, because
+     * dropping a field the client actually sent is a worse failure mode than
+     * encoding one nobody reads any more. */
     else if (a.kind === "move") {
       o.src = a.src; o.dest = a.dest;
       if (a.terrain) o.terrain = a.terrain;

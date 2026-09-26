@@ -239,12 +239,16 @@ S.sessionAnswer(s4, E, h4.player.token, 0, { pick: 0 });     // the meld
 ok(!S.sessionUndo(s4, E, h4.player.token).ok,
    'a meld could be unplayed after the trick — that is a look at the answers');
 
-// ------------------------------------------- a landfall survives a replay
-/* A move that ends on empty ground carries the terrain of the tile it lays.
- * That terrain is a CHOICE, not a function of the seed, so if the codec drops
- * it the replay lays something else — and since undo, reconnect and every
- * remote client are all replays, the whole table would quietly diverge from
- * that point on. Cheap to check, catastrophic to miss.
+// --------------------- an extra field on a move answer survives a replay
+/* This used to be "a landfall survives a replay": a voyage's move answer
+ * carried the terrain it chose to lay, a CHOICE rather than a function of the
+ * seed, so if the codec dropped it the replay laid something else. The rule
+ * changed — a voyage only ever lays Ocean now, and no client sends a terrain
+ * field for one any more — but the codec's job did not: whatever extra field
+ * a move answer carries has to round-trip through encode/decode untouched, or
+ * undo, reconnect and every remote client (all of them replays) would
+ * quietly diverge. Kept as a synthetic case, since nothing in the live game
+ * exercises it any more.
  */
 {
   const req = { type: 'turn', seat: 0, state: { cards: [] } };
@@ -252,13 +256,13 @@ ok(!S.sessionUndo(s4, E, h4.player.token).ok,
   const move = { kind: 'move', src: '0,0', dest: '-1,1', terrain: 'forest' };
   const tok = S.encodeAnswer(g0, req, move);
   ok(tok.terrain === 'forest',
-     `the codec dropped the landfall terrain: ${JSON.stringify(tok)}`);
+     `the codec dropped the move's terrain field: ${JSON.stringify(tok)}`);
   const back = S.decodeAnswer(g0, req, tok);
   ok(back.terrain === 'forest',
-     `a landfall decoded without its terrain: ${JSON.stringify(back)}`);
+     `a move decoded without its terrain field: ${JSON.stringify(back)}`);
   ok(back.src === '0,0' && back.dest === '-1,1', 'the move itself did not survive');
   ok(S.legalAnswer ? S.legalAnswer(g0, req, tok) !== false : true,
-     'a landfall move token is rejected as illegal');
+     'a move token carrying a terrain field is rejected as illegal');
 
   /* An ordinary move must not grow a terrain field out of nowhere. */
   const plain = S.encodeAnswer(g0, req, { kind: 'move', src: '0,0', dest: '1,0' });

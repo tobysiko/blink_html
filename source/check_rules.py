@@ -731,9 +731,15 @@ for terr in ("plains", "ocean", "forest", "mountain"):
     check(f"beat them by {bonus + 1}" in seg,
           f"the terrain figure says the wrong margin for {terr.capitalize()}: "
           f"+{bonus} means beating them by {bonus + 1}")
-# and the sea's own rule, which is the reason this figure is not just a table
-check("ANY terrain" in ter_text and "once a turn" in ter_text,
-      "the terrain figure no longer shows the water advantage")
+# and the sea's own rule, which is the reason this figure is not just a table.
+# It only ever lays Ocean now (never real landfall onto Plains/Forest/Mountain
+# — that stays an ordinary suited explore), so the figure is checked for that,
+# not for the old "any terrain" wording it replaced.
+check("new Ocean tile" in ter_text and "once a turn" in ter_text,
+      "the terrain figure no longer shows the water advantage laying Ocean")
+check("ANY terrain" not in ter_text,
+      "the terrain figure still promises the water advantage lays ANY terrain "
+      "— it only ever lays Ocean now")
 
 # THE WORKED ROUND is two figures and a page of prose, and all three can drift
 # apart from each other and from the engine. The first draft of the map figure

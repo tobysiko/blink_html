@@ -10,8 +10,11 @@
  *
  * The rule, as the designer stated it: a move that starts on Ocean may end on
  * any Ocean tile the ship can reach through connected water, OR on any empty
- * space touching that water — in which case a tile is laid there and the unit
- * lands on it, all in the one move action.
+ * space touching that water — in which case a NEW OCEAN TILE is laid there
+ * and the unit lands on it, all in the one move action. This mechanism only
+ * ever lays Ocean now; real landfall onto Plains/Forest/Mountain happens the
+ * ordinary way, through explore+move with a card of that terrain's own suit,
+ * and is not this test's concern.
  *
  * Needs jsdom.
  */
@@ -87,16 +90,15 @@ function board(spec) {
   let guard = 0;
   while (!r.done && guard++ < 20) {
     const q = r.value;
-    if (q.type === 'turn') r = it.next({ kind: 'move', src: '0,0', dest: target,
-                                         terrain: 'forest' });
-    else if (q.type === 'waterexplore') r = it.next({ cell: target, terrain: 'forest' });
+    if (q.type === 'turn') r = it.next({ kind: 'move', src: '0,0', dest: target });
     else break;
     if (guard > 1) break;
   }
   const made = g.m.tiles.get(target);
   ok(!!made, `the move onto ${target} laid no tile`);
-  ok(made && made.terrain === 'forest',
-     `landfall laid a ${made && made.terrain} tile, not the forest that was asked for`);
+  ok(made && made.terrain === 'ocean',
+     `landfall laid a ${made && made.terrain} tile — this mechanism only ever `
+     + 'lays Ocean now');
   ok(made && made.units.includes(0), 'the unit did not land on the tile it found');
   ok(g.m.tiles.get('0,0').units.length === 0,
      'the unit is ashore AND still on the water it sailed from');
@@ -154,7 +156,7 @@ setTimeout(() => {
     put(0, 0, 'ocean', true);
     put(0, 1, 'plains', false);
     put(1, 0, 'mountain', false);
-    for (const terr of ['plains','forest','ocean','mountain']) G.m.supply[terr] = 5;
+    G.m.supply.ocean = 5;   // the only terrain this mechanism ever lays now
     REQ.opts = G.turnOptions(p, REQ.state);
     render();
     return { sources: REQ.opts.moveSources.slice(),
@@ -213,18 +215,10 @@ setTimeout(() => {
     ok(hex && hex.classList.contains('hot'),
        `${cell} is a legal landfall but is not drawn as clickable`);
     if (hex) {
+      /* One click, one move: the engine no longer asks which terrain to lay —
+       * it is always Ocean — so clicking the hex must resolve the whole move
+       * immediately, with no intermediate prompt. */
       click(hex);
-      /* With more than one terrain left in the supply the engine asks which to
-       * lay — and it must ask for the TERRAIN, not for the cell again. */
-      const asked = txt();
-      ok(/which terrain/i.test(asked) || /Landfall/i.test(asked),
-         `after clicking the landfall hex the game asked: "${asked.slice(0, 90)}"`
-         + ' — it should be asking which terrain to lay, not asking for a cell');
-      const terrBtn = qa('#prompt button').find((b) => /^(Plains|Forest|Ocean|Mountain)$/
-        .test(b.textContent.trim()));
-      ok(!!terrBtn, 'no terrain buttons offered for the landfall: '
-         + qa('#prompt button').map((b) => b.textContent.trim()).join('/'));
-      if (terrBtn) click(terrBtn);
       setTimeout(() => {
         const after = w.eval(`(() => {
           const t = G.m.tiles.get(${JSON.stringify(cell)});
@@ -236,6 +230,9 @@ setTimeout(() => {
         ok(after.exists, `clicking ${cell} laid no tile`);
         ok(after.size === before + 1,
            `the map went from ${before} tiles to ${after.size} — expected one more`);
+        ok(after.terrain === 'ocean',
+           `clicking ${cell} laid a ${after.terrain} tile — this mechanism only `
+           + 'ever lays Ocean now');
         ok(after.mine, `the unit did not land on ${cell}`);
         ok(after.ship.length === 0, 'the unit is ashore and still on the water');
         report();

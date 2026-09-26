@@ -534,7 +534,7 @@ def terrains():
                "\u2014 the first sea move each turn also lays a tile, free",
                9, anchor="start", cls="fig-label")
 
-    # a unit sailing across open water, then a tile of ANY terrain arriving
+    # a unit sailing across open water, then a new Ocean tile arriving
     ox, oy = 158, sy + 82
     for k in range(3):
         b += prism(ox + k * (DX + 2), oy, "ocean")
@@ -552,11 +552,10 @@ def terrains():
           f'{ay:.1f} M{nx - SQ - 20:.1f} {ay - 6:.1f} l10 6 l-10 6" '
           f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
           f'stroke-linejoin="round"/>')
-    # An empty dashed cell rather than a green one: the point is that you pick
-    # the terrain, and drawing a Forest there says Forest.
-    b += prism(nx, oy, None, empty=True, dashed=True)
-    b += label(nx, oy + 4, "ANY", 11, cls="fig-attack")
-    b += label(nx, oy + R + 20, "then lay a tile of ANY terrain,", 9,
+    # A solid Ocean tile, drawn the same as the three it extends from - there
+    # is no terrain to pick any more, only ever more sea.
+    b += prism(nx, oy, "ocean")
+    b += label(nx, oy + R + 20, "then lay a new Ocean tile,", 9,
                cls="fig-label")
     b += label(nx, oy + R + 31, "anywhere the map legally takes it", 9,
                cls="fig-label")

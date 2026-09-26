@@ -77,9 +77,11 @@ const has = (a, k) => a.includes(k);
 }
 
 // ------------------------------------------------------- water advantage
-/* "The first time each turn that you move by sea, you may immediately explore
- *  one tile of any terrain you like." A sea move starts AND ends on Ocean —
- *  stepping onto the water from land is an ordinary land move. */
+/* "The first time each turn that you move by sea, you may immediately lay
+ *  one new Ocean tile." A sea move starts AND ends on Ocean — stepping onto
+ *  the water from land is an ordinary land move. Never real landfall onto
+ *  Plains/Forest/Mountain: that stays the ordinary explore, with a card of
+ *  that terrain's own suit. */
 /* THE MELD PAYS FOR THE MOVES (v0.26). This used to hand the turn an empty
  * meld, because movement was an allowance the tier gave you and the cards you
  * played had nothing to do with it. Now each card carries one movement, so an
@@ -126,7 +128,8 @@ function turnRun(g, seat, answers, meldSize) {
   ok(n === 1, `the water advantage fired ${n} times in one turn, expected once`);
 }
 {
-  // and the free tile really is any terrain, not the mover's suit
+  // and the free tile is Ocean, and only ever Ocean now — never the mover's
+  // suit, never a choice among the terrains in the supply
   const g = board([[0, 0, 'ocean', 0], [1, 0, 'ocean', null], [0, 1, 'plains', null],
                    [1, 1, 'plains', null]]);
   let offered = null;
@@ -135,8 +138,9 @@ function turnRun(g, seat, answers, meldSize) {
     (req) => { offered = req; return null; },
     { kind: 'end' },
   ]);
-  ok(offered && offered.terrains.length === 4,
-     'the water advantage did not offer every terrain in the supply');
+  ok(offered && offered.terrains.length === 1 && offered.terrains[0] === 'ocean',
+     `the water advantage offered ${offered && JSON.stringify(offered.terrains)}, `
+     + 'not Ocean alone');
   ok(offered && offered.options.every((k) => {
     const [c, r] = E.unK(k);
     return E.nbrKeys(c, r).filter((n) => g.m.tiles.has(n)).length >= 2;
@@ -190,8 +194,11 @@ function turnRun(g, seat, answers, meldSize) {
        `${k} is across the map from the voyage and was still offered`);
 }
 
-/* And the ship goes ashore: sighting land and staying at sea left the new tile
- * unowned, so the voyage produced a tile for nobody. */
+/* And the sea comes with a crew: pushing the water onward and staying moored
+ * at the old tile would leave the new one unowned, so the voyage produced a
+ * tile for nobody. This is never landfall — the new tile is Ocean, not land,
+ * and the terrain field on the answer is ignored now that there is nothing
+ * left to ask. */
 {
   const g = board([[0, 0, 'ocean', 0], [1, 0, 'ocean', null], [0, 1, 'plains', null],
                    [1, 1, 'plains', null]]);
@@ -199,14 +206,18 @@ function turnRun(g, seat, answers, meldSize) {
   let chosen = null;
   turnRun(g, 0, [
     { kind: 'move', src: '0,0', dest: '1,0' },
-    (req) => { chosen = req.options[0]; return { cell: chosen, terrain: 'plains' }; },
+    (req) => { chosen = req.options[0]; return { cell: chosen, terrain: req.terrains[0] }; },
     { kind: 'end' },
   ]);
   ok(chosen, 'no free tile was offered on an open coast');
   const landed = chosen && g.m.tiles.get(chosen);
   ok(landed, `the chosen cell ${chosen} never became a tile`);
+  ok(landed && landed.terrain === 'ocean',
+     `the water advantage laid a ${landed && landed.terrain} tile — it only `
+     + 'ever lays Ocean now');
   ok(landed && landed.units.includes(0),
-     'the ship found land and stayed at sea — the new tile has nobody on it');
+     'the ship pushed the sea onward and stayed moored — the new tile has '
+     + 'nobody on it');
   ok(landed && landed.owner === 0,
      'the tile the voyage found belongs to nobody');
   const from = g.m.tiles.get('1,0');
