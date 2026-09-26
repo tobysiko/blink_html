@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-24T20:22:17Z
+ * Built 2026-09-26T05:54:28Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2063,7 +2063,7 @@ class Game {
     this.log = [];
     this.endedOn = null;
     this.finalRounds = null;
-    this.pile = [];            // shared face-down discard pile (§04, §09)
+    this.pile = [];            // the market: shared face-down pile, trade only (§09-10)
     this.removed = [];         // cards OUT OF THE GAME (empty under v0.26)
     this.spent = [];           // every card spent for an effect, in order
     this.m.bandOf = (seat) => this.P[seat].band();

@@ -2515,6 +2515,20 @@ function renderPromptBody() {
   if (REQ.type === "meld") coach("coach.meld");
   else if (REQ.type === "duel" && REQ.role === "defend") coach("coach.duel");
   else if (REQ.type === "feed") coach("coach.food");
+  else if (REQ.type === "draft") coach("coach.draft");
+  /* Fires on the very first ordinary map turn, which is the earliest point
+   * research or trade is even possible - and the moment it arms, force the
+   * market open too, since a collapsed panel nobody has ever opened is not
+   * something a new player finds on their own. After this once, the fold
+   * goes back to minding its own space on a narrow screen (foldOpen()). */
+  else if (REQ.type === "turn" && coach("coach.market")) {
+    /* FOLD.market, not just the live element: renderMarket() runs before
+     * this on every pass and would snap the fold shut again on the very
+     * next render (e.g. an animation), before the banner is even read. */
+    FOLD.market = true;
+    const mf = $("#marketfold");
+    if (mf) mf.open = true;
+  }
   const myBand = G.P[ME] ? G.P[ME].band() : 0;
   if (COACH_BAND === null) COACH_BAND = myBand;
   else if (myBand > COACH_BAND) { COACH_BAND = myBand; coach("coach.tier"); }

@@ -29,7 +29,7 @@ function gitStamp() {
     /* "Dirty" must mean the SOURCE is uncommitted. The files this script
      * writes are outputs of this very run, so counting them would make every
      * build dirty forever — commit, rebuild, dirty again. */
-    const outs = [PLAY, 'deploy', 'rulebook.html',
+    const outs = [PLAY, 'deploy', 'rulebook.html', 'first-game.html',
                   'card-effects.html', 'map-objectives.html']
       .map((f) => `':(exclude)${f}'`).join(' ');
     return { commit: run('git rev-parse --short=10 HEAD'),
@@ -139,6 +139,7 @@ function buildServer() {
  * beside the page, both in the project root and in the deploy folder. A link
  * that 404s is worse than no link. */
 const DOCS = { 'rulebook.html': `../source/Blink-rules-${VTAG}.html`,
+               'first-game.html': '../source/Blink-first-game.html',
                'card-effects.html': '../source/Blink-card-effects.html',
                'map-objectives.html': '../source/Blink-map-objectives.html' };
 for (const [name, src] of Object.entries(DOCS)) {

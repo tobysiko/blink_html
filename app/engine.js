@@ -2056,7 +2056,7 @@ class Game {
     this.log = [];
     this.endedOn = null;
     this.finalRounds = null;
-    this.pile = [];            // shared face-down discard pile (§04, §09)
+    this.pile = [];            // the market: shared face-down pile, trade only (§09-10)
     this.removed = [];         // cards OUT OF THE GAME (empty under v0.26)
     this.spent = [];           // every card spent for an effect, in order
     this.m.bandOf = (seat) => this.P[seat].band();
