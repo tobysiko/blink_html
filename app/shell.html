@@ -1098,6 +1098,11 @@
 
   /* ---- objective cards ---- */
   .objbox{margin-top:6px}
+  /* Moved to the top of the player panel (was the last thing on the page,
+   * easy to forget about) — a thin gold rule keeps it from reading as just
+   * another row under the score line. */
+  .objbox.top{margin:6px 0 8px; padding:6px 8px 2px; border-left:3px solid var(--gold);
+    background:#FFFBEF; border-radius:0 7px 7px 0}
   .objrow,.objpick{display:flex; gap:6px; flex-wrap:wrap; margin-top:3px}
   .objcard{display:flex; flex-direction:column; gap:3px; text-align:left;
     border:1px solid var(--line); border-radius:7px; background:#fff;

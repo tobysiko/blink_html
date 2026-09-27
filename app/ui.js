@@ -2065,6 +2065,16 @@ function renderPlayer() {
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
+    ${p.objectives && p.objectives.length
+      ? `<div class="objbox top"><span class="vlab">${
+          t(G.OBJECTIVES_MODE === "open" ? "board.sharedObjectives" : "board.myObjective")
+        }</span><div class="objrow">` +
+        p.objectives.map((o) => {
+          const pr = G.objectiveProgress(ME, o);
+          return objCard(o, pr.done ? "done" : "", undefined, pr);
+        }).join("") +
+        `</div></div>`
+      : ""}
     <details class="fold boardfold"${foldOpen("board") ? " open" : ""}>
     <summary class="seclab">${t("sec.board")}<span class="foldnow">${
       foodLadder()
@@ -2262,18 +2272,6 @@ function renderPlayer() {
     sorted.length && sorted.length < 3
       ? ` <span class="muted">${t("board.centreHint")}</span>` : ""
   }</span></div></div>`;
-
-  // your objective(s) — secret ones are yours alone, open ones are shared
-  if (p.objectives && p.objectives.length) {
-    const shared = G.OBJECTIVES_MODE === "open";
-    s += `<div class="objbox"><span class="vlab">${
-      t(shared ? "board.sharedObjectives" : "board.myObjective")}</span><div class="objrow">` +
-      p.objectives.map((o) => {
-        const pr = G.objectiveProgress(ME, o);
-        return objCard(o, pr.done ? "done" : "", undefined, pr);
-      }).join("") +
-      `</div></div>`;
-  }
 
   $("#player").innerHTML = s;
   wireFold($("#player .boardfold"), "board");
