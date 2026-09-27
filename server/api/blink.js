@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-27T15:21:42Z
+ * Built 2026-09-27T19:36:40Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1649,33 +1649,6 @@ class Game {
     /* WHEN EFFECT A IS DECLARED. "afterReveal" is v0.26 and printed; "blind"
      * is the v0.25 rule, kept so its measurements reproduce. */
     this.A_TIMING = opts.aTiming === "blind" ? "blind" : "afterReveal";
-    /* INCOME, AND WHY THERE IS A SWITCH FOR IT.
-     *
-     * Toby played v0.26-ish at a table on 19 Sep and reported three things at
-     * once: gold was the binding constraint, nobody fortified, and nobody's
-     * victory row had cards in it. The sim says the same thing and names the
-     * cause. Under the LEAN economy - no food bill, no ascension coins, which
-     * is what the v0.26 board concept assumes - income falls from 90.3 gold a
-     * game to 53.8 across four seats, and nothing replaced ascension's 24.8.
-     * Fortifying is what gets cut: it is the only wholly discretionary spend,
-     * and freeing up money moves it 6.8 -> 13.4 with no rule change at all.
-     *
-     *   "off"        - printed. Nothing pays income.
-     *   "crossroads" - Toby's proposal, untested: one tile of yours that
-     *                  touches an OCCUPIED tile of each of the other three
-     *                  terrains pays 1 gold per unit of yours standing on it,
-     *                  once each recycle.
-     *
-     * Measured incidentally - bots are not trying for it - at 5.38 gold per
-     * seat per game, paying on 78% of recycles. That is +40% income under
-     * Lean, which is the right size; a player aiming at it does better. The
-     * rival proposal (1 gold per complete set of all four terrains) measured
-     * 1.74 and paid on only 41% of recycles, so it is not built.
-     *
-     * CADENCE IS PART OF THE RULE. At recycle (3.2 a game) it is the size
-     * above; per ROUND it would pay up to 36 a game and drown the economy. */
-    this.INCOME = ["crossroads", "objective", "both"].includes(opts.income)
-      ? opts.income : "off";
     /* HOW MANY PERKS RUN AT ONCE.
      *
      *   "one"   - v0.26, printed. Exactly one, chosen at each recycle from
@@ -1906,6 +1879,47 @@ class Game {
      * under SCORING. "off" is still reachable for a first game. */
     this.OBJECTIVES_MODE = ["off", "secret", "open", "both", "showone"]
       .includes(opts.objectives) ? opts.objectives : "showone";
+    /* INCOME, AND WHY THERE IS A SWITCH FOR IT.
+     *
+     * Toby played v0.26-ish at a table on 19 Sep and reported three things at
+     * once: gold was the binding constraint, nobody fortified, and nobody's
+     * victory row had cards in it. The sim says the same thing and names the
+     * cause. Under the LEAN economy - no food bill, no ascension coins, which
+     * is what the v0.26 board concept assumes - income falls from 90.3 gold a
+     * game to 53.8 across four seats, and nothing replaced ascension's 24.8.
+     * Fortifying is what gets cut: it is the only wholly discretionary spend,
+     * and freeing up money moves it 6.8 -> 13.4 with no rule change at all.
+     *
+     *   "off"        - printed. Nothing pays income.
+     *   "crossroads" - Toby's first proposal, untested: one tile of yours
+     *                  that touches an OCCUPIED tile of each of the other
+     *                  three terrains pays 1 gold per unit of yours standing
+     *                  on it, once each recycle. Measured incidentally -
+     *                  bots are not trying for it - at 5.38 gold per seat
+     *                  per game, paying on 78% of recycles: +40% income
+     *                  under Lean. Kept reachable; no longer the default.
+     *   "objective"  - Toby's second proposal (27 Sep), now the default
+     *                  whenever objectives are in play: 1 gold for every
+     *                  objective card of yours that is CURRENTLY COMPLETE,
+     *                  yours or shared, shown or secret, once each recycle.
+     *                  See objectivePay for why it reads every card and not
+     *                  just the open one.
+     *
+     * CADENCE IS PART OF THE RULE. At recycle (3.2 a game) crossroads' size
+     * above is right; per ROUND it would pay up to 36 a game and drown the
+     * economy.
+     *
+     * THE DEFAULT FOLLOWS OBJECTIVES, NOT A FIXED "off". Toby's own table
+     * had objectives on (the base-game default) and never noticed income,
+     * because income defaulted off regardless. Objectives are printed as
+     * base game (see OBJECTIVES_MODE above) precisely because they already
+     * carry the game's scoring weight, so paying for a completed one is the
+     * natural companion rule, not an extra module to remember to switch on.
+     * An explicit choice - including an explicit "off" - always wins; this
+     * default only fires when the setup call leaves `income` unset. */
+    this.INCOME = ["off", "crossroads", "objective", "both"].includes(opts.income)
+      ? opts.income
+      : this.OBJECTIVES_MODE !== "off" ? "objective" : "off";
     /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
      * worth its points or nothing, however many times you built it.
      * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
@@ -2241,27 +2255,28 @@ class Game {
     return best;
   }
 
-  /* WHAT YOUR OPEN OBJECTIVE PAYS, each recycle.
+  /* WHAT YOUR OBJECTIVES PAY, each recycle.
    *
-   * One coin per matching instance of the card everyone can see. The SECRET
-   * one pays nothing, and both still score their points at the end, so
-   * showing a card is a trade rather than a formality: you are telling the
-   * table what you are building - and which single tile breaks it - in
-   * exchange for an income that arrives while you still have a game to spend
-   * it on.
+   * 1 gold for every objective card of yours that is complete RIGHT NOW -
+   * flat per card, not per matching instance, and it reads every card you
+   * hold, shown or secret. That is a deliberate change from the v0.26
+   * "open objective" draft, which paid only the shown card and scaled with
+   * however many times it matched: this pays the same coin whether you show
+   * or hide, because the point of the rule is to get a player to GO LOOK AT
+   * THEIR OBJECTIVES each recycle, and a secret objective is exactly the one
+   * that is easiest to forget you are holding. A card that stops matching
+   * (someone took the tile) simply stops paying that recycle - nothing is
+   * banked or lost, it is re-checked from scratch every time.
    *
-   * It uses a component already on the table and adds no marker, which is
-   * what recommends it over the crossroads. What it costs instead is that it
-   * pays for a thing you have ALREADY built, so it compounds for whoever gets
-   * there first; the counterplay is that a pattern is three tiles and taking
-   * one of them stops the payments.
-   *
-   * Only the open card is read, never `objectives` as a whole, or the secret
-   * one would pay through the back door. */
+   * It uses a component already on the table and adds no marker. What it
+   * costs is that it pays for a thing you have ALREADY built, so it
+   * compounds for whoever gets there first; the counterplay is that most
+   * patterns are a small handful of tiles and taking one stops the
+   * payments. Both cards still score their printed points at the end
+   * regardless of what they paid along the way. */
   objectivePay(p) {
     if (this.INCOME !== "objective" && this.INCOME !== "both") return 0;
-    if (!p.objOpen) return 0;
-    return this.objectiveCount(p.i, p.objOpen);
+    return (p.objectives || []).filter((o) => this.objectiveDone(p.i, o)).length;
   }
 
   // --- setup ---------------------------------------------------
@@ -5513,6 +5528,12 @@ function defaultName(rand, taken) {
 function newSession(opts, rand) {
   const o = opts || {};
   const n = Math.min(4, Math.max(2, o.n || 3));
+  /* Read once, ahead of `rules`, because income's own default now follows
+   * it (see the INCOME comment in engine.js) and both fields have to agree
+   * on the SAME resolved value a client and the server would each compute
+   * locally — an object literal cannot read a sibling key while building it. */
+  const objectives = ["secret", "open", "both", "showone"].includes(o.objectives)
+    ? o.objectives : "off";
   return {
     protocol: SESSION_PROTOCOL,
     code: o.code || makeCode(rand),
@@ -5526,8 +5547,7 @@ function newSession(opts, rand) {
     rules: {
       trickRule: o.trickRule || "dock",
       deck: o.deck || "abc",
-      objectives: ["secret", "open", "both", "showone"].includes(o.objectives)
-        ? o.objectives : "off",
+      objectives,
       retireRule: o.retireRule || "lowest",
       consolation: ["last", "half", "ladder"].includes(o.consolation)
         ? o.consolation : "last",
@@ -5574,7 +5594,12 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
-      income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
+      /* Mirrors the engine's own INCOME default (see engine.js): an explicit
+       * choice always wins, and an unset one follows whether objectives are
+       * in play rather than defaulting to "off" outright. */
+      income: ["off", "crossroads", "objective", "both"].includes(o.income)
+        ? o.income
+        : objectives !== "off" ? "objective" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: ["once", "perMiddle", "perInstance"]

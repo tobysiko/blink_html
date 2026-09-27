@@ -105,7 +105,12 @@ const ok = (c, what) => { if (!c) fail.push(what); };
      `income made the victory row worse: ${off.vrow.toFixed(2)} -> ${on.vrow.toFixed(2)}`);
 }
 
-/* ---- the OPEN objective pays; the secret one does not ---- */
+/* ---- EVERY complete objective pays - open or secret, flat per card ----
+ *
+ * Toby's second proposal (27 Sep): reward CHECKING your objectives, not just
+ * showing one. So this reads `objectives` as a whole, not `objOpen`, and it
+ * pays a flat 1 per card regardless of how many instances of the pattern you
+ * hold - the old "open pays per instance, secret pays nothing" rule is gone. */
 {
   const g = new E.Game(3, 11, { humans: [], objectives: 'showone', income: 'objective' });
   const p0 = g.P[0];
@@ -113,51 +118,78 @@ const ok = (c, what) => { if (!c) fail.push(what); };
   ok(p0.objOpen === p0.objectives[0], 'the open objective is not the one scoring reads first');
   ok(g.P.every((q) => q.objOpen), 'a seat was dealt no open objective');
 
-  /* Build the OPEN card's pattern by hand and check it pays; then build the
-     SECRET card's and check it does not. The second half is the one that
-     matters - reading `objectives` instead of `objOpen` would pay for the
-     hidden card too, and nothing else in the game would look different. */
-  const lay = (card) => {
-    const m = g.m;
-    m.tiles.clear();
-    const mid = '0,0', near = E.nbrKeys(0, 0);
-    m.doExplore(mid, card.mid); m.settle(mid, 0);
+  const m = g.m;
+  /* Lays a card's pattern at a given hex centre, WITHOUT clearing what is
+     already on the map, so two cards' patterns can coexist. */
+  const layAt = (centre, card) => {
+    const near = E.nbrKeys(...centre.split(',').map(Number));
+    m.doExplore(centre, card.mid); m.settle(centre, 0);
     m.doExplore(near[0], card.a); m.settle(near[0], 0);
     m.doExplore(near[2], card.b); m.settle(near[2], 0);   // not adjacent to near[0]
   };
+  const lay = (card) => { m.tiles.clear(); layAt('0,0', card); };
 
+  ok(g.objectivePay(p0) === 0, 'an untouched map paid objective income');
+
+  /* Build the OPEN card's pattern: pays exactly 1, however many instances. */
   lay(p0.objOpen);
-  ok(g.objectivePay(p0) >= 1, 'the open objective was built and paid nothing');
+  ok(g.objectivePay(p0) === 1,
+     `building the open card once paid ${g.objectivePay(p0)}, expected a flat 1`);
 
+  /* THE SECRET CARD PAYS TOO NOW - that is the whole point of the change.
+     Cleared map, only the secret card's pattern this time. */
   const secret = p0.objectives[1];
   if (secret && secret.id !== p0.objOpen.id) {
     lay(secret);
-    ok(g.objectivePay(p0) === 0,
-       'the SECRET objective paid gold — income is reading objectives, not objOpen');
+    ok(g.objectivePay(p0) === 1,
+       'the secret objective paid nothing - it should pay exactly like the open one');
+
+    /* BOTH complete at once, at two separate sites so neither pattern
+       borrows a tile from the other: 1 per card, so 2 - not double-counted
+       instances, and not the old "secret pays nothing" either. */
+    layAt('0,6', p0.objOpen);   // far enough from '0,0' to share no tiles
+    const both = g.objectivePay(p0);
+    ok(both === 2, `both cards complete at once paid ${both}, expected a flat 2`);
   }
 }
 
-/* ---- and it is off unless asked for ---- */
+/* ---- and it is off if income is explicitly turned off ---- */
 {
-  const g = E.playOut(4, 77, { humans: [], objectives: 'showone' });
-  ok(!(g.stats.gold_in_objective), 'the open objective paid with no income rule on');
+  const g = E.playOut(4, 77, { humans: [], objectives: 'showone', income: 'off' });
+  ok(!(g.stats.gold_in_objective), 'income: "off" still paid objective gold');
   const h = E.playOut(4, 77, { humans: [], objectives: 'showone', income: 'crossroads' });
   ok(!(h.stats.gold_in_objective), 'the crossroads rule also paid objective gold');
 }
 
+/* ---- and objective income is now the DEFAULT whenever objectives are on ----
+ *
+ * This is the fix for "I never noticed any income" - a table playing the
+ * printed defaults (objectives on, income unset) now gets paid without
+ * anyone finding and switching on a setup option. Leaving objectives off
+ * keeps income off too: there is nothing for it to read. */
+{
+  const g = new E.Game(3, 11, { humans: [] });   // no income opt at all
+  ok(g.INCOME === 'objective',
+     `a default table's INCOME is "${g.INCOME}", expected "objective" to follow the printed objectives rule`);
+  const h = new E.Game(3, 11, { humans: [], objectives: 'off' });
+  ok(h.INCOME === 'off',
+     `turning objectives off left INCOME as "${h.INCOME}", expected "off" - there is nothing to pay for`);
+}
+
 /* ---- WHAT IT ACTUALLY PAYS, recorded so it cannot drift unnoticed ----
  *
- * Bots weight objectives at zero, so this is the floor: what a player who
- * IGNORES their open card earns. It is nearly nothing, which is the design
- * working - but it also means this rule cannot fix a table that has no money,
- * because it pays the player who is already executing well. 88% of recycles
- * pay nothing at all. Kept as a range so a real change trips it and noise
- * does not. */
+ * Bots weight objectives at zero, so this is the floor: what a table that
+ * IGNORES its objectives earns anyway just by playing the game. Reading
+ * every card instead of only the open one, and paying flat instead of per
+ * instance, raises this well above the old "open card only" rule's ~15% -
+ * kept as a range so a real change trips it and noise does not. */
 {
-  let fires = 0, paid = 0;
+  let fires = 0, paid = 0, goldTotal = 0;
   const orig = E.Game.prototype._recycle;
   E.Game.prototype._recycle = function* (q) {
-    fires += 1; if (this.objectivePay(q)) paid += 1;
+    fires += 1;
+    const obj = this.objectivePay(q);
+    if (obj) { paid += 1; goldTotal += obj; }
     yield* orig.call(this, q);
   };
   for (let s = 0; s < 40; s++)
@@ -165,8 +197,8 @@ const ok = (c, what) => { if (!c) fail.push(what); };
                              objectives: 'showone', income: 'objective' });
   E.Game.prototype._recycle = orig;
   const pct = 100 * paid / fires;
-  ok(pct > 4 && pct < 25,
-     `the open objective paid on ${pct.toFixed(1)}% of recycles, expected 5-25% `
+  ok(pct > 15 && pct < 45,
+     `objective income paid on ${pct.toFixed(1)}% of recycles, expected 15-45% `
      + '(bots do not aim at objectives, so this is the ignore-it floor)');
 }
 
@@ -174,4 +206,5 @@ if (fail.length) { console.log('FAIL:'); for (const f of fail) console.log('  ' 
 console.log('income: the crossroads pays only when all three other terrains are occupied beside it, '
   + 'by anybody; one gold a unit; lapses when a neighbour leaves; lands before the bill; '
   + 'and it moves fortifying and the victory row the way it was meant to; '
-  + 'the open objective pays per instance and the secret one never does');
+  + 'objective income pays a flat 1 gold per completed card, open or secret, '
+  + 'and is the default income whenever objectives are in play');

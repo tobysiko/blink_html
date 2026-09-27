@@ -57,6 +57,7 @@ const opts = {
   growLimits: chosen['grow-limits'] === 'grow',
   perks: chosen.perks === 'on',
   fortify: chosen.fortify,
+  income: chosen.income,
   loss: chosen.loss,
   startLayout: chosen.startlayout,
   attacksPerTurn: chosen.attacks === 'one' ? 1 : 0,

@@ -58,6 +58,12 @@ function defaultName(rand, taken) {
 function newSession(opts, rand) {
   const o = opts || {};
   const n = Math.min(4, Math.max(2, o.n || 3));
+  /* Read once, ahead of `rules`, because income's own default now follows
+   * it (see the INCOME comment in engine.js) and both fields have to agree
+   * on the SAME resolved value a client and the server would each compute
+   * locally — an object literal cannot read a sibling key while building it. */
+  const objectives = ["secret", "open", "both", "showone"].includes(o.objectives)
+    ? o.objectives : "off";
   return {
     protocol: SESSION_PROTOCOL,
     code: o.code || makeCode(rand),
@@ -71,8 +77,7 @@ function newSession(opts, rand) {
     rules: {
       trickRule: o.trickRule || "dock",
       deck: o.deck || "abc",
-      objectives: ["secret", "open", "both", "showone"].includes(o.objectives)
-        ? o.objectives : "off",
+      objectives,
       retireRule: o.retireRule || "lowest",
       consolation: ["last", "half", "ladder"].includes(o.consolation)
         ? o.consolation : "last",
@@ -119,7 +124,12 @@ function newSession(opts, rand) {
        * that fails to survive the trip is two clients replaying different
        * boards. */
       fortify: ["wall", "assault"].includes(o.fortify) ? o.fortify : "wall",
-      income: ["crossroads", "objective", "both"].includes(o.income) ? o.income : "off",
+      /* Mirrors the engine's own INCOME default (see engine.js): an explicit
+       * choice always wins, and an unset one follows whether objectives are
+       * in play rather than defaulting to "off" outright. */
+      income: ["off", "crossroads", "objective", "both"].includes(o.income)
+        ? o.income
+        : objectives !== "off" ? "objective" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
       objectiveScoring: ["once", "perMiddle", "perInstance"]
