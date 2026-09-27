@@ -264,6 +264,22 @@ check("within your reach" in rules and "up to two tiles out" in rules,
 check("reachOut(this.m, p.i, dist)" in js,
       "the engine no longer applies a reach to colonies")
 
+# 7a. A, B and C share ONE victory-row effect per round — not "one per turn"
+# on B alone. Before this, C was printed as usable "at any moment" with no
+# cap at all, and the app only ever gated B (`bUsed`); a player could declare
+# A, found a colony, and cash several cards, all in the same round.
+check("bUsed" not in js,
+      "the engine still has the old per-effect bUsed flag — B, C (and D "
+      "under the abd deck) must share p.vrowUsed instead")
+check("p.vrowUsed" in js or "this.vrowUsed" in js,
+      "the engine has no shared vrowUsed allowance for victory-row effects")
+check("one victory-row effect" in rules.lower()
+      or "one victory-row effect (a/b/c) per round" in rules.lower(),
+      "§07 does not state that A/B/C share one victory-row effect per round")
+check("the other two are off the table until your next round" in rules
+      or "off the table until your next round" in rules,
+      "§07 does not say that spending one effect blocks the other two this round")
+
 # 8. the market is nine positions in both the rules and the engine
 check("nine" in rules and "3 × 3" in rules, "the market is not printed as 3 x 3 = nine")
 check("opts.gridSize || 9" in js, "the engine's market is no longer nine positions")

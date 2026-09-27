@@ -2866,9 +2866,9 @@ function vcardPanel(bar, p) {
   const third = thirdEffect(c);
   const canA = inCardPhase;
   const canB = !!o && o.colonyCards.includes(c);
-  const canThird = !!o && (deckIsD() ? !o.conquestBlocked : true);
+  const canThird = !!o && (deckIsD() ? !o.conquestBlocked : !o.cashBlocked);
   const whyThird = !o ? t("vcard.mapPhase")
-    : deckIsD() ? t(o.conquestBlocked || "") : t("vcard.mapPhase");
+    : deckIsD() ? t(o.conquestBlocked || "") : t(o.cashBlocked || "vcard.mapPhase");
   /* Say the true reason. A 16–20 colony takes ANY terrain, so "no tiles of that
    * terrain" would be a lie for exactly the cards most likely to be spent. */
   const sameSuit = effectBv22(c.r)[2];

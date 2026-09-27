@@ -566,9 +566,10 @@ HTML = f"""<!doctype html>
   <p>The melds went down face down and only their <em>size</em> was public while they did
   (§04). So when you declare you can see exactly what you are trying to beat: A is an
   answer, not a bet. The meld you laid was the bet.</p>
-  <p>Only A is declared here. <strong>B</strong> is used in your own map phase and
-  <strong>C</strong> at any moment, so neither needs announcing now. Most rounds nobody declares
-  anything and the step takes a second.</p>
+  <p>Only A is declared here — <strong>B</strong> is used in your own map phase and
+  <strong>C</strong> at any moment, so neither needs announcing now. But all three are the
+  same allowance: declare A here and B and C are both off the table for the rest of your
+  round (§10). Most rounds nobody declares anything and the step takes a second.</p>
   <div class="note">
     <span class="tag">Being late is an advantage</span>
     <p>The last player to declare has seen every meld and every declaration before theirs,
@@ -936,13 +937,17 @@ HTML = f"""<!doctype html>
   read on your neighbours, paid for in advance.</p>
   {fig('fortify', "A wall does not save the unit — it raises the rank needed to come for it. The coin holds at your tier's number, the defender's own card fights instead if it is higher, and the coin is spent either way.")}
 
-  <h3>One victory card</h3>
-  <p>Once per map phase you may spend a card from your victory row on its
+  <h3>One victory-row effect per round</h3>
+  <p>In your own map phase you may spend a card from your victory row on its
   <strong>B</strong> effect (§10) — new ground founded beyond your meld: a tile or two from
   the supply, a unit from your reserve on each, and a fortification coin on each of those
-  units from the general supply. It explores, so touch-two and your reach both apply.
-  Effects A and C have their own moments; B is the only one tied to your turn, and it is
-  <strong>at most one per turn</strong>.</p>
+  units from the general supply. It explores, so touch-two and your reach both apply.</p>
+  <p>A, B and C are offered at different moments — A right after the reveal, B in your own
+  map phase, C at any moment in it — but they draw on <strong>one allowance per round</strong>.
+  Spend a card on any one of them and the other two are off the table until your next
+  round: declare A and you may not also found a colony or cash a card this round, found a
+  colony and you may not also declare A or cash one, and so on. <strong>At most one victory
+  card leaves your row per round</strong>, whichever effect it pays for.</p>
 </section>
 
 <section>
@@ -1462,7 +1467,7 @@ HTML = f"""<!doctype html>
       <b>Water advantage</b>: your first sea move each turn lets you place one free Ocean
       tile, anywhere on the map (touch-two applies; <b>reach does not</b>). · <b>Reallocate gold</b> freely
       between reserve and fortifications; research spending is one-way. ·
-      <b>One victory card on B</b> per turn.</p>
+      <b>One victory-row effect (A/B/C) per round</b>.</p>
       <h3>Fortifying</h3>
       <p>1 gold on one of your units. The coin is a <b>wall</b>: it defends at your tier's
       printed value — <b>10 / 12 / 14 / 16 / 18</b>, two under that tier's rank cap — and
@@ -1490,11 +1495,13 @@ HTML = f"""<!doctype html>
       playing with them, then <b>take your discard back as your new hand</b>. It is ten
       cards: nothing you play ever leaves you, and you draw nothing from the market.
       Carry on with the turn.</p>
-      <h3>Victory-card effects</h3>
+      <h3>Victory-card effects — one per round</h3>
       <p>Spend a victory card for ONE of: <b>A</b> add its rank to your meld's total this trick (higher bands
       win ties) · <b>B</b> found a colony — new tiles + units + fortifications from the
-      GENERAL SUPPLY, once per turn · <b>C</b> take 2–5 gold. A is declared <b>after the
-      melds are turned over</b>, leader first; B in your own map phase; C at any moment. The card
+      GENERAL SUPPLY · <b>C</b> take 2–5 gold. A is declared <b>after the
+      melds are turned over</b>, leader first; B in your own map phase; C at any moment.
+      <b>Whichever you spend, the other two are off the table until your next round</b> — one
+      victory-row effect per round, not one of each. The card
       goes to the <b>bottom of the market</b>.</p>
       <h3>Scoring</h3>
       <p>Units on the map + 1 per card in your victory row + the centre-slot rank of that row

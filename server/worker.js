@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-26T06:52:59Z
+ * Built 2026-09-26T21:46:04Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -874,6 +874,7 @@ class Player {
     this.spentA = 0;
     this.aBand = null;
     this.reached = 0;
+    this.vrowUsed = false; // one victory-row effect (A/B/C/D) per round; reset each round
   }
   band() {
     for (let j = 0; j < this.reserve.length; j++) if (this.reserve[j] > 0) return j;
@@ -2765,6 +2766,13 @@ class Game {
        * whole trick would appear at once instead of going round the table. */
       this.fx("meld", { seat: i, n: cards.length });
       p.bonus = 0; p.sumBonus = 0; p.ties = false; p.spentA = 0; p.aBand = null;
+      /* One VICTORY-ROW EFFECT per round, whichever letter it wears. A, B and
+       * C (or D, under the "abd" deck) all draw on this single allowance, so
+       * founding a colony this round rules out also cashing or declaring —
+       * reset here, at the top of your round, before A gets its own chance
+       * below. The forced sale at famine time (§ recycle) is NOT this: that
+       * is survival, not a turn choice, and stays unlimited. */
+      p.vrowUsed = false;
       for (const c of cards) p.hand.splice(p.hand.indexOf(c), 1);
       this.inc("meld_" + cards.length);
       if (this.A_TIMING === "blind")
@@ -3033,7 +3041,7 @@ class Game {
     for (const [k, t] of this.m.tiles)
       if (t.owner === p.i && t.gold < t.units.length) fortifyCells.push(k);
     const colonyBlocked =
-      st.bUsed ? "why.colony.used"
+      p.vrowUsed ? "why.vrow.used"
       : p.reserveEmpty() ? "why.colony.noUnits"
       : !spaces.size ? "why.colony.noSpace" : null;
     /* A card is only offered if it could actually found something: the terrain
@@ -3090,9 +3098,14 @@ class Game {
        * the sea moves that would collect it. */
       waterReady: !st.waterUsed || p.hasPerk("navigation"),
       deck: this.DECK,
-      cashCards: this.DECK === "abc" ? p.vrow.slice() : [],
-      conquestTargets: this.DECK === "abd" ? this.conquestTargets(p) : [],
+      /* C and D share B's one-vrow-effect-per-round allowance (§10): once ANY
+       * of A/B/C/D has been spent this round, the other two on your deck are
+       * off the table too, not just repeats of the one you used. */
+      cashCards: this.DECK === "abc" && !p.vrowUsed ? p.vrow.slice() : [],
+      cashBlocked: this.DECK === "abc" && p.vrowUsed ? "why.vrow.used" : null,
+      conquestTargets: this.DECK === "abd" && !p.vrowUsed ? this.conquestTargets(p) : [],
       conquestBlocked: this.DECK !== "abd" ? "why.conquest.deck"
+        : p.vrowUsed ? "why.vrow.used"
         : this.conquestTargets(p).length ? null
         : this._anyRivalAdjacent(p)
           ? "why.conquest.gold"
@@ -3176,7 +3189,10 @@ class Game {
     const st = { cards: use.slice(), moves: meldMoves + (p.perkReady("roads") ? 1 : 0),
                  moveBase: meldBase,
                  researches: 0, researchesPaid: 0,
-                 bUsed: false, waterUsed: false };
+                 waterUsed: false };
+    /* Victory-row effects share one allowance per round on `p.vrowUsed`, not
+     * on turn-local state here — A is declared in an earlier phase and must
+     * count against the same allowance B/C/D draw on. */
     /* Refill only once the meld is fully resolved. Recycling while cards are
      * still on the table would swap the discard into hand and then take those
      * cards back on top of it — over the ten-card ceiling. The bot cannot hit
@@ -3325,13 +3341,15 @@ class Game {
           break;
         }
         case "colony": {
-          if (!st.bUsed && (yield* this._playColonyHuman(p, ans.card))) st.bUsed = true;
+          if (!p.vrowUsed && (yield* this._playColonyHuman(p, ans.card))) p.vrowUsed = true;
           break;
         }
         case "conquest": {
           /* Spend a victory card on D. Each hit takes the fortification coin
            * first if there is one; a tile you empty is settled if the card's
-           * band allows it and a unit is left in your reserve. */
+           * band allows it and a unit is left in your reserve. One vrow
+           * effect per round: D shares B's allowance under this deck. */
+          if (p.vrowUsed) break;
           const i = p.vrow.indexOf(ans.card);
           if (i < 0) break;
           const [kills, maySettle] = effectD(ans.card.r);
@@ -3340,6 +3358,7 @@ class Game {
           p.vrow.splice(i, 1);
           this._spendCard(ans.card);
           this.inc("effect_d_used");
+          p.vrowUsed = true;
           for (let n = 0; n < kills; n++) {
             targets = this.conquestTargets(p);
             if (!targets.length) break;
@@ -3367,6 +3386,8 @@ class Game {
           break;
         }
         case "cashRow": {
+          // one vrow effect per round: C shares B's allowance under this deck
+          if (p.vrowUsed) break;
           const i = p.vrow.indexOf(ans.card);
           if (i >= 0) {
             p.vrow.splice(i, 1);
@@ -3374,6 +3395,7 @@ class Game {
             this.inc("effect_c_used");
             this.purse(p, effectC(ans.card.r), "effect_c", "vrow",
                        { card: ans.card.r });
+            p.vrowUsed = true;
           }
           break;
         }
@@ -4522,6 +4544,10 @@ class Game {
    * reveal it is a blind commitment (v0.25), after it a read of the table
    * (v0.26). See A_TIMING at the card phase. */
   *_maybeDeclareA(p) {
+    /* One vrow effect per round (A/B/C/D share the allowance) — see the reset
+     * at meld time. A always runs before B/C/D in a round, so this is mostly
+     * a guard for symmetry, not one that ever actually fires today. */
+    if (p.vrowUsed) return;
     /* THE BOT DOES NOT READ THE TABLE, so moving this after the reveal does
      * not change a bots-only game by one card: both policies below guess at
      * what rivals are likely to have from their meld LIMITS and its own hand,
@@ -4581,15 +4607,16 @@ class Game {
     p.spentA = Math.max(p.spentA, card.r);
     p.aBand = bandOfRank(card.r);
     this.inc("effect_a_used");
+    p.vrowUsed = true;
   }
 
   /* B — found colonies (§10). Lay new tiles, put units on them, fortify them
    * from the GENERAL SUPPLY. Touch-two still applies; REACH does not. */
   *_maybeUseB(p) {                                   // bot path
     /* The four-card guard is the BOT'S, matched to D's so the two can be
-     * compared. The rule is one card per turn, a legal space, and a tile of
-     * the right terrain still in the supply. */
-    if (p.reserveEmpty() || p.vrow.length < p.w.COLONY_MIN_ROW) return;
+     * compared. The rule is one vrow effect (A/B/C/D) per round, a legal
+     * space, and a tile of the right terrain still in the supply. */
+    if (p.vrowUsed || p.reserveEmpty() || p.vrow.length < p.w.COLONY_MIN_ROW) return;
     for (const c of p.vrow.slice().sort(cardSort)) if (this._playColony(p, c)) return;
     if (false) yield null;                           // keeps the generator signature
   }
@@ -4629,7 +4656,7 @@ class Game {
   }
 
   _playColony(p, c) {                                // bot path
-    if (p.reserveEmpty()) return false;
+    if (p.vrowUsed || p.reserveEmpty()) return false;
     const [tiles, units, sameSuit] = effectBv22(c.r);
     const want = sameSuit ? c.s : null;
     if (want !== null && this.m.supply[want] <= 0) return false;
@@ -4638,6 +4665,7 @@ class Game {
     p.vrow.splice(p.vrow.indexOf(c), 1);
     this._spendCard(c);
     this.inc("effect_b_used");
+    p.vrowUsed = true;
 
     let placed = 0, settled = 0;
     while (placed < tiles) {
@@ -4660,7 +4688,7 @@ class Game {
    * new ground, and it decides who your next neighbour is — so a person picks
    * the cell, and the terrain too when the card allows any. */
   *_playColonyHuman(p, c) {
-    if (p.reserveEmpty()) return false;
+    if (p.vrowUsed || p.reserveEmpty()) return false;
     const [tiles, units, sameSuit] = effectBv22(c.r);
     const want = sameSuit ? c.s : null;
     if (want !== null && this.m.supply[want] <= 0) return false;
@@ -4669,6 +4697,7 @@ class Game {
     p.vrow.splice(p.vrow.indexOf(c), 1);
     this._spendCard(c);
     this.inc("effect_b_used");
+    p.vrowUsed = true;
 
     let placed = 0, settled = 0;
     while (placed < tiles) {
@@ -4700,7 +4729,7 @@ class Game {
    * the row would lose (_rowCost, padded for the cards still to come). Spend
    * only when the swing beats the point. This is a policy, not a rule. */
   *_maybeUseD(p) {
-    if (this.DECK !== "abd" || !p.vrow.length) return;
+    if (this.DECK !== "abd" || !p.vrow.length || p.vrowUsed) return;
     const targets = this.conquestTargets(p);
     if (!targets.length) return;
     // tiles a strike would actually empty, and so take
@@ -4725,6 +4754,7 @@ class Game {
       p.vrow.splice(p.vrow.indexOf(card), 1);
       this._spendCard(card);
       this.inc("effect_d_used");
+      p.vrowUsed = true;
       let done = 0, list = targets;
       while (done < kills) {
         list = this.conquestTargets(p);
@@ -4771,21 +4801,23 @@ class Game {
   }
 
   /* C — cash a victory card for gold when the coins are worth more than the
-   * point (§12). Bot path; a person cashes from the turn menu at will. */
+   * point (§12). Bot path; a person cashes from the turn menu at will.
+   * One vrow effect per round (§10): at most one card leaves the row here,
+   * same as a person gets one cashRow before the option disappears. This
+   * used to be a while loop that could empty the whole row in one call. */
   *_maybeCashC(p, ahead) {
-    if (!p.vrow.length) return;
-    while (p.vrow.length) {
-      const low = p.vrow.slice().sort(cardSort)[0];
-      const cost = this._rowCost(p, low);
-      const gain = effectC(low.r);
-      const need = ahead ? p.food() + 1 : Math.max(1, p.food());
-      const broke = p.gold < need;
-      if (!broke || gain < cost * p.w.C_GOLD_PER_POINT) return;
-      p.vrow.splice(p.vrow.indexOf(low), 1);
-      this._spendCard(low);
-      this.inc("effect_c_used");
-      this.purse(p, gain, "effect_c", "vrow", { card: low.r });
-    }
+    if (!p.vrow.length || p.vrowUsed) return;
+    const low = p.vrow.slice().sort(cardSort)[0];
+    const cost = this._rowCost(p, low);
+    const gain = effectC(low.r);
+    const need = ahead ? p.food() + 1 : Math.max(1, p.food());
+    const broke = p.gold < need;
+    if (!broke || gain < cost * p.w.C_GOLD_PER_POINT) return;
+    p.vrow.splice(p.vrow.indexOf(low), 1);
+    this._spendCard(low);
+    this.inc("effect_c_used");
+    this.purse(p, gain, "effect_c", "vrow", { card: low.r });
+    p.vrowUsed = true;
     if (false) yield null;
   }
 
