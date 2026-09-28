@@ -2679,7 +2679,7 @@ function renderPromptBody() {
       btn(t("btn.takeLoss"), () => answer(null), "alt");
       break;
     case "objective": {
-      ask(t("ask.objective"));
+      ask(t("ask.objective", { pts: objPointsLabel({ points: 4 }) }));
       const pick = el("div", "objpick");
       pick.innerHTML = REQ.options.map((o, i) => objCard(o, "", `data-obj="${i}"`)).join("");
       bar.appendChild(pick);
@@ -2905,6 +2905,18 @@ function vcardPanel(bar, p) {
   return true;
 }
 
+/* What a card's badge says it is worth — read off the RULE IN PLAY, not the
+ * card's own printed field. `o.points` (4, on every card) is only the true
+ * number under "once"; the v0.26 printed default is "perInstance", which
+ * pays G.OBJ_PER (2) every time the pattern completes, and showing the old
+ * flat 4 there is exactly the stale-number bug this was written to fix. */
+function objPointsLabel(o) {
+  if (G.OBJ_SCORING === "perInstance") return t("obj.points.each", { n: G.OBJ_PER });
+  if (G.OBJ_SCORING === "perMiddle")
+    return t("obj.points.middle", { n: o.points, extra: G.OBJ_EXTRA });
+  return t("obj.points", { n: o.points });
+}
+
 /* An objective card: the chain it asks for, drawn as three terrain chips with
  * the middle one marked, because the shape is the whole point. */
 /* `prog` is the engine's objectiveProgress for this seat, when there is one:
@@ -2917,7 +2929,7 @@ function objCard(o, cls, attr, prog) {
     style="background:${TC[terr]}" title="${TL[terr]}">${SUIT_LETTER[terr]}</span>`;
   const tag = attr === undefined ? "span" : "button";
   return `<${tag} class="objcard ${cls || ""}" ${attr || ""}>
-    <span class="oname">${objName(o)}<em>${t("obj.points", { n: o.points })}</em></span>
+    <span class="oname">${objName(o)}<em>${objPointsLabel(o)}</em></span>
     <span class="ochain">${chip(o.a)}${chip(o.mid, true)}${chip(o.b)}</span>
     <span class="oflav">${t(o.a === o.b ? "obj.chainSame" : "obj.chain",
       { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>${
@@ -3046,7 +3058,7 @@ function renderFinal(bar) {
     if (anyObj) {
       s += `<td>${(d.objDone || []).map((x) =>
         `<span class="${x.done ? "ok" : "muted"}">${objName(x.o)}${
-          x.done ? ` +${x.o.points}` : " ✗"}</span>`).join("<br>") || "—"}</td>`;
+          x.done ? ` +${x.points}` : " ✗"}</span>`).join("<br>") || "—"}</td>`;
     }
     s += `<td><b>${d.total}</b></td></tr>`;
   }

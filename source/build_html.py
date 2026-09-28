@@ -1287,6 +1287,15 @@ HTML = f"""<!doctype html>
   base score is counted.</p>
 
   <div class="note">
+    <span class="tag">At the table</span>
+    <p>Under <strong>Show one</strong>, keep the two cards in different places. Your
+    <strong>hidden</strong> card belongs in your hand — you will check it after nearly every
+    tile you place, and a card in hand is the one you can always see without reaching across
+    the table. Your <strong>shown</strong> card belongs face up on your player board, where
+    the rest of the table can read it without asking you.</p>
+  </div>
+
+  <div class="note">
     <span class="tag">Why it changes the map</span>
     <p>Without objectives, ground is ground: you take what you can reach. With them,
     a particular empty hex beside your Forest is suddenly worth exploring
