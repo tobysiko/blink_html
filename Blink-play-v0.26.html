@@ -1790,7 +1790,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"unknown","branch":"unknown","dirty":null,"built":"2026-09-28T15:40:46Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"adb83d8690","branch":"main","dirty":true,"built":"2026-09-28T17:56:30Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2434,6 +2434,7 @@ en: {
   "log.cashed": "You cashed {card} for 1 gold.",
   "log.unusedGold": "{n} unused card(s) → {n} gold.",
   "log.duel.won": "Duel: {a} beat {b} \u2014 a defender goes home.",
+  "log.duel.abandoned": "Duel: {a} beat {b} \u2014 the ground is clear, but you have no unit in reserve to hold it. It stays open.",
   "log.retreat": "Seat {seat} falls back to the {terrain} next door.",
   "ask.retreat": "<b>Fall back</b> <span class=\"muted\">\u2014 you lost the ground. Choose a tile of yours beside it with room; that unit retreats there and stays yours. Only plains and forest can ever take one.</span>",
   "hex.retreat": "retreat here",
@@ -3139,6 +3140,7 @@ de: {
   "log.cashed": "Du tauschst {card} gegen 1 Gold.",
   "log.unusedGold": "{n} ungenutzte Karte(n) → {n} Gold.",
   "log.duel.won": "Duell: {a} schl\u00e4gt {b} \u2014 ein Verteidiger geht heim.",
+  "log.duel.abandoned": "Duell: {a} schl\u00e4gt {b} \u2014 das Feld ist frei, aber du hast keine Einheit in Reserve, um es zu besetzen. Es bleibt offen.",
   "log.retreat": "Platz {seat} zieht sich auf das benachbarte {terrain} zur\u00fcck.",
   "ask.retreat": "<b>R\u00fcckzug</b> <span class=\"muted\">\u2014 du hast das Feld verloren. W\u00e4hle ein benachbartes eigenes Feld mit Platz; die Einheit zieht sich dorthin zur\u00fcck und bleibt deine. Nur Ebene und Wald k\u00f6nnen eine aufnehmen.</span>",
   "hex.retreat": "hierhin zur\u00fcckziehen",
@@ -7321,12 +7323,23 @@ class Game {
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
       let took = false;
-      if (this.DUEL_TAKE && !tile.units.length && !tile.gold && p.takeUnit()) {
+      const cleared = !tile.units.length && !tile.gold;
+      if (this.DUEL_TAKE && cleared && p.takeUnit()) {
         this.m.settle(cell, p.i);
         this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
         this.inc("duel_settle");
         took = true;
+      } else if (this.DUEL_TAKE && cleared) {
+        /* The last defender is gone and the wall is down, but the reserve
+         * that would have moved onto the empty ground is itself empty. This
+         * is the printed rule (§Attack: "No unit in reserve ... the tile is
+         * simply left empty"), not a glitch — but without a line in the log
+         * it reads as one: the tile just sits there belonging to nobody, and
+         * a player who won the fight has no way to tell why they didn't get
+         * it. Say so. */
+        this.inc("duel_abandoned");
+        this.say("log.duel.abandoned", { a, b });
       }
       /* SPOILS. Paid after the ground is resolved, because "ground" has to know
        * whether the tile actually changed hands. */
@@ -7973,7 +7986,16 @@ class Game {
 
   /* The same effect, asked. Where a colony lands is a real decision — it is
    * new ground, and it decides who your next neighbour is — so a person picks
-   * the cell, and the terrain too when the card allows any. */
+   * the cell, and the terrain too when the card allows any.
+   *
+   * THE CARD IS SPENT WHEN THE FIRST TILE ACTUALLY GOES DOWN, not when B is
+   * clicked. Toby found the old order (spend, THEN ask where): declare B,
+   * look at the map, decide against it after all, click "stop here" with
+   * nothing placed - and the card was already gone, exactly as if you'd used
+   * it. That's not a real decision, it's a trap with a cancel button that
+   * doesn't cancel. Backing out before anything is on the map now costs
+   * nothing, the same as never having clicked B; only a successful placement
+   * commits the card, `vrowUsed`, and the round's one-effect allowance. */
   *_playColonyHuman(p, c) {
     if (p.vrowUsed || p.reserveEmpty()) return false;
     const [tiles, units, sameSuit] = effectBv22(c.r);
@@ -7981,25 +8003,27 @@ class Game {
     if (want !== null && this.m.supply[want] <= 0) return false;
     if (!this.colonyCells(p, c).length) return false;
 
-    p.vrow.splice(p.vrow.indexOf(c), 1);
-    this._spendCard(c);
-    this.inc("effect_b_used");
-    p.vrowUsed = true;
-
     let placed = 0, settled = 0;
     while (placed < tiles) {
       const options = this.colonyCells(p, c);
       const terrains = want !== null ? [want] : TER.filter((t) => this.m.supply[t] > 0);
       if (!options.length || !terrains.length) break;
       const pick = yield { type: "colony", seat: p.i, card: c, options, terrains,
-                           left: tiles - placed, settles: Math.max(0, units - settled) };
-      if (!pick) break;                              // may stop early; the card is spent
+                           left: tiles - placed, settles: Math.max(0, units - settled),
+                           atStart: placed === 0 };
+      if (!pick) break;                    // free while nothing has been placed yet
       if (!this._foundColony(p, pick.cell, pick.terrain || terrains[0], settled < units)) break;
+      if (!placed) {                       // the FIRST successful placement spends the card
+        p.vrow.splice(p.vrow.indexOf(c), 1);
+        this._spendCard(c);
+        this.inc("effect_b_used");
+        p.vrowUsed = true;
+      }
       placed += 1;
       if (settled < units) settled += 1;
     }
-    this.say("log.colony", { n: placed });
-    return true;
+    if (placed) this.say("log.colony", { n: placed });
+    return placed > 0;
   }
 
   /* D — CONQUEST, bot path.
@@ -12461,7 +12485,11 @@ function renderPromptBody() {
           left: REQ.left,
           settles: REQ.settles ? t("ask.colony.settles", { n: REQ.settles }) : "",
           terrain: one ? TL[REQ.terrains[0]] : t("ask.colony.any") }));
-        btn(t("btn.stopHere"), () => answer(null), "alt");
+        /* Before anything is on the map the card hasn't been spent yet (see
+           _playColonyHuman), so this is the same free back-out as "Keep
+           card" on the effect picker - once a tile is down it's "Stop here"
+           instead, because there IS now something the card already paid for. */
+        btn(t(REQ.atStart ? "btn.keepCard" : "btn.stopHere"), () => answer(null), "alt");
       } else {
         ask(t("ask.terrain"));
         for (const terr of REQ.terrains)
