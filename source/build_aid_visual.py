@@ -291,8 +291,8 @@ def sheet():
         if i < len(ROUND) - 1:
             b += arrow(x + bw + 0.4, top + bh / 2, x + bw + 2.6)
     y = top + bh + 3.8
-    b += T(M, y, "Your hand runs out mid-turn? Recycle at once — the back of this "
-                 "sheet says what that means.", 3.0, col=SOFT, italic=True)
+    b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "
+                 "this sheet says what that means.", 3.0, col=SOFT, italic=True)
     y += 7.5
 
     # ================================================== 1b. WHAT MAY I LAY?
@@ -406,8 +406,8 @@ def sheet():
     body += f'<path d="M{x + 3} {cy + 0.6} L{x + colw - 3} {cy + 0.6}" ' \
             f'stroke="{LINE}" stroke-width="0.4"/>'
     w, n = wrap(x + 3, cy + 4.4,
-                "Move coins freely on your own turn. Between turns they stand where "
-                "you left them — which is when a wall is tested.", iw, 2.8, INK)
+                "A coin on a unit stays until a fight spends it or the unit is "
+                "disturbed. It never comes back to your gold.", iw, 2.8, INK)
     body += w
     heights.append(cy + 4.4 + n * 3.6 - ctop + 1.6)
     panel_b = body
@@ -432,7 +432,7 @@ def sheet():
     body += T(x + 3, cy + 4.4, "THEN IT LEAVES THE ROW", 3.0, weight="700", col=RED)
     w, n = wrap(x + 3, cy + 8.2,
                 "– 1 point · your centre card may drop · a shallower perk "
-                "menu next recycle. It goes to the BOTTOM of the shared pile: nothing "
+                "menu next recycle. It goes to the BOTTOM of the market: nothing "
                 "leaves the game.", iw, 2.7, SOFT)
     body += w
     heights.append(cy + 8.2 + n * 3.5 - ctop + 1.6)
@@ -537,7 +537,7 @@ def back():
     y += 4.0
 
     # ============================================= 2. THE RECYCLE
-    b += head(M, y, "THE RECYCLE", "the moment your hand runs out")
+    b += head(M, y, "THE RECYCLE", "the moment your hand is empty and your meld spent")
     y += 5.0
     rw = (W - 2 * M - 3 * 4) / 4
     rh = 0
@@ -545,7 +545,7 @@ def back():
         rh = max(rh, 16.0 + len(split(what, rw - 7, 2.9)) * 3.8 + 2.4)
     for i, (key, tag, what) in enumerate(RECYCLE):
         x = M + i * (rw + 4)
-        module = tag == "modules only"
+        module = tag.endswith("module")
         b += panel(x, y, rw, rh, accent=None if module else GOLD,
                    fill=PANEL if module else PAPER)
         b += T(x + 3, y + 6.0, key, 3.4, weight="700", spacing="0.2",
@@ -557,8 +557,8 @@ def back():
         if i < len(RECYCLE) - 1:
             b += arrow(x + rw + 0.4, y + rh / 2, x + rw + 3.6)
     y += rh + 3.4
-    b += T(M, y, "Greyed steps are MODULES ONLY — a base game recycles by refilling, "
-                 "and nothing else.", 3.0, col=SOFT, italic=True)
+    b += T(M, y, "The greyed step is the perks module — without it, a recycle is "
+                 "income and refilling.", 3.0, col=SOFT, italic=True)
     y += 8.0
 
     # ============================================= 3. THE MAP, AND WHAT IT PAYS
@@ -590,13 +590,13 @@ def back():
     ib = ""
     ix = M + ow + 5
     cy2 = otop + 6.2
-    ib += T(ix + 4, cy2, "INCOME", 3.8, weight="700", col=SOFT)
-    ib += T(ix + iw2 - 4, cy2, "modules only", 2.7, anchor="end", col=FAINT, mono=True)
+    ib += T(ix + 4, cy2, "INCOME", 3.8, weight="700", col=INK)
+    ib += T(ix + iw2 - 4, cy2, "at each recycle", 2.7, anchor="end", col=GOLD, mono=True)
     cy2 += 5.0
     for key, what in INCOME:
-        ib += T(ix + 4, cy2, key, 3.0, weight="600", col=SOFT)
+        ib += T(ix + 4, cy2, key, 3.0, weight="600", col=INK)
         cy2 += 3.9
-        w1, n1 = wrap(ix + 4, cy2, what, iw2 - 11, 2.8, FAINT)
+        w1, n1 = wrap(ix + 4, cy2, what, iw2 - 11, 2.8, SOFT)
         ib += w1; cy2 += n1 * 3.6 + 2.0
     ih = cy2 - otop
     h = max(oh, ih) + 1.5
@@ -678,7 +678,10 @@ def build():
             b += (f'<rect x="{M}" y="{y}" width="{tw}" height="6" fill="{PANEL}" '
                   f'fill-opacity="0.5"/>')
         b += T(colx[0], y + 4.2, band, 3.2, mono=True, weight="600")
-        b += T(colx[1], y + 4.2, r["a"], 3.2)
+        # "+3 total" for the 1-5 row read as "adds 3" - it is the SAMPLE rank the
+        # engine was asked about. A adds the spent card's own rank.
+        a_txt = "+ its rank" + (" \u00b7 wins ties" if "tie" in r["a"] else "")
+        b += T(colx[1], y + 4.2, a_txt, 3.2)
         b += T(colx[2], y + 4.2, r["b"], 3.2)
         b += T(colx[3], y + 4.2, r["c"], 3.2, col=GOLD, weight="700", mono=True)
         y += 6

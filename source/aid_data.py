@@ -36,17 +36,15 @@ FREE = [
     ("MOVE", "1 per meld card",
      "land: through your own tiles · sea: across empty Ocean · never an attack."),
     ("WATER", "once a turn",
-     "a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach."),
+     "sail onto a new Ocean tile laid on your water's coast."),
     ("RESEARCH", "",
-     "twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · "
-     "buy at or under your cap."),
+     "twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap."),
     ("TRADE", "",
-     "shares research's twice · 1 gold then 2 · draw the market's top two, blind · "
-     "bury any two of your ten back down."),
+     "shares research's two · draw the market's top two, blind · bury any two."),
     ("FORTIFY", "1 gold",
-     "a coin on a unit · it defends at your tier's WALL + the terrain, or a better card."),
+     "a coin on a unit · defends at your WALL + terrain, or a better card."),
     ("COLONY", "",
-     "one a turn · spend a victory card on its B effect."),
+     "a victory card's B effect · one victory effect per round."),
 ]
 
 TIERS = [
@@ -72,7 +70,7 @@ ROUND = [
     ("DECLARE", "spend a victory card on its A effect, or not",
                 "leader first — you can see every meld"),
     ("RANK",    "highest total wins the trick",
-                "then most cards, then highest card, then earliest laid"),
+                "ties: more cards, a tie-winning A, highest card, earliest laid"),
     ("MAP",     "spend your meld, in that order",
                 "winner first · set-aside and gold settle here"),
 ]
@@ -84,7 +82,7 @@ COIN_USES = [
     # some other font for that one character - and printed as an empty box
     # wherever it could not. Nothing on either aid may use a glyph the
     # face lacks; check_rules.py refuses one now.
-    ("RESEARCH", "1 then 2", "take a card at or under your tier's cap into your discard"),
+    ("RESEARCH", "1 then 2", "retire your lowest · take a card at or under your tier's cap, to hand or discard"),
     ("TRADE",    "1 then 2", "draw the market's top two, blind · bury any two back"),
     ("FORTIFY",  "1",         "on a unit · defends at your WALL + the terrain"),
     ("KEEP",     "—",    "gold breaks a tie at the end of the game"),
@@ -146,9 +144,9 @@ FLOW_ASIDE = [
 # THE RECYCLE, in order. Two of the three steps are modules; the sheet says so,
 # because a table playing the base game must not go looking for them.
 RECYCLE = [
-    ("WHEN", "your hand runs out", "at once, mid-turn \u2014 finish your turn after"),
-    ("1 \u00b7 INCOME", "modules only", "collect what your board has earned"),
-    ("2 \u00b7 ARM A PERK", "modules only",
+    ("WHEN", "hand empty, meld spent", "at once, mid-turn \u2014 finish your turn after"),
+    ("1 \u00b7 INCOME", "with objectives", "1 gold per objective you hold right now, shown or hidden"),
+    ("2 \u00b7 ARM A PERK", "perks module",
      "one, from what your row reaches NOW \u00b7 it runs till the next recycle"),
     ("3 \u00b7 REFILL", "always", "take your discard back \u2014 that IS your ten"),
 ]
@@ -167,12 +165,13 @@ OBJECTIVES = {
     "cost":  "the card you show tells the table which single tile would break it",
 }
 
-# INCOME - a module, and the sheet marks it as one.
+# INCOME - printed since v0.26 (the engine's default whenever objectives are
+# in play). It used to be drawn as a module, with crossroads income beside it
+# and the hidden card paying nothing; neither is the printed rule.
 INCOME = [
-    ("CROSSROADS", "one tile of yours touching all three other terrains pays "
-                   "1 gold per unit standing on it"),
-    ("YOUR OPEN OBJECTIVE", "pays 1 gold for each arrangement you hold \u00b7 the "
-                            "card you kept hidden pays nothing"),
-    ("BOTH STILL SCORE", "income is paid at the recycle; the points are counted "
-                         "at the end either way"),
+    ("1 GOLD PER OBJECTIVE", "at each recycle, for each of your two cards whose "
+                             "pattern you hold right now \u2014 shown or hidden"),
+    ("FLAT", "one coin per card, however many arrangements it has"),
+    ("POINTS STILL COUNT", "income is paid at the recycle; the points are counted "
+                           "at the end"),
 ]

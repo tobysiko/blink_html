@@ -160,24 +160,18 @@ def back():
         <th>Cap</th><th>Wall</th></tr>
     {rows}
   </table>
-  <p class="note first">Read your top tier that still holds units, and nothing is
-    cumulative. Growing costs you nothing.</p>
   <div class="ter">{ter}</div>
-  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
-    first · highest total wins · winner's die
-    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
-    lost: set a card aside, +1 gold. Last: +1 gold.</p>
-  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
-    (from what your row reaches now; it runs till the next recycle even if you spend the
-    card).</p>
+  <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
+    highest total wins · winner's die = meld size · spend in that order. Matched the
+    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
+    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
-    wins; level goes to the card matching the ground, else the defender. Clear the last
-    unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
-    your objectives.</p>
+  <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
+    theirs matches the ground.</p>
+  <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
+    row + centre · objectives.</p>
   <div class="foot"><span>Blink {VTAG}</span><span>deep-diversions.com/blink</span></div>
 </div>"""
 

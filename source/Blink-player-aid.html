@@ -77,7 +77,7 @@ tr:nth-child(even) td { background: #EFECE3; }
   <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
     and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's twice · 1 gold then 2 · draw the market's top two, blind · bury any two of your ten back down.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · it defends at your tier's WALL + the terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">sail onto a new Ocean tile laid on your water's coast.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's two · draw the market's top two, blind · bury any two.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · defends at your WALL + terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">a victory card's B effect · one victory effect per round.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -86,24 +86,18 @@ tr:nth-child(even) td { background: #EFECE3; }
         <th>Cap</th><th>Wall</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>12</td><td>10</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>14</td><td>12</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>16</td><td>14</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>18</td><td>16</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>20</td><td>18</td></tr>
   </table>
-  <p class="note first">Read your top tier that still holds units, and nothing is
-    cumulative. Growing costs you nothing.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
-    first · highest total wins · winner's die
-    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
-    lost: set a card aside, +1 gold. Last: +1 gold.</p>
-  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
-    (from what your row reaches now; it runs till the next recycle even if you spend the
-    card).</p>
+  <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
+    highest total wins · winner's die = meld size · spend in that order. Matched the
+    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
+    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
-    wins; level goes to the card matching the ground, else the defender. Clear the last
-    unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
-    your objectives.</p>
+  <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
+    theirs matches the ground.</p>
+  <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
+    row + centre · objectives.</p>
   <div class="foot"><span>Blink v0.26</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
   <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
@@ -112,7 +106,7 @@ tr:nth-child(even) td { background: #EFECE3; }
   <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
     and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's twice · 1 gold then 2 · draw the market's top two, blind · bury any two of your ten back down.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · it defends at your tier's WALL + the terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">sail onto a new Ocean tile laid on your water's coast.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's two · draw the market's top two, blind · bury any two.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · defends at your WALL + terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">a victory card's B effect · one victory effect per round.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -121,24 +115,18 @@ tr:nth-child(even) td { background: #EFECE3; }
         <th>Cap</th><th>Wall</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>12</td><td>10</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>14</td><td>12</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>16</td><td>14</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>18</td><td>16</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>20</td><td>18</td></tr>
   </table>
-  <p class="note first">Read your top tier that still holds units, and nothing is
-    cumulative. Growing costs you nothing.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
-    first · highest total wins · winner's die
-    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
-    lost: set a card aside, +1 gold. Last: +1 gold.</p>
-  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
-    (from what your row reaches now; it runs till the next recycle even if you spend the
-    card).</p>
+  <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
+    highest total wins · winner's die = meld size · spend in that order. Matched the
+    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
+    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
-    wins; level goes to the card matching the ground, else the defender. Clear the last
-    unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
-    your objectives.</p>
+  <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
+    theirs matches the ground.</p>
+  <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
+    row + centre · objectives.</p>
   <div class="foot"><span>Blink v0.26</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
   <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
@@ -147,7 +135,7 @@ tr:nth-child(even) td { background: #EFECE3; }
   <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
     and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's twice · 1 gold then 2 · draw the market's top two, blind · bury any two of your ten back down.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · it defends at your tier's WALL + the terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">sail onto a new Ocean tile laid on your water's coast.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's two · draw the market's top two, blind · bury any two.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · defends at your WALL + terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">a victory card's B effect · one victory effect per round.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -156,24 +144,18 @@ tr:nth-child(even) td { background: #EFECE3; }
         <th>Cap</th><th>Wall</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>12</td><td>10</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>14</td><td>12</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>16</td><td>14</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>18</td><td>16</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>20</td><td>18</td></tr>
   </table>
-  <p class="note first">Read your top tier that still holds units, and nothing is
-    cumulative. Growing costs you nothing.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
-    first · highest total wins · winner's die
-    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
-    lost: set a card aside, +1 gold. Last: +1 gold.</p>
-  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
-    (from what your row reaches now; it runs till the next recycle even if you spend the
-    card).</p>
+  <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
+    highest total wins · winner's die = meld size · spend in that order. Matched the
+    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
+    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
-    wins; level goes to the card matching the ground, else the defender. Clear the last
-    unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
-    your objectives.</p>
+  <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
+    theirs matches the ground.</p>
+  <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
+    row + centre · objectives.</p>
   <div class="foot"><span>Blink v0.26</span><span>deep-diversions.com/blink</span></div>
 </div></div><div class="aid"><div class="face front">
   <div class="hd"><b>Your turn</b> · each card of your meld does ONE of</div>
@@ -182,7 +164,7 @@ tr:nth-child(even) td { background: #EFECE3; }
   <div class="both">Every card: <b>in reach</b> — a tile you hold or one beside it —
     and its <b>suit matches the terrain</b>.</div>
   <p class="lead" style="margin-top:1.2mm">Free · no card · any order</p>
-  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · buy at or under your cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's twice · 1 gold then 2 · draw the market's top two, blind · bury any two of your ten back down.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · it defends at your tier's WALL + the terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">one a turn · spend a victory card on its B effect.</span></div>
+  <div class="free"><span class="k">MOVE<em>1 per meld card</em></span><span class="d">land: through your own tiles · sea: across empty Ocean · never an attack.</span></div><div class="free"><span class="k">WATER<em>once a turn</em></span><span class="d">sail onto a new Ocean tile laid on your water's coast.</span></div><div class="free"><span class="k">RESEARCH<em></em></span><span class="d">twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap.</span></div><div class="free"><span class="k">TRADE<em></em></span><span class="d">shares research's two · draw the market's top two, blind · bury any two.</span></div><div class="free"><span class="k">FORTIFY<em>1 gold</em></span><span class="d">a coin on a unit · defends at your WALL + terrain, or a better card.</span></div><div class="free"><span class="k">COLONY<em></em></span><span class="d">a victory card's B effect · one victory effect per round.</span></div>
 </div><div class="fold"></div><div class="face back">
   <div class="hd"><b>The numbers</b></div>
   <div class="rule"></div>
@@ -191,23 +173,17 @@ tr:nth-child(even) td { background: #EFECE3; }
         <th>Cap</th><th>Wall</th></tr>
     <tr><td class="n">Tribe</td><td>2</td><td>2</td><td>12</td><td>10</td></tr><tr><td class="n">Settlement</td><td>3</td><td>3</td><td>14</td><td>12</td></tr><tr><td class="n">Kingdom</td><td>5</td><td>4</td><td>16</td><td>14</td></tr><tr><td class="n">Empire</td><td>5</td><td>5</td><td>18</td><td>16</td></tr><tr><td class="n">Civilization</td><td>5</td><td>6</td><td>20</td><td>18</td></tr>
   </table>
-  <p class="note first">Read your top tier that still holds units, and nothing is
-    cumulative. Growing costs you nothing.</p>
   <div class="ter"><span><i style="background:#C9992B"></i>Plains holds 3</span><span><i style="background:#37704A"></i>Forest 2 · +1 defence</span><span><i style="background:#256A8C"></i>Ocean 1 · sea road</span><span><i style="background:#8A837A"></i>Mountain 1 · +2 defence</span></div>
-  <p class="note"><b>Round.</b> Melds face down · turn over together · Declare A, leader
-    first · highest total wins · winner's die
-    = meld size, and leads; others 2/3/4 · spend in that order. Matched the winner and
-    lost: set a card aside, +1 gold. Last: +1 gold.</p>
-  <p class="note"><b>Recycle.</b> Hand empty — at once, mid-turn. Take your discard
-    back — that IS your ten, you draw nothing — and carry on. <i>Modules only:</i> collect income, and arm ONE perk
-    (from what your row reaches now; it runs till the next recycle even if you spend the
-    card).</p>
+  <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
+    highest total wins · winner's die = meld size · spend in that order. Matched the
+    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+  <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
+    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
-  <p class="note"><b>Duel.</b> Your spent card vs their hand card + the ground. Higher
-    wins; level goes to the card matching the ground, else the defender. Clear the last
-    unit and the tile is yours.</p>
-  <p class="note"><b>End.</b> Last unit placed: finish the round, then one more. Score 1/unit · 1/row card + its centre rank (3+) ·
-    your objectives.</p>
+  <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
+    theirs matches the ground.</p>
+  <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
+    row + centre · objectives.</p>
   <div class="foot"><span>Blink v0.26</span><span>deep-diversions.com/blink</span></div>
 </div></div></div></body></html>

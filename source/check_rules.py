@@ -356,7 +356,8 @@ a_timing = re.search(r'opts\.aTiming === "blind" \? "blind" : "(\w+)"', js)
 check(bool(a_timing), "cannot find the engine's A_TIMING default")
 if a_timing and a_timing.group(1) == "afterReveal":
     low = aid_txt.lower()
-    i_declare, i_reveal = low.find("declare a"), low.find("turn over together")
+    _rv = re.search(r"turn over together|\breveal\b", low)
+    i_declare, i_reveal = low.find("declare a"), (_rv.start() if _rv else -1)
     check(i_declare > i_reveal > -1,
           "the engine declares A after the melds are turned over, but the aid's "
           "round order still puts the declare step first")
@@ -1125,8 +1126,14 @@ if vis2_file.exists():
           "arrangement, which is what the engine pays")
     # income is a MODULE and must be marked as one, or a base-game table goes
     # looking for a rule it does not have
-    check(re.search(r"modules only", vis2, re.I),
-          "side two does not mark income and perks as modules only")
+    # v0.26: objective income is PRINTED (the engine default with objectives
+    # on), so only the perk step is a module now.
+    check(re.search(r"perks module", vis2, re.I),
+          "side two does not mark arming a perk as the perks module")
+    check(not re.search(r"modules only", vis2, re.I),
+          "side two still calls income a module - it is printed with objectives")
+    check("CROSSROADS" not in vis2,
+          "side two still shows crossroads income, which is not the printed rule")
     # and the redundancy that prompted the rebuild must not creep back: the
     # four free actions that the coin and victory-row columns already spell out
     for dup in ("stand it on a unit", "take a card at or under"):
@@ -1134,9 +1141,11 @@ if vis2_file.exists():
               f"side two repeats \"{dup}...\" from the front - that duplication "
               "is what the second side was made to remove")
 
-check(re.search(r"modules only", aid_txt, re.I),
-      "the player aid lists the recycle steps without marking which belong "
-      "to modules")
+# Only the perk step is a module now; objective income is printed.
+check(re.search(r"perk \(module\)", aid_txt, re.I),
+      "the player aid lists the recycle steps without marking the perk as a module")
+check(not re.search(r"modules only:?\s*collect income", aid_txt, re.I),
+      "the player aid still calls income a module - it is printed with objectives")
 
 if "The recycle" in rules:
     check("recycle" in figs,
