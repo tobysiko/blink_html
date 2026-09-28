@@ -2768,7 +2768,11 @@ function renderPromptBody() {
           left: REQ.left,
           settles: REQ.settles ? t("ask.colony.settles", { n: REQ.settles }) : "",
           terrain: one ? TL[REQ.terrains[0]] : t("ask.colony.any") }));
-        btn(t("btn.stopHere"), () => answer(null), "alt");
+        /* Before anything is on the map the card hasn't been spent yet (see
+           _playColonyHuman), so this is the same free back-out as "Keep
+           card" on the effect picker - once a tile is down it's "Stop here"
+           instead, because there IS now something the card already paid for. */
+        btn(t(REQ.atStart ? "btn.keepCard" : "btn.stopHere"), () => answer(null), "alt");
       } else {
         ask(t("ask.terrain"));
         for (const terr of REQ.terrains)

@@ -115,6 +115,26 @@ const strip = () => board([
   ok(g.m.tiles.size === before + 1, 'stopping early still laid the second tile');
   ok(!g.P[0].vrow.includes(c), 'a card stopped early was not spent');
 }
+// 6b. changing your mind BEFORE anything is placed costs nothing at all -
+// Toby found this at a table: declared B, saw the map, backed out on the
+// very first prompt, and the card vanished anyway under the old rule (spend
+// first, ask where second). The card must still be in hand/vrow, untouched,
+// exactly as if B had never been clicked.
+{
+  const g = strip();
+  const c = card(13);
+  g.P[0].vrow.push(c);
+  const before = g.m.tiles.size;
+  const it = g._playColonyHuman(g.P[0], c);
+  const q1 = it.next().value;
+  ok(q1.atStart === true, 'the first colony prompt did not say nothing has been placed yet');
+  const r = it.next(null);                            // change of mind, first prompt
+  ok(r.done, 'declining the first placement kept the generator going');
+  ok(r.value === false, 'declining the first placement still reported the effect as used');
+  ok(g.m.tiles.size === before, 'declining the first placement laid a tile anyway');
+  ok(g.P[0].vrow.includes(c), 'changing your mind before placing anything still spent the card');
+  ok(!g.P[0].vrowUsed, 'changing your mind before placing anything still burned the round\'s effect');
+}
 // 7. the top band takes ANY terrain; the lower bands take the card's suit
 {
   const g = strip();

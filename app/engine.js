@@ -4045,12 +4045,23 @@ class Game {
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */
       let took = false;
-      if (this.DUEL_TAKE && !tile.units.length && !tile.gold && p.takeUnit()) {
+      const cleared = !tile.units.length && !tile.gold;
+      if (this.DUEL_TAKE && cleared && p.takeUnit()) {
         this.m.settle(cell, p.i);
         this.fx("unit-in", { seat: p.i, to: cell });
         this._payAscension(p);
         this.inc("duel_settle");
         took = true;
+      } else if (this.DUEL_TAKE && cleared) {
+        /* The last defender is gone and the wall is down, but the reserve
+         * that would have moved onto the empty ground is itself empty. This
+         * is the printed rule (§Attack: "No unit in reserve ... the tile is
+         * simply left empty"), not a glitch — but without a line in the log
+         * it reads as one: the tile just sits there belonging to nobody, and
+         * a player who won the fight has no way to tell why they didn't get
+         * it. Say so. */
+        this.inc("duel_abandoned");
+        this.say("log.duel.abandoned", { a, b });
       }
       /* SPOILS. Paid after the ground is resolved, because "ground" has to know
        * whether the tile actually changed hands. */
@@ -4697,7 +4708,16 @@ class Game {
 
   /* The same effect, asked. Where a colony lands is a real decision — it is
    * new ground, and it decides who your next neighbour is — so a person picks
-   * the cell, and the terrain too when the card allows any. */
+   * the cell, and the terrain too when the card allows any.
+   *
+   * THE CARD IS SPENT WHEN THE FIRST TILE ACTUALLY GOES DOWN, not when B is
+   * clicked. Toby found the old order (spend, THEN ask where): declare B,
+   * look at the map, decide against it after all, click "stop here" with
+   * nothing placed - and the card was already gone, exactly as if you'd used
+   * it. That's not a real decision, it's a trap with a cancel button that
+   * doesn't cancel. Backing out before anything is on the map now costs
+   * nothing, the same as never having clicked B; only a successful placement
+   * commits the card, `vrowUsed`, and the round's one-effect allowance. */
   *_playColonyHuman(p, c) {
     if (p.vrowUsed || p.reserveEmpty()) return false;
     const [tiles, units, sameSuit] = effectBv22(c.r);
@@ -4705,25 +4725,27 @@ class Game {
     if (want !== null && this.m.supply[want] <= 0) return false;
     if (!this.colonyCells(p, c).length) return false;
 
-    p.vrow.splice(p.vrow.indexOf(c), 1);
-    this._spendCard(c);
-    this.inc("effect_b_used");
-    p.vrowUsed = true;
-
     let placed = 0, settled = 0;
     while (placed < tiles) {
       const options = this.colonyCells(p, c);
       const terrains = want !== null ? [want] : TER.filter((t) => this.m.supply[t] > 0);
       if (!options.length || !terrains.length) break;
       const pick = yield { type: "colony", seat: p.i, card: c, options, terrains,
-                           left: tiles - placed, settles: Math.max(0, units - settled) };
-      if (!pick) break;                              // may stop early; the card is spent
+                           left: tiles - placed, settles: Math.max(0, units - settled),
+                           atStart: placed === 0 };
+      if (!pick) break;                    // free while nothing has been placed yet
       if (!this._foundColony(p, pick.cell, pick.terrain || terrains[0], settled < units)) break;
+      if (!placed) {                       // the FIRST successful placement spends the card
+        p.vrow.splice(p.vrow.indexOf(c), 1);
+        this._spendCard(c);
+        this.inc("effect_b_used");
+        p.vrowUsed = true;
+      }
       placed += 1;
       if (settled < units) settled += 1;
     }
-    this.say("log.colony", { n: placed });
-    return true;
+    if (placed) this.say("log.colony", { n: placed });
+    return placed > 0;
   }
 
   /* D — CONQUEST, bot path.
