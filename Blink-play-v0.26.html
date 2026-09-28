@@ -1790,7 +1790,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"unknown","branch":"unknown","dirty":null,"built":"2026-09-27T20:32:02Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"unknown","branch":"unknown","dirty":null,"built":"2026-09-28T15:40:46Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1985,7 +1985,7 @@ en: {
   "setup.objectives": "Map objectives",
   "setup.objectives.note": "(advanced module)",
   "setup.objectives.off": "Off",
-  "setup.objectives.secret": "Secret — dealt two, keep one, 4 points",
+  "setup.objectives.secret": "Secret — dealt two, keep one",
   "setup.objectives.open": "Open — two face up, shared by everyone",
   "setup.objectives.both": "Keep both — dealt two, both score",
   "setup.objectives.showone": "Two each, one shown \u2014 show one and keep one hidden; both score at the end (v0.26)",
@@ -2217,6 +2217,8 @@ en: {
   "board.sharedObjectives": "shared objectives — anyone may build these",
   "board.handEmpty": "hand empty",
   "obj.points": "{n} pts",
+  "obj.points.each": "{n} pts each",
+  "obj.points.middle": "{n} pts, +{extra} each after",
   "obj.chainSame": "a {a}, a {mid}, another {b} — in a chain",
   "obj.chain": "a {a}, next to a {mid}, next to an {b}",
 
@@ -2273,9 +2275,9 @@ en: {
   "log.objective.again": "{name} completed again \u2014 {n} points in all.",
   "setup.objscoring": "An objective pays",
   "setup.objscoring.perInstance": "2 a arrangement \u2014 every matching middle pays, and building the pattern twice pays twice (printed rule)",
-  "setup.objscoring.once": "Once (printed)",
+  "setup.objscoring.once": "Once (v0.25's rule)",
   "setup.objscoring.perMiddle": "Once per middle tile",
-  "setup.objscoring.note": "Printed: the pattern is worth its points or nothing, however many times you built it. Per middle tile: the card pays once, and 1 more for every further tile of the middle terrain that also completes it \u2014 the two ends may be shared between them.",
+  "setup.objscoring.note": "Printed (v0.26): 2 for every arrangement you hold, so building the pattern twice pays twice. Once: the pattern is worth its points or nothing, however many times you built it \u2014 the old v0.25 rule. Per middle tile: the card pays once, and 1 more for every further tile of the middle terrain that also completes it \u2014 the two ends may be shared between them.",
   "obj.finished": "{name} complete.",
   "log.objective": "{name} completed \u2014 {n} points.",
   "fx.why.lost_trick": "last place",
@@ -2329,7 +2331,7 @@ en: {
   "ask.buy": "<b>Take a card</b> at or below rank {cap} — click a lit slot in the innovation space.",
   "ask.declare": "<b>Declare</b> <span class=\"muted\">— spend a victory card on <b>A</b> before anyone's meld is seen, or skip</span>",
   "ask.famine": "<b>Famine</b> <span class=\"muted\">— you owe {owed} and hold {gold}. Cash a lit victory card below for gold, or take the loss: each gold short sends a unit home from the map.</span>",
-  "ask.objective": "<b>Secret objective.</b> You were dealt two. Keep one — it stays hidden all game and scores <b>4 points</b> at the end if you have built it. Every chain is three tiles <b>you occupy</b>, the middle touching both ends.",
+  "ask.objective": "<b>Secret objective.</b> You were dealt two. Keep one — it stays hidden all game and is worth <b>{pts}</b> at the end if you have built it. Every chain is three tiles <b>you occupy</b>, the middle touching both ends.",
   "ask.conquest": "<b>{name}.</b> {left} strike(s) left — click a highlighted rival tile. {settle} A fortification coin absorbs the hit first.",
   "ask.conquest.settle": "A tile you empty is settled with one of your units.",
   "ask.conquest.nosettle": "This band removes a unit but does not take the ground.",
@@ -2707,7 +2709,7 @@ de: {
   "setup.objectives": "Kartenziele",
   "setup.objectives.note": "(Zusatzmodul)",
   "setup.objectives.off": "Aus",
-  "setup.objectives.secret": "Geheim — zwei erhalten, eines behalten, 4 Punkte",
+  "setup.objectives.secret": "Geheim — zwei erhalten, eines behalten",
   "setup.objectives.open": "Offen — zwei offen, für alle",
   "setup.objectives.both": "Beide behalten — zwei erhalten, beide werten",
   "setup.objectives.showone": "Zwei je Spieler, eines offen \u2014 zeige eines und halte eines geheim; beide z\u00e4hlen am Ende (v0.26)",
@@ -2923,6 +2925,8 @@ de: {
   "board.sharedObjectives": "gemeinsame Ziele — jede und jeder darf sie bauen",
   "board.handEmpty": "Hand leer",
   "obj.points": "{n} Pkt.",
+  "obj.points.each": "{n} Pkt. pro Mal",
+  "obj.points.middle": "{n} Pkt., +{extra} je weiterem Mal",
   "obj.chainSame": "{a}, {mid}, noch einmal {b} — in einer Kette",
   "obj.chain": "{a}, daneben {mid}, daneben {b}",
 
@@ -2979,9 +2983,9 @@ de: {
   "log.objective.again": "{name} erneut erf\u00fcllt \u2014 insgesamt {n} Punkte.",
   "setup.objscoring": "Ein Ziel z\u00e4hlt",
   "setup.objscoring.perInstance": "2 je Anordnung \u2014 jede passende Mitte z\u00e4hlt; das Muster zweimal zu bauen zahlt doppelt (gedruckte Regel)",
-  "setup.objscoring.once": "Einmal (gedruckt)",
+  "setup.objscoring.once": "Einmal (Regel aus v0.25)",
   "setup.objscoring.perMiddle": "Einmal je Mittelfeld",
-  "setup.objscoring.note": "Gedruckt: das Muster bringt seine Punkte oder nichts, egal wie oft du es gebaut hast. Je Mittelfeld: die Karte z\u00e4hlt einmal und 1 weiteren Punkt f\u00fcr jedes weitere Feld des mittleren Gel\u00e4ndes, das das Muster ebenfalls vervollst\u00e4ndigt \u2014 die beiden Enden d\u00fcrfen geteilt werden.",
+  "setup.objscoring.note": "Gedruckt (v0.26): 2 f\u00fcr jede Anordnung, die du h\u00e4ltst \u2014 das Muster zweimal zu bauen zahlt doppelt. Einmal: das Muster bringt seine Punkte oder nichts, egal wie oft du es gebaut hast \u2014 die alte Regel aus v0.25. Je Mittelfeld: die Karte z\u00e4hlt einmal und 1 weiteren Punkt f\u00fcr jedes weitere Feld des mittleren Gel\u00e4ndes, das das Muster ebenfalls vervollst\u00e4ndigt \u2014 die beiden Enden d\u00fcrfen geteilt werden.",
   "obj.finished": "{name} erf\u00fcllt.",
   "log.objective": "{name} erf\u00fcllt \u2014 {n} Punkte.",
   "fx.why.lost_trick": "letzter Platz",
@@ -3035,7 +3039,7 @@ de: {
   "ask.buy": "<b>Nimm eine Karte</b> mit Wert {cap} oder darunter — klicke ein hervorgehobenes Feld im Innovationsfeld.",
   "ask.declare": "<b>Ansagen</b> <span class=\"muted\">— eine Siegkarte für <b>A</b> ausgeben, bevor irgendeine Kombination zu sehen ist, oder überspringen</span>",
   "ask.famine": "<b>Hungersnot</b> <span class=\"muted\">— du schuldest {owed} und hast {gold}. Tausche unten eine hervorgehobene Siegkarte gegen Gold, oder nimm den Verlust hin: für jedes fehlende Gold kehrt eine Einheit von der Karte zurück.</span>",
-  "ask.objective": "<b>Geheimes Ziel.</b> Du hast zwei erhalten. Behalte eines — es bleibt das ganze Spiel verdeckt und bringt am Ende <b>4 Punkte</b>, wenn du es gebaut hast. Jede Kette besteht aus drei Feldern, die <b>du besetzt</b>, wobei das mittlere beide Enden berührt.",
+  "ask.objective": "<b>Geheimes Ziel.</b> Du hast zwei erhalten. Behalte eines — es bleibt das ganze Spiel verdeckt und ist am Ende <b>{pts}</b> wert, wenn du es gebaut hast. Jede Kette besteht aus drei Feldern, die <b>du besetzt</b>, wobei das mittlere beide Enden berührt.",
   "ask.conquest": "<b>{name}.</b> Noch {left} Angriff(e) — klicke ein hervorgehobenes gegnerisches Feld. {settle} Eine Befestigungsmünze fängt den Treffer zuerst ab.",
   "ask.conquest.settle": "Ein Feld, das du leerst, besiedelst du mit einer eigenen Einheit.",
   "ask.conquest.nosettle": "Diese Stufe entfernt eine Einheit, nimmt das Feld aber nicht ein.",
@@ -3610,8 +3614,11 @@ function bandsFor(spec) {
 }
 
 /* Map objectives — the advanced module. Every card is the same shape: three
- * tiles YOU OCCUPY in a chain, the middle touching both ends. Worth 4 points,
- * once, or nothing. Ends need not touch each other. */
+ * tiles YOU OCCUPY in a chain, the middle touching both ends. Ends need not
+ * touch each other. `points: 4` below is the card's flat printed number,
+ * used as-is only under OBJ_SCORING "once"/"perMiddle" - it is NOT what the
+ * printed v0.26 default pays. See objectiveScore() for what a card is
+ * actually worth under whichever rule is live. */
 const OBJECTIVES = [
   ["Foothills",        "mountain", "forest",   "plains",   "Where the stone gives way to soil"],
   ["Watershed",        "mountain", "plains",   "ocean",    "Every drop from here reaches the sea"],
@@ -5185,29 +5192,29 @@ class Game {
     this.INCOME = ["off", "crossroads", "objective", "both"].includes(opts.income)
       ? opts.income
       : this.OBJECTIVES_MODE !== "off" ? "objective" : "off";
-    /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
-     * worth its points or nothing, however many times you built it.
-     * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
-     * tile of yours that also completes it.
-     *
-     * Why the middle and not the whole instance: one payment per middle is a
-     * scan a person can do at a table - point at each tile of the middle
-     * terrain, check its neighbours, tally. Counting instances that share no
-     * tiles at all is a packing problem, and two players will count the same
-     * map differently, which is the worst thing a scoring rule can do.
-     * Measured ceiling from twelve tiles: 7 middles against 4 disjoint
-     * instances, and 30 if every combination counted. See
-     * claude/map-objectives.md. */
     /* HOW AN OBJECTIVE PAYS.
      *
-     *   "perInstance" - v0.26, printed. OBJ_PER points for EVERY matching
-     *                   arrangement you hold, and nothing special about the
-     *                   first. Two tiles of the middle terrain that each
-     *                   complete the card pay twice.
-     *   "once"        - v0.25: the card pays its 4 points once or not at all,
-     *                   and building the pattern twice pays nothing extra.
-     *   "perMiddle"   - the measured half-step: 4 for the first, OBJ_EXTRA
-     *                   for each further middle.
+     *   "perInstance" - v0.26, PRINTED AND DEFAULT. OBJ_PER (2) points for
+     *                   EVERY matching arrangement you hold, and nothing
+     *                   special about the first. Two tiles of the middle
+     *                   terrain that each complete the card pay twice.
+     *   "once"        - v0.25's rule, kept for comparison: the card pays its
+     *                   4 points once or not at all, and building the
+     *                   pattern twice pays nothing extra. NOT the printed
+     *                   rule any more - a card, a setup label or a comment
+     *                   that says otherwise is a leftover from before v0.26.
+     *   "perMiddle"   - the measured half-step considered along the way: 4
+     *                   for the first, OBJ_EXTRA for each further middle.
+     *                   Why the middle and not the whole instance: one
+     *                   payment per middle is a scan a person can do at a
+     *                   table - point at each tile of the middle terrain,
+     *                   check its neighbours, tally. Counting instances that
+     *                   share no tiles at all is a packing problem, and two
+     *                   players will count the same map differently, which
+     *                   is the worst thing a scoring rule can do. Measured
+     *                   ceiling from twelve tiles: 7 middles against 4
+     *                   disjoint instances, and 30 if every combination
+     *                   counted. See claude/map-objectives.md.
      *
      * FLAT, and not "a big first payment plus a little for each extra",
      * because the incidental rates across the twelve cards vary four-fold
@@ -12365,7 +12372,7 @@ function renderPromptBody() {
       btn(t("btn.takeLoss"), () => answer(null), "alt");
       break;
     case "objective": {
-      ask(t("ask.objective"));
+      ask(t("ask.objective", { pts: objPointsLabel({ points: 4 }) }));
       const pick = el("div", "objpick");
       pick.innerHTML = REQ.options.map((o, i) => objCard(o, "", `data-obj="${i}"`)).join("");
       bar.appendChild(pick);
@@ -12591,6 +12598,18 @@ function vcardPanel(bar, p) {
   return true;
 }
 
+/* What a card's badge says it is worth — read off the RULE IN PLAY, not the
+ * card's own printed field. `o.points` (4, on every card) is only the true
+ * number under "once"; the v0.26 printed default is "perInstance", which
+ * pays G.OBJ_PER (2) every time the pattern completes, and showing the old
+ * flat 4 there is exactly the stale-number bug this was written to fix. */
+function objPointsLabel(o) {
+  if (G.OBJ_SCORING === "perInstance") return t("obj.points.each", { n: G.OBJ_PER });
+  if (G.OBJ_SCORING === "perMiddle")
+    return t("obj.points.middle", { n: o.points, extra: G.OBJ_EXTRA });
+  return t("obj.points", { n: o.points });
+}
+
 /* An objective card: the chain it asks for, drawn as three terrain chips with
  * the middle one marked, because the shape is the whole point. */
 /* `prog` is the engine's objectiveProgress for this seat, when there is one:
@@ -12603,7 +12622,7 @@ function objCard(o, cls, attr, prog) {
     style="background:${TC[terr]}" title="${TL[terr]}">${SUIT_LETTER[terr]}</span>`;
   const tag = attr === undefined ? "span" : "button";
   return `<${tag} class="objcard ${cls || ""}" ${attr || ""}>
-    <span class="oname">${objName(o)}<em>${t("obj.points", { n: o.points })}</em></span>
+    <span class="oname">${objName(o)}<em>${objPointsLabel(o)}</em></span>
     <span class="ochain">${chip(o.a)}${chip(o.mid, true)}${chip(o.b)}</span>
     <span class="oflav">${t(o.a === o.b ? "obj.chainSame" : "obj.chain",
       { a: TL[o.a], mid: TL[o.mid], b: TL[o.b] })}</span>${
@@ -12732,7 +12751,7 @@ function renderFinal(bar) {
     if (anyObj) {
       s += `<td>${(d.objDone || []).map((x) =>
         `<span class="${x.done ? "ok" : "muted"}">${objName(x.o)}${
-          x.done ? ` +${x.o.points}` : " ✗"}</span>`).join("<br>") || "—"}</td>`;
+          x.done ? ` +${x.points}` : " ✗"}</span>`).join("<br>") || "—"}</td>`;
     }
     s += `<td><b>${d.total}</b></td></tr>`;
   }

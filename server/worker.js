@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-27T20:32:03Z
+ * Built 2026-09-28T15:40:47Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -345,8 +345,11 @@ function bandsFor(spec) {
 }
 
 /* Map objectives — the advanced module. Every card is the same shape: three
- * tiles YOU OCCUPY in a chain, the middle touching both ends. Worth 4 points,
- * once, or nothing. Ends need not touch each other. */
+ * tiles YOU OCCUPY in a chain, the middle touching both ends. Ends need not
+ * touch each other. `points: 4` below is the card's flat printed number,
+ * used as-is only under OBJ_SCORING "once"/"perMiddle" - it is NOT what the
+ * printed v0.26 default pays. See objectiveScore() for what a card is
+ * actually worth under whichever rule is live. */
 const OBJECTIVES = [
   ["Foothills",        "mountain", "forest",   "plains",   "Where the stone gives way to soil"],
   ["Watershed",        "mountain", "plains",   "ocean",    "Every drop from here reaches the sea"],
@@ -1920,29 +1923,29 @@ class Game {
     this.INCOME = ["off", "crossroads", "objective", "both"].includes(opts.income)
       ? opts.income
       : this.OBJECTIVES_MODE !== "off" ? "objective" : "off";
-    /* HOW OFTEN ONE OBJECTIVE PAYS. "once" is the printed rule: the pattern is
-     * worth its points or nothing, however many times you built it.
-     * "perMiddle" pays the card once and OBJ_EXTRA for every further middle
-     * tile of yours that also completes it.
-     *
-     * Why the middle and not the whole instance: one payment per middle is a
-     * scan a person can do at a table - point at each tile of the middle
-     * terrain, check its neighbours, tally. Counting instances that share no
-     * tiles at all is a packing problem, and two players will count the same
-     * map differently, which is the worst thing a scoring rule can do.
-     * Measured ceiling from twelve tiles: 7 middles against 4 disjoint
-     * instances, and 30 if every combination counted. See
-     * claude/map-objectives.md. */
     /* HOW AN OBJECTIVE PAYS.
      *
-     *   "perInstance" - v0.26, printed. OBJ_PER points for EVERY matching
-     *                   arrangement you hold, and nothing special about the
-     *                   first. Two tiles of the middle terrain that each
-     *                   complete the card pay twice.
-     *   "once"        - v0.25: the card pays its 4 points once or not at all,
-     *                   and building the pattern twice pays nothing extra.
-     *   "perMiddle"   - the measured half-step: 4 for the first, OBJ_EXTRA
-     *                   for each further middle.
+     *   "perInstance" - v0.26, PRINTED AND DEFAULT. OBJ_PER (2) points for
+     *                   EVERY matching arrangement you hold, and nothing
+     *                   special about the first. Two tiles of the middle
+     *                   terrain that each complete the card pay twice.
+     *   "once"        - v0.25's rule, kept for comparison: the card pays its
+     *                   4 points once or not at all, and building the
+     *                   pattern twice pays nothing extra. NOT the printed
+     *                   rule any more - a card, a setup label or a comment
+     *                   that says otherwise is a leftover from before v0.26.
+     *   "perMiddle"   - the measured half-step considered along the way: 4
+     *                   for the first, OBJ_EXTRA for each further middle.
+     *                   Why the middle and not the whole instance: one
+     *                   payment per middle is a scan a person can do at a
+     *                   table - point at each tile of the middle terrain,
+     *                   check its neighbours, tally. Counting instances that
+     *                   share no tiles at all is a packing problem, and two
+     *                   players will count the same map differently, which
+     *                   is the worst thing a scoring rule can do. Measured
+     *                   ceiling from twelve tiles: 7 middles against 4
+     *                   disjoint instances, and 30 if every combination
+     *                   counted. See claude/map-objectives.md.
      *
      * FLAT, and not "a big first payment plus a little for each extra",
      * because the incidental rates across the twelve cards vary four-fold
