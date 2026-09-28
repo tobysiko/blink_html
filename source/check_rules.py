@@ -175,7 +175,8 @@ check("highest total wins" in rules,
 check("Most cards wins the trick" not in rules,
       "the rulebook still says most cards wins")
 # the worked example has to be worked the new way, or it teaches the old rule
-check(re.search(r"8 \+ 8 for.{0,40}16", rules),
+check(re.search(r"8 \+ 8 for.{0,40}16", rules)
+      or re.search(r"8 of Mountain \+ 8 of Ocean.{0,60}total 16", rules),
       "the worked example does not add the winning meld up")
 
 # 4c. research runs up to twice a turn, at a rising price
@@ -187,14 +188,19 @@ check("up to twice per turn" in rules.lower(),
 # passed while §10 still opened "Once per turn, during your map phase" and its
 # step 3 still said "Pay 1 gold" — the section contradicted the summary of
 # itself two pages later, which is exactly the drift this file exists to catch.
-sec10 = rules.split("Research and the market")[-1].split("A worked example")[0]
+# v0.26 edit pass: the section is "Research and trade" (§09 now), and it ends
+# where "The victory row" begins. The old split keys ("Research and the
+# market", "A worked example") no longer existed, so the split silently
+# returned the whole book and every §10 check below was a whole-book check.
+sec10 = rules.split("Research and trade")[-1].split("The victory row")[0]
 check("Once per turn, during your map phase" not in sec10,
       "§10 still opens by saying research is once per turn")
 check("up to twice per turn" in sec10.lower(),
       "§10's own body never says research may be taken twice")
-check(re.search(r"1 gold the first time this turn, 2 the second", sec10),
+check(re.search(r"1 gold the first time this turn, 2 the second", sec10)
+      or re.search(r"1 gold, or 2 for your second improvement this turn", sec10),
       "§10's steps do not state the rising price where a player follows them")
-check(re.search(r"first research of your turn costs 1 gold, the second costs 2", rules),
+check(re.search(r"first (?:research|improvement) of (?:your|a) turn costs 1 gold, the second costs 2", rules),
       "the rulebook does not print the rising research price")
 
 # 4d. effect A adds the card's own rank
@@ -247,7 +253,7 @@ check(bool(worked) and worked.group(1) == "19",
       f"the worked five-card row scores {worked.group(1) if worked else '?'}, expected 19")
 
 # 6. research: automatic placement, lowest card retired, and the caps again
-check("highest rank" in rules and "Nobody chooses this" in rules,
+check("highest rank" in rules and "Nobody chooses" in rules,
       "§10 does not say the draw is placed automatically")
 check("lowest-ranked card in your hand" in rules,
       "§10 does not restrict the retire to the lowest card")
@@ -273,12 +279,11 @@ check("bUsed" not in js,
       "under the abd deck) must share p.vrowUsed instead")
 check("p.vrowUsed" in js or "this.vrowUsed" in js,
       "the engine has no shared vrowUsed allowance for victory-row effects")
-check("one victory-row effect" in rules.lower()
-      or "one victory-row effect (a/b/c) per round" in rules.lower(),
-      "§07 does not state that A/B/C share one victory-row effect per round")
-check("the other two are off the table until your next round" in rules
-      or "off the table until your next round" in rules,
-      "§07 does not say that spending one effect blocks the other two this round")
+check("share one allowance per round" in rules,
+      "§10 does not state that A/B/C share one victory-row effect per round")
+check("at most one victory card leaves your row each round" in rules,
+      "§10 does not say that at most one victory card is spent per round, "
+      "whichever effect it pays for")
 
 # 8. the market is nine positions in both the rules and the engine
 check("nine" in rules and "3 × 3" in rules, "the market is not printed as 3 x 3 = nine")
@@ -291,10 +296,21 @@ holds_js = dict(re.findall(r"(\w+):\s*(\d+)",
                            re.search(r"HOLDS = \{([^}]*)\}", js).group(1)))
 def_js = dict(re.findall(r"(\w+):\s*(\d+)",
                          re.search(r"TERRAIN_DEFENCE = \{([^}]*)\}", js).group(1)))
+# v0.26 edit pass: the terrain TABLE in §08 was folded into §06 as two
+# sentences ("Holds ... Plains 3, Forest 2, ..." and "Defence ... Plains +0,
+# ..."), because the table, the terrain figure and a second table under Attack
+# all printed the same eight numbers. Both sentences are read back here.
+_holds_s = re.search(r"Holds is how many units a tile can take:(.{0,80}?)\.", rules)
+_def_s = re.search(r"Defence is added to a defender in a fight:(.{0,80}?)\.", rules)
+check(bool(_holds_s), "§06 no longer prints what each terrain holds")
+check(bool(_def_s), "§06 no longer prints each terrain's defence")
 for terr in ("plains", "ocean", "forest", "mountain"):
-    check(re.search(rf"{terr.capitalize()} {holds_js[terr]} \+{def_js[terr]}", rules),
-          f"the terrain table does not print {terr.capitalize()} "
-          f"{holds_js[terr]} / +{def_js[terr]}")
+    if _holds_s:
+        check(re.search(rf"{terr.capitalize()} {holds_js[terr]}\b", _holds_s.group(1)),
+              f"§06 does not print {terr.capitalize()} holds {holds_js[terr]}")
+    if _def_s:
+        check(re.search(rf"{terr.capitalize()} \+{def_js[terr]}\b", _def_s.group(1)),
+              f"§06 does not print {terr.capitalize()} defends +{def_js[terr]}")
 check('plains: 3, forest: 2, ocean: 1, mountain: 1' in js.replace('"', '')
       or 'HOLDS' in js, "cannot find the engine's terrain capacities")
 
@@ -525,8 +541,16 @@ for slot, needs in [(4, 2), (3, 3), (2, 4), (1, 5)]:
     check(bool(hit), f"section 13 does not show slot {slot} waking at {needs} cards")
 check("SPEND" in perk_sec and "STANDING" in perk_sec,
       "section 13 does not name the two kinds of token")
-check("switches off" in perk_sec,
-      "section 13 does not say that spending a card can switch a perk off")
+# v0.26 edit pass: §13 printed BOTH "an armed perk keeps running until your
+# next recycle" and, in a note below it, "spending a card ... the perk switches
+# off" - the second was the v0.25 depth rule. The engine's hasPerk() reads only
+# the armed perk, so the first is the rule, and this check used to demand the
+# retired sentence.
+check("keeps running until your next recycle" in perk_sec,
+      "section 13 does not say an armed perk runs until the next recycle")
+check("switches off" not in perk_sec,
+      "section 13 still says spending a card switches a perk off - the armed "
+      "perk runs until the next recycle whatever you spend")
 
 # the aid sets it in small caps with CSS, so the markup reads "Your turn"
 check("your turn" in aid_txt.lower(),
@@ -693,7 +717,7 @@ check(re.search(r"\*_duelCard\(q, role, tile, against(?:, by)?(?:, floor)?\)", j
       "the defender is no longer told what they are answering")
 check("_duelCard(p, \"attack\"" not in js,
       "the attacker is being asked for a card from hand again")
-check(re.search(r"attack is the card you spent", rules, re.I),
+check(re.search(r"attack is the (?:rank of the )?card you spent", rules, re.I),
       "section 06 does not say the spent card IS the attack")
 
 # THE FORTIFICATION is the rule most rewritten in this game — absorb, then the
@@ -718,7 +742,7 @@ for phrase, why in [
     ("10", "section 07 does not print the ladder"),
     ("floor, not a substitute",
      "section 07 does not say a wall is a floor rather than a substitute"),
-    ("higher of the two",
+    ("if that card is higher, it fights instead",
      "section 07 does not say the higher of wall and card fights")]:
     check(phrase.lower() in rules.lower(), why)
 # ...and the figure has to show both halves of it: what bounces, what breaks
@@ -744,9 +768,14 @@ for terr in ("plains", "ocean", "forest", "mountain"):
     bonus = int(def_js[terr])
     check(f"+{bonus}" in seg,
           f"the terrain figure does not give {terr.capitalize()} defence +{bonus}")
-    check(f"beat them by {bonus + 1}" in seg,
-          f"the terrain figure says the wrong margin for {terr.capitalize()}: "
-          f"+{bonus} means beating them by {bonus + 1}")
+    # "beat them by N" is gone on purpose. The attacking card always matches
+    # the ground (it could not act there otherwise), so a level total goes to
+    # the ATTACKER unless the defender's card also matches - the real margin is
+    # N+1 only against a card of that terrain. A number that is right half the
+    # time is the kind of claim this file exists to stop printing.
+    check("beat them by" not in seg,
+          f"the terrain figure prints a margin for {terr.capitalize()} that only "
+          "holds against a defender of that terrain")
 # and the sea's own rule, which is the reason this figure is not just a table.
 # It only ever lays Ocean now (never real landfall onto Plains/Forest/Mountain
 # — that stays an ordinary suited explore), so the figure is checked for that,
@@ -820,9 +849,16 @@ toll = re.search(r"(?:attack|take|conquer)[^.]{0,60}costs? \d gold"
                  r"|attack costs \d", rules, re.I)
 check(not toll, "the rulebook is still charging gold to attack "
       f"(\u201c{toll.group(0) if toll else ''}\u201d) — the duel replaced that price")
-check("the defender holds" in rules,
+# The level duel, as it actually plays: the attacker's card ALWAYS matches the
+# ground (cellActions refuses any other), so duelWinner's "matching card wins,
+# defender if both or neither" reduces to "attacker, unless the defender's card
+# matches too". The book prints that reduced form.
+check("return am && !dm;" in js,
+      "duelWinner no longer gives a level fight to a matching attacker over a "
+      "non-matching defender")
+check(re.search(r"level total goes to\s+you", rules),
       "the rulebook does not say who wins a level duel")
-check("suit matches the ground" in rules,
+check("unless the defender's card is also of that terrain" in rules,
       "the rulebook does not print the suit tie-break for a level duel")
 # winning a duel that empties the tile takes the ground. This is the change that
 # made combat worth doing at all (DUEL-SPOILS.md), so the book must say it and
@@ -832,7 +868,7 @@ check(re.search(r"DUEL_TAKE = opts\.duelTake !== false", js),
 check(re.search(r"ground changes hands", rules),
       "section 06 does not say a won duel takes the ground")
 # a defence bonus is only a defence bonus if the rule adds it to the DEFENDER
-check(re.search(r"Defence.{0,80}rank.{0,40}terrain.s defence bonus", rules, re.S),
+check(re.search(r"defence is that card.s rank plus the terrain.s defence", rules, re.S),
       "section 06 no longer adds the terrain bonus to the defender's rank")
 
 # ------------------------------------------------------------- the tutorial
@@ -907,7 +943,7 @@ for _n, _pls in _LAYOUTS.items():
             _dists.append(_hex_distance(_pls[_i], _pls[_j]))
 _lo, _hi = min(_dists), max(_dists)
 check(_lo == 3, f"the closest two starts are {_lo} tiles apart, not 3")
-check("no start closer than three tiles" in rules,
+check("no two starts closer than three tiles" in rules,
       "the rulebook no longer states the minimum distance between two starts")
 check("exactly three tiles from every other" not in rules,
       f"the rulebook claims every start is exactly three apart; they run {_lo}\u2013{_hi}")
@@ -1009,9 +1045,10 @@ if recyc:
     check(re.search(r"if you are playing with perks", recyc, re.I),
           "the recycle no longer says arming a perk is only for tables playing "
           "with the perks module")
-    check(re.search(r"base game a recycle is", recyc, re.I),
-          "the recycle no longer says what the BASE game does at this moment, "
-          "so a table with no modules cannot tell which steps are theirs")
+    check(re.search(r"Collect your income:\s*1 gold for each of your map objectives",
+                    recyc, re.I),
+          "the recycle no longer says what the income step pays, so a table "
+          "cannot tell whether it is theirs")
 # THE A4 PICTORIAL AID, against the engine.
 #
 # It is a SECOND rendering of the folded card's facts - the two share
@@ -1104,8 +1141,8 @@ check(re.search(r"modules only", aid_txt, re.I),
 if "The recycle" in rules:
     check("recycle" in figs,
           "\u00a709 is called The recycle but there is no recycle figure to draw it")
-    check(re.search(r"collect what your board has earned", rules, re.I),
-          "\u00a709 no longer says what the recycle is FOR \u2014 it reads as a "
+    check(re.search(r"Collect your income", rules),
+          "\u00a708 no longer says what the recycle is FOR \u2014 it reads as a "
           "housekeeping list again")
 
 # ------------------------------------------------ where a set-aside card goes
@@ -1123,13 +1160,13 @@ check(m, "cannot find where the engine puts a set-aside card")
 if m:
     to_owner = m.group(0).startswith("p.discard")
     if to_owner:
-        check(re.search(r"goes into <strong>your own discard</strong>", raw_rules),
+        check(re.search(r"the one you set aside, goes face up into your own\s+<strong>discard</strong>", raw_rules),
               "the engine returns a set-aside card to its owner's discard and §04 "
               "does not say so")
         check(not re.search(r"set aside[^.]{0,80}shared pile", rules, re.I),
               "§04 still sends the set-aside card to the shared pile, which is "
               "where it stopped going")
-        check(re.search(r"A card from your meld\s+never leaves you", raw_rules),
+        check(re.search(r"nothing you play ever leaves you", rules),
               "the book never states the rule the routing follows — that a meld "
               "card stays with its owner and only a victory-row card leaves")
     else:
@@ -1184,8 +1221,7 @@ if m:
               "rather than viable")
         check(re.search(r"take <strong>1 gold</strong>", raw_rules),
               "§06 never tells the player to take the coin a won tile pays")
-        check(re.search(r"the tile is simply left empty \(and there are no spoils",
-                        raw_rules),
+        check(re.search(r"the tile is simply left empty, and\s+pays nothing", rules),
               "§06 does not say the coin is withheld when the tile is emptied but "
               "NOT taken — without that clause the book reads as paying for every "
               "duel won, which is a different and worse rule")
@@ -1340,13 +1376,13 @@ for _doc, _txt in [("the rulebook", rules)] + [
               "nothing is drawn from it at a recycle")
 
 # ...and it must still say what IS true, or the note has simply been deleted.
-check(re.search(r"you do not\s+draw from it to refill", rules, re.I),
+check(re.search(r"you do not\s+draw from it to refill|you never draw cards to refill", rules, re.I),
       "\u00a709 no longer tells the player that the market is not what they refill from")
 # The pile is shuffled once. This is a rule with a visible consequence - what
 # you bury in a trade comes round in its own time - and the engine agrees only
 # because someone read the book; PILE_SHUFFLE defaulted the other way for a
 # while. Ask both sides.
-check(re.search(r"shuffled once, at setup, and never again", rules, re.I),
+check(re.search(r"shuffled once, at setup, and never again|never shuffled after setup", rules, re.I),
       "\u00a709 no longer prints that the market is shuffled once and never again")
 check(re.search(r'PILE_SHUFFLE = opts\.pileShuffle === "recycle" \? "recycle" : "setup"', js),
       "the engine reshuffles the market at every recycle; the rulebook prints "
@@ -1387,8 +1423,7 @@ check(re.search(r'RESEARCH_TO = \["hand", "discard"\]\.includes\(opts\.researchT
 check(re.search(r':\s*"choose";', js),
       "the engine does not DEFAULT to letting the player choose where a "
       "researched card lands")
-check(re.search(r"say where it goes: into your hand.{0,400}into your discard",
-                rules, re.S | re.I),
+check(re.search(r"Put it\s+into your hand.{0,80}or your discard", rules, re.S | re.I),
       "§10 does not offer the player the choice of hand or discard")
 check(not re.search(r"straight into your hand", rules, re.I),
       "§10 still says a researched card goes straight into your hand - it is a "
@@ -1396,8 +1431,9 @@ check(not re.search(r"straight into your hand", rules, re.I),
 check(not re.search(r"hands you one for your discard", rules, re.I),
       "§09 still says research hands you a card for your discard - it is a "
       "choice now")
-check(re.search(r"to your hand or your discard, as you choose", rules, re.I),
-      "§09 does not say the researched card goes where the player chooses")
+check(re.search(r"to hand or\s+discard", rules, re.I),
+      "the quick reference does not say the researched card goes where the "
+      "player chooses")
 
 # ---- 3. A FULL VICTORY ROW BUMPS ITS LOWEST TO THE MARKET --------------------
 # Three rules at once: the engine refused the research, §10 said discard one of
@@ -1425,8 +1461,7 @@ _m = re.search(r"this\.OBJ_PER = opts\.objectivePer === undefined \? (\d+)", js)
 check(_m, "cannot find the objective's point value in the engine")
 if _m:
     _per = int(_m.group(1))
-    check(re.search(rf"pays\s+<strong>{_per}</strong>\s*\n?\s*points for every such arrangement",
-                    rules) or re.search(rf"{_per}\s*\n?\s*points for every such arrangement", rules),
+    check(re.search(rf"scores\s+{_per} points for each arrangement", rules),
           f"§12 does not say an objective pays {_per} for every arrangement")
     _obj = HERE / "Blink-objectives-colour.html"
     if _obj.exists():
@@ -1448,13 +1483,13 @@ if _m:
 # It printed FOUR numbers a tier under a heading naming THREE things, because
 # the free-moves column left the ladder and never left this sentence. Nothing
 # checked it: check_rules reads the tier TABLE, and this is prose.
-_qr = re.search(r"Melds, rank cap, wall:(.{0,400}?)Read them off", rules, re.S)
+_qr = re.search(r"Meld, rank cap, wall:(.{0,400}?)Read your current tier", rules, re.S)
 check(_qr, "cannot find the quick reference's tier line")
 if _qr:
     for _name, _meld, _cap, _wall in zip(
             ["Tribe", "Settlement", "Kingdom", "Empire", "Civilization"],
             MELD, CAPS, WALLS):
-        _row = re.search(rf"{_name}\s+([\d,\s]+?)\.", _qr.group(1))
+        _row = re.search(rf"{_name}\s+([\d,\s]+?)(?:\.|·)", _qr.group(1))
         check(_row, f"the quick reference has no line for {_name}")
         if _row:
             _n = [int(x) for x in re.findall(r"\d+", _row.group(1))]
@@ -1471,7 +1506,7 @@ if _qr:
 check(re.search(r"const b = \(dCard \? dCard\.r : 0\) \+ TERRAIN_DEFENCE\[terrain\]", js),
       "the duel no longer adds the terrain to the defender - the rulebook says "
       "it does")
-check(re.search(r"plus the terrain's bonus, like any other defender", rules, re.I),
+check(re.search(r"defends at\s+your tier.s wall.{0,120}plus the terrain.s defence", rules, re.I | re.S),
       "§06 does not say the terrain's bonus is added to a wall")
 check(not re.search(r"exactly\s*\n?\s*<strong>one</strong> rank in a dealt hand", rules),
       "§07 still claims exactly one dealt rank can break the lowest wall; on "
@@ -1487,14 +1522,14 @@ check(not re.search(r"exactly\s*\n?\s*<strong>one</strong> rank in a dealt hand"
 # text_of() strips tags, so this checks the plain prose a player actually
 # reads, not markup - a subsection with a heading and no content would not
 # satisfy this any more than three sentences with no heading would.
-check(re.search(r"\bTrade\b.{0,20}The other face of an improvement", rules, re.S),
+check(re.search(r"\bTrade\b.{0,10}Where research reaches up", rules, re.S),
       "§10 has no Trade subsection - the action is named throughout but "
       "never taught")
-check(re.search(r"[Dd]raw the top two cards.{0,40}of the market, blind", rules, re.S),
+check(re.search(r"[Dd]raw the top two cards.{0,40}of the market.{0,20}blind", rules, re.S),
       "§10 does not say trade draws the market's top two, blind")
-check("bury them at the bottom of the market" in rules,
+check(re.search(r"[Bb]ury any two cards.{0,160}bottom of the market", rules, re.S),
       "§10 does not say where the two cards you give back go")
-check(re.search(r"costs exactly what research does.{0,60}same allowance", rules, re.S),
+check(re.search(r"research twice, trade twice, or one of each", rules, re.S),
       "§10 does not say trade shares research's price and allowance")
 
 # The tutorial met the same audit and passed it the same way research's

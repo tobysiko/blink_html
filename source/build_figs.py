@@ -206,12 +206,12 @@ def table():
 
     # the market: deck plus 3x3, to the left of the map
     mk_x, mk_y = 40, 92
-    b += panel(mk_x - 10, mk_y - 10, 150, 132, "MARKET",
+    b += panel(mk_x - 10, mk_y - 10, 150, 132, "INNOVATION SPACE",
                "nine face up \u00b7 buy at or under your rank cap")
     b += facedown(mk_x, mk_y + 40, 28, 38, 3)
     b += label(mk_x + 18, mk_y + 96, "upgrade", 9.5, cls="fig-label")
     b += label(mk_x + 18, mk_y + 106, "deck", 9.5, cls="fig-label")
-    grid = [(11, "plains"), (16, "ocean"), (12, "forest"),
+    grid = [(19, "plains"), (16, "ocean"), (12, "forest"),
             (18, "mountain"), (13, "plains"), (17, "ocean"),
             (15, "forest"), (14, "mountain"), (20, "plains")]
     for i, (rank, suit) in enumerate(grid):
@@ -237,7 +237,7 @@ def table():
     b += panel(pa_x - 12, pa_y - 12, 336, 88, "PLAY AREA",
                "every meld stays here until it is spent")
     melds = [("you", [(5, "plains"), (6, "plains")]),
-             ("rival", [(8, "mountain"), (8, "ocean")]),
+             ("rival", [(3, "mountain"), (4, "ocean")]),
              ("third", [(4, "mountain")])]
     mx = pa_x
     for who, cards in melds:
@@ -252,11 +252,11 @@ def table():
     b += die(pa_x + 288, pa_y + 20, 3)
     # Centred on the dice would push the right end of this caption through the
     # PLAY AREA border, which sits at pa_x + 288. Centred to fit instead.
-    b += label(pa_x + 250, pa_y + 64, "dice \u2014 the coloured one led", 9.5, cls="fig-label")
+    b += label(pa_x + 250, pa_y + 64, "dice \u2014 the coloured one won", 9.5, cls="fig-label")
 
     # the shared pile and the coin supply
     b += facedown(96, 296, 22, 30, 2)
-    b += label(110, 338, "shared pile", 9.5, cls="fig-label")
+    b += label(110, 338, "market", 9.5, cls="fig-label")
     b += gold(544, 296)
     b += gold(562, 302)
     b += gold(552, 312)
@@ -326,19 +326,19 @@ def table():
     #   four   1-2-3-4
     #   three  1-2-3 · 2-3-4 · 9-9-10
     #   two    1-2 · 2-3 · 3-4 · 9-9 · 9-10
-    #   and 17 alone, which is what a high card is for — cash it, or attack.
+    #   and 13 alone (a researched card; this seat is a Settlement, cap 14).
     #
     # The run of four deliberately spans all four suits: melds do not care about
     # suit, and a reader who sees a run in one colour will assume they do. The
     # 9-9-10 is there because duplicates are free and nothing else says so.
     hand = [(1, "ocean"), (2, "mountain"), (3, "plains"), (4, "forest"),
-            (9, "ocean"), (9, "plains"), (10, "mountain"), (17, "forest")]
+            (9, "ocean"), (9, "plains"), (10, "mountain"), (13, "forest")]
     b += fan(yx + yw / 2, yy + 92, hand, 52, 72, 8.6)
     b += label(yx + yw / 2, yy + 214,
                "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
                9.5, cls="fig-step")
     b += label(yx + yw / 2, yy + 228,
-               "ten between your turns, and nobody else ever sees it",
+               "yours alone \u2014 nobody else ever sees it",
                9.5, cls="fig-label")
     return svg(0, 0, b, vb="auto")
 
@@ -513,7 +513,7 @@ def terrains():
         b += label(cx, top + 196, "DEFENCE", 9, cls="fig-step")
         b += label(cx, top + 216, f"+{bonus}", 17,
                    cls="fig-attack" if bonus else "fig-label")
-        b += label(cx, top + 230, f"beat them by {bonus + 1}", 9, cls="fig-label")
+        b += label(cx, top + 230, "added to the defender", 9, cls="fig-label")
 
         # what it is FOR
         b += (f'<line x1="{x + 14}" y1="{top + 240}" x2="{x + COL - 14}" '
@@ -531,36 +531,32 @@ def terrains():
     b += label(20, sy + 22, "ONLY THE SEA DOES THIS", 10, anchor="start",
                cls="fig-step")
     b += label(200, sy + 22,
-               "\u2014 the first sea move each turn also lays a tile, free",
+               "\u2014 once a turn, a ship may lay new sea and sail onto it",
                9, anchor="start", cls="fig-label")
 
-    # a unit sailing across open water, then a new Ocean tile arriving
-    ox, oy = 158, sy + 82
+    # a unit on open water sails out onto a NEW Ocean tile laid on that
+    # water's coast. The new tile sits in the row below, touching TWO of the
+    # Ocean tiles it came from - touch-two holds for a voyage as for any
+    # explore. (An earlier drawing left a gap and said "anywhere", and the one
+    # after it laid the tile touching a single hex; neither is the rule.)
+    ox, oy = 210, sy + 62
     for k in range(3):
-        b += prism(ox + k * (DX + 2), oy, "ocean")
+        b += prism(ox + k * DX, oy, "ocean")
+    nx, ny = ox + 1.5 * DX, oy + DY
+    b += prism(nx, ny, "ocean")
+    b += (f'<polygon points="{pstr(hex_pts(nx, ny))}" fill="none" stroke="#C0392B" '
+          f'stroke-width="2" stroke-dasharray="4 3"/>')
     b += unit(ox, oy, "you", 1)
-    ay = oy - R - 12
-    b += (f'<path d="M{ox:.1f} {ay:.1f} L{ox + 2 * DX + 2:.1f} {ay:.1f} '
-          f'M{ox + 2 * DX - 8:.1f} {ay - 6:.1f} l10 6 l-10 6" '
+    b += (f'<path d="M{ox + 6:.1f} {oy + 8:.1f} L{nx - 12:.1f} {ny - 2:.1f} '
+          f'M{nx - 22:.1f} {ny - 4:.1f} l10 2 l-4 -9" '
           f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
           f'stroke-linejoin="round"/>')
-    b += label(ox + DX, oy + R + 20, "sail as far as the open water reaches",
-               9, cls="fig-label")
-
-    nx = ox + 2 * (DX + 2) + 168
-    b += (f'<path d="M{ox + 2 * DX + SQ + 14:.1f} {ay:.1f} L{nx - SQ - 10:.1f} '
-          f'{ay:.1f} M{nx - SQ - 20:.1f} {ay - 6:.1f} l10 6 l-10 6" '
-          f'fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round" '
-          f'stroke-linejoin="round"/>')
-    # A solid Ocean tile, drawn the same as the three it extends from - there
-    # is no terrain to pick any more, only ever more sea.
-    b += prism(nx, oy, "ocean")
-    b += label(nx, oy + R + 20, "then lay a new Ocean tile,", 9,
-               cls="fig-label")
-    b += label(nx, oy + R + 31, "anywhere the map legally takes it", 9,
-               cls="fig-label")
-    b += label(nx, oy + R + 42, "\u2014 no card needed, once a turn", 9,
-               cls="fig-label")
+    lx = ox + 2 * DX + SQ + 18
+    b += label(lx, oy + 2, "a unit on Ocean lays a new", 9, anchor="start", cls="fig-label")
+    b += label(lx, oy + 14, "Ocean tile on the coast of", 9, anchor="start", cls="fig-label")
+    b += label(lx, oy + 26, "its water and sails onto it", 9, anchor="start", cls="fig-label")
+    b += label(lx, oy + 44, "one movement, no card,", 9, anchor="start", cls="fig-step")
+    b += label(lx, oy + 56, "once a turn \u2014 see \u00a707", 9, anchor="start", cls="fig-step")
     return svg(0, 0, b, vb="auto")
 
 
@@ -569,23 +565,26 @@ F["terrain"] = terrains()
 # ------------------------------------------------------- explore
 def explore():
     b = ""
-    layout = [(0, 0, "plains"), (1, 0, "forest")]
+    # The empty space touches TWO tiles - the Forest beside it and the
+    # Mountain below - because that is the rule the figure illustrates. The
+    # earlier drawing offered a space touching only one tile, which is exactly
+    # the explore §06 forbids.
+    layout = [(0, 0, "plains"), (1, 0, "forest"), (1, 1, "mountain")]
     for c, r, t in layout:
         x, y = axial(c, r)
         b += prism(x, y, t)
     x, y = axial(0, 0); b += unit(x, y, "you", 1)
-    x, y = axial(1, 0)
-    b += unit(x, y, "you", 1)
+    x, y = axial(1, 0); b += unit(x, y, "you", 1)
     x, y = axial(2, 0)
     b += prism(x, y, None, empty=True, dashed=True)
-    b += label(x, y + 4, "?", 22, cls="fig-strong")
-    b += label(x, y + 48, "no tile here yet", 11)
-    b += ('<path d="M{:.0f} {:.0f} l26 0 M{:.0f} {:.0f} l-8 -6 M{:.0f} {:.0f} l-8 6"'
-          ' fill="none" stroke="#C0392B" stroke-width="2" stroke-linecap="round"/>'
-          .format(axial(1, 0)[0] + 28, 0, axial(1, 0)[0] + 54, 0, axial(1, 0)[0] + 54, 0))
-    b += card(178, -32, 6, "ocean", w=40, h=56)
-    b += label(198, 44, "play 6 of Ocean", 11, anchor="middle")
-    b += label(198, 59, "\u2192 place a tile", 11, anchor="middle")
+    b += label(x, y + 8, "?", 22, cls="fig-strong")
+    b += label(x, y - R - 10, "empty space, touching two tiles", 10)
+    cx0 = x + SQ + 70
+    b += card(cx0, -28, 6, "ocean", w=40, h=56)
+    b += label(cx0 + 20, 46, "play 6 of Ocean", 11, anchor="middle")
+    b += label(cx0 + 20, 61, "\u2192 lay an Ocean tile", 11, anchor="middle")
+    b += label(cx0 + 20, 76, "+1 gold (rank 10 or under)", 10, anchor="middle",
+               cls="fig-step")
     return svg(0, 0, b, vb="auto")
 
 F["explore"] = explore()
@@ -612,20 +611,19 @@ def combat():
     # ---- row 1: the card you SPENT against a card from their HAND
     xa = 0
     xd = xa + cw + gap + 14
-    b += card(xa, 12, 12, "plains", w=cw, h=ch)
+    b += card(xa, 12, 12, "forest", w=cw, h=ch)
     b += card(xd, 12, 9, "forest", w=cw, h=ch)
     b += label(xa + cw / 2, 4, "attack", 10, cls="fig-attack")
     b += label(xd + cw / 2, 4, "defence", 10, cls="fig-step")
     # WHERE each card comes from is the part players got wrong: the attacker
     # commits nothing extra, so an attack costs exactly what a settle costs.
-    b += label(xa + cw / 2, ch + 42, "the card you spent", 8, cls="fig-label")
-    b += label(xd + cw / 2, ch + 42, "one card from hand", 8, cls="fig-label")
+    b += label(xa + cw / 2, 12 + ch + 33, "the card you spent", 8, cls="fig-label")
+    b += label(xd + cw / 2, 12 + ch + 33, "their card + Forest", 8, cls="fig-label")
     b += label((xa + cw + xd) / 2, 12 + ch / 2 + 8, "vs", 12, cls="fig-label")
     b += label(xa + cw / 2, 12 + ch + 18, "12", 13, cls="fig-strong")
     # the ground is on the DEFENDER's side of the sum, and that is the whole
     # point of the terrain: a bonus, not a toll
     b += label(xd + cw / 2, 12 + ch + 18, "9 + 1 = 10", 13, cls="fig-strong")
-    b += label(xd + cw / 2, 12 + ch + 32, "Forest defends", 9, cls="fig-step")
 
     # ---- row 2: the ground changes hands
     centre = (xa + xd + cw) / 2
@@ -637,7 +635,7 @@ def combat():
     b += (f'<path d="M{ax:.1f} {ty - 8:.1f} l16 0 M{ax + 10:.1f} {ty - 13:.1f} '
           f'l6 5 l-6 5" fill="none" stroke="#C0392B" stroke-width="2.2" '
           f'stroke-linecap="round" stroke-linejoin="round"/>')
-    b += label(ax + 20, ty - 12, "home", 9, anchor="start", cls="fig-attack")
+    b += label(ax + 20, ty - 12, "falls back", 9, anchor="start", cls="fig-attack")
     b += label(centre, ty + R + TER["forest"]["h"] + 17, "yours now", 10,
                cls="fig-step")
     # ...AND THE COIN (v0.26). The spoils are the newest rule in the game and
@@ -678,7 +676,7 @@ def fortify():
     INK, SOFT, LINE = "#2A2E2B", "#6B6F68", "#CDC7B8"
 
     # ---- left: a starting-deck card bounces off
-    b += label(52, -26, "DEALT", 10, cls="fig-step")
+    b += label(52, -26, "UNDER THE WALL", 10, cls="fig-step")
     b += card(0, -8, 9, "plains", w=cw, h=ch)
     b += (f'<path d="M{cw + 10} {ch / 2 - 8:.0f} l30 0 M{cw + 32} '
           f'{ch / 2 - 14:.0f} l6 6 l-6 6" fill="none" stroke="{SOFT}" '
@@ -703,7 +701,7 @@ def fortify():
 
     # ---- right: a researched card goes through
     rx = 252
-    b += label(rx + cw / 2, -26, "RESEARCHED", 10, cls="fig-step")
+    b += label(rx + cw / 2, -26, "OVER THE WALL", 10, cls="fig-step")
     b += (f'<path d="M{rx - 40} {ch / 2 - 8:.0f} l30 0 M{rx - 18} '
           f'{ch / 2 - 14:.0f} l6 6 l-6 6" fill="none" stroke="{SOFT}" '
           f'stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')
@@ -738,7 +736,7 @@ def market():
     gx, gy = 16, 18
     CAP = 16                      # a Kingdom player is reading this figure
     # (rank, suit, how deep the stack is) — a fair spread of ranks 11-20
-    grid = [(11, "plains", 1), (16, "forest", 2), (12, "ocean", 1),
+    grid = [(12, "plains", 1), (16, "forest", 2), (12, "ocean", 1),
             (18, "mountain", 3), (13, "plains", 1), (17, "ocean", 2),
             (15, "forest", 1), (14, "mountain", 2), (20, "plains", 1)]
 
@@ -748,8 +746,8 @@ def market():
         b += (f'<rect x="{dx - d*2.0:.1f}" y="{dy - d*2.0:.1f}" width="{cw}" '
               f'height="{ch}" rx="4" fill="#E4E0D6" stroke="#8A837A" '
               f'stroke-width="1.1"/>')
-    b += label(dx + cw / 2, dy + ch + 16, "one deck,", 11, cls="fig-step")
-    b += label(dx + cw / 2, dy + ch + 30, "all suits shuffled", 11, cls="fig-step")
+    b += label(dx + cw / 2, dy + ch + 16, "upgrade", 11, cls="fig-step")
+    b += label(dx + cw / 2, dy + ch + 30, "deck", 11, cls="fig-step")
     # arrow: draw onto ANY position
     ax = dx + cw + 12
     b += (f'<path d="M{ax:.0f} {dy + ch/2:.0f} l24 0 M{ax + 19:.0f} '
@@ -802,7 +800,7 @@ def board():
     # column anchors
     chip_x = PAD + 6
     name_x = chip_x + 34
-    slots_x0 = name_x + 74          # unit slots start here
+    slots_x0 = name_x + 94          # unit slots start here (clear of "Civilization")
     # BUY UP TO and WALL sit side by side, in that order, exactly as they do on
     # the printed board: both are ranks, and the pair is two apart, which is
     # the rule. The figure had the wall and not the cap, so the picture of the
@@ -1103,9 +1101,9 @@ def recycle():
 
     # ---- the trigger, across the top
     b += box(0, 0, W, 34, accent=GOLD)
-    b += label(14, 22, "YOUR LAST HAND CARD IS PLAYED", 12, anchor="start", cls="fig-key")
+    b += label(14, 22, "YOUR HAND IS EMPTY AND YOUR MELD SPENT", 12, anchor="start", cls="fig-key")
     b += label(W - 14, 22,
-               "at once, mid-turn — not at the end of it", 10,
+               "at once, mid-turn", 10,
                anchor="end", cls="fig-label")
 
     # ---- four steps
@@ -1117,13 +1115,13 @@ def recycle():
     # otherwise by keeping a step that no longer happens.
     BW, BH, TOP, GAP = 192, 104, 58, 24
     steps = [
-        ("1", "INCOME", "your tiles, and your open objective", "module", GOLD),
+        ("1", "INCOME", "1 gold per map objective you hold right now", "", GOLD),
         ("2", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
         # "draw to ten" was the previous version, where a matched meld card went
         # to the SHARED pile and the hand came back short. It does not now: the
         # discard IS ten, and the figure was telling a player to draw from a pile
         # the section beside it tells them not to touch.
-        ("3", "RECYCLE", "take your discard back, all ten", "", None),
+        ("3", "PICK UP", "your whole discard: ten cards, no drawing", "", None),
     ]
     for i, (n, title, detail, tag, accent) in enumerate(steps):
         x = i * (BW + GAP)
@@ -1135,7 +1133,7 @@ def recycle():
         words, line, lines = detail.split(), "", []
         for wd in words:
             trial = (line + " " + wd).strip()
-            if len(trial) > 30:
+            if len(trial) > 26:
                 lines.append(line); line = wd
             else:
                 line = trial
@@ -1160,8 +1158,8 @@ def recycle():
           f'<path d="M {cx - 4.5} {y1 - 7} L {cx} {y1} L {cx + 4.5} {y1 - 7} Z" fill="{SOFT}"/>')
     b += box(0, y1 + 4, W, 30)
     b += label(W / 2, y1 + 24,
-               "carry on with your turn \u2014 your map phase and your research "
-               "are still in front of you", 10)
+               "carry on with your turn \u2014 moves, walls and research are still "
+               "in front of you", 10)
     return svg(W, H, b, vb=f"-2 -2 {W + 4} {H + 4}")
 
 

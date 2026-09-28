@@ -707,7 +707,7 @@ class GameMap {
     if (t.gold) t.gold = 0;                     // "stacked onto" disturbs the unit
     t.units.push(p);
   }
-  takeUnitOff(k) {                              // starvation, not combat
+  takeUnitOff(k) {                              // starvation, or a won duel (no coin absorbs)
     const t = this.tiles.get(k);
     const u = t.units.length ? t.units.pop() : null;
     t.gold = Math.min(t.gold, t.units.length);
@@ -3726,8 +3726,15 @@ class Game {
    *
    * The defender chooses where to fall back, because it is their unit and the
    * choice is theirs - the same reason they choose the card in a duel. */
-  *_takeUnit(p, cell) {
-    const victim = this.m.removeUnit(cell);
+  /* `absorb`: may a coin on the tile eat the hit instead of a unit? Under the
+   * old gold-priced combat it could - that was the whole of what a coin did.
+   * Under the duel it must NOT: the wall has already fought (and gone to the
+   * supply) inside _duel, so a won duel removes a unit, as §07 prints ("beat
+   * the wall and the duel is won: a defender falls back"). Letting a second
+   * coin absorb it meant a two-unit stack with two coins needed an extra won
+   * duel that the rulebook never mentions. */
+  *_takeUnit(p, cell, absorb = true) {
+    const victim = absorb ? this.m.removeUnit(cell) : this.m.takeUnitOff(cell);
     if (victim === null) {
       this.inc("absorbed_by_fortification");
       this.fx("shield", { seat: p.i, at: cell });
@@ -4040,7 +4047,7 @@ class Game {
     this.say(attackerWins ? "log.duel.won" : "log.duel.held",
              { a, b, wall: dCard && dCard.wall ? dCard.r : 0 });
     if (attackerWins) {
-      this.inc("duel_won"); yield* this._takeUnit(p, cell);
+      this.inc("duel_won"); yield* this._takeUnit(p, cell, false);
       /* The ground changes hands — but only if the fight actually emptied it,
        * and only if you have a unit left on your board to put there. Clearing
        * a stack still takes as many won duels as there are defenders. */

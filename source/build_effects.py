@@ -97,8 +97,7 @@ HTML = f"""<!doctype html>
   <p><strong>A</strong> is declared in the <em>declare step</em>, AFTER every meld is face up
   and in leader order — you can see what you are trying to beat, and so can the player after
   you. <strong>B</strong> is used during your own map phase, when the board in front of you is
-  already settled. <strong>C</strong> may be taken at any moment, including in the middle of
-  paying for something else.</p>
+  already settled. <strong>C</strong> is taken in your own map phase, at any point in it.</p>
 </section>
 
 <section>

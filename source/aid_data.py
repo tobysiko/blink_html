@@ -33,10 +33,10 @@ def terrain(GOLD, FOREST, OCEAN, STONE):
 
 # Free actions: no card spent, any order, your own turn only.
 FREE = [
-    ("MOVE", "your tier",
-     "land: across your own units · sea: across empty Ocean · never an attack."),
-    ("WATER", "first sea move",
-     "one free Ocean tile, anywhere · touch-two applies, reach does not."),
+    ("MOVE", "1 per meld card",
+     "land: through your own tiles · sea: across empty Ocean · never an attack."),
+    ("WATER", "once a turn",
+     "a unit on Ocean sails onto a new Ocean tile on its water's coast · touch-two, not reach."),
     ("RESEARCH", "",
      "twice · 1 gold then 2 · draw onto the highest rank · retire your lowest · "
      "buy at or under your cap."),
@@ -45,8 +45,6 @@ FREE = [
      "bury any two of your ten back down."),
     ("FORTIFY", "1 gold",
      "a coin on a unit · it defends at your tier's WALL + the terrain, or a better card."),
-    ("GOLD", "",
-     "free · shift coins between reserve and walls."),
     ("COLONY", "",
      "one a turn · spend a victory card on its B effect."),
 ]
@@ -97,7 +95,7 @@ COIN_USES = [
 VROW_USES = [
     ("A", "in the DECLARE step", "add its rank to your meld's total this trick"),
     ("B", "in your map phase", "found a colony — new tiles and units from the supply"),
-    ("C", "at any moment", "take 2–5 gold, by its rank band"),
+    ("C", "in your map phase", "take 2–5 gold, by its rank band"),
 ]
 
 # ---------------------------------------------------------------- new in v0.26

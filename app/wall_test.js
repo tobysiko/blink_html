@@ -185,5 +185,23 @@ function fight(s, rank, fort) {
      `nothing was said about it: ${JSON.stringify(said)}`);
 }
 
+// ------------------ a won duel removes a UNIT, even with a second coin there
+/* §07: "Beat the wall and the duel is won: a defender falls back." Under the
+ * wall rule the coin that fought has already gone to the supply inside
+ * _duel. A second coin on the same stack used to absorb the win as well, so a
+ * two-unit Plains holding two coins needed an extra won duel the book never
+ * mentions. */
+{
+  const s = scene({ fortify: 'wall' }, [5], 'plains');
+  s.tile.units.push(s.owner);                      // two defenders...
+  s.tile.gold = 2;                                 // ...one coin each
+  const units0 = s.tile.units.length;
+  fight(s, 19);
+  ok(s.tile.gold === 1, `the wall that fought left ${s.tile.gold} coins, expected 1`);
+  ok(s.tile.units.length === units0 - 1,
+     'a won duel against a stack with a second coin removed no defender - the coin absorbed it');
+  ok(s.tile.owner === s.owner, 'one won duel took a tile that still has a defender on it');
+}
+
 if (fail.length) { console.error(fail.join('\n')); process.exit(1); }
 console.log('wall_test ok');

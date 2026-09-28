@@ -270,7 +270,7 @@ HTML = f"""<!doctype html>
   better card, you swap two of your ten for the top two of the <b>market</b> — a different
   pile from the innovation space, and sight unseen until the two you drew are in your hand.
   It costs the same as research and comes out of the same twice-a-turn allowance: research,
-  trade, or one of each. §10 has the whole of it — for a first game, researching alone is
+  trade, or one of each. §09 has the whole of it — for a first game, researching alone is
   plenty to be going on with.</p>
   <div class="say"><b>The frontier pays.</b> Explore with a card of <b>rank 10 or under</b>
   — anything from your starting deck — and take <b>1 gold</b>. Your weakest cards are worth
@@ -310,18 +310,18 @@ HTML = f"""<!doctype html>
     <dd>Coming last pays you a gold, and you'll need it. Deliberately playing a single is a
     real strategy, not a failure. (§04)</dd>
     <dt>Expecting to capture a tile in one turn.</dt>
-    <dd>One card removes one defender and places nothing. You empty a tile one round and settle
-    it the next. (§06)</dd>
+    <dd>One won duel removes one defender. A tile holding three takes three duels, and only the
+    one that clears the last defender takes the ground. (§06)</dd>
     <dt>Emptying bands as fast as possible.</dt>
-    <dd>Bigger melds put you on a costlier row, and that gold has three other jobs. Growth is
-    a decision, not a goal. (§09)</dd>
+    <dd>Growing is free, but every unit you place brings the end closer, and a unit spread thin
+    is one a rival can take. Growth is a decision, not a goal. (§04)</dd>
     <dt>Hoarding cards in the victory row and never spending one.</dt>
     <dd>They're also your emergency gold and your trick insurance. A row of five you never
     touched may mean you played too safely — though every card is worth a point on its own,
     so spending one always costs you something. (§10)</dd>
     <dt>Forgetting the discard is your next hand.</dt>
     <dd>What you play this round is what you'll hold next time round. Cards bought late arrive
-    later than you think. (§09)</dd>
+    later than you think. (§08)</dd>
   </dl>
 </section>
 
