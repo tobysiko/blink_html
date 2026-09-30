@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-30T08:00:14Z
+ * Built 2026-09-30T08:17:17Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -1832,10 +1832,12 @@ class Game {
     this.GARRISON = opts.garrison || 0;
     this.m.fortMode = this.FORTIFY;   // NB: m.fortify() is a method
     this.m.atkLeft = Infinity;
-    /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
+    /* See _payFrontier. OFF IS THE PRINTED GAME since 30 Sep 2026 (Toby: "it's
+     * not needed"). "low" - a coin for exploring with a rank 10 or under - was
+     * printed from v0.24 to v0.26 and stays selectable, with the other variants,
      * so the measurements that chose it can be reproduced. */
-    this.FRONTIER = ["always", "seams", "chance", "off"].includes(opts.frontier)
-      ? opts.frontier : "low";
+    this.FRONTIER = ["always", "seams", "chance", "low", "off"].includes(opts.frontier)
+      ? opts.frontier : "off";
     /* "chance" is the table version of "seams": a die is rolled and some faces
      * pay. Seams measured at 3.9 gold a game over 11.3 explorations — 34.5% of
      * them — so two faces of six (33.3%) is the same economy with no coins to
@@ -4091,7 +4093,7 @@ class Game {
      * map turn still has a meld in flight that the top-up-to-ten cannot see. */
   }
 
-  /* WHAT THE FRONTIER PAYS (experimental, off by default).
+  /* WHAT THE FRONTIER PAYS (off by default - see the constructor).
    *
    * Fortifying is gated by gold, not by appetite: holding the bot's spending
    * cushion fixed and varying nothing else moves walls built from 19.9 a game
@@ -5605,11 +5607,11 @@ function newSession(opts, rand) {
        * trip — `o.duelTake || true` would quietly turn it back on and the two
        * clients would settle different tiles. */
       duelTake: o.duelTake !== false,
-      /* Default "low", so anything else has to survive the trip — two clients
-       * disagreeing about whether the frontier pays would replay different
-       * purses and then different boards. */
+      /* Default "off" (printed since 30 Sep 2026), so anything else has to
+       * survive the trip — two clients disagreeing about whether the frontier
+       * pays would replay different purses and then different boards. */
       frontier: ["always", "seams", "off", "chance", "low"].includes(o.frontier)
-        ? o.frontier : "low",
+        ? o.frontier : "off",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,

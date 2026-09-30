@@ -1575,11 +1575,11 @@
     <div class="field">
       <label for="frontier" data-i18n="setup.frontier">Exploring pays</label>
       <select id="frontier">
-        <option value="low" selected data-i18n="setup.frontier.low"></option>
+        <option value="off" selected data-i18n="setup.frontier.off"></option>
+        <option value="low" data-i18n="setup.frontier.low"></option>
         <option value="chance" data-i18n="setup.frontier.chance"></option>
         <option value="seams" data-i18n="setup.frontier.seams"></option>
         <option value="always" data-i18n="setup.frontier.always"></option>
-        <option value="off" data-i18n="setup.frontier.off"></option>
       </select>
       <p class="hint" id="frontier-hint" data-i18n="setup.frontier.note"></p>
     </div>
@@ -1790,7 +1790,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"c9a23fb1cb","branch":"main","dirty":true,"built":"2026-09-30T08:00:13Z"};
+const BUILD = {"version":"v0.26","api":null,"reportUrl":null,"commit":"unknown","branch":"unknown","dirty":null,"built":"2026-09-30T08:17:14Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -1909,11 +1909,11 @@ en: {
   "mast.sub": "Climbing the ladder of civilization",
   "mast.pitch": "The cards you play do two things at once: they compete for the trick, and they are the budget your civilization spends. Win the trick and you act first \u2014 but every card you played still reaches the map.",
   "setup.frontier": "Exploring pays",
-  "setup.frontier.low": "1 gold with a card of rank 10 or under \u2014 printed rule",
+  "setup.frontier.low": "1 gold with a card of rank 10 or under \u2014 the v0.24\u2013v0.26 rule",
   "setup.frontier.chance": "1 gold on a roll of 1 or 2 \u2014 the die version of seams",
   "setup.frontier.seams": "1 gold from a seam, four per terrain \u2014 the frontier runs out",
   "setup.frontier.always": "1 gold every time",
-  "setup.frontier.off": "nothing",
+  "setup.frontier.off": "nothing (printed rule)",
   "setup.frontier.note": "(measured: paying every time is the most anti-combat rule in the game \u2014 it doubles the penalty for fighting without making anyone explore more)",
   "setup.supply": "Tiles per terrain",
   "setup.supply.15": "15 \u2014 printed; a game ends with five or six of each unused",
@@ -2634,11 +2634,11 @@ de: {
   "mast.sub": "Die Leiter der Zivilisation hinauf",
   "mast.pitch": "Deine Karten tun zweierlei zugleich: Sie k\u00e4mpfen um den Stich, und sie sind das Budget deiner Zivilisation. Wer den Stich gewinnt, handelt zuerst \u2014 doch jede gespielte Karte erreicht trotzdem die Karte.",
   "setup.frontier": "Erkunden bringt",
-  "setup.frontier.low": "1 Gold mit einer Karte bis Wert 10 \u2014 gedruckte Regel",
+  "setup.frontier.low": "1 Gold mit einer Karte bis Wert 10 \u2014 Regel von v0.24 bis v0.26",
   "setup.frontier.chance": "1 Gold bei einer 1 oder 2 \u2014 die W\u00fcrfelfassung der Adern",
   "setup.frontier.seams": "1 Gold aus einer Ader, vier je Gel\u00e4nde \u2014 die Grenze ersch\u00f6pft sich",
   "setup.frontier.always": "jedes Mal 1 Gold",
-  "setup.frontier.off": "nichts",
+  "setup.frontier.off": "nichts (gedruckte Regel)",
   "setup.frontier.note": "(gemessen: jedes Mal zu zahlen ist die kampffeindlichste Regel im Spiel \u2014 sie verdoppelt den Nachteil des K\u00e4mpfens, ohne dass jemand mehr erkundet)",
   "setup.supply": "Pl\u00e4ttchen je Gel\u00e4nde",
   "setup.supply.15": "15 \u2014 gedruckt; am Ende liegen f\u00fcnf bis sechs je Sorte ungenutzt",
@@ -5103,10 +5103,12 @@ class Game {
     this.GARRISON = opts.garrison || 0;
     this.m.fortMode = this.FORTIFY;   // NB: m.fortify() is a method
     this.m.atkLeft = Infinity;
-    /* See _payFrontier. "low" is the printed game as of v0.24; the others exist
+    /* See _payFrontier. OFF IS THE PRINTED GAME since 30 Sep 2026 (Toby: "it's
+     * not needed"). "low" - a coin for exploring with a rank 10 or under - was
+     * printed from v0.24 to v0.26 and stays selectable, with the other variants,
      * so the measurements that chose it can be reproduced. */
-    this.FRONTIER = ["always", "seams", "chance", "off"].includes(opts.frontier)
-      ? opts.frontier : "low";
+    this.FRONTIER = ["always", "seams", "chance", "low", "off"].includes(opts.frontier)
+      ? opts.frontier : "off";
     /* "chance" is the table version of "seams": a die is rolled and some faces
      * pay. Seams measured at 3.9 gold a game over 11.3 explorations — 34.5% of
      * them — so two faces of six (33.3%) is the same economy with no coins to
@@ -7362,7 +7364,7 @@ class Game {
      * map turn still has a meld in flight that the top-up-to-ten cannot see. */
   }
 
-  /* WHAT THE FRONTIER PAYS (experimental, off by default).
+  /* WHAT THE FRONTIER PAYS (off by default - see the constructor).
    *
    * Fortifying is gated by gold, not by appetite: holding the bot's spending
    * cushion fixed and varying nothing else moves walls built from 19.9 a game
@@ -8876,11 +8878,11 @@ function newSession(opts, rand) {
        * trip — `o.duelTake || true` would quietly turn it back on and the two
        * clients would settle different tiles. */
       duelTake: o.duelTake !== false,
-      /* Default "low", so anything else has to survive the trip — two clients
-       * disagreeing about whether the frontier pays would replay different
-       * purses and then different boards. */
+      /* Default "off" (printed since 30 Sep 2026), so anything else has to
+       * survive the trip — two clients disagreeing about whether the frontier
+       * pays would replay different purses and then different boards. */
       frontier: ["always", "seams", "off", "chance", "low"].includes(o.frontier)
-        ? o.frontier : "low",
+        ? o.frontier : "off",
       duelKeep: !!o.duelKeep,
       meldScore: o.meldScore === "sum" ? "sum" : "count",
       aSumLadder: o.aSumLadder || null,
