@@ -290,10 +290,19 @@ def sheet():
         b += wrap(x + 3, top + 13.0 + n1 * 3.8 + 1.6, who, inner, 2.6, FAINT)[0]
         if i < len(ROUND) - 1:
             b += arrow(x + bw + 0.4, top + bh / 2, x + bw + 2.6)
-    y = top + bh + 3.8
+    y = top + bh + 4.4
+    # THE SET-ASIDE gets its own line in ink, not the faint second line of the
+    # MAP box: it is the one rule of the round that costs a player something,
+    # and the one a table forgets.
+    b += T(M, y, "Played as many cards as the winner and lost? Set one of them aside: "
+                 "it pays 1 gold instead of acting,", 3.1, weight="600")
+    y += 4.0
+    b += T(M, y, "and goes to your own discard. Fewer cards than the winner: spend "
+                 "them all. Last place: +1 gold.", 3.1, weight="600")
+    y += 4.2
     b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "
                  "this sheet says what that means.", 3.0, col=SOFT, italic=True)
-    y += 7.5
+    y += 6.8
 
     # ================================================== 1b. WHAT MAY I LAY?
     # The single largest omission on the one-page sheet: Blink is a
@@ -322,7 +331,7 @@ def sheet():
     y += mh + 7.5
 
     # ================================================== 2. THE THREE DECISIONS
-    b += head(M, y, "WHAT ARE MY OPTIONS?", "one of these, never all of them")
+    b += head(M, y, "WHAT ARE MY OPTIONS?", "what a card, a coin and a victory card can do")
     y += 5
     colw = (W - 2 * M - 2 * 5) / 3
     ctop = y

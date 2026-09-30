@@ -71,8 +71,8 @@ ROUND = [
                 "leader first — you can see every meld"),
     ("RANK",    "highest total wins the trick",
                 "ties: more cards, a tie-winning A, highest card, earliest laid"),
-    ("MAP",     "spend your meld, in that order",
-                "winner first · set-aside and gold settle here"),
+    ("MAP",     "spend your meld, winner first",
+                "but first see the line below"),
 ]
 
 # WHAT A COIN CAN DO. (key, price, what)
