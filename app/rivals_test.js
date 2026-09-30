@@ -22,11 +22,12 @@ catch (e) { console.error('this test needs jsdom — run: npm install jsdom'); p
 
 const html = fs.readFileSync(require('./test_setup.js').PLAY_HTML, 'utf8');
 const fail = [];
-let checks = 0, leaksLooked = 0;
+let checks = 0, leaksLooked = 0, toggles = 0;
 
 function game(seed, n) {
   return new Promise((done) => {
-    const dom = new JSDOM(html, { runScripts: 'dangerously', pretendToBeVisual: true });
+    /* a real origin, so localStorage exists and remembering can be checked */
+    const dom = new JSDOM(html, { url: 'https://blink.test/', runScripts: 'dangerously', pretendToBeVisual: true });
     const w = dom.window, d = w.document;
     w.addEventListener('error', (e) => fail.push('error: ' + e.message));
     const q = (s) => d.querySelector(s);
@@ -82,7 +83,7 @@ function game(seed, n) {
 
     setTimeout(() => {
       require('./test_setup.js').start(w, d, { players: n, seat: 0, seed });
-      let steps = 0;
+      let steps = 0, toggled = false;
       const tick = () => {
         if (w.eval('gameOver()')) {
           w.eval('render()');
@@ -93,6 +94,27 @@ function game(seed, n) {
         }
         if (w.eval('REQ && mine()')) {
           if (steps % 3 === 0) inspect();
+          /* One tap folds them all away and one brings them back; folded, the
+           * bar still gives every rival's public score; the choice sticks. */
+          if (!toggled && steps >= 30) {
+            toggled = true; toggles++;
+            const click = (x) => x.dispatchEvent(new w.MouseEvent('click', { bubbles: true, cancelable: true }));
+            const fold = () => q('#rivals .rivalsfold');
+            if (!fold().open) fail.push('the other boards start folded on a wide screen');
+            click(q('#rivals summary'));
+            if (fold().open) fail.push('the Hide bar did not fold the boards away');
+            if (qa('#rivals .rdig').length !== w.eval('G.n') - 1)
+              fail.push('folded, the bar does not list every rival');
+            if (w.localStorage.getItem('blink_rivals') !== 'shut') fail.push('folding was not remembered');
+            w.eval('render()');
+            if (fold().open) fail.push('the boards unfolded themselves on the next render');
+            click(q('#corners .corner[data-seat] .ohead'));
+            if (!fold().open) fail.push('tapping a rival in the map corner did not show the boards');
+            click(q('#rivals summary'));
+            click(q('#rivals summary'));
+            if (!fold().open || w.localStorage.getItem('blink_rivals') !== 'open')
+              fail.push('the Show bar did not bring the boards back and remember it');
+          }
           w.eval(`(() => {
             if (REQ.type === 'turn') {
               const o = REQ.opts;
@@ -118,6 +140,7 @@ function game(seed, n) {
   await game(5, 4);
   await game(12, 3);
   await game(30, 2);
+  if (toggles !== 3) fail.push(`the fold was exercised in ${toggles} of 3 games`);
   if (!leaksLooked) fail.push('no rival ever held a hidden objective — the leak check never ran');
   if (fail.length) { console.error([...new Set(fail)].slice(0, 30).join('\n')); process.exit(1); }
   console.log(`rival boards: ${checks} inspections — tiers, gold, hand, victory row and shown `

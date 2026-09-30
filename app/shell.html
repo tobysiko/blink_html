@@ -1180,6 +1180,31 @@
   .corner{cursor:pointer}
   .corner .sc sup{font-size:8px; color:var(--mut); margin-left:1px}
   .rivalsfold{margin-top:8px}
+  /* The whole bar is the switch: a thumb-sized target that says what it does,
+     and when folded it still carries everyone's score and tier. */
+  .rivalsfold > summary{list-style:none; cursor:pointer; display:flex; align-items:center;
+    gap:10px; flex-wrap:wrap; min-height:38px; padding:5px 10px; border:1px solid var(--line);
+    border-radius:8px; background:#F4F1EA}
+  .rivalsfold > summary::-webkit-details-marker{display:none}
+  .rivalsfold[open] > summary{background:none; border-color:transparent; padding-left:2px}
+  .rtitle{font-size:10px; letter-spacing:.13em; text-transform:uppercase; font-weight:700;
+    color:var(--mut)}
+  .rdigs{display:flex; gap:12px; flex-wrap:wrap; font-size:12px}
+  .rdig{display:inline-flex; align-items:center; gap:4px; white-space:nowrap}
+  .rdig i{width:9px; height:9px; border-radius:50%}
+  .rdig sup{font-size:8px; color:var(--mut)}
+  .rdig em{font-style:normal; font-size:10.5px; color:var(--mut)}
+  .rtog{margin-left:auto; font-size:11.5px; font-weight:700; color:var(--deep);
+    border:1px solid var(--deep); border-radius:12px; padding:3px 10px; background:#fff;
+    white-space:nowrap}
+  /* On a phone each board shows only the row they are on, not the whole ladder,
+     and the objective loses its sentence (the three chips already say it). */
+  @media (max-width:560px){
+    .rl:not(.here){display:none}
+    .rb-ladder{min-width:0; flex:1 1 100%}
+    .rb-obj .oflav{display:none}
+    .rivalgrid{grid-template-columns:minmax(0,1fr)}
+  }
   .rivalgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
     gap:8px; margin-top:4px}
   .rboard{border:1px solid var(--line); border-left:4px solid var(--c);

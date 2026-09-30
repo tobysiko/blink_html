@@ -1831,7 +1831,7 @@ const narrowScreen = () => !!(window.matchMedia
  * had: the tier ladder, the thing you check before every single decision, was
  * behind a one-line summary that opened closed. The market is a reference you
  * consult; your board is your state. Only the market folds itself. */
-const ALWAYS_OPEN = { board: true, rivals: true };
+const ALWAYS_OPEN = { board: true };
 const foldOpen = (k) =>
   (FOLD[k] === null ? (ALWAYS_OPEN[k] || !narrowScreen()) : FOLD[k]);
 /* The USER's clicks are what set a preference - not the `toggle` event, which
@@ -2182,11 +2182,41 @@ function renderRivals() {
   const sc = G.score();
   const seats = rivalOrder().map(([i]) => i);
   if (!seats.length) { box.innerHTML = ""; return; }
-  box.innerHTML = `<details class="fold rivalsfold"${foldOpen("rivals") ? " open" : ""}>
-    <summary class="seclab">${t("sec.rivals")}</summary>
+  /* ONE TAP TO PUT THEM AWAY. Folded, the bar still says the one thing worth
+   * a glance - everyone's public score and tier - so hiding the boards costs
+   * nothing on a phone. Open on a wide screen, folded on a narrow one, until
+   * the player chooses; the choice is remembered. */
+  if (FOLD.rivals === null) FOLD.rivals = rivalsPref();
+  const open = foldOpen("rivals");
+  const digest = seats.map((i) => {
+    const d = publicScore(i, sc.find((x) => x.seat === i));
+    return `<span class="rdig"><i style="background:${SEAT_C[i]}"></i>${seatName(i)} <b>${
+      d.total}${d.hidden ? "<sup>+?</sup>" : ""}</b> <em>${tierName(G.P[i].band())}</em></span>`;
+  }).join("");
+  box.innerHTML = `<details class="rivalsfold"${open ? " open" : ""}>
+    <summary><span class="rtitle">${t("sec.rivals")}</span>${
+      open ? "" : `<span class="rdigs">${digest}</span>`}<span class="rtog">${
+      t(open ? "rival.hideAll" : "rival.showAll")}</span></summary>
     <div class="rivalgrid">${seats.map((i) => rivalBoard(i, sc)).join("")}</div>
   </details>`;
-  wireFold(box.querySelector(".rivalsfold"), "rivals");
+  const fold = box.querySelector(".rivalsfold");
+  fold.querySelector("summary").addEventListener("click", (e) => {
+    e.preventDefault();                       // re-render rather than toggle in place
+    FOLD.rivals = !open;
+    try { window.localStorage.setItem(RIVALS_KEY, FOLD.rivals ? "open" : "shut"); }
+    catch (err) { /* remembered for this game only */ }
+    renderRivals();
+  });
+}
+/* NB: no dots in the storage key — see COACH_KEY. */
+const RIVALS_KEY = "blink_rivals";
+function rivalsPref() {
+  try {
+    const v = window.localStorage.getItem(RIVALS_KEY);
+    if (v === "open") return true;
+    if (v === "shut") return false;
+  } catch (e) { /* no storage: fall back to the screen size */ }
+  return null;
 }
 
 /* Tap a rival in the map corner and their board comes into view. */
