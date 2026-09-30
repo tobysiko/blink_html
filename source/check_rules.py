@@ -695,20 +695,22 @@ for terr in ("forest", "mountain"):
               f"the combat figure names {terr.capitalize()} without its "
               f"+{def_js[terr]}")
 
-# THE FRONTIER PAYS, and the rank it pays up to is a number that exists twice.
+# THE FRONTIER COIN WAS DROPPED on 30 Sep 2026 (Toby: "it's not needed"). It
+# was printed v0.24-v0.26 as 1 gold for exploring with a rank 10 or under; the
+# engine keeps it as a selectable variant ("low"). What is checked now is the
+# absence, on both sides: the engine must not default to paying, and no
+# printed document may still promise the coin - a retired rule survives in
+# prose longer than anywhere else (see project-state, THE FAILURE MODE).
 frontier = re.search(r'FRONTIER = \[[^\]]*\]\s*\.includes\(opts\.frontier\)\s*'
                      r'\?\s*opts\.frontier\s*:\s*"(\w+)"', js, re.S)
-check(bool(frontier) and frontier.group(1) == "low",
-      "the engine no longer pays for exploring with a low card by default")
+check(bool(frontier) and frontier.group(1) == "off",
+      "the engine pays for exploring by default again - the frontier coin was dropped")
 rank = re.search(r"FRONTIER_RANK = opts\.frontierRank \|\| (\d+)", js)
-check(bool(rank), "cannot find the frontier rank in app/engine.js")
-if rank:
-    check(f"rank {rank.group(1)} or under" in rules,
-          f"section 06 does not say the frontier pays at rank {rank.group(1)} or under")
-    # and the boundary has to be the starting deck / upgrade line, or the rule
-    # stops explaining itself
-    check(int(rank.group(1)) == 10,
-          "the frontier rank is no longer the starting-deck boundary")
+_FRONTIER_PROSE = re.compile(r"frontier pays|rank 10 or under|explor\w*[^.]{0,40}\+1 gold",
+                             re.I)
+check(not _FRONTIER_PROSE.search(rules),
+      "the rulebook still promises a coin for exploring: "
+      f"\u201c{(_FRONTIER_PROSE.search(rules) or [''])[0]}\u201d")
 
 # WHOSE CARDS FIGHT. The first duel asked the attacker for a card from hand as
 # well as the meld card they had already spent, which is not what anybody
@@ -882,8 +884,8 @@ no_bonus_rule(tut, "the tutorial")
 check(not re.search(r"attacking into \w+ \(\d\)", tut, re.I),
       "the tutorial still charges gold to attack")
 check("duel" in tut.lower(), "the tutorial never mentions the duel")
-check(bool(rank) and f"rank {rank.group(1)} or under" in tut,
-      f"the tutorial does not teach the frontier coin at rank {rank and rank.group(1)}")
+check(not _FRONTIER_PROSE.search(tut),
+      "the tutorial still teaches the dropped frontier coin")
 check("the tile is yours" in tut, "the tutorial does not say a won duel takes the ground")
 for terr in ("plains", "ocean", "forest", "mountain"):
     check(f"{terr.capitalize()} +{def_js[terr]}" in tut
@@ -1554,6 +1556,13 @@ check("straight into your hand" not in tut,
 check(re.search(r"second kind of improvement.{0,20}trade", tut, re.S),
       "the tutorial's first game never mentions trade as the other "
       "improvement")
+
+# ...and no aid may still promise the dropped frontier coin either.
+for _name, _txt in (("the folded player aid", aid_txt),
+                    ("side one of the pictorial aid", globals().get("vis", "")),
+                    ("side two of the pictorial aid", globals().get("vis2", ""))):
+    check(not _FRONTIER_PROSE.search(_txt),
+          f"{_name} still promises a coin for exploring (dropped 30 Sep 2026)")
 
 # ---------------------------------------------------------------- the verdict
 #

@@ -169,7 +169,7 @@ console.log('economy_test ok');
  * is two faces of six. */
 {
   const g = new E.Game(4, 5, { humans: [] });
-  ok(g.FRONTIER === 'low', 'the printed frontier rule is no longer the default');
+  ok(g.FRONTIER === 'off', 'the printed frontier rule (no coin) is no longer the default');
   ok(Math.abs(g.FRONTIER_CHANCE - 2 / 6) < 1e-9,
      'the default chance is not two faces of six');
 

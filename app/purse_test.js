@@ -87,7 +87,9 @@ const ok = (c, what) => { if (!c) fail.push(what); };
       const opts = [{ deck: 'abd' }, { combat: 'gold' }, {},
                     { income: 'crossroads' },
                     { income: 'objective', objectives: 'showone' },
-                    { economy: 'full' }][s % 6];
+                    // the frontier coin is a variant since 30 Sep 2026, so it
+                    // has to be switched on for its reason to fire at all
+                    { economy: 'full', frontier: 'low' }][s % 6];
       const done = E.playOut(n, (s * 40503) % 2147483647, opts);
       for (const k of Object.keys(done.stats)) {
         const m = /^gold_(in|out)_(.+)$/.exec(k);

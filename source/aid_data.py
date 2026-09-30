@@ -20,7 +20,7 @@ def card_uses(GOLD, FOREST, RED, STONE):
     """The four things ONE card of your meld may do. Exactly one, per card."""
     return [
         ("SETTLE",  GOLD,   "a unit from your top tier"),
-        ("EXPLORE", FOREST, "a new tile · must touch TWO · rank 10 or under pays 1 gold"),
+        ("EXPLORE", FOREST, "a new tile of the card's suit · must touch TWO tiles"),
         ("ATTACK",  RED,    "a duel · your rank vs card + ground · take it: +1 gold"),
         ("CASH",    STONE,  "1 gold"),
     ]

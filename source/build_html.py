@@ -465,8 +465,7 @@ HTML = f"""<!doctype html>
     <li><strong>Bex</strong> spends both cards. The Mountain beside her Plains is in reach,
     so her <strong>8 of Mountain</strong> settles a unit there — Mountain holds one, so it is
     hers alone. Her <strong>8 of Ocean</strong> explores: she picks an empty space beside
-    her civilization that touches at least two tiles, and lays an Ocean tile from the supply.
-    The card is rank 10 or under, so the frontier pays her <strong>1 gold</strong>.</li>
+    her civilization that touches at least two tiles, and lays an Ocean tile from the supply.</li>
     <li><strong>Ada</strong> sets aside the 5 — it pays her <strong>1 gold</strong> and goes
     to her own discard — and spends the <strong>6 of Plains</strong> to settle a second unit
     on her homeland, which holds three.</li>
@@ -624,10 +623,7 @@ HTML = f"""<!doctype html>
   <p><strong>A new tile must touch at least two tiles already on the map.</strong> The map
   grows as one compact body; there are no bridges into open table. If that terrain has run
   out of the supply, the card takes gold instead.</p>
-  <p><strong>The frontier pays.</strong> If the card you explored with is <strong>rank 10
-  or under</strong>, take <strong>1 gold</strong>. Your weakest cards are worth something
-  on the edge of the map, and the tap closes by itself as your hand improves.</p>
-  {fig('explore', "Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two tiles already on the map — and the very next card may settle it. A card of rank 10 or under also pays a coin.")}
+  {fig('explore', "Exploring lays new ground beside your civilization. The tile matches the suit of the card and must touch at least two tiles already on the map — and the very next card may settle it.")}
 
   <h3>Attack</h3>
   <p>A tile a rival occupies cannot be settled. Spending a card on it <strong>declares an
@@ -855,8 +851,7 @@ HTML = f"""<!doctype html>
     each of those units with a coin <strong>from the general supply</strong>. Each tile is an
     explore: it must touch two tiles and lie <strong>within your reach</strong> — or, for the
     6–10 band, <strong>up to two tiles out</strong>. You need at least one unit in your
-    reserve and a tile of the right terrain in the supply; lay what you can. A colony does
-    not pay the frontier coin.</li>
+    reserve and a tile of the right terrain in the supply; lay what you can.</li>
     <li><strong>C</strong> is taken in your own map phase, at any point in it.</li>
   </ul>
   <div class="note" style="border-left-color:var(--forest)">
@@ -1085,8 +1080,7 @@ HTML = f"""<!doctype html>
       <b>1 gold</b>. In your reach, suit matches terrain. No units on the map? Reach does not
       apply.</p>
       <h3>Explore</h3>
-      <p>New tile touches <b>at least two</b> tiles. Terrain run out → gold instead.
-      Rank 10 or under → +1 gold.</p>
+      <p>New tile touches <b>at least two</b> tiles. Terrain run out → gold instead.</p>
       <h3>Duel</h3>
       <p>Attack = your card's rank. Defence = their card from hand (or their wall) + terrain
       (Plains 0 · Ocean 0 · Forest 1 · Mountain 2). Higher wins; level goes to you unless
@@ -1118,8 +1112,8 @@ HTML = f"""<!doctype html>
       5 gold. A after the reveal; B and C in your map phase. Spent cards go to the bottom of
       the market. A sixth card bumps the lowest there.</p>
       <h3>Gold in</h3>
-      <p>1 each: cash a card · explore with rank 10 or under · last-ranked meld · set-aside
-      card · take the ground in a duel. Also: 1 per objective held, at each recycle ·
+      <p>1 each: cash a card · last-ranked meld · set-aside card · take the ground in a
+      duel. Also: 1 per objective held, at each recycle ·
       effect C.</p>
       <h3>End and scoring</h3>
       <p>Any reserve empty at the end of a round → one more round. Score 1 per unit on the map + 1 per

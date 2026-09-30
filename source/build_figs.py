@@ -583,8 +583,6 @@ def explore():
     b += card(cx0, -28, 6, "ocean", w=40, h=56)
     b += label(cx0 + 20, 46, "play 6 of Ocean", 11, anchor="middle")
     b += label(cx0 + 20, 61, "\u2192 lay an Ocean tile", 11, anchor="middle")
-    b += label(cx0 + 20, 76, "+1 gold (rank 10 or under)", 10, anchor="middle",
-               cls="fig-step")
     return svg(0, 0, b, vb="auto")
 
 F["explore"] = explore()

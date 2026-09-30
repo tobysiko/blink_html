@@ -198,7 +198,10 @@ setTimeout(() => {
    * wrong furniture entirely), and nothing named the rule — so the first
    * report of it was "nothing happens when I explore with a low card". A gold
    * income nobody notices is a gold income nobody plays around. */
+  /* Off in the printed game since 30 Sep 2026; switched on here because the
+   * variant is still selectable and must still announce itself. */
   w.eval(`(() => {
+    G.FRONTIER = 'low';
     const p = G.P[ME];
     const cell = [...G.m.legalSpaces()][0];
     G.log.length = 0;

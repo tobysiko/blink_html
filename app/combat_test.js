@@ -263,15 +263,19 @@ ok(E.playOut(3, 7, { duelTake: false }).DUEL_TAKE === false,
  * The boundary is the one that explains itself: rank 10 is the top of every
  * starting deck and the bottom of the market. */
 {
+  /* 30 Sep 2026: DROPPED from the printed game ("it's not needed"). The
+   * default is now "off"; "low" is kept selectable and still tested here so
+   * the measurement above can be reproduced. */
   const g = E.playOut(3, 7, {});
-  ok(g.FRONTIER === 'low', `the frontier rule defaults to ${g.FRONTIER}`);
-  ok(g.FRONTIER_RANK === 10, `the frontier pays up to ${g.FRONTIER_RANK}, not 10`);
-  ok(E.playOut(3, 7, { frontier: 'off' }).FRONTIER === 'off',
-     'the older economy cannot be selected for comparison');
+  ok(g.FRONTIER === 'off', `the frontier rule defaults to ${g.FRONTIER}, not off`);
+  ok((g.stats.frontier_paid || 0) === 0, 'a default game still paid the frontier coin');
+  const low = E.playOut(3, 7, { frontier: 'low' });
+  ok(low.FRONTIER === 'low', 'the v0.24-v0.26 frontier cannot be selected for comparison');
+  ok(low.FRONTIER_RANK === 10, `the frontier pays up to ${low.FRONTIER_RANK}, not 10`);
 
   let paid = 0, explored = 0, off = 0;
   for (const n of [2, 3, 4]) for (let s = 0; s < 40; s++) {
-    const a = E.playOut(n, (s * 40503) % 2147483647, {});
+    const a = E.playOut(n, (s * 40503) % 2147483647, { frontier: 'low' });
     paid += a.stats.frontier_paid || 0;
     explored += a.stats.explore || 0;
     off += E.playOut(n, (s * 40503) % 2147483647, { frontier: 'off' })
