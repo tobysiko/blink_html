@@ -2944,7 +2944,7 @@ class Game {
          * The bot below keeps the fixed sequence, so the sim's numbers still
          * describe the same engine. */
         p.played = [];
-        // the card set aside has already gone to the shared pile, not to yours
+        // the card set aside has already gone to your discard (_trickDues)
         yield* this._humanTurn(p, use);
       } else {
         yield* this._place(p, use);

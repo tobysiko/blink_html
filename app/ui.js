@@ -836,6 +836,179 @@ function coach(key) {
 }
 function coachDismiss() { COACH = null; renderPrompt(); }
 
+/* WHAT DO I DO NOW, in letters you can read from across the table.
+ *
+ * The prompt bar answers that question too, but it sits under the map in
+ * 13 px type among buttons, and a first-time player's eyes are on the board.
+ * The guide is one banner over the whole play area: where in the round you
+ * are (meld, reveal, map), one big instruction, and one line on how to do it.
+ * It is for learning the game; anyone who knows it switches it off, from the
+ * banner itself or the setup page, and the choice is remembered.
+ *
+ * It follows the TABLE, not only the engine. The engine resolves everyone's
+ * map turn before the client animates any of it, so the request for your own
+ * turn arrives while the others are still visibly playing. Saying "your turn"
+ * over somebody else's settling would teach exactly the wrong order, so until
+ * the animation reaches your seat the banner says whose turn it is. */
+/* NB: no dots in the storage key — see COACH_KEY. */
+const GUIDE_KEY = "blink_guide";
+let GUIDE_LAST = "";
+
+function guideOn() {
+  const sel = $("#guide-pref");
+  return !sel || sel.value !== "off";
+}
+function loadGuidePref() {
+  let v = null;
+  try { v = window.localStorage.getItem(GUIDE_KEY); } catch (e) { /* default on */ }
+  const sel = $("#guide-pref");
+  if (sel && (v === "on" || v === "off")) sel.value = v;
+}
+function setGuide(on) {
+  const sel = $("#guide-pref");
+  if (sel) sel.value = on ? "on" : "off";
+  try { window.localStorage.setItem(GUIDE_KEY, on ? "on" : "off"); } catch (e) {}
+  renderGuide();
+}
+
+/* Requests that belong to your own map turn: the ones the banner holds back
+ * while the table is still showing someone else's. */
+const GUIDE_MYTURN = new Set(["turn", "setaside", "bonus", "discard", "assault",
+  "conquest", "colony", "waterexplore", "buy", "retire", "researchTo", "trade"]);
+
+function guideState() {
+  const decided = uiWinner() !== null && uiWinner() !== undefined;
+  const step = decided ? 2 : 0;
+  const S = (tone, st, head, sub) => ({ tone, step: st, head, sub });
+  if (gameOver()) return S("wait", null, t("guide.over.h"), t("guide.over.s"));
+  /* Between one seat's turn ending and the next one's starting, nobody is
+   * acting for a beat or two. Name whoever is up next rather than flicker to
+   * a vaguer line and back. */
+  let acting = uiActing();
+  if ((acting === null || acting === undefined) && decided) {
+    const up = uiSeq().find((i) => !uiDone(i));
+    if (up !== undefined) acting = up;
+  }
+  const watching = (i) => S("wait", 2, t("guide.watch.h", { name: seatName(i) }),
+    t("guide.watch.s"));
+
+  if (!REQ || !mine()) {
+    if (REQ && G.isHuman(REQ.seat) && REQ.seat !== ME)
+      return S("wait", step, t("guide.wait.h", { name: seatName(REQ.seat) }),
+               t("guide.wait.s"));
+    if (acting !== null && acting !== undefined && acting !== ME) return watching(acting);
+    return S("wait", step, t("guide.others.h"), t("guide.others.s"));
+  }
+
+  /* Yours, but the table has not got there yet. */
+  if (GUIDE_MYTURN.has(REQ.type) && G.acting === ME && acting !== ME) {
+    if (decided && acting !== null && acting !== undefined) {
+      const w = watching(acting);
+      const seq = uiSeq();
+      if (seq.indexOf(ME) === seq.indexOf(acting) + 1) w.sub = t("guide.watch.next");
+      return w;
+    }
+    return S("wait", 1, t("guide.reveal.h"), t("guide.reveal.s"));
+  }
+  if (REQ.type === "effectA" && fxEnabled() && TRICK && !TRICK.shown)
+    return S("wait", 1, t("guide.reveal.h"), t("guide.reveal.s"));
+
+  const p = G.P[ME];
+  switch (REQ.type) {
+    case "draft":
+      return S("act", "setup", tn("guide.draft.h", REQ.pass), t("guide.draft.s"));
+    case "mulligan":
+      return S("act", "setup", t("guide.mulligan.h"), t("guide.mulligan.s"));
+    case "objective":
+      return S("act", "setup", t("guide.objective.h"), t("guide.objective.s"));
+    case "homeland":
+      return S("act", "setup", t("guide.homeland.h"), t("guide.homeland.s"));
+    case "meld": {
+      const mr = meldRules();
+      const what = t("ask.meld." + (mr.combo && mr.friends ? "both"
+        : mr.combo ? "combo" : mr.friends ? "friends" : "run"));
+      return S("act", 0, t(G.round <= 1 ? "guide.meld.first" : "guide.meld.h"),
+               t("guide.meld.s", { lim: p.meldLimit(), what }));
+    }
+    case "effectA":
+      if (SEL.vcard) return S("act", 1, t("guide.vcard.h"), t("guide.vcard.s"));
+      return S("act", 1, t("guide.declare.h"), t("guide.declare.s"));
+    case "setaside":
+      return S("alert", 2, t("guide.aside.h"), t("guide.aside.s"));
+    case "bonus":
+      return S("act", 2, t("guide.bonus.h"), t("guide.bonus.s"));
+    case "turn": {
+      const o = REQ.opts;
+      const left = o.cards.length;
+      if (RESEARCH) return S("act", 2, t("guide.research.h"), t("guide.research.s"));
+      if (SEL.mode === "move")
+        return S("act", 2, t("guide.move.h"), tn("guide.move.s", o.moves));
+      if (SEL.mode === "fortify")
+        return S("act", 2, t("guide.fortify.h"), t("guide.fortify.s"));
+      if (SEL.vcard) return S("act", 2, t("guide.vcard.h"), t("guide.vcard.s"));
+      if (left && SEL.card)
+        return S("act", 2, t("guide.turn.card.h"), t("guide.turn.card.s"));
+      if (left) {
+        const first = uiWinner() === ME && left === (p.tableau || []).length;
+        return S("act", 2, tn("guide.turn.h", left),
+                 (first ? t("guide.turn.won") : "") + t("guide.turn.s"));
+      }
+      return S("act", 2, t("guide.turn.done.h"), tn("guide.turn.done.s", o.moves));
+    }
+    case "duel":
+      return S("alert", 2, t("guide.duel.h"), t("guide.duel.s"));
+    case "assault":
+      return S("act", 2, t("guide.assault.h"), t("guide.assault.s"));
+    case "discard":
+      return S("act", 2, t("guide.discard.h"), t("guide.discard.s"));
+    case "retire":
+      return S("act", 2, t("guide.retire.h"), t("guide.retire.s"));
+    case "buy":
+      return S("act", 2, t("guide.buy.h"), t("guide.buy.s"));
+    case "researchTo":
+      return S("act", 2, t("guide.researchTo.h"), t("guide.researchTo.s"));
+    case "trade":
+      return S("act", 2, t("guide.trade.h"), tn("guide.trade.s", REQ.need));
+    case "perk":
+      return S("act", 2, t("guide.perk.h"), t("guide.perk.s"));
+    case "conquest": case "colony": case "waterexplore": case "retreat":
+      return S("act", 2, t("guide.hex.h"), t("guide.hex.s"));
+    default:
+      return S("act", step, t("guide.other.h"), t("guide.other.s"));
+  }
+}
+
+function renderGuide() {
+  const box = $("#guide");
+  const on = guideOn();
+  const show = $("#guideon");
+  if (show) { show.hidden = on || !G; show.title = t("guide.showTip"); }
+  if (!box) return;
+  if (!G || !on) { box.hidden = true; GUIDE_LAST = ""; return; }
+  const g = guideState();
+  box.hidden = false;
+  box.className = g.tone;
+  const steps = [t("guide.st.meld"), t("guide.st.reveal"), t("guide.st.map")];
+  const side = g.step === "setup"
+    ? `<span class="gpill">${t("guide.setup")}</span>`
+    : `<span class="gpill">${t("guide.round", { n: G.round })}</span>`
+      + (g.step === null ? "" : `<ol class="gsteps">${steps.map((s, k) =>
+          `<li class="${k === g.step ? "on" : k < g.step ? "done" : ""}">${s}</li>`)
+          .join("")}</ol>`);
+  box.innerHTML = `<div class="gside">${side}</div>
+    <div class="gtext"><div class="ghead">${g.head}</div>
+      <div class="gsub">${g.sub}</div></div>
+    <button type="button" class="gx" title="${t("guide.hideTip")}" aria-label="${t("guide.hide")}"><span class="gxl">${
+      t("guide.hide")}</span> ✕</button>`;
+  box.querySelector(".gx").addEventListener("click", () => setGuide(false));
+  /* A new instruction arrives with a small drop, so a change is noticed even
+   * when it happens while you were looking at the board. */
+  if (g.head !== GUIDE_LAST) {
+    GUIDE_LAST = g.head;
+    box.classList.add("fresh");
+  }
+}
+
 /* Drain whatever the engine recorded since the last step and play it. */
 function playEvents() {
   if (!G || !G.events || !G.events.length) return 0;
@@ -1015,6 +1188,7 @@ function render() {
   renderSide();
   renderPrompt();
   renderZone();
+  renderGuide();
   updateUndo();
   updateFlag();
 }
@@ -1081,6 +1255,8 @@ function renderTable() {
   /* An animation beat rebuilds the meld area, and would take the highlight off
    * a step that is still waiting for a click. Put it back. */
   renderZone();
+  /* ...and the beat may be the one that hands the turn to you. */
+  renderGuide();
 }
 
 const mine = () => REQ && REQ.seat === ME;
@@ -1984,7 +2160,7 @@ function renderMyMeld() {
   if (aside) {
     /* The forced set-aside happens HERE, on the cards already lying on the
      * table, rather than in a separate list in the prompt. One of these leaves
-     * for the shared pile and pays you a coin; there is no way past it. */
+     * for your own discard and pays you a coin; there is no way past it. */
     n = REQ.options.length;
     cards = REQ.options.map((c, i) => cardBtn(c, "want", `data-aside="${i}"`, "mid")).join("");
   } else if (choosing) {
@@ -3349,6 +3525,9 @@ window.addEventListener("DOMContentLoaded", () => {
     $("#seed").value = Math.floor(Math.random() * 1e6);
   });
   $("#bot-level").addEventListener("change", levelNote);
+  loadGuidePref();
+  $("#guide-pref").addEventListener("change", () => setGuide(guideOn()));
+  $("#guideon").addEventListener("click", () => setGuide(true));
   if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
   if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
   if ($("#meld-score")) $("#meld-score").addEventListener("change", syncALadderRow);

@@ -22,6 +22,7 @@ const ui = fs.readFileSync(here('ui.js'), 'utf8');
 /* Not rules, or read through a helper that IS in netRules. */
 const EXEMPT = {
   coach: 'a display preference, not a rule',
+  'guide-pref': 'a display preference, not a rule',
   economy: 'read through leanEconomy() into food and ascension',
   layout: 'read through chosenLayout()',
 };

@@ -297,6 +297,18 @@ exactly one area is lit, it is the one the click goes in, and it contains
 something live. It found a real fault immediately — an animation beat rebuilding
 the meld area silently removed the highlight from a step that was still waiting.
 
+**The guide banner** (`renderGuide()` in `ui.js`) is the same question asked in
+large type for beginners: a strip over the play area with the round's three
+steps (meld · reveal · map), one big instruction and one line on how to do it.
+Green is your move, red is something done to you that needs an answer (attacked,
+set aside), paper is waiting. It follows the *table*, not the engine: the engine
+asks for your map turn before the client has animated the rivals' turns, and
+until the animation reaches your seat the banner names whoever is on the map.
+It is on by default, hidden from its own button, restored from the Guide button
+in the map toolbar, and the choice is kept in `localStorage` (`blink_guide`) and
+mirrored in the setup page's "Step-by-step banner" select. `guide_test.js`
+plays whole games and poisons the table-following branch.
+
 ## Moving, and the water advantage
 
 The movement rules were checked line by line against §07 and hold — `move_test.js`
@@ -688,6 +700,7 @@ node move_test.js            # movement and the water advantage, on built maps
 node colony_test.js          # effect B: reach, touch-two, and who picks the cell
 node trick_test.js           # the trick is staged in order, on the clock
 node zone_test.js            # every step lights one area, and it is clickable
+node guide_test.js           # the what-to-do-now banner: specific, on the right step, switchable
 node view_test.js            # hexes stay clickable; big boards pan, not shrink
 node setup_test.js           # the setup page, hot seat, watch mode, restart, leave
 node undo_test.js            # undo rewinds your turn exactly, and no further
