@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-30T08:30:36Z
+ * Built 2026-09-30T14:18:36Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2951,7 +2951,7 @@ class Game {
          * The bot below keeps the fixed sequence, so the sim's numbers still
          * describe the same engine. */
         p.played = [];
-        // the card set aside has already gone to the shared pile, not to yours
+        // the card set aside has already gone to your discard (_trickDues)
         yield* this._humanTurn(p, use);
       } else {
         yield* this._place(p, use);
