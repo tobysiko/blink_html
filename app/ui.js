@@ -1062,6 +1062,7 @@ function playEvents() {
       /* The three tiles that did it, lit in order, so the pattern is visible as
        * a shape on the map rather than a name on a card. */
       case "objective": {
+        if (e.open === false && e.seat !== ME) break;      // hidden: not announced
         (e.cells || []).forEach((k, j) => ring(cellPoint(k), false, d + j * 120));
         const mid = cellPoint((e.cells || [])[0]);
         if (mid) caption(mid, t("obj.points", { n: e.points }), true, d + 260);
@@ -1184,6 +1185,7 @@ function render() {
   renderMap();
   renderTable();
   renderPlayer();
+  renderRivals();
   renderMarket();
   renderSide();
   renderPrompt();
@@ -1821,7 +1823,7 @@ let HELD = 0, HOLD_T = null, HOLD_AT = null;
  * null means "whatever this screen has room for", which is the state until
  * somebody says otherwise; once they open or close one it stays where they
  * put it for the rest of the session. */
-const FOLD = { market: null, board: null };
+const FOLD = { market: null, board: null, rivals: null };
 const narrowScreen = () => !!(window.matchMedia
   && window.matchMedia("(max-width: 900px)").matches);
 /* YOUR OWN BOARD IS NOT AN EXTRA. Folding it away on a narrow screen made it
@@ -1829,7 +1831,7 @@ const narrowScreen = () => !!(window.matchMedia
  * had: the tier ladder, the thing you check before every single decision, was
  * behind a one-line summary that opened closed. The market is a reference you
  * consult; your board is your state. Only the market folds itself. */
-const ALWAYS_OPEN = { board: true };
+const ALWAYS_OPEN = { board: true, rivals: true };
 const foldOpen = (k) =>
   (FOLD[k] === null ? (ALWAYS_OPEN[k] || !narrowScreen()) : FOLD[k]);
 /* The USER's clicks are what set a preference - not the `toggle` event, which
@@ -2047,7 +2049,7 @@ function renderCorners() {
   let s = "";
   for (const [i, spot] of rivalOrder()) {
     const q = G.P[i];
-    const d = sc.find((x) => x.seat === i);
+    const d = publicScore(i, sc.find((x) => x.seat === i));
     const won = uiWinner() === i;
     const cls = [
       "corner", spot,
@@ -2072,19 +2074,143 @@ function renderCorners() {
            sty ? `${styleName(sty)}: ${styleNote(sty)} — ` : ""}${
            t("board.seatTip", { seat: seatName(i), score: d.total, gold: q.gold,
                                 tier: tierName(q.band()), limit: q.meldLimit() })}${
-           won ? " — " + t("board.wonTrick") : ""}">
+           d.hidden ? " " + tn("rival.plusHidden", d.hidden) : ""}${
+           won ? " — " + t("board.wonTrick") : ""} — ${
+           t("rival.tip", { seat: seatName(i) })}">
       <span class="ohead">
         <span class="pin" style="background:${SEAT_C[i]}"><b>${uiPos(i) + 1}</b></span>
         <span class="oname">${seatName(i)}</span>${
           sty ? `<span class="sty">${styleName(sty)}</span>` : ""}
         ${won ? CROWN : ""}
-        <span class="ometa"><span class="sc">${d.total}</span>
+        <span class="ometa"><span class="sc">${d.total}${
+          d.hidden ? "<sup>+?</sup>" : ""}</span>
           <span>🪙${q.gold}</span>${dots}</span>
       </span>
       <span class="ocards">${m.html}${meldSlots(q, m.n)}</span>
     </div>`;
   }
   box.innerHTML = s;
+}
+
+/* WHAT YOU COULD READ OFF THEIR SIDE OF THE TABLE.
+ *
+ * At a real table every other player's board is in front of you: how far down
+ * their tiers they have settled, the coins on their walls, their victory row
+ * card by card, the objective they chose to show, how thick their hand and
+ * discard are. The corners carry only a name, a score and a meld, so the app
+ * hid most of what a player at the table would glance at before every
+ * decision. These are those boards, small, below your own.
+ *
+ * What stays hidden is what is hidden at the table: their hand's cards, the
+ * objective they keep secret, and the points it may be worth - which is why
+ * the score here is the PUBLIC one, with "+?" for what you cannot know. */
+function publicScore(i, d) {
+  if (i === ME || gameOver()) return Object.assign({}, d, { hidden: 0 });
+  const open = G.openObjectivesOf(i);
+  let pts = 0, hidden = 0;
+  for (const x of d.objDone || [])
+    if (!open.includes(x.o)) { pts += x.points; hidden += 1; }
+  return Object.assign({}, d, { total: d.total - pts, obj: d.obj - pts, hidden });
+}
+
+function rivalBoard(i, sc) {
+  const q = G.P[i];
+  const d = publicScore(i, sc.find((x) => x.seat === i));
+  const bands = (G && G.BANDS) || BANDS;
+  let units = 0, walls = 0;
+  for (const tile of G.m.tiles.values()) {
+    units += tile.units.filter((u) => u === i).length;
+    if (tile.owner === i && tile.gold) walls += tile.gold;
+  }
+  const sty = BOT_STYLES[q.style] ? q.style : null;
+  let ladder = "";
+  for (let j = 0; j < bands.length; j++) {
+    const n = bands[j][1], left = q.reserve[j];
+    let pips = "";
+    for (let u = 0; u < n; u++) pips += `<i class="${u < left ? "rpf" : ""}"></i>`;
+    ladder += `<div class="rl${j === q.band() ? " here" : ""}"><span>${
+      tierName(j)}</span><span class="pips">${pips}</span></div>`;
+  }
+  const cap = q.rankCap();
+  const now = t("rival.now", { meld: q.meldLimit(), cap })
+    + (wallLadder() ? t("rival.wall", { n: wallOf(cap) }) : "");
+
+  const row = q.vrow.slice().sort(cardSortUI);
+  let slots = "";
+  for (let k = 0; k < 5; k++) {
+    const c = row[k - (5 - row.length)];
+    slots += `<span class="rv${k === 2 ? " centre" : ""}">${
+      c ? cardChip(c, "", "", "mini") : ""}</span>`;
+  }
+  const armed = q.perks && q.perkActive
+    ? `<div class="rperk">${t("rival.perk", { name: t("perk." + q.perkActive + ".name") })}</div>` : "";
+
+  const open = gameOver() ? (q.objectives || []) : G.openObjectivesOf(i);
+  const objs = open.map((o) => {
+    const pr = Object.assign({ them: true }, G.objectiveProgress(i, o));
+    return objCard(o, pr.done ? "done" : "", undefined, pr);
+  }).join("");
+  const nHidden = gameOver() ? 0 : (q.objectives || []).filter((o) => !open.includes(o)).length;
+  const objLab = G.OBJECTIVES_MODE === "open" ? t("rival.shared") : t("rival.shown");
+
+  return `<div class="rboard" data-seat="${i}" style="--c:${SEAT_C[i]}">
+    <div class="rb-head"><span class="dot"></span><b>${seatName(i)}</b>${
+      sty ? `<span class="sty">${styleName(sty)}</span>` : ""}
+      <span class="tier">${tierName(q.band())}</span>
+      <span class="purse">🪙 ${q.gold}</span>
+      <span class="score">${t("board.vp", { n: d.total })}${
+        d.hidden ? ` <em title="${tn("rival.plusHidden", d.hidden)}">+?</em>` : ""}</span></div>
+    <div class="rb-stats">${[t("rival.hand", { n: q.hand.length }),
+      t("rival.discard", { n: q.discard.length }), tn("rival.units", units),
+      walls ? tn("rival.walls", walls) : ""].filter(Boolean).join(" · ")}</div>
+    <div class="rb-body">
+      <div class="rb-ladder">${ladder}<div class="rb-now">${now}</div></div>
+      <div class="rb-side">
+        <div class="rb-row"><span class="vlab">${t("board.victoryRow")} · ${
+          t("board.vp", { n: d.vrow })}</span><div class="rvs">${slots}</div>${armed}</div>
+        ${objs || nHidden ? `<div class="rb-obj"><span class="vlab">${
+          objs ? objLab : t("rival.noneShown")}</span>${objs}${
+          nHidden && objs ? `<span class="rhid">${tn("rival.plusHidden", nHidden)}</span>` : ""}</div>` : ""}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderRivals() {
+  const box = $("#rivals");
+  if (!box || !G) return;
+  const sc = G.score();
+  const seats = rivalOrder().map(([i]) => i);
+  if (!seats.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<details class="fold rivalsfold"${foldOpen("rivals") ? " open" : ""}>
+    <summary class="seclab">${t("sec.rivals")}</summary>
+    <div class="rivalgrid">${seats.map((i) => rivalBoard(i, sc)).join("")}</div>
+  </details>`;
+  wireFold(box.querySelector(".rivalsfold"), "rivals");
+}
+
+/* Tap a rival in the map corner and their board comes into view. */
+function showRival(i) {
+  FOLD.rivals = true;
+  renderRivals();
+  const b = $(`#rivals .rboard[data-seat="${i}"]`);
+  if (!b) return;
+  /* On a wide screen the panel under the map scrolls and the page does not,
+   * so scroll the panel and the board stays where it is. On a phone the page
+   * itself scrolls (the panel is `overflow: visible`), so scroll the page. */
+  const pane = b.closest(".lower");
+  const own = pane && window.getComputedStyle
+    && /auto|scroll/.test(window.getComputedStyle(pane).overflowY);
+  if (own) {
+    const top = b.getBoundingClientRect().top - pane.getBoundingClientRect().top
+      + pane.scrollTop - 6;
+    if (pane.scrollTo) pane.scrollTo({ top, behavior: "smooth" });
+    else pane.scrollTop = top;
+  } else if (b.scrollIntoView) {
+    b.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  b.classList.add("flash");
+  setTimeout(() => b.classList.remove("flash"), 1200);
 }
 
 /* The order strip: everyone in the trick, left to right, in the order they
@@ -2243,11 +2369,18 @@ function renderPlayer() {
         <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
     ${p.objectives && p.objectives.length
       ? `<div class="objbox top"><span class="vlab">${
-          t(G.OBJECTIVES_MODE === "open" ? "board.sharedObjectives" : "board.myObjective")
+          t(G.OBJECTIVES_MODE === "open" ? "board.sharedObjectives"
+            : p.objectives.length > 1 ? "board.myObjectives" : "board.myObjective")
         }</span><div class="objrow">` +
         p.objectives.map((o) => {
           const pr = G.objectiveProgress(ME, o);
-          return objCard(o, pr.done ? "done" : "", undefined, pr);
+          /* v0.26 deals two and shows one: say which is which, because the
+           * shown one is exactly what the others are reading off your board. */
+          const tag = G.OBJECTIVES_MODE === "open" ? ""
+            : `<span class="otag${o === p.objOpen ? " shown" : ""}">${
+                t(o === p.objOpen ? "board.objShown" : "board.objHidden")}</span>`;
+          return `<div class="objwrap">${tag}${
+            objCard(o, pr.done ? "done" : "", undefined, pr)}</div>`;
         }).join("") +
         `</div></div>`
       : ""}
@@ -3116,8 +3249,10 @@ function objCard(o, cls, attr, prog) {
     prog ? `<span class="oprog${prog.done ? " done" : ""}">${
       prog.done ? (prog.hits > 1 ? t("obj.prog.doneN", { n: prog.hits })
                                  : t("obj.prog.done"))
-      : prog.n === 0 ? t("obj.prog.none", { terrain: TL[prog.missing] })
-      : t("obj.prog", { n: prog.n, terrain: TL[prog.missing] })}</span>` : ""}
+      : prog.n === 0 ? t(prog.them ? "obj.prog.none.them" : "obj.prog.none",
+                         { terrain: TL[prog.missing] })
+      : t(prog.them ? "obj.prog.them" : "obj.prog",
+          { n: prog.n, terrain: TL[prog.missing] })}</span>` : ""}
   </${tag}>`;
 }
 
@@ -3437,6 +3572,13 @@ function renderMarket() {
 
 /* The sidebar is gone — rivals live in the map corners now. All that is left is
  * a quiet log strip, and the round counter in the header. */
+/* A rival's HIDDEN objective completing is not news anyone at the table would
+ * hear: the card is in their hand until the end. Only its owner sees the line,
+ * and everyone sees it once the game is over. */
+function secretLine(key, vars) {
+  return /^log\.objective/.test(key) && vars && vars.open === false
+    && vars.seat !== ME && !gameOver();
+}
 /* One log line. `log.recycle` carries a clause that only appears when cards
  * were actually drawn, so it is composed rather than looked up whole. */
 function logLine(key, vars) {
@@ -3449,7 +3591,8 @@ function logLine(key, vars) {
 function renderSide() {
   /* The engine logs a KEY and its variables; the sentence is made here, in
    * whatever language is on. */
-  $("#log").innerHTML = G.log.slice(-6)
+  $("#log").innerHTML = G.log.filter(([, key, vars]) => !secretLine(key, vars))
+    .slice(-6)
     .map(([r, key, vars]) => `<div><b>R${r}</b> ${
       logLine(key, vars)}</div>`).join("");
   $("#log").scrollTop = $("#log").scrollHeight;
@@ -3528,6 +3671,11 @@ window.addEventListener("DOMContentLoaded", () => {
   loadGuidePref();
   $("#guide-pref").addEventListener("change", () => setGuide(guideOn()));
   $("#guideon").addEventListener("click", () => setGuide(true));
+  $("#corners").addEventListener("click", (e) => {
+    if (e.target.closest(".cf")) return;               // a card: hold to read it
+    const c = e.target.closest(".corner[data-seat]");
+    if (c) showRival(Number(c.dataset.seat));
+  });
   if ($("#layout")) $("#layout").addEventListener("change", syncLayoutRow);
   if ($("#layout-custom")) $("#layout-custom").addEventListener("input", syncLayoutRow);
   if ($("#meld-score")) $("#meld-score").addEventListener("change", syncALadderRow);

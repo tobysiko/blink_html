@@ -1174,6 +1174,50 @@
   .ochip.mid{outline:2px solid var(--deep); outline-offset:1px}
   .oflav{font-size:10px; color:var(--mut)}
 
+  /* ---- the other players' boards ----
+     Everything you could read off their side of a real table, small: tiers,
+     walls, victory row card by card, the objective they show. */
+  .corner{cursor:pointer}
+  .corner .sc sup{font-size:8px; color:var(--mut); margin-left:1px}
+  .rivalsfold{margin-top:8px}
+  .rivalgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+    gap:8px; margin-top:4px}
+  .rboard{border:1px solid var(--line); border-left:4px solid var(--c);
+    border-radius:8px; padding:5px 8px 6px; background:#fff;
+    transition:box-shadow .3s ease}
+  .rboard.flash{box-shadow:0 0 0 3px var(--c)}
+  .rb-head{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+  .rb-head .dot{width:10px; height:10px; border-radius:50%; background:var(--c)}
+  .rb-head .sty{font-size:10px; font-style:italic; color:var(--mut)}
+  .rb-head .tier{font-size:11px; color:var(--mut)}
+  .rb-head .purse{font-weight:600}
+  .rb-head .score{margin-left:auto; font-weight:700}
+  .rb-head .score em{font-style:normal; font-weight:400; font-size:10px; color:var(--mut)}
+  .rb-stats{font-size:11px; color:var(--hint); margin:2px 0 5px}
+  .rb-body{display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap}
+  .rb-ladder{flex:none; font-size:10.5px; min-width:120px}
+  .rl{display:flex; justify-content:space-between; gap:8px; padding:1px 4px;
+    border-radius:3px; color:var(--mut)}
+  .rl.here{background:#E8F1E4; color:var(--ink); font-weight:600}
+  .rl .pips{display:flex; gap:2px; align-items:center}
+  .rl .pips i{width:7px; height:7px; border-radius:50%; border:1px solid #B9B1A2}
+  .rl .pips i.rpf{background:var(--c); border-color:var(--c)}
+  .rb-now{font-size:10px; color:var(--hint); margin-top:3px; padding-left:4px}
+  .rb-side{flex:1 1 150px; min-width:0; display:flex; flex-direction:column; gap:5px}
+  .rvs{display:flex; gap:3px; margin-top:2px}
+  .rv{min-width:36px; height:26px; border:1px dashed #B9B4A8; border-radius:4px;
+    display:flex; align-items:center; justify-content:center; background:#F4F1EA}
+  .rv.centre{border:2px solid var(--green)}
+  .rv:has(.cf){border-color:transparent; background:none}
+  .rv.centre:has(.cf){border:2px solid var(--green); border-radius:6px}
+  .rperk{font-size:10.5px; color:var(--deep); margin-top:2px}
+  .rb-obj .objcard{min-width:0; font-size:11px}
+  .rhid{display:block; font-size:10.5px; color:var(--mut); margin-top:2px}
+  .objwrap{display:flex; flex-direction:column; gap:2px}
+  .otag{font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--mut);
+    font-weight:600}
+  .otag.shown{color:#8A6A2A}
+
   /* ---- the victory-card effect picker ---- */
   .vpanel{display:flex; gap:12px; align-items:flex-start; flex-wrap:wrap;
     border:1px solid var(--line); border-radius:8px; background:#FFFCF4;
@@ -1834,6 +1878,8 @@
            winner. -->
       <div id="discard" class="discard" hidden></div>
       <div id="player"></div>
+      <!-- The other players' boards: what you could read across the table. -->
+      <div id="rivals"></div>
       <div id="log"></div>
       <!-- The rules, within reach of the table rather than behind a menu. -->
       <nav class="docs gamedocs" aria-labelledby="gdocs-label">

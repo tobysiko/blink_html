@@ -309,6 +309,19 @@ in the map toolbar, and the choice is kept in `localStorage` (`blink_guide`) and
 mirrored in the setup page's "Step-by-step banner" select. `guide_test.js`
 plays whole games and poisons the table-following branch.
 
+**The other players' boards** (`renderRivals()`) sit under your own: for each
+rival their tier ladder (units still in reserve, the current row highlighted,
+with its meld limit, research cap and wall), gold, hand and discard counts,
+units and walls on the map, the victory row card by card, the armed perk, and
+the objective they SHOW (v0.26 deals two and shows one; `openObjectivesOf()` in
+the engine decides). Tapping a rival in a map corner brings their board into
+view. What stays hidden is what the table hides: a rival's score is the PUBLIC
+one (`publicScore()` leaves hidden-objective points out and marks it `+?`), and
+the engine's objective log line and map rings now carry `seat` and `open` so the
+client shows a hidden objective's completion only to its owner. Before this the
+log read "Fjord completed — 2 points" for a rival's secret card. At game end
+everything is revealed. `rivals_test.js` checks both leaks (poison-tested).
+
 ## Moving, and the water advantage
 
 The movement rules were checked line by line against §07 and hold — `move_test.js`
@@ -701,6 +714,7 @@ node colony_test.js          # effect B: reach, touch-two, and who picks the cel
 node trick_test.js           # the trick is staged in order, on the clock
 node zone_test.js            # every step lights one area, and it is clickable
 node guide_test.js           # the what-to-do-now banner: specific, on the right step, switchable
+node rivals_test.js          # other players' boards: what the table shows, nothing it hides
 node view_test.js            # hexes stay clickable; big boards pan, not shrink
 node setup_test.js           # the setup page, hot seat, watch mode, restart, leave
 node undo_test.js            # undo rewinds your turn exactly, and no further

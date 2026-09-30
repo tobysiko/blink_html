@@ -2967,12 +2967,17 @@ class Game {
         if (now <= objBefore[j]) return;
         this.inc(objBefore[j] ? "objective_again" : "objective_done");
         const hits = this.objectiveHits(i, o);
+        /* `open`: may the rest of the table know? A HIDDEN objective completed
+         * is not announced at a real table - the player just keeps quiet
+         * until the end - so the client shows it only to its owner. The
+         * event still carries it, because the owner's screen needs it. */
+        const open = this.openObjectivesOf(i).includes(o);
         this.fx("objective", { seat: i, id: o.id, name: o.name,
                                points: this.objectiveScore(i, o), hits: now,
-                               again: objBefore[j] > 0,
+                               again: objBefore[j] > 0, open,
                                cells: hits[hits.length - 1] || [] });
         this.say(objBefore[j] ? "log.objective.again" : "log.objective",
-                 { name: o.name, n: this.objectiveScore(i, o) });
+                 { name: o.name, n: this.objectiveScore(i, o), seat: i, open });
       });
       this.turnDone.add(i);
       this.fx("turnend", { seat: i });
