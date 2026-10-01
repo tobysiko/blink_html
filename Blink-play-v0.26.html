@@ -1663,6 +1663,14 @@
       <p class="hint" data-i18n="setup.startmap.note"></p>
     </div>
     <div class="field">
+      <label for="startunits" data-i18n="setup.startunits">Quick start</label>
+      <select id="startunits">
+        <option value="1" selected data-i18n="setup.startunits.one"></option>
+        <option value="2" data-i18n="setup.startunits.two"></option>
+      </select>
+      <p class="hint" data-i18n="setup.startunits.note"></p>
+    </div>
+    <div class="field">
       <label for="loss" data-i18n="setup.loss">A beaten unit</label>
       <select id="loss">
         <option value="displace" selected data-i18n="setup.loss.displace"></option>
@@ -1925,7 +1933,7 @@
 
 <script>
 document.documentElement.className += ' js';   // scripts run: hide the no-JS notice
-const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"26d97489e5","branch":"main","dirty":true,"built":"2026-09-30T21:31:24Z"};
+const BUILD = {"version":"v0.26","api":"/api/blink","reportUrl":"/api/blink/report","commit":"c62b4871fa","branch":"main","dirty":true,"built":"2026-10-01T13:21:18Z"};
 /* Blink — interface language.
  *
  * Every string a player reads lives here, English and German side by side, so
@@ -2677,6 +2685,10 @@ en: {
   "setup.startmap.block": "Mountains and plains (printed)",
   "setup.startmap.homelands": "Homelands \u2014 all four terrains, placed in turn",
   "setup.startmap.note": "Printed: one Mountain per player in the middle, one Plains each around it, all laid before play. Homelands: the Mountains go down as always, then each player in initiative order adds a Forest, a Plains and an Ocean of their own \u2014 the start player first, so the last to place sees the most map.",
+  "setup.startunits": "Quick start",
+  "setup.startunits.one": "Off — one unit on your homeland (printed rule)",
+  "setup.startunits.two": "On — two units each: everyone starts at Settlement, melds of three",
+  "setup.startunits.note": "Optional rule (§03). Skips the cramped opening at Tribe; a game runs about half a round shorter.",
   "setup.loss": "A beaten unit",
   "setup.loss.reserve": "Goes home to your reserve (the rule before v0.26)",
   "setup.loss.displace": "Falls back to a neighbouring tile of yours with room \u2014 and only dies if there is none (printed rule)",
@@ -3478,6 +3490,10 @@ de: {
   "setup.startmap.block": "Gebirge und Ebenen (gedruckt)",
   "setup.startmap.homelands": "Heimatl\u00e4nder \u2014 alle vier Gel\u00e4nde, reihum gelegt",
   "setup.startmap.note": "Gedruckt: ein Gebirge je Spieler in der Mitte, je eine Ebene darum, alles vor dem Spiel gelegt. Heimatl\u00e4nder: die Gebirge liegen wie immer, dann legt jede Person in Initiativreihenfolge Wald, Ebene und Meer \u2014 die Startperson zuerst, sodass die letzte am meisten von der Karte sieht.",
+  "setup.startunits": "Schnellstart",
+  "setup.startunits.one": "Aus — eine Einheit auf deiner Heimat (gedruckte Regel)",
+  "setup.startunits.two": "An — je zwei Einheiten: alle beginnen als Siedlung, Kombinationen aus drei",
+  "setup.startunits.note": "Optionale Regel (§03). Überspringt den engen Anfang als Stamm; eine Partie dauert etwa eine halbe Runde kürzer.",
   "setup.loss": "Geschlagene Einheit",
   "setup.loss.reserve": "kehrt in die Reserve zur\u00fcck (Regel vor v0.26)",
   "setup.loss.displace": "zieht sich auf ein benachbartes eigenes Feld mit Platz zur\u00fcck \u2014 und stirbt nur, wenn es keines gibt (gedruckte Regel)",
@@ -5684,7 +5700,23 @@ class Game {
     this.spent = [];           // every card spent for an effect, in order
     this.m.bandOf = (seat) => this.P[seat].band();
     this._dealStyles();
-    for (const pl of this.P) pl.takeUnit();          // the starting unit
+    /* QUICK START (optional rule, v0.26). Everyone places TWO units on their
+     * homeland instead of one. On the printed board that empties the Tribe
+     * tier before the first card is played, so the game opens at Settlement:
+     * melds of three, research up to 14, a wall of 12. Leaving a tier at setup
+     * is not an ascension, so `reached` is advanced here without paying.
+     * Under "block" the map constructor already stood the first unit on each
+     * homeland; the extra ones are added here. "homelands" settles them all
+     * in _layHomelands. */
+    this.START_UNITS = Number(opts.startUnits) === 2 ? 2 : 1;
+    for (const pl of this.P) {
+      for (let k = 0; k < this.START_UNITS; k++) pl.takeUnit();
+      pl.ascensionDue();
+    }
+    if (this.START === "block")
+      this.m.starts.forEach(([c, r], i) => {
+        for (let k = 1; k < this.START_UNITS; k++) this.m.settle(K(c, r), i);
+      });
     this._deal();
   }
 
@@ -6762,7 +6794,7 @@ class Game {
       const pOpts = this.m.homelandOptions(i, mt, unK(fk), true);
       const pk = yield* this._pickHomeland(i, "plains", pOpts);
       this.m.doExplore(pk, "plains");
-      this.m.settle(pk, i);
+      for (let k = 0; k < this.START_UNITS; k++) this.m.settle(pk, i);
       this.m.starts.push(unK(pk));
       this.fx("tile", { seat: i, to: pk });
 
@@ -9237,6 +9269,7 @@ function newSession(opts, rand) {
         : objectives !== "off" ? "objective" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
+      startUnits: Number(o.startUnits) === 2 ? 2 : 1,
       objectiveScoring: ["once", "perMiddle", "perInstance"]
         .includes(o.objectiveScoring) ? o.objectiveScoring : "perInstance",
       handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
@@ -10300,6 +10333,8 @@ function startGame(force) {
                              loss: $("#loss") ? $("#loss").value : undefined,
                              startLayout: $("#startlayout")
                                ? $("#startlayout").value : undefined,
+                             startUnits: $("#startunits")
+                               ? Number($("#startunits").value) : 1,
                              objectiveScoring: $("#objscoring")
                                ? $("#objscoring").value : undefined,
                              handSetup: $("#handsetup")
@@ -14131,6 +14166,7 @@ function netRules() {
     income: $("#income") ? $("#income").value : undefined,
     loss: $("#loss") ? $("#loss").value : undefined,
     startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
+    startUnits: $("#startunits") ? Number($("#startunits").value) : 1,
     objectiveScoring: $("#objscoring") ? $("#objscoring").value : undefined,
     handSetup: $("#handsetup") ? $("#handsetup").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,

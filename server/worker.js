@@ -1,7 +1,7 @@
 /* GENERATED — do not edit.
  * Built by server/build.js from app/engine.js, app/session.js and
  * server/worker.src.js. Edit those and rebuild:  node server/build.js
- * Built 2026-09-30T21:31:25Z
+ * Built 2026-10-01T13:21:18Z
  */
 
 /* ---------------- app/engine.js ---------------- */
@@ -2088,7 +2088,23 @@ class Game {
     this.spent = [];           // every card spent for an effect, in order
     this.m.bandOf = (seat) => this.P[seat].band();
     this._dealStyles();
-    for (const pl of this.P) pl.takeUnit();          // the starting unit
+    /* QUICK START (optional rule, v0.26). Everyone places TWO units on their
+     * homeland instead of one. On the printed board that empties the Tribe
+     * tier before the first card is played, so the game opens at Settlement:
+     * melds of three, research up to 14, a wall of 12. Leaving a tier at setup
+     * is not an ascension, so `reached` is advanced here without paying.
+     * Under "block" the map constructor already stood the first unit on each
+     * homeland; the extra ones are added here. "homelands" settles them all
+     * in _layHomelands. */
+    this.START_UNITS = Number(opts.startUnits) === 2 ? 2 : 1;
+    for (const pl of this.P) {
+      for (let k = 0; k < this.START_UNITS; k++) pl.takeUnit();
+      pl.ascensionDue();
+    }
+    if (this.START === "block")
+      this.m.starts.forEach(([c, r], i) => {
+        for (let k = 1; k < this.START_UNITS; k++) this.m.settle(K(c, r), i);
+      });
     this._deal();
   }
 
@@ -3166,7 +3182,7 @@ class Game {
       const pOpts = this.m.homelandOptions(i, mt, unK(fk), true);
       const pk = yield* this._pickHomeland(i, "plains", pOpts);
       this.m.doExplore(pk, "plains");
-      this.m.settle(pk, i);
+      for (let k = 0; k < this.START_UNITS; k++) this.m.settle(pk, i);
       this.m.starts.push(unK(pk));
       this.fx("tile", { seat: i, to: pk });
 
@@ -5641,6 +5657,7 @@ function newSession(opts, rand) {
         : objectives !== "off" ? "objective" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
+      startUnits: Number(o.startUnits) === 2 ? 2 : 1,
       objectiveScoring: ["once", "perMiddle", "perInstance"]
         .includes(o.objectiveScoring) ? o.objectiveScoring : "perInstance",
       handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",
