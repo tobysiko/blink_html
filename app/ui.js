@@ -244,6 +244,8 @@ function startGame(force) {
                              loss: $("#loss") ? $("#loss").value : undefined,
                              startLayout: $("#startlayout")
                                ? $("#startlayout").value : undefined,
+                             startUnits: $("#startunits")
+                               ? Number($("#startunits").value) : 1,
                              objectiveScoring: $("#objscoring")
                                ? $("#objscoring").value : undefined,
                              handSetup: $("#handsetup")
@@ -4075,6 +4077,7 @@ function netRules() {
     income: $("#income") ? $("#income").value : undefined,
     loss: $("#loss") ? $("#loss").value : undefined,
     startLayout: $("#startlayout") ? $("#startlayout").value : undefined,
+    startUnits: $("#startunits") ? Number($("#startunits").value) : 1,
     objectiveScoring: $("#objscoring") ? $("#objscoring").value : undefined,
     handSetup: $("#handsetup") ? $("#handsetup").value : undefined,
     attacksPerTurn: $("#attacks") && $("#attacks").value === "one" ? 1 : 0,

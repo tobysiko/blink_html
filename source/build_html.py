@@ -423,6 +423,14 @@ HTML = f"""<!doctype html>
     to 1, and lead the first round.</li>
   </ol>
   {fig('setup_maps', 'The starting layouts for two, three and four players, each with every homeland unit in place.')}
+  <div class="note">
+    <span class="tag">Optional: quick start</span>
+    <p>To skip the slowest part of the opening, each player places <strong>two</strong> units
+    from their top tier on their homeland in step 4 instead of one. That empties the Tribe
+    tier before the first card is played, so everyone begins at <strong>Settlement</strong>:
+    melds of up to <strong>three</strong> cards, research up to 14 and a wall of 12. Nothing
+    else changes. The worked round below uses the standard start.</p>
+  </div>
 </section>
 
 <section class="example">

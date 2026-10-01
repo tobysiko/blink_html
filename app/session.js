@@ -132,6 +132,7 @@ function newSession(opts, rand) {
         : objectives !== "off" ? "objective" : "off",
       loss: o.loss === "displace" ? "displace" : "reserve",
       startLayout: o.startLayout === "homelands" ? "homelands" : "block",
+      startUnits: Number(o.startUnits) === 2 ? 2 : 1,
       objectiveScoring: ["once", "perMiddle", "perInstance"]
         .includes(o.objectiveScoring) ? o.objectiveScoring : "perInstance",
       handSetup: ["deal", "mulligan"].includes(o.handSetup) ? o.handSetup : "draft",

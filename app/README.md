@@ -715,6 +715,7 @@ node trick_test.js           # the trick is staged in order, on the clock
 node zone_test.js            # every step lights one area, and it is clickable
 node guide_test.js           # the what-to-do-now banner: specific, on the right step, switchable
 node rivals_test.js          # other players' boards: what the table shows, nothing it hides
+node quickstart_test.js      # optional quick start: two units each, Settlement from the first card
 node view_test.js            # hexes stay clickable; big boards pan, not shrink
 node setup_test.js           # the setup page, hot seat, watch mode, restart, leave
 node undo_test.js            # undo rewinds your turn exactly, and no further
