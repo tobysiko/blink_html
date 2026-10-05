@@ -655,23 +655,22 @@ def build():
              f'fill="none" stroke="{SOFT}" stroke-width="0.5" '
              f'stroke-linecap="round" stroke-linejoin="round"/>')
 
-    # --- VICTORY ROW: five slots, wholly inside the trim -------------------
-    # v0.26 print pass: the slots used to be drawn at full poker-card size,
-    # 63.5 mm each, centred on the sheet - five of them are 317.5 mm on a
-    # 297 mm page, so slots 1 and 5 ran off the left and right edges and all
-    # five ran off the bottom. A printed component may not depend on paper it
-    # does not have. The slots are now the printable width split five ways,
-    # and only the strip a card's top edge covers. A card (63.5 mm) is wider
-    # than its slot (about 54 mm), so neighbours overlap a little, each still
-    # showing its top-left index - and the cards hang off the board's edge,
-    # which is what they would do on a table anyway.
+    # --- VICTORY ROW: five slots at true card size -------------------------
+    # Five poker cards (63.5 mm) need 317.5 mm and the sheet is 297, so the
+    # row cannot sit wholly inside the margins - and it must not shrink, or a
+    # slot no longer says how big a card is. So the five slots are full card
+    # width, centred (the scoring slot dead centre at 148.5 mm), and the sheet
+    # cuts 10.25 mm off slots 1 and 5. The cards themselves overhang the board's
+    # bottom edge, which is what they would do on a table anyway.
+    # (5 Oct: a print pass briefly split the printable width five ways - 54 mm
+    # slots - to keep them inside the trim. Toby: the slots stay card-sized.)
     # The card column is the tallest thing above the row now, so it decides
     # where the row starts; the left-hand zone is checked against it below.
     by = max(gv_y + gvh, score_last, note_y, col_bot) + 3.0   # divider above the row
     vlabel_y = by + 5.2
     vy = vlabel_y + 3.0                          # top of the slots
-    vbot = PH - M - 1.0                          # inside the bottom trim
-    pitch = (PW - 2 * M) / 5
+    vbot = PH                                    # the card runs off the bottom
+    vrow_x0 = (PW - 5 * CARD_W) / 2              # -10.25: wider than the sheet
     s.append(T(M, vlabel_y, "VICTORY ROW", 4.6, anchor="start", weight="600"))
     s.append(T(M + 36, vlabel_y, "\u2014 slide cards in from below; the centre "
                "slot scores", 3.2, anchor="start", col=SOFT, mono=True))
@@ -692,29 +691,36 @@ def build():
     s.append(T(hi_x, vlabel_y, "HIGHEST", 2.9, anchor="end",
                col=SOFT, mono=True, spacing="0.3"))
 
+    s.append(f'<clipPath id="sheet"><rect x="0" y="0" width="{PW}" '
+             f'height="{PH}"/></clipPath>')
+    s.append('<g clip-path="url(#sheet)">')
     for k in range(5):
-        cx = M + k * pitch + 0.8
-        w = pitch - 1.6
+        cx = vrow_x0 + k * CARD_W
         mid = (k == 2)
-        s.append(f'<rect x="{cx:.2f}" y="{vy:.2f}" width="{w:.2f}" '
-                 f'height="{vbot - vy:.2f}" rx="2.4" '
+        s.append(f'<rect x="{cx:.2f}" y="{vy:.2f}" width="{CARD_W}" '
+                 f'height="{CARD_H}" rx="3" '
                  f'fill="{GOLDl if mid else PAPER}" '
                  f'{"fill-opacity=" + chr(34) + "0.55" + chr(34) + " " if mid else ""}'
                  f'stroke="{GOLD if mid else FAINT}" '
                  f'stroke-width="{1.4 if mid else 0.7}"'
                  f'{"" if mid else " stroke-dasharray=" + chr(34) + "2.5 2" + chr(34)}/>')
-        s.append(T(cx + 4.0, vy + 7.0, f"{k+1}", 5.5, anchor="start",
+        # slot 1's index would fall off the left edge with the rest of its box
+        lx = max(cx + 5.5, 4.5)
+        s.append(T(lx, vy + 7.0, f"{k+1}", 5.5, anchor="start",
                    col=INK if mid else FAINT, weight="600" if mid else "400"))
         if mid:
-            s.append(T(cx + 11, vy + 6.7, "SCORES", 3.8, anchor="start", col=GOLDd,
+            s.append(T(cx + 12, vy + 6.7, "SCORES", 3.8, anchor="start", col=GOLDd,
                        mono=True, spacing="0.5", weight="600"))
-        # WHERE THE FIRST CARD GOES. This was a line in the ON THE BOARD
-        # legend; it belongs on the slot it is about.
+        # WHERE THE FIRST CARD GOES, on the slot it is about.
         if k == 4:
-            s.append(T(cx + 11, vy + 6.5, "fills from the right", 3.2,
+            s.append(T(cx + 12, vy + 6.5, "first card here", 3.0,
                        anchor="start", col=SOFT, mono=True))
+    s.append('</g>')
     s.append(f'<line x1="{M}" y1="{by:.2f}" x2="{PW-M}" y2="{by:.2f}" '
              f'stroke="{LINE}" stroke-width="0.4"/>')
+    if abs(5 * CARD_W - 317.5) > 0.01 or abs(vrow_x0 + 2.5 * CARD_W - PW / 2) > 0.01:
+        raise SystemExit("board_a4: the victory-row slots are not five centred "
+                         "poker-card widths")
     if vbot - vy < 12:
         raise SystemExit(f"board_a4: the victory-row slots are only "
                          f"{vbot - vy:.1f} mm tall - the lower zone grew")
@@ -748,7 +754,7 @@ def build():
                 f"board_a4: a line of text runs {x0 + w - (col_x0 - 2):.1f} mm "
                 f"into the card column:\n    {line[:70]}...")
         # ...and a line INSIDE a card area stays inside its outline.
-        if x0 >= col_x0 and x0 + w > col_x1 - 2:
+        if x0 >= col_x0 and disc_y0 - 3 < ly < col_bot + 3 and x0 + w > col_x1 - 2:
             raise SystemExit(
                 f"board_a4: a card-area line overflows its outline by "
                 f"{x0 + w - (col_x1 - 2):.1f} mm:\n    {line[:70]}...")
