@@ -297,8 +297,8 @@ def sheet():
     b += T(M, y, "Played as many cards as the winner and lost? Set one of them aside: "
                  "it pays 1 gold instead of acting,", 3.1, weight="600")
     y += 4.0
-    b += T(M, y, "and goes to your own discard. Fewer cards than the winner: spend "
-                 "them all. Last place: +1 gold.", 3.1, weight="600")
+    b += T(M, y, "and goes to your own discard. Everyone else spends them all. "
+                 "Last place: +1 gold.", 3.1, weight="600")
     y += 4.2
     b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "
                  "this sheet says what that means.", 3.0, col=SOFT, italic=True)
@@ -414,9 +414,13 @@ def sheet():
         body += box; cy += h + 1.2
     body += f'<path d="M{x + 3} {cy + 0.6} L{x + colw - 3} {cy + 0.6}" ' \
             f'stroke="{LINE}" stroke-width="0.4"/>'
+    # ONE ALLOWANCE, SHARED. Two boxes each priced "1 then 2" read as two
+    # allowances of two; the rule is research twice, trade twice or one of
+    # each, at 1 gold then 2 - so the column closes by saying it once. (What
+    # used to close it - a wall coin stays until spent - is in FORTIFY now.)
     w, n = wrap(x + 3, cy + 4.4,
-                "A coin on a unit stays until a fight spends it or the unit is "
-                "disturbed. It never comes back to your gold.", iw, 2.8, INK)
+                "research or trade: two a turn, 1 gold then 2",
+                iw, 2.6, INK, weight="600")
     body += w
     heights.append(cy + 4.4 + n * 3.6 - ctop + 1.6)
     panel_b = body
@@ -440,9 +444,8 @@ def sheet():
             f'stroke="{LINE}" stroke-width="0.4"/>'
     body += T(x + 3, cy + 4.4, "THEN IT LEAVES THE ROW", 3.0, weight="700", col=RED)
     w, n = wrap(x + 3, cy + 8.2,
-                "– 1 point · your centre card may drop · a shallower perk "
-                "menu next recycle. It goes to the BOTTOM of the market: nothing "
-                "leaves the game.", iw, 2.7, SOFT)
+                "– 1 point · your centre card may drop. It goes to the BOTTOM "
+                "of the market: nothing leaves the game.", iw, 2.7, SOFT)
     body += w
     heights.append(cy + 8.2 + n * 3.5 - ctop + 1.6)
     panel_c = body
@@ -548,7 +551,8 @@ def back():
     # ============================================= 2. THE RECYCLE
     b += head(M, y, "THE RECYCLE", "the moment your hand is empty and your meld spent")
     y += 5.0
-    rw = (W - 2 * M - 3 * 4) / 4
+    nr = len(RECYCLE)
+    rw = (W - 2 * M - (nr - 1) * 4) / nr
     rh = 0
     for key, tag, what in RECYCLE:
         rh = max(rh, 16.0 + len(split(what, rw - 7, 2.9)) * 3.8 + 2.4)
@@ -566,8 +570,8 @@ def back():
         if i < len(RECYCLE) - 1:
             b += arrow(x + rw + 0.4, y + rh / 2, x + rw + 3.6)
     y += rh + 3.4
-    b += T(M, y, "The greyed step is the perks module — without it, a recycle is "
-                 "income and refilling.", 3.0, col=SOFT, italic=True)
+    b += T(M, y, "You never draw cards to refill: the cards you spent are the cards "
+                 "you pick up.", 3.0, col=SOFT, italic=True)
     y += 8.0
 
     # ============================================= 3. THE MAP, AND WHAT IT PAYS

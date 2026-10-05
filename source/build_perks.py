@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """Print-and-play sheet for the victory row perk tokens.
 
-PROPOSAL. Nothing here is in the engine or the rulebook — see VROW-PERKS.md.
-This exists so the idea can be cut out and played with, which is the only way
-to find out whether it is any good.
+AN OPTIONAL MODULE, not part of the base rulebook. The rules are in
+Blink-perks-module.html (build_perks_module.py), which reads its list of
+perks from PERKS below - one list, so the sheet and the document cannot
+disagree about what a token does.
 
 Each token is a FOLD-OVER tile: the available face and the spent face sit side
 by side on one side of the sheet, and you fold along the middle. That is
@@ -34,8 +35,8 @@ PAPER, PANEL, LINE = "#FBFAF6", "#EFECE3", "#CDC7B8"
 #
 # What replaces it is the one distinction that changes what you DO with the
 # token. SPEND perks are used once and turned face down until your hand
-# recycles. STANDING perks are rates — they simply run while their slot holds a
-# card, and never turn over at all.
+# recycles. STANDING perks are rates — they simply run while they are armed,
+# and never turn over at all.
 KINDS = {
     "spend":    ("#4A6670", "SPEND \u00b7 turn me over"),
     "standing": ("#4F5E4A", "STANDING \u00b7 always on"),
@@ -44,8 +45,14 @@ KINDS = {
 # (deck, name, rule). Kept short on purpose: the token carries one line and the
 # appendix carries the edge cases.
 PERKS = [
+    # v0.26 print pass: every token here has to DO something under the printed
+    # rules. Siegecraft discounted a gold price on attacks that the duel does
+    # not charge, so it now works on the duel itself; Granary paid for an
+    # upkeep the printed economy does not have, so it is no longer printed;
+    # and the tokens that named "the shared pile" or "the pile of spent cards"
+    # now name the market, which is what that pile is called.
     ("spend", "Coercion",
-     "Force a rival to spend a victory card on B or C and discard it. "
+     "Force a rival to spend a victory card on B or C now. "
      "At rank 11+, you choose which card."),
     ("spend", "Displacement",
      "Move one enemy unit to a legal adjacent tile, instead of one of your "
@@ -55,46 +62,40 @@ PERKS = [
     ("spend", "Pioneering",
      "A tile you lay need touch only ONE tile already on the map, not two."),
     ("spend", "Salvage",
-     "Take the card set aside against you into your hand, and discard one of "
-     "yours to the shared pile instead."),
-    ("spend", "Roads", "One extra movement each turn."),
+     "When you must set a card aside, set aside a card from your hand "
+     "instead: every card of your meld still acts."),
+    ("spend", "Roads", "One extra movement in a turn."),
     ("standing", "Navigation",
-     "Your water advantage triggers on EVERY sea move, not only the first."),
+     "You may take the water advantage more than once a turn."),
     ("spend", "Ramparts",
      "A fortification survives the first time its unit is disturbed. The coin "
      "stays; the next disturbance takes it."),
     ("spend", "Siegecraft",
-     "Your attacks on Forest and Mountain cost 1 gold less, to a minimum of 0."),
+     "In one attack on Forest or Mountain, the ground adds nothing to the "
+     "defender."),
     ("spend", "Outposts",
-     "Your reach extends one tile further than the tiles you occupy."),
+     "One card may act one tile further out than your reach."),
     ("standing", "Arithmetic",
      "Friends of 10s: any two cards summing to 10, 20 or 30 are a legal meld."),
     ("standing", "Composition",
      "Combination melds: play two or more melds of 2+ cards together as one."),
     ("spend", "Archaeology",
-     "Swap a card from your hand for one of rank 10 or under from the pile of "
-     "spent cards."),
+     "Look through the market and swap a card from your hand for one of rank "
+     "10 or under; bury yours at its bottom."),
     ("spend", "Diplomacy",
      "When a rival matches your winning meld and loses, YOU choose which of "
      "their cards is set aside."),
     ("spend", "Scholarship",
-     "Your rank cap is 1 higher than your tier prints."),
+     "One research may take a card one rank above your rank cap."),
     ("spend", "Foresight",
      "Look at the top card of the upgrade deck before deciding whether to "
      "research."),
-    # GRANARY IS PARKED. Its effect is "pay one less food", and v0.26 prints
-    # the lean economy, where there is no food to pay - it was a token that
-    # could be dealt and then do nothing at all. It is out of the playable
-    # pool in the engine (PERKS.granary.todo) and printed here only as what it
-    # is: a perk waiting for an economy that is no longer the printed one.
-    ("standing", "Granary",
-     "FULL ECONOMY ONLY. Pay one gold less at each recycle, to a minimum of "
-     "none. Does nothing in the printed game, which has no upkeep."),
     ("spend", "Coinage", "One cashed card pays 2 gold instead of 1."),
     ("spend", "Tribute",
-     "Take 1 extra gold whenever your meld ranks last."),
+     "When your meld ranks last, take 1 extra gold on top of the usual coin."),
     ("spend", "Markets",
-     "Move one face-up market card to a different grid position."),
+     "Move one face-up card in the innovation space to a different grid "
+     "position."),
 ]
 
 # ---- geometry ------------------------------------------------------------
@@ -162,7 +163,7 @@ def token(kind, name, rule):
     # does get flipped, the back is the place to say put me back.
     if kind == "standing":
         big, note = "ALWAYS ON", ("This one never turns over. Leave it face up "
-                                  "for as long as its slot holds a card.")
+                                  "for as long as it is armed.")
     else:
         big, note = "SPENT", "Turn this back over when your hand recycles."
     return f"""<div class="tok">
@@ -180,7 +181,7 @@ def token(kind, name, rule):
     <div class="name">{name}</div>
     <div class="spent">{big}</div>
     <div class="back">{note}</div>
-    <div class="foot">Blink &middot; {VTAG} &middot; proposal</div>
+    <div class="foot">Blink &middot; {VTAG} &middot; perks module</div>
   </div>
 </div>"""
 
@@ -198,21 +199,19 @@ def build():
                      + "".join(token(*p) for p in chunk)
                      + "</div>")
     head = f"""<div class="head">
-  <div class="warn">PROPOSAL &middot; UNTESTED &middot; NOT PART OF THE GAME</div>
-  <h1>Victory row perks</h1>
-  <p>Shuffle the tokens and <b>deal four to each player</b>. Put one on each of
-  <b>slots 1 to 4</b> of your victory row, face up &mdash; your choice which
-  goes where, and it is <b>permanent</b> once a card reaches the row. The
-  fifth slot stays blank: it fills on your first research, so a perk there
-  would be a baseline everyone has rather than a bet anyone made.<br>
-  A perk is live while its slot holds a card. Cards fill the row from the right,
-  so <b>slot 4 wakes at two cards, slot 3 at three, slot 2 at four and slot 1
-  needs all five</b> &mdash; the slot is the bet. Spend a perk by turning its
-  token over; turn every token back when your hand recycles.<br>
-  Every perk is equal &mdash; there are no better or worse kinds, only the two
-  ways they work: <b>SPEND</b> perks turn face down when used and come back on
-  your recycle; <b>STANDING</b> perks simply run while their slot holds a card
-  and never turn over.<br>
+  <div class="warn">OPTIONAL MODULE</div>
+  <h1>Perk tokens</h1>
+  <p>The full rules are in the <b>perks module</b> document. In short: shuffle the
+  {len(PERKS)} tokens and <b>deal four to each player</b>. Lay one above each of
+  <b>slots 1 to 4</b> of your victory row, face up &mdash; your choice which goes
+  where, and it is <b>permanent</b> once a card reaches the row. Slot 5 stays
+  empty.<br>
+  At each recycle, after income and before you pick up your discard, turn every
+  token face up and <b>arm one perk</b> whose slot your row reaches: <b>slot 4 at
+  two cards, slot 3 at three, slot 2 at four and slot 1 at all five</b>. Turn the
+  armed token sideways. It runs until your next recycle, even if you spend the
+  card that unlocked it. <b>SPEND</b> perks turn face down when used;
+  <b>STANDING</b> perks never turn over.<br>
   <b>Cutting:</b> the dashed rectangles are cuts. The dotted line down the
   middle of each token, marked with a triangle at each end, is a
   <b>fold</b> &mdash; fold it backwards so both printed faces end up outside,
@@ -223,7 +222,7 @@ def build():
     body = '<div class="pagebreak"></div>'.join(pages)
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Blink &middot; victory row perk tokens &middot; {VTAG}</title>
+<title>Blink &middot; perk tokens &middot; {VTAG}</title>
 <style>{CSS}</style>
 </head><body>
 {body}

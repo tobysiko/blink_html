@@ -38,9 +38,10 @@ FREE = [
     ("WATER", "once a turn",
      "sail onto a new Ocean tile laid on your water's coast."),
     ("RESEARCH", "",
-     "twice · 1 then 2 · draw onto the highest rank · retire lowest · buy up to cap."),
+     "with trade, twice a turn · 1 gold then 2 · draw onto the highest rank · "
+     "retire lowest · take up to your rank cap."),
     ("TRADE", "",
-     "shares research's two · draw the market's top two, blind · bury any two."),
+     "one of the same two · draw the market's top two, blind · bury any two."),
     ("FORTIFY", "1 gold",
      "a coin on a unit · defends at your WALL + terrain, or a better card."),
     ("COLONY", "",
@@ -70,7 +71,8 @@ ROUND = [
     ("DECLARE", "spend a victory card on its A effect, or not",
                 "leader first — you can see every meld"),
     ("RANK",    "highest total wins the trick",
-                "ties: more cards, a tie-winning A, highest card, earliest laid"),
+                "ties: more cards, a tie-winning A, the higher victory card "
+                "spent on A, highest card, earliest laid"),
     ("MAP",     "spend your meld, winner first",
                 "but first see the line below"),
 ]
@@ -82,10 +84,16 @@ COIN_USES = [
     # some other font for that one character - and printed as an empty box
     # wherever it could not. Nothing on either aid may use a glyph the
     # face lacks; check_rules.py refuses one now.
-    ("RESEARCH", "1 then 2", "retire your lowest · take a card at or under your tier's cap, to hand or discard"),
+    # ONE ALLOWANCE OF TWO, shared: research twice, trade twice, or one of
+    # each, at 1 gold then 2. Printed as two separate "1 then 2" prices, the
+    # pair read as two allowances of two each.
+    # (the sheet prints the shared allowance once, above these two boxes)
+    ("RESEARCH", "1 then 2", "retire your lowest · take a card up to your rank cap, "
+                             "to hand or discard"),
     ("TRADE",    "1 then 2", "draw the market's top two, blind · bury any two back"),
-    ("FORTIFY",  "1",         "on a unit · defends at your WALL + the terrain"),
-    ("KEEP",     "—",    "gold breaks a tie at the end of the game"),
+    ("FORTIFY",  "1",         "on a unit: defends at WALL + terrain until a fight or "
+                              "a move"),
+    ("KEEP",     "—",    "gold breaks a tie at the end"),
 ]
 
 # WHAT A VICTORY-ROW CARD CAN DO. One of three, then it leaves the row.
@@ -122,7 +130,7 @@ FLOW = [
     ("YOUR HAND",   "ten cards",        "always ten — nothing you play leaves you"),
     ("YOUR MELD",   "face down, then up", "what you lay for the trick"),
     ("THE MAP",     "settle \u00b7 explore \u00b7 attack", "or cash it for 1 gold"),
-    ("YOUR DISCARD", "face up beside you", "everything you spent this cycle"),
+    ("YOUR DISCARD", "face up on your board", "everything you spent this cycle"),
     # "BACK TO HAND" was 2mm wider than the box it titles - the boxes are
     # (page - margins - gaps) / 5 and nothing was going to make it fit.
     ("RECYCLE",     "your discard IS your new hand", "ten cards \u00b7 nothing you play "
@@ -141,14 +149,14 @@ FLOW_ASIDE = [
                                  "\u00b7 you meld it again next recycle"),
 ]
 
-# THE RECYCLE, in order. Two of the three steps are modules; the sheet says so,
-# because a table playing the base game must not go looking for them.
+# THE RECYCLE, in order. Two steps in the base game. (The perks module adds a
+# third between them; it is published separately, with its own rules.)
+# PICK UP, not REFILL: you never draw cards to refill - the discard IS the hand.
 RECYCLE = [
     ("WHEN", "hand empty, meld spent", "at once, mid-turn \u2014 finish your turn after"),
     ("1 \u00b7 INCOME", "with objectives", "1 gold per objective you hold right now, shown or hidden"),
-    ("2 \u00b7 ARM A PERK", "perks module",
-     "one, from what your row reaches NOW \u00b7 it runs till the next recycle"),
-    ("3 \u00b7 REFILL", "always", "take your discard back \u2014 that IS your ten"),
+    ("2 \u00b7 PICK UP", "always", "take your discard back \u2014 that IS your ten \u00b7 "
+                                   "nothing is drawn"),
 ]
 
 # MAP OBJECTIVES - base game as of v0.26.

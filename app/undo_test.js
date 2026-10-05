@@ -169,7 +169,7 @@ setTimeout(() => {
         const s = q('.slot.hot'); if (s) click(s); else click(btn(/Cancel/));
       } else if (/Famine/.test(t)) {
         const r = q('.vrowbox button.want'); if (r) click(r); else click(btn(/Take the loss/));
-      } else if (/Secret objective/.test(t)) click(q('.objpick button'));
+      } else if (/Secret objective|Show one of your two objectives/.test(t)) click(q('.objpick button'));
       else {
         const b = btn(/Skip|Stop|Cancel|Take the loss|Keep this card|Play no effect/);
         if (b) click(b);

@@ -465,7 +465,7 @@ function clickThrough(p) {
     return click(qa('#hand button.want')[0] || qa('#hand button')[0]);
   if (/Take a card/.test(t)) return click(q('.slot.hot') || btn(/Cancel/));
   if (/Famine/.test(t)) return click(q('.vrowbox button.want') || btn(/Take the loss/));
-  if (/Secret objective/.test(t)) return click(q('.objpick button'));
+  if (/Secret objective|Show one of your two objectives/.test(t)) return click(q('.objpick button'));
   const b = btn(/Skip|Stop|Cancel|Take the loss|Keep this card|Play no effect/);
   return b ? click(b) : click(q('#map .hot'));
 }

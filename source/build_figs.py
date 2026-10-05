@@ -207,7 +207,7 @@ def table():
     # the market: deck plus 3x3, to the left of the map
     mk_x, mk_y = 40, 92
     b += panel(mk_x - 10, mk_y - 10, 150, 132, "INNOVATION SPACE",
-               "nine face up \u00b7 buy at or under your rank cap")
+               "nine face up \u00b7 research up to your rank cap")
     b += facedown(mk_x, mk_y + 40, 28, 38, 3)
     b += label(mk_x + 18, mk_y + 96, "upgrade", 9.5, cls="fig-label")
     b += label(mk_x + 18, mk_y + 106, "deck", 9.5, cls="fig-label")
@@ -712,7 +712,7 @@ def fortify():
                "A wall holds at your tier's number \u2014 10 / 12 / 14 / 16 / 18,",
                11, cls="fig-strong")
     b += label(160, ch + 111,
-               "two under the rank you may buy. It is a FLOOR:",
+               "two under your rank cap. It is a FLOOR:",
                11, cls="fig-strong")
     b += label(160, ch + 126,
                "a better card from hand fights instead.", 11, cls="fig-strong")
@@ -845,7 +845,7 @@ def board():
     # ---- header ----
     y = PAD + 4
     b += label(PAD, y, "RESERVE", 12, anchor="start", cls="fig-step")
-    b += label(cap_x, y, "BUY UP TO", 11, cls="fig-step")
+    b += label(cap_x, y, "RANK CAP", 11, cls="fig-step")
     b += label(wall_x, y, "WALL", 11, cls="fig-step")
     # MOVES IS NOT DRAWN. Movement comes from the meld in v0.26 - one per card
     # played - so the ladder is four numbers and this figure has to agree with
@@ -1081,7 +1081,7 @@ def recycle():
     order, and a player not running them needs to see that the base game is
     the solid boxes and nothing else.
     """
-    W, H = 624, 222
+    W, H = 624, 192
     INK, SOFT, RULE = "#1C1F1D", "#5A5F59", "#CDC7B8"
     GOLD, PAPER = "#C9992B", "#FBFAF6"
     b = ""
@@ -1111,15 +1111,16 @@ def recycle():
     # no modules on, a recycle is picking your cards up. The phase earns its
     # name from the two dashed boxes, and the figure should not pretend
     # otherwise by keeping a step that no longer happens.
-    BW, BH, TOP, GAP = 192, 104, 58, 24
+    BW, BH, TOP, GAP = 300, 74, 58, 24
     steps = [
+        # The perk step left with the perks module, which is published as a
+        # document of its own; the base game's recycle is these two boxes.
         ("1", "INCOME", "1 gold per map objective you hold right now", "", GOLD),
-        ("2", "ARM A PERK", "one, from what your row reaches now", "module", GOLD),
         # "draw to ten" was the previous version, where a matched meld card went
         # to the SHARED pile and the hand came back short. It does not now: the
         # discard IS ten, and the figure was telling a player to draw from a pile
         # the section beside it tells them not to touch.
-        ("3", "PICK UP", "your whole discard: ten cards, no drawing", "", None),
+        ("2", "PICK UP", "your whole discard: ten cards, no drawing", "", None),
     ]
     for i, (n, title, detail, tag, accent) in enumerate(steps):
         x = i * (BW + GAP)
@@ -1131,7 +1132,7 @@ def recycle():
         words, line, lines = detail.split(), "", []
         for wd in words:
             trial = (line + " " + wd).strip()
-            if len(trial) > 26:
+            if len(trial) > 44:
                 lines.append(line); line = wd
             else:
                 line = trial
@@ -1149,7 +1150,7 @@ def recycle():
     # closes the same way and the eye knows the flow has ended. The first
     # version left the arrow pointing down into white space with the sentence
     # floating beside it, which read as two unrelated marks.
-    cx = 2 * (BW + GAP) + BW / 2          # the centre of the REFILL box
+    cx = (len(steps) - 1) * (BW + GAP) + BW / 2   # the centre of the PICK UP box
     y0, y1 = TOP + BH + 3, TOP + BH + 22
     b += (f'<path d="M {cx} {y0} L {cx} {y1 - 7}" stroke="{SOFT}" '
           f'stroke-width="1.6" fill="none"/>'

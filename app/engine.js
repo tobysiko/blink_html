@@ -2757,6 +2757,24 @@ class Game {
     /* Setup, in the order §03 prints it: the hands first, then the map. */
     if (!this._handsSettled) yield* this._handSetup();
     if (this.START === "homelands" && !this._homelandsLaid) yield* this._layHomelands();
+    /* SHOW ONE (§03 step 7, §12): each player CHOOSES which of their two
+     * objectives goes face up. The deal used to settle it - the first card
+     * dealt was always the shown one - which made the choice the rulebook
+     * describes a coin toss. A person is asked; a bot keeps the deal's order
+     * (no rng draw, so every seeded measurement is unchanged). The shown card
+     * is kept at index 0 of `objectives`, which nothing else depends on. */
+    if (this.OBJECTIVES_MODE === "showone" && !this._shownChosen) {
+      this._shownChosen = true;
+      for (const p of this.P) {
+        if (!this.isHuman(p.i) || (p.objectives || []).length < 2) continue;
+        const pick = yield { type: "objective", seat: p.i, show: true,
+                             options: p.objectives.slice() };
+        if (pick && p.objectives.includes(pick)) {
+          p.objOpen = pick;
+          p.objectives = [pick].concat(p.objectives.filter((o) => o !== pick));
+        }
+      }
+    }
     this.round += 1;
     this._standingAt = null;        // the table has changed; read it again
     const order = [];
@@ -2974,7 +2992,7 @@ class Game {
         yield* this._maybeUseB(p);
         if (this.DECK === "abd") yield* this._maybeUseD(p);
         else yield* this._maybeCashC(p, false);
-        yield* this._freeMoves(p);
+        yield* this._freeMoves(p, use.length);
         yield* this._maybeFortify(p);
         if (!p.hand.length) { yield* this._reclaimForFood(p); yield* this._recycle(p); }
       }
@@ -3316,17 +3334,21 @@ class Game {
            * there. Only ever Ocean now - it used to offer any terrain, which
            * was landfall wearing this mechanism's clothes; real landfall is the
            * ordinary explore+move fold with a land-suited card, not this. */
-          if (fromSea && toSea && (!st.waterUsed || p.hasPerk("navigation"))) {
+          if (fromSea && toSea && st.moves > 0
+              && (!st.waterUsed || p.hasPerk("navigation"))) {
             const cells = this.waterExploreCells(ans.src, ans.dest);
             if (cells.length && this.m.supply.ocean > 0) {
-              /* Spent only when it is actually offered. It used to be marked
-               * used before this check, so sailing into open water — where
-               * nothing legal is in reach — burned the advantage for the whole
-               * turn without ever showing the player a choice. */
-              st.waterUsed = true;
+              /* Spent only when it is TAKEN (§07: a unit "may" sail out).
+               * It was first marked used before the offer existed, then as the
+               * offer was made - so a player who said no had still lost it for
+               * the turn. And sailing onto the new tile is a move like any
+               * other: §07 says the advantage "uses one movement", so it is
+               * only offered with a movement left, and costs it. */
               const pick = yield { type: "waterexplore", seat: p.i,
                                    options: cells, terrains: ["ocean"] };
-              if (pick) {
+              if (pick && cells.includes(pick.cell)) {
+                st.waterUsed = true;
+                st.moves -= 1;
                 this.m.doExplore(pick.cell, "ocean");
                 /* The ship keeps sailing. Sighting open water and then staying
                  * put left the new tile unowned and the voyage with nothing to
@@ -5109,10 +5131,13 @@ class Game {
 
   /* Would THIS sea move collect the advantage? A question about this voyage:
    * is there a tile left to lay, and is there anywhere on this coast to lay
-   * it. Asked before the move, so it must be given both ends explicitly. */
-  waterPays(p, srcKey, destKey) {
+   * it. Asked before the move, so it must be given both ends explicitly.
+   * `movesLeft`, when given, is the movements before this sail: the voyage
+   * onto the new tile is a movement of its own (§07), so it takes two. */
+  waterPays(p, srcKey, destKey, movesLeft) {
     const src = this.m.tiles.get(srcKey), dest = this.m.tiles.get(destKey);
     if (!src || !dest) return false;
+    if (movesLeft !== undefined && movesLeft < 2) return false;
     if (src.terrain !== "ocean" || dest.terrain !== "ocean") return false;
     if (this.m.supply.ocean <= 0) return false;
     return this.waterExploreCells(srcKey, destKey).length > 0;
@@ -5143,15 +5168,21 @@ class Game {
     return null;
   }
 
-  *_freeMoves(p) {
-    let budget = p.freeMoves();
-    // the first sea move    // the first sea move buys a free explore, which is worth more than most
-    // land moves — a bot that never takes it makes the rule measure as dead
+  *_freeMoves(p, meldCards) {
+    /* The printed rule (§07, CARD_MOVES "meld"): one movement per card of the
+     * meld you resolved, the set-aside card excluded. The bots used to move by
+     * the old per-tier allowance whatever the setting, so every simulated
+     * number about movement was measured under a rule that is not printed. */
+    let budget = this.CARD_MOVES === "meld" && meldCards !== undefined
+      ? meldCards : p.freeMoves();
+    // the first sea move buys a free explore, which is worth more than most
+    // land moves — a bot that never takes it makes the rule measure as dead.
+    // The voyage onto the new tile is a movement of its own (§07).
     const sea = this._seaMove(p);
     if (budget > 0 && sea) {
       this._doMove(p, sea[0], sea[1]);
-      this._waterExplore(p, sea[0], sea[1]);
       budget -= 1;
+      if (budget > 0 && this._waterExplore(p, sea[0], sea[1])) budget -= 1;
     }
     /* Pro seats move ONLY for a reason. There is deliberately no fallback to
      * the naive mover here: spreading thin measured worse than not moving. */
@@ -5267,6 +5298,7 @@ class Game {
     return p.reserve[j] === 1 && j + 1 < this.BANDS.length;
   }
   _nextFood(p) {
+    if (!this.FOOD_ON) return 0;                // lean economy: nobody eats
     const j = Math.min(p.band() + 1, this.BANDS.length - 1);
     return this.BANDS[j][3];
   }

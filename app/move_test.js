@@ -114,18 +114,37 @@ function turnRun(g, seat, answers, meldSize) {
      'stepping onto the water from land paid the water advantage');
 }
 {
-  //  water -> water IS, and only once per turn
+  //  water -> water IS. §07: a unit "may" sail out - so DECLINING keeps the
+  //  advantage for a later sea move this turn; it is spent only when taken.
   const g = board([[0, 0, 'ocean', 0], [1, 0, 'ocean', null], [2, 0, 'ocean', null],
                    [0, 1, 'plains', null], [1, 1, 'plains', null]]);
   g.P[0].reserve = [2, 4, 6, 4, 4];
   const seen = turnRun(g, 0, [
     { kind: 'move', src: '0,0', dest: '1,0' },
-    null,                                   // decline the free tile
+    null,                                   // decline the new tile
     { kind: 'move', src: '1,0', dest: '2,0' },
+    null,                                   // offered again - decline again
     { kind: 'end' },
   ]);
   const n = seen.filter((t) => t === 'waterexplore').length;
-  ok(n === 1, `the water advantage fired ${n} times in one turn, expected once`);
+  ok(n === 2, `declining the water advantage used it up (${n} offers in two sea moves, expected 2)`);
+}
+{
+  //  ...and once TAKEN it is gone for the turn, and the voyage costs a movement
+  const g = board([[0, 0, 'ocean', 0], [1, 0, 'ocean', null], [2, 0, 'ocean', null],
+                   [0, 1, 'plains', null], [1, 1, 'plains', null]]);
+  g.P[0].reserve = [2, 4, 6, 4, 4];
+  let movesAfter = null, landed = null;
+  const seen = turnRun(g, 0, [
+    { kind: 'move', src: '0,0', dest: '1,0' },
+    (req) => { landed = req.options[0]; return { cell: landed, terrain: 'ocean' }; },
+    (req) => { movesAfter = req.opts && req.opts.moves;
+               return { kind: 'move', src: landed, dest: '1,0' }; },
+    { kind: 'end' },
+  ], 4);
+  const n = seen.filter((t) => t === 'waterexplore').length;
+  ok(n === 1, `after taking the water advantage it was offered ${n} times, expected once`);
+  ok(movesAfter === 2, `a sea move plus the voyage left ${movesAfter} of 4 movements, expected 2`);
 }
 {
   // and the free tile is Ocean, and only ever Ocean now — never the mover's
@@ -331,7 +350,7 @@ function turnRun(g, seat, answers, meldSize) {
           }
           if (sea && o.moves && !req.state.waterUsed) {
             sails++;
-            pending = { expect: g.waterPays(g.P[0], sea[0], sea[1]) };
+            pending = { expect: g.waterPays(g.P[0], sea[0], sea[1], o.moves) };
             ans = { kind: 'move', src: sea[0], dest: sea[1] };
           } else {
             const live = o.cards.filter((m) => m.options.length);

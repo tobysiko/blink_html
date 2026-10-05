@@ -90,10 +90,27 @@ function configure(w, d, opts) {
   return { players, humans };
 }
 
-/* Configure and press Start. */
+/* Configure and press Start.
+ *
+ * SHOW ONE IS NOW A QUESTION TOO (v0.26 printed rule: you choose which of
+ * your two objectives goes face up). Like the draft above, every DOM test
+ * written before it expects the first thing asked to be a meld, so the
+ * choice is answered here - the first card, as dealt - and any hand-over
+ * screen it raised in a hot-seat game is passed, leaving the table exactly
+ * where it used to start. A test that means to exercise the choice passes
+ * `showObjective: 'ask'` (guide_test, ui_playthrough_test and the network
+ * test answer it themselves). */
 function start(w, d, opts) {
   const cfg = configure(w, d, opts);
   d.querySelector("#start").click();
+  if (!opts || opts.showObjective !== "ask") {
+    for (let k = 0; k < 12; k++) {
+      const gate = d.querySelector("#pass");
+      if (gate && !gate.hidden) { d.querySelector("#pass-go").click(); continue; }
+      if (!w.eval("!!(REQ && REQ.type === 'objective' && REQ.show && mine())")) break;
+      w.eval("answer(REQ.options[0])");
+    }
+  }
   return cfg;
 }
 

@@ -2,10 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Blink — Card Effects</title>
+<title>Blink — Perks module</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -227,122 +225,179 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
 /* And nothing else animates on paper either, whatever gets added later. */
 @media print{*,*::before,*::after{animation:none!important;transition:none!important}}
 
-.bands td:first-child{font-family:"IBM Plex Mono",monospace;white-space:nowrap}
-.allranks{font-size:.86rem}
-.allranks td{padding:.34rem .7rem .34rem 0}
-.allranks td:first-child{font-family:"IBM Plex Mono",monospace;
-  font-variant-numeric:tabular-nums;width:3rem}
-.allranks tbody tr:nth-child(5n) td{border-bottom:1.5px solid var(--stone)}
-.ruling{border-left:3px solid var(--ocean);padding:.1rem 0 .1rem 1rem;margin:1.3rem 0;
-  max-width:var(--measure)}
-.ruling .tag{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.14em;
+.opener .lede{font-size:1.06rem}
+.contents{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  padding:.7rem 0;margin:1.4rem 0 0}
+.contents .tag{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.14em;
   text-transform:uppercase;color:var(--stone);display:block;margin-bottom:.3rem}
+.contents p{margin:0;font-size:.86rem;line-height:1.7;color:var(--stone)}
+.contents b{color:var(--ink)}
+p.fine{font-size:.84rem;color:var(--stone);margin:.5rem 0 0}
+.gloss dt{font-weight:600;margin:.7rem 0 0;break-after:avoid}
+.gloss dd{margin:.1rem 0 0;color:var(--stone);break-before:avoid}
+
+@page{size:A4;margin:16mm 16mm 16mm 16mm}
+body{font-size:9.6pt;line-height:1.42}
+.sheet{max-width:none;box-shadow:none;background:#fff}
+.pad{padding:0}
+.mast{padding:0 0 .8rem}
+section{padding:.8rem 0 .2rem}
+h3{margin:.8rem 0 .3rem}
+table{font-size:8.8pt;margin:.4rem 0 .7rem}
+table.perks td:first-child{white-space:nowrap;font-weight:600}
+table.perks td:nth-child(2){white-space:nowrap;font-family:"IBM Plex Mono",monospace;
+  font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#5A5F59}
+footer{padding:.8rem 0 0;break-before:avoid}
+@media print{
+  p,li{orphans:2;widows:2}
+  ul,.note{break-inside:avoid}
+  /* the long perk list may run on to the next page, a whole row at a time,
+     rather than leave half a page blank in front of it */
+  table.perks{break-inside:auto}
+}
+/* the step circles are 1.5rem; at this body size a one-line step is shorter */
+.seq>li{min-height:1.75rem}
 </style>
 </head>
 <body>
-<div class="sheet">
+<div class="sheet"><div class="pad">
 
-<header class="mast pad">
-  <p class="eyebrow">Reference · victory-card effects</p>
-  <h1>Card Effects</h1>
-  <p class="sub">The three things a victory card can do</p>
-  <p class="meta"><span>Companion to base game rules v0.26</span><span>Toby Siko</span></p>
+<header class="mast">
+  <p class="eyebrow">An optional module for the base rules v0.26</p>
+  <h1 style="font-size:2.6rem;line-height:1">Perks</h1>
+  <p class="sub" style="font-size:1.05rem">A job for every slot of your victory row</p>
 </header>
 <div class="steprule"><i></i><i></i><i></i><i></i></div>
 
-<main class="pad">
+<main>
 
-<section>
-  <div class="h2"><span class="num">—</span><h2>The three effects</h2></div>
-  <p class="lede">Every civilization card carries three printed effects. A card sitting in your
-  <strong>victory row</strong> may be spent on exactly one of them, after which the card leaves
-  the game — your row shrinks, and your end score with it. The options are always the same three
-  kinds; only their strength grows with the card's rank.</p>
-  <table class="bands">
-    <thead><tr><th>Rank</th><th>A · card phase</th><th>B · map phase</th><th>C · any time</th></tr></thead>
-    <tbody><tr><td>1–5</td><td>Add this card's <b>rank</b> to your meld's total for this trick</td><td><b>Found a colony</b>: 1 new tile of this suit, 1 unit on it, fortified</td><td class='num-cell'>2 gold</td></tr><tr><td>6–10</td><td>Add this card's <b>rank</b> to your total, <b>and win ties</b></td><td><b>Distant colony</b>: as above, and the tile may sit up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>11–15</td><td>Add this card's <b>rank</b> to your meld's total</td><td><b>Open a frontier</b>: 2 new tiles of this suit, 1 unit on one, fortified</td><td class='num-cell'>4 gold</td></tr><tr><td>16–20</td><td>Add this card's <b>rank</b> to your total, <b>and win ties</b></td><td><b>Two colonies</b>: 2 new tiles of ANY terrain, 1 unit on each, both fortified</td><td class='num-cell'>5 gold</td></tr></tbody>
-  </table>
-  <p><strong>A</strong> is declared in the <em>declare step</em>, AFTER every meld is face up
-  and in leader order — you can see what you are trying to beat, and so can the player after
-  you. <strong>B</strong> is used during your own map phase, when the board in front of you is
-  already settled. <strong>C</strong> is taken in your own map phase, at any point in it.</p>
+<section style="border-top:none">
+  <div class="h2"><span class="num">01</span><h2>What the module adds</h2></div>
+  <p class="lede">Perks give the slots of your victory row a job of their own. Every
+  rule of the base game still applies; this module adds one step to the recycle and a
+  small hand of tokens beside your board.</p>
+  <p><strong>Exactly one perk runs at a time</strong>, and you choose which at every
+  recycle, from the perks your row is deep enough to reach <em>at that moment</em>. A deep
+  row does not run four perks — it chooses from four. No perk runs before your first
+  recycle.</p>
+  <p>Once armed, a perk <strong>keeps running until your next recycle</strong>, even if you
+  spend the victory card that unlocked it. Spending a victory card costs you nothing now;
+  it shows up at the next recycle, as a shorter menu.</p>
 </section>
 
 <section>
-  <div class="h2"><span class="num">01</span><h2>Three rulings</h2></div>
+  <div class="h2"><span class="num">02</span><h2>Components</h2></div>
+  <ul>
+    <li><strong>19 perk tokens</strong> — one of each perk listed in §05. Each is a
+    fold-over token: a <b>ready</b> face and a <b>spent</b> face. Print them from the perk
+    token sheet, cut along the dashed lines and fold along the dotted one.</li>
+  </ul>
+</section>
 
-  <h3>What a colony is — effect B</h3>
-  <p>B no longer settles into ground you already hold. It <strong>founds new ground</strong>:
-  you lay tiles, put units on them from your board, and fortify them. At most
-  <strong>one victory card may be spent on B per turn</strong>.</p>
-  <p>The fortification coins come from the <strong>general supply</strong>, not from your
-  own gold — B is the one place in Blink where a fortification is free.</p>
-  <div class="ruling">
-    <span class="tag">Placement</span>
-    <p>Every colony tile still obeys <b>touch-two</b>: it must touch at least two tiles
-    already on the map. <b>Reach does not apply</b> — a colony may be founded anywhere along
-    the map's edge, not only beside your own civilization. Ranks <b>1&ndash;15</b> place tiles
-    matching the spent card's suit; ranks <b>16&ndash;20</b> may place any terrain. Ranks
-    <b>6&ndash;10</b> may reach up to two tiles out, laying the intervening tile first.</p>
-  </div>
-  <div class="ruling">
-    <span class="tag">Two tiles, one unit</span>
-    <p>Ranks <b>11&ndash;15</b> lay two tiles but take only <b>one</b> unit from your board:
-    settle and fortify that one, and leave the second tile as open ground. Units come from
-    the topmost tier holding any, so a colony still empties your board — which costs you
-    nothing to keep, but does move you up a tier whether you wanted it yet or not.</p>
-  </div>
+<section>
+  <div class="h2"><span class="num">03</span><h2>Setup</h2></div>
+  <p>Do this after the base game's setup, before the first card is played.</p>
+  <ol class="seq">
+    <li>Shuffle the perk tokens and <b>deal four to each
+    player</b>. Return the rest to the box unseen.</li>
+    <li>Lay one token on the table just above each of <strong>slots
+    1, 2, 3 and 4</strong> of
+    your victory row, ready face up, in any order you like. <strong>Slot 5 stays
+    empty</strong>: it fills on your first research, so a perk there would be a gift.</li>
+    <li>You may rearrange your tokens until your first card reaches your victory row.
+    From then on the arrangement is <strong>permanent</strong>.</li>
+  </ol>
 
-  <h3>What “add this card’s rank” means — effect A</h3>
-  <p>This changes only the total the trick is judged on. It never adds cards to your meld, never
-  puts a unit on the map, and never lets you exceed your meld-size limit. Your meld is still
-  exactly the cards you physically played — a straight of four is four cards to spend, whatever
-  you declared.</p>
-  <p>The bonus is virtual: when the highest total wins, your meld is worth more, so it can take a
-  trick it would otherwise lose. The reward is tempo — you win the trick, spend your full meld,
-  and act first — not size.</p>
-  <p>A spent victory card is <b>gone</b>: it leaves the game, not your hand, and it is no longer
-  worth points in your victory row at the end. That is the whole cost. So declaring a 19 buys
-  nineteen points of trick and gives up a card that was scoring for you.</p>
-  <p class="fine">In v0.22 this effect read “+1 / +2 cards”, because the trick went to the most
-  cards. Under a total, one extra card was worth an average card and the wording had to change
-  with the rule. The v0.22 version is in the variants book.</p>
+  <h3>Which slot</h3>
+  <p>The victory row fills from the <strong>right</strong>, so the slot decides how long
+  you wait before a perk can be armed:</p>
+  <table class="wide">
+    <thead><tr><th>Slot</th><th>Reachable when your row holds</th><th>The bet</th></tr></thead>
+    <tbody>
+      <tr><td class="num-cell">4</td><td class="num-cell">2 cards</td><td>Working almost at once. The safe place for the perk you want most.</td></tr>
+      <tr><td class="num-cell">3</td><td class="num-cell">3 cards</td><td>Reachable in most games.</td></tr>
+      <tr><td class="num-cell">2</td><td class="num-cell">4 cards</td><td>Late, and only if you keep researching.</td></tr>
+      <tr><td class="num-cell">1</td><td class="num-cell">all 5</td><td>A long shot: fill the row and never spend it down.</td></tr>
+    </tbody>
+  </table>
+  <p>Every perk is equal in strength; what differs is how soon you want each one, and how
+  much of your row you will tie up to reach it.</p>
+</section>
 
-  <h3>Several A effects in one trick</h3>
-  <p>Nothing stops two or more players spending A in the same round. Each applies, and the trick
-  resolves on the modified totals — highest total wins, then most cards, then highest single
-  rank, then earliest played, exactly as normal. Because every declaration is made before any meld is
-  played, nobody can answer anybody: you are all guessing at once, and finding out together.</p>
-  <div class="ruling">
-    <span class="tag">A is a bet, B is a decision</span>
-    <p>The difference in timing is the difference in kind. <strong>A</strong> is spent before you
-    have seen a single card, so it is a wager on a trick you might have won anyway.
-    <strong>B</strong> is spent in your own map phase with the board in front of you, so it is
-    never a gamble — only a question of whether the units are worth the card.</p>
-  </div>
-  <div class="ruling">
-    <span class="tag">Two players both winning ties</span>
-    <p>If two players each spend an effect that <em>wins ties</em> and they are still tied, the
-    player who spent the <strong>higher-ranked card</strong> takes the trick.</p>
+<section>
+  <div class="h2"><span class="num">04</span><h2>Playing with perks</h2></div>
+  <h3>At every recycle</h3>
+  <p>The module adds one step to the recycle (base rules §08), after income and before
+  you pick up your discard:</p>
+  <ol class="seq">
+    <li><strong>Collect your income</strong>, as in the base game.</li>
+    <li><strong>Arm a perk.</strong> Turn all your perk tokens ready face up. Then choose
+    <strong>one</strong> of the perks whose slot your row reaches right now, and turn that
+    token sideways to show it is armed. Any perk you had armed before stops. If your row
+    reaches none, or you would rather have none, nothing is armed.</li>
+    <li><strong>Pick up your whole discard</strong> as your new hand, as in the base
+    game.</li>
+  </ol>
+  <p>Only the armed perk works. The others wait, face up, for a later recycle.</p>
+
+  <h3>The two kinds</h3>
+  <ul>
+    <li><strong>SPEND</strong> — use it once, then turn the token face down. It turns ready
+    face up again at your next recycle.</li>
+    <li><strong>STANDING</strong> — it simply works for as long as it is armed. These tokens
+    never turn over.</li>
+  </ul>
+  <p>Each token says which kind it is.</p>
+
+  <div class="note">
+    <span class="tag">The price of a perk</span>
+    <p>Every victory card you spend on A, B or C is a slot your row may no longer reach at
+    the next recycle. The more you value your perks, the fewer effects you will spend — a
+    player who wants every slot in reach has quietly given up their war chest.</p>
   </div>
 </section>
 
 <section>
-  <div class="h2"><span class="num">02</span><h2>Every card, at a glance</h2></div>
-  <p>The production reference: the exact A / B / C each rank prints. All four suits of a rank
-  share the same effects. A card's suit matters only for effect B's terrain requirement, and for
-  the meld shapes the card can join.</p>
-  <table class="allranks">
-    <thead><tr><th>Rank</th><th>A · trick</th><th>B · map</th><th>C · gold</th></tr></thead>
-    <tbody><tr><td>1</td><td>+rank to your total</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>2</td><td>+rank to your total</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>3</td><td>+rank to your total</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>4</td><td>+rank to your total</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>5</td><td>+rank to your total</td><td>colony, this suit</td><td class='num-cell'>2 gold</td></tr><tr><td>6</td><td>+rank, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>7</td><td>+rank, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>8</td><td>+rank, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>9</td><td>+rank, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>10</td><td>+rank, wins ties</td><td>colony, up to 2 out</td><td class='num-cell'>3 gold</td></tr><tr><td>11</td><td>+rank to your total</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>12</td><td>+rank to your total</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>13</td><td>+rank to your total</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>14</td><td>+rank to your total</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>15</td><td>+rank to your total</td><td>2 tiles, 1 unit</td><td class='num-cell'>4 gold</td></tr><tr><td>16</td><td>+rank, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>17</td><td>+rank, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>18</td><td>+rank, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>19</td><td>+rank, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr><tr><td>20</td><td>+rank, wins ties</td><td>2 colonies, any terrain</td><td class='num-cell'>5 gold</td></tr></tbody>
+  <div class="h2"><span class="num">05</span><h2>The perks</h2></div>
+  <p>All nineteen tokens, in alphabetical order. A perk works only
+  while it is armed.</p>
+  <table class="perks wide">
+    <thead><tr><th>Perk</th><th>Kind</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td>Archaeology</td><td>Spend</td><td>Look through the market and swap a card from your hand for one of rank 10 or under; bury yours at its bottom.</td></tr>
+      <tr><td>Arithmetic</td><td>Standing</td><td>Friends of 10s: any two cards summing to 10, 20 or 30 are a legal meld.</td></tr>
+      <tr><td>Coercion</td><td>Spend</td><td>Force a rival to spend a victory card on B or C now. At rank 11+, you choose which card.</td></tr>
+      <tr><td>Coinage</td><td>Spend</td><td>One cashed card pays 2 gold instead of 1.</td></tr>
+      <tr><td>Composition</td><td>Standing</td><td>Combination melds: play two or more melds of 2+ cards together as one.</td></tr>
+      <tr><td>Diplomacy</td><td>Spend</td><td>When a rival matches your winning meld and loses, YOU choose which of their cards is set aside.</td></tr>
+      <tr><td>Displacement</td><td>Spend</td><td>Move one enemy unit to a legal adjacent tile, instead of one of your own movements.</td></tr>
+      <tr><td>Foresight</td><td>Spend</td><td>Look at the top card of the upgrade deck before deciding whether to research.</td></tr>
+      <tr><td>Markets</td><td>Spend</td><td>Move one face-up card in the innovation space to a different grid position.</td></tr>
+      <tr><td>Navigation</td><td>Standing</td><td>You may take the water advantage more than once a turn.</td></tr>
+      <tr><td>Outposts</td><td>Spend</td><td>One card may act one tile further out than your reach.</td></tr>
+      <tr><td>Pioneering</td><td>Spend</td><td>A tile you lay need touch only ONE tile already on the map, not two.</td></tr>
+      <tr><td>Ramparts</td><td>Spend</td><td>A fortification survives the first time its unit is disturbed. The coin stays; the next disturbance takes it.</td></tr>
+      <tr><td>Roads</td><td>Spend</td><td>One extra movement in a turn.</td></tr>
+      <tr><td>Salvage</td><td>Spend</td><td>When you must set a card aside, set aside a card from your hand instead: every card of your meld still acts.</td></tr>
+      <tr><td>Scholarship</td><td>Spend</td><td>One research may take a card one rank above your rank cap.</td></tr>
+      <tr><td>Siegecraft</td><td>Spend</td><td>In one attack on Forest or Mountain, the ground adds nothing to the defender.</td></tr>
+      <tr><td>Terracing</td><td>Spend</td><td>One of your tiles may hold one unit above its terrain limit.</td></tr>
+      <tr><td>Tribute</td><td>Spend</td><td>When your meld ranks last, take 1 extra gold on top of the usual coin.</td></tr>
+    </tbody>
   </table>
+  <div class="note">
+    <span class="tag">Designer's note</span>
+    <p>The perks module has been played far less than the base game, and some tokens
+    will need adjusting. The app currently includes 7 of them. Tell me which ones
+    your table arms, and which ones it never does.</p>
+  </div>
 </section>
 
 </main>
 
-<div class="pad"><footer>Blink · card effects reference · companion to base game rules v0.26 ·
-Toby Siko · deep-diversions.com/blink · @tobysiko.bsky.social</footer></div>
+<footer>Blink · perks module · for base rules v0.26 · Toby Siko · deep-diversions.com/blink
+· deep.diversions.com@gmail.com</footer>
 
-</div>
+</div></div>
 </body>
 </html>

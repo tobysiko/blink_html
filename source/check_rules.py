@@ -329,7 +329,10 @@ if vrow_rule and vrow_rule.group(1) == "card+centre":
     board_txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", board))
     check(re.search(r"1\s+per card in your victory row", board_txt),
           "the player board does not print the victory row's point PER CARD")
-    check(re.search(r"rank of its CENTRE card", board_txt, re.I),
+    # v0.26 print pass: "the rank of its CENTRE card" became "the rank in the
+    # centre slot" - the slot is what the board draws, and it is the slot that
+    # scores (an empty-left row puts a lower card there).
+    check(re.search(r"rank in the centre slot", board_txt, re.I),
           "the player board does not print the victory row's centre rank")
     check(re.search(r"1 point per card in the row", rules),
           "the rulebook does not print the victory row's point per card")
@@ -443,12 +446,20 @@ def section(html_src, sid):
 
 raw_rules = (HERE / RULES_HTML).read_text(encoding="utf8")
 obj_sec = section(raw_rules, "objectives")
-perk_sec = section(raw_rules, "perks")
+# PERKS LEFT THE RULEBOOK in the v0.26 print pass (Toby, 5 Oct 2026): they are
+# an optional module with a document of their own, like the expansions. Every
+# perk check below now reads THAT document, and the rulebook is checked for
+# the opposite - that it no longer teaches any of it.
+_pm_file = HERE / "Blink-perks-module.html"
+check(_pm_file.exists(), "the perks module has not been built - run build_perks_module.py")
+perk_sec = text_of(_pm_file) if _pm_file.exists() else ""
+check(not re.search(r"\bperks?\b", rules, re.I),
+      "the rulebook still mentions perks - they are a separate module document now")
 sys.path.insert(0, str(HERE))
 from aid_data import card_uses as _cu          # noqa: E402
 card_uses_for_check = _cu("", "", "", "")
 check(bool(obj_sec), "the rulebook has no map objectives section")
-check(bool(perk_sec), "the rulebook has no perks section")
+check(bool(perk_sec), "the perks module document is empty")
 
 n_obj = len(re.findall(r'\["[A-Z][a-z]+[^"]*",\s*"(?:mountain|forest|plains|ocean)"', js))
 check(n_obj > 0, "cannot find the objective cards in app/engine.js")
@@ -510,13 +521,13 @@ if modes:
 perk_rule = re.search(r'PERK_RULE = opts\.perkRule === "depth" \? "depth" : "(\w+)"', js)
 check(bool(perk_rule), "cannot find the engine's PERK_RULE default")
 if perk_rule and perk_rule.group(1) == "one":
-    check(re.search(r"exactly one perk runs at a time", rules, re.I),
-          "the engine runs one perk at a time and the rulebook does not say so")
-    check(re.search(r"keeps running until your next recycle", rules, re.I),
-          "the rulebook does not say an armed perk survives losing the card "
+    check(re.search(r"exactly one perk runs at a time", perk_sec, re.I),
+          "the engine runs one perk at a time and the perks module does not say so")
+    check(re.search(r"keeps running until your next recycle", perk_sec, re.I),
+          "the perks module does not say an armed perk survives losing the card "
           "that unlocked it \u2014 which is the whole point of the change")
-    check(not re.search(r"works for the rest of the\s+game until you spend the card", rules, re.I),
-          "the rulebook still describes the v0.25 perk rule (a perk runs until "
+    check(not re.search(r"works for the rest of the\s+game until you spend the card", perk_sec, re.I),
+          "the perks module still describes the v0.25 perk rule (a perk runs until "
           "you spend the card under it)")
 
 
@@ -529,29 +540,58 @@ if deal:
     numword = {2: "two", 3: "three", 4: "four", 5: "five"}.get(int(deal.group(1)))
     check(re.search(rf"deal\s+(?:{numword}|{deal.group(1)})\s+to each player",
                     perk_sec, re.I),
-          f"section 13 does not say to deal {deal.group(1)} to each player")
+          f"the perks module does not say to deal {deal.group(1)} to each player")
 if slots:
     nums = [int(x) for x in slots.group(1).split(",")]
     check(max(nums) == 4 and 5 not in nums,
           f"PERK_SLOTS is {nums}; the rulebook says slots 1 to 4 and slot 5 blank")
     check("slot 5 stays empty" in perk_sec.lower(),
-          "section 13 does not say slot 5 stays empty")
+          "the perks module does not say slot 5 stays empty")
 # the wake-up thresholds, straight from perkSlotNeeds
 for slot, needs in [(4, 2), (3, 3), (2, 4), (1, 5)]:
     hit = re.search(rf"\b{slot}\s+{needs} cards", perk_sec) or (slot == 1 and "all 5" in perk_sec)
-    check(bool(hit), f"section 13 does not show slot {slot} waking at {needs} cards")
+    check(bool(hit), f"the perks module does not show slot {slot} reachable at {needs} cards")
 check("SPEND" in perk_sec and "STANDING" in perk_sec,
-      "section 13 does not name the two kinds of token")
+      "the perks module does not name the two kinds of token")
 # v0.26 edit pass: §13 printed BOTH "an armed perk keeps running until your
 # next recycle" and, in a note below it, "spending a card ... the perk switches
 # off" - the second was the v0.25 depth rule. The engine's hasPerk() reads only
 # the armed perk, so the first is the rule, and this check used to demand the
 # retired sentence.
 check("keeps running until your next recycle" in perk_sec,
-      "section 13 does not say an armed perk runs until the next recycle")
+      "the perks module does not say an armed perk runs until the next recycle")
 check("switches off" not in perk_sec,
-      "section 13 still says spending a card switches a perk off - the armed "
-      "perk runs until the next recycle whatever you spend")
+      "the perks module still says spending a card switches a perk off - the "
+      "armed perk runs until the next recycle whatever you spend")
+
+# THE TOKEN SHEET AND THE MODULE DOCUMENT ARE ONE LIST. build_perks_module.py
+# renders its list FROM build_perks.PERKS, so this asks the printed results:
+# every token name is in the document, the document's count is the sheet's,
+# and neither still carries the proposal-era wording the print pass removed.
+from build_perks import PERKS as _SHEET          # noqa: E402
+_pt_file = HERE / "Blink-perk-tokens.html"
+_ptt = text_of(_pt_file) if _pt_file.exists() else ""
+check(bool(_ptt), "the perk token sheet has not been built - run build_perks.py")
+for _kind, _name, _rule in _SHEET:
+    check(_name in perk_sec, f"the perks module does not list the {_name} token")
+_nword = {16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen",
+          20: "twenty"}.get(len(_SHEET), str(len(_SHEET)))
+check(re.search(rf"\b(?:{len(_SHEET)}|{_nword})\s+perk tokens", perk_sec, re.I),
+      f"the perks module does not count the {len(_SHEET)} tokens the sheet prints")
+for _name_, _txt in (("token sheet", _ptt), ("perks module", perk_sec)):
+    check("NOT PART OF THE GAME" not in _txt and "PROPOSAL" not in _txt,
+          f"the {_name_} still calls perks an untested proposal")
+    check(not re.search(r"shared pile", _txt, re.I),
+          f"the {_name_} still names a 'shared pile' - the face-down pile is the market")
+    check(not re.search(r"live while its slot holds a card|for as long as its slot holds a card",
+                        _txt, re.I),
+          f"the {_name_} prints the v0.25 rule (a perk runs while its slot holds a "
+          "card); one perk is armed at each recycle")
+    # the printed duel charges nothing to attack, so a perk that discounts the
+    # price of an attack is a token that does nothing
+    check(not re.search(r"attacks?[^.]{0,60}cost[^.]{0,20}gold less", _txt, re.I),
+          f"the {_name_} prints a perk that lowers the gold cost of an attack, "
+          "and the duel has no such cost")
 
 # the aid sets it in small caps with CSS, so the markup reads "Your turn"
 check("your turn" in aid_txt.lower(),
@@ -564,7 +604,9 @@ check(re.search(r"1 (gold )?then 2|1 then 2 gold", aid_txt),
       f"the aid does not print the 1-then-2 research price (engine default "
       f"{re.search(chr(34) + 'twice' + chr(34), js) and 'twice'})")
 # The board's job is now to name its own parts, so THAT is what is pinned.
-_TERMS = ["MELD", "BUY UP TO", "RESERVE", "VICTORY ROW"]
+# "BUY UP TO" became RANK CAP in the v0.26 print pass: one name for the
+# number, the one the rulebook's tier table and glossary use.
+_TERMS = ["MELD", "RANK CAP", "RESERVE", "VICTORY ROW"]
 if not MELD_MOVES:
     _TERMS += ["MOVES"]
 if not LEAN:
@@ -582,7 +624,11 @@ for item in ["SETTLE", "EXPLORE", "ATTACK", "CASH", "MOVE", "RESEARCH",
 # the unit slots, counted per row: this is the component players actually load
 import collections
 rows = collections.Counter()
-for c in re.finditer(r'<circle[^>]*cy="([\d.]+)"[^>]*r="6.50"', board):
+# Matched by what a unit slot IS - an empty dashed ring - not by its radius:
+# the rings went from 13 to 11 mm when the card column arrived, and a check
+# keyed to r="6.50" then counted nothing and failed for the wrong reason.
+for c in re.finditer(r'<circle[^>]*cy="([\d.]+)"[^>]*fill="none" '
+                     r'stroke="#B9B4A8"[^>]*stroke-dasharray', board):
     rows[round(float(c.group(1)), 1)] += 1
 drawn = [n for _, n in sorted(rows.items())]
 check(drawn == UNITS, f"the board draws {drawn} unit slots per tier, engine has {UNITS}")
@@ -614,9 +660,11 @@ check(len(corners) == len(CAPS),
 # The HEADING, not just the glossary: reverting the column label alone left the
 # explanatory line behind and the first version of this check passed anyway.
 check(not re.search(r">\s*CAP\s*<", board),
-      "the board still heads the rank column CAP - the app calls it 'buy up to'")
-check("BUY UP TO" in board_txt,
+      "the board heads the rank column with a bare CAP - it is the RANK CAP")
+check("RANK CAP" in board_txt,
       "the rank column has lost its heading")
+check("BUY UP TO" not in board_txt,
+      "the board still says BUY UP TO - the rulebook calls the number the rank cap")
 
 # ...and the count is printed on the top card of each fan, so the number can be
 # read without counting the cards
@@ -1041,13 +1089,17 @@ if econ and econ.group(1) == "lean":
 # characters of section 01, which contains neither the claim nor its negation.
 # Both checks passed on a rulebook with the wording deliberately removed.
 check(re.search(r"optional module", perk_sec, re.I),
-      "\u00a713 no longer calls perks an optional module")
+      "the perks module document no longer calls perks an optional module")
 recyc = section(raw_rules, "recycle")
 check(bool(recyc), "the rulebook has no recycle section to check")
 if recyc:
-    check(re.search(r"if you are playing with perks", recyc, re.I),
-          "the recycle no longer says arming a perk is only for tables playing "
-          "with the perks module")
+    # v0.26 print pass: the base recycle is income, then pick up. Arming a
+    # perk is taught in the module document, at the step it slots into.
+    check(not re.search(r"\bperk", recyc, re.I),
+          "the rulebook's recycle still teaches arming a perk - that step lives "
+          "in the perks module document now")
+    check(re.search(r"before you pick up|after income", perk_sec, re.I),
+          "the perks module does not say where in the recycle a perk is armed")
     check(re.search(r"Collect your income:\s*1 gold for each of your map objectives",
                     recyc, re.I),
           "the recycle no longer says what the income step pays, so a table "
@@ -1130,8 +1182,13 @@ if vis2_file.exists():
     # looking for a rule it does not have
     # v0.26: objective income is PRINTED (the engine default with objectives
     # on), so only the perk step is a module now.
-    check(re.search(r"perks module", vis2, re.I),
-          "side two does not mark arming a perk as the perks module")
+    # v0.26 print pass: perks are a separate module document, so the base
+    # aid carries no perk step at all rather than a greyed one.
+    check(not re.search(r"\bperk", vis2, re.I),
+          "side two still mentions perks - they are a separate module now")
+    check(re.search(r"PICK UP", vis2) and not re.search(r"\bREFILL\b", vis2),
+          "side two's recycle still says REFILL - you never draw to refill, "
+          "you pick your discard up")
     check(not re.search(r"modules only", vis2, re.I),
           "side two still calls income a module - it is printed with objectives")
     check("CROSSROADS" not in vis2,
@@ -1144,8 +1201,21 @@ if vis2_file.exists():
               "is what the second side was made to remove")
 
 # Only the perk step is a module now; objective income is printed.
-check(re.search(r"perk \(module\)", aid_txt, re.I),
-      "the player aid lists the recycle steps without marking the perk as a module")
+check(not re.search(r"\bperk", aid_txt, re.I),
+      "the folded player aid still mentions perks - they are a separate module now")
+if vis_file.exists():
+    check(not re.search(r"\bperk", vis, re.I),
+          "side one of the pictorial aid still mentions perks")
+    # the RANK box lists the tie-breaks in the rulebook's order, all of them
+    _ties = ["more cards", "tie-winning A", "higher victory card", "highest card",
+             "earliest laid"]
+    _at = [vis.find(t) for t in _ties]
+    check(all(i >= 0 for i in _at) and _at == sorted(_at),
+          "the pictorial aid's RANK box does not list the tie-breaks in the "
+          "rulebook's order: " + " > ".join(_ties))
+    # research and trade are one allowance of two, not two each
+    check(re.search(r"research or trade: two a turn", vis),
+          "side one does not say research and trade share one allowance of two")
 check(not re.search(r"modules only:?\s*collect income", aid_txt, re.I),
       "the player aid still calls income a module - it is printed with objectives")
 
@@ -1311,10 +1381,6 @@ GONE_OK = {
     # economy is still one of them - it just has to say so, which is checked
     # separately below.
     "Blink-variants.html",
-    # the perk tokens print one perk, Granary, whose whole effect is an economy
-    # the base game no longer has. It is out of the playable pool and the token
-    # says so in its own text, which is checked just below.
-    "Blink-perk-tokens.html",
     # NOT PART OF THE KIT. build_pdfs.sh does not run build_deck_spec.py and
     # nothing prints this; it is a v0.24-era proposal about effect D, left on
     # disk. It is skipped rather than repaired because repairing it would imply

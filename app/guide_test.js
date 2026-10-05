@@ -39,7 +39,7 @@ function game(seed, n, handsetup) {
     const other = w.eval('t("guide.other.h")');
 
     setTimeout(() => {
-      require('./test_setup.js').start(w, d, { players: n, seat: 0, seed,
+      require('./test_setup.js').start(w, d, { players: n, seat: 0, seed, showObjective: 'ask',
         advanced: handsetup ? { handsetup } : {} });
       let steps = 0, toggled = false;
       const tick = () => {

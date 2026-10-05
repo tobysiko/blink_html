@@ -55,7 +55,11 @@
   .flagbtn.has{background:rgba(255,190,120,.22); border-color:#FFD7A8}
   @media (max-width: 560px){ .hbtn{padding:3px 7px} header .right{font-size:10.5px} }
   @media (max-width: 430px){ .hnav{gap:4px; margin-left:6px}
-    .hbtn{padding:3px 5px; font-size:11px} header{gap:8px; padding:7px 9px} }
+    .hbtn{padding:3px 5px; font-size:11px} header{gap:8px; padding:7px 9px}
+    /* German labels are longer: let the game buttons take a row of their own
+       rather than push the page sideways. */
+    body.playing header{flex-wrap:wrap; row-gap:5px}
+    body.playing .hnav{margin-left:0; width:100%; justify-content:flex-end} }
 
   /* one modal shape, used by the flag dialog */
   #flagbox{position:fixed; inset:0; z-index:60; background:rgba(30,40,32,.55);
@@ -446,7 +450,9 @@
      nobody has ever confused them. */
   /* min-height is the map's own floor (see #mapbox), lifted to this level so
      that when something above takes height - the guide banner - the panel
-     under the map scrolls instead of the board sliding beneath it. */
+     under the map scrolls instead of the board sliding beneath it. NOT
+     `auto`: the map SVG's intrinsic height then props the area open and the
+     prompt under it is squeezed to a sliver at four players. */
   .tablearea{flex:1 1 auto; min-height:44vh; display:flex; align-items:stretch}
   #marketside{flex:none; display:flex; flex-direction:column; gap:3px;
     padding:4px 7px 6px; background:#EFEBE1;
@@ -495,7 +501,7 @@
   /* Shrinkable, so it can never push the bottom of itself off the window: if
      the map takes its floor, this scrolls inside instead of being clipped. */
   .lower{flex:0 1 auto; min-height:0; border-top:1px solid var(--line);
-    background:var(--panel); padding:6px 10px 8px; max-height:52vh; overflow-y:auto;
+    background:var(--panel); padding:6px 10px 8px; max-height:44vh; overflow-y:auto;
     -webkit-overflow-scrolling:touch;
     /* Stop a scroll that hits the end of this panel from rubber-banding the
        body behind it — the body is locked (overflow:hidden) during play, so
@@ -984,6 +990,13 @@
     #guide .ghead{font-size:18px}
     #guide .gsub{font-size:12.5px}
   }
+  /* On a short laptop screen every pixel of banner is a pixel of map: same
+     words, tighter. */
+  @media (min-width:641px) and (max-height:900px){
+    #guide{padding:6px 14px}
+    #guide .ghead{font-size:18px}
+    #guide .gsub{font-size:12.5px; margin-top:1px}
+  }
   .guideon{margin-left:auto; border:1px solid var(--deep); color:var(--deep);
     background:#fff; border-radius:11px; font:inherit; font-size:11px; font-weight:700;
     padding:2px 10px; cursor:pointer; min-height:22px}
@@ -1090,6 +1103,12 @@
     z-index:6}
   .whycap.good{background:#2F6B45}
   .whycap.bad{background:#8C3A16}
+  /* White on both. A bare .bad further down sets red text, and on the
+     red-brown background it made every lost fight unreadable. */
+  .whycap.good, .whycap.bad{color:#fff}
+  /* the result table scrolls inside its own box, never the page */
+  .finalwrap{max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch}
+  .duelwords{font-size:12.5px; margin:4px 0 2px; color:var(--ink)}
   .whycap.up{opacity:1}
   @media (prefers-reduced-motion: reduce){
     .tok{transition:none} .ring{animation:none; display:none}
@@ -1834,9 +1853,8 @@
       data-i18n="setup.docs.rules">Rulebook</a>
     <a class="doclink" id="doc-effects" href="card-effects.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.effects">Card effects</a>
-  </nav>
-  <nav class="docs" aria-labelledby="vdocs-label">
-    <span class="sublab" id="vdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
+    <!-- Map objectives are part of the base game (v0.26, §12), so they sit
+         with the rest of the rules, not under "variants". -->
     <a class="doclink" id="doc-objectives" href="map-objectives.html" target="_blank" rel="noopener"
       data-i18n="setup.docs.objectives">Map objectives</a>
   </nav>
@@ -1884,9 +1902,12 @@
         <div id="turnbar"></div>
         <button type="button" id="guideon" class="guideon" hidden
           data-i18n="guide.show"></button>
-        <div id="zoom"><button id="zout" title="zoom out">−</button
-          ><button id="zin" title="zoom in">+</button
-          ><button id="zfit" title="show the whole board · press again for playing size"
+        <div id="zoom"><button id="zout" title="zoom out" data-i18n-attr="title"
+            data-i18n="zoom.out">−</button
+          ><button id="zin" title="zoom in" data-i18n-attr="title"
+            data-i18n="zoom.in">+</button
+          ><button id="zfit" data-i18n-attr="title" data-i18n="zoom.fit"
+            title="show the whole board · press again for playing size"
             >⤢</button></div>
       </div>
       <div id="corners"></div>
@@ -1921,9 +1942,6 @@
           data-i18n="setup.docs.rules">Rulebook</a>
         <a class="doclink" href="card-effects.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.effects">Card effects</a>
-      </nav>
-      <nav class="docs gamedocs" aria-labelledby="gvdocs-label">
-        <span class="sublab" id="gvdocs-label" data-i18n="setup.docs.variantRules">Variant rules</span>
         <a class="doclink" href="map-objectives.html" target="_blank" rel="noopener"
           data-i18n="setup.docs.objectives">Map objectives</a>
       </nav>

@@ -47,7 +47,7 @@ function run(seed, n, seat, deck, obj, cb, extra) {
   const note = (k) => { seenKinds[k] = (seenKinds[k] || 0) + 1; };
 
   setTimeout(() => {
-    require('./test_setup.js').start(w, d, { players: n, seat, seed,
+    require('./test_setup.js').start(w, d, { players: n, seat, seed, showObjective: 'ask',
       advanced: Object.assign({}, deck ? { deck } : {}, obj ? { objectives: obj } : {},
                               extra || {}) });
 
@@ -177,7 +177,7 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         note('conquest');
         const h = hot();
         if (h) click(h); else click(btn(/Stop/));
-      } else if (/Secret objective/.test(t)) {
+      } else if (/Secret objective|Show one of your two objectives/.test(t)) {
         note('objective'); click(q('.objpick button'));
       } else if (/Arm a perk/.test(t)) {
         /* v0.26 arms exactly one perk per recycle, so this prompt appears two

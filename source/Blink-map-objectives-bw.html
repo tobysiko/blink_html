@@ -191,9 +191,19 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   .gloss dt{break-inside:avoid}
   .gloss dd{break-inside:avoid}
   #quickref{break-before:page;padding-top:0}
+  /* the glossary is one page of its own, never split across two */
+  #glossary{break-before:page;padding-top:0}
   #quickref .cols{gap:.2rem 1.6rem}
   #quickref h3{margin:.55rem 0 .15rem;font-size:.98rem}
   #quickref p{font-size:8.6pt;line-height:1.38;margin:0 0 .3rem}
+  /* no stranded lines, and no list broken after its first item */
+  p,li{orphans:2;widows:2}
+  .lede,ul.keep,.ref ul{break-inside:avoid}
+  /* the victory-row effects table: the rank band and the headings stay on one line */
+  table.fx th,table.fx td:first-child{white-space:nowrap}
+  /* the glossary is read on paper, so its body is ink, not the soft grey */
+  .ref .gloss dd{color:#2D2D2D}
+  .keep{break-inside:avoid}
 }
 @media (max-width:640px){
   body{font-size:15px}

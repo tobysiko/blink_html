@@ -40,6 +40,8 @@ function fxTextD(r) {
   return { d: t("fx.d." + b), dShort: t("fx.dShort." + b) };
 }
 const objName = (o) => t("obj." + o.id + ".name");
+/* A card in words: "Mountain 10", never the engine's "10M". */
+const cardLabel = (c) => `${TL[c.s]} ${c.r}`;
 const objFlavour = (o) => t("obj." + o.id + ".flavour");
 /* Brightened from the components' crimson/azure/violet/olive: a unit has to
  * read against its own terrain, and Azure-on-ocean and Olive-on-forest were
@@ -834,7 +836,15 @@ function coach(key) {
   seen.add(key);
   try { window.localStorage.setItem(COACH_KEY, [...seen].join(",")); } catch (e) {}
   COACH = key;
+  COACH_FOR = REQ ? REQ.type : null;
   return true;
+}
+/* A tip belongs to the step it explains. Left until "Got it", the draft tip
+ * sat over the meld, the map turn and the last round of a whole game. It now
+ * goes when the step it was armed on is over. */
+let COACH_FOR = null;
+function coachExpire() {
+  if (COACH && (!REQ || REQ.type !== COACH_FOR)) COACH = null;
 }
 function coachDismiss() { COACH = null; renderPrompt(); }
 
@@ -922,6 +932,7 @@ function guideState() {
     case "mulligan":
       return S("act", "setup", t("guide.mulligan.h"), t("guide.mulligan.s"));
     case "objective":
+      if (REQ.show) return S("act", "setup", t("guide.objective.show.h"), t("guide.objective.show.s"));
       return S("act", "setup", t("guide.objective.h"), t("guide.objective.s"));
     case "homeland":
       return S("act", "setup", t("guide.homeland.h"), t("guide.homeland.s"));
@@ -1285,7 +1296,8 @@ function seaDests(src) {
  * a tile, and a badge that promises one anyway is a lie the player only finds
  * out about after committing the move. */
 function seaPays(src, dest) {
-  try { return G.waterPays(G.P[ME], src, dest); } catch (e) { return false; }
+  const left = REQ && REQ.type === "turn" && REQ.opts ? REQ.opts.moves : undefined;
+  try { return G.waterPays(G.P[ME], src, dest, left); } catch (e) { return false; }
 }
 /* The empty cells this source may make landfall on. The engine sends them with
  * the turn options, keyed by source; falling back to asking it directly keeps
@@ -2398,7 +2410,7 @@ function renderPlayer() {
       <span class="tier">${tierName(p.band())}</span>
       <span class="purse">🪙 ${p.gold}</span>
       <span class="score">${t("board.vp", { n: sc.total })}
-        <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, dom: sc.dom })}</em></span></div>
+        <em>${t("board.pop", { pop: sc.pop, row: sc.vrow, obj: sc.obj || 0 })}</em></span></div>
     ${p.objectives && p.objectives.length
       ? `<div class="objbox top"><span class="vlab">${
           t(G.OBJECTIVES_MODE === "open" ? "board.sharedObjectives"
@@ -2809,6 +2821,7 @@ function renderDuelOutcome() {
 }
 
 function renderPrompt() {
+  coachExpire();
   renderPromptBody();
   if (!COACH || gameOver()) return;
   /* A FORCED PROMPT GETS NO BUTTON BUT ITS OWN. During a set-aside the only
@@ -2992,6 +3005,12 @@ function renderPromptBody() {
                + `<i></i><b>${REQ.needMatch}</b></span>`
              : "")
           + `</span>`);
+        /* ...and the same in words, because a row of symbols is a puzzle the
+         * first time it appears, and it appears on somebody else's turn. */
+        const who = REQ.by === null || REQ.by === undefined ? "?" : seatName(REQ.by);
+        bar.appendChild(el("div", "duelwords", REQ.wall
+          ? t("duel.words.wall", { seat: who, att: cardLabel(REQ.against), wall: REQ.wall, need })
+          : t("duel.words", { seat: who, att: cardLabel(REQ.against), need })));
       }
       btn(t("ask.duel.decline"), () => answer(null), "ghost");
       break;
@@ -3020,7 +3039,11 @@ function renderPromptBody() {
       btn(t("btn.takeLoss"), () => answer(null), "alt");
       break;
     case "objective": {
-      ask(t("ask.objective", { pts: objPointsLabel({ points: 4 }) }));
+      /* Two different questions share this request: under "secret" you KEEP
+       * one of two; under "show one" (printed) you keep both and choose which
+       * goes face up. */
+      ask(REQ.show ? t("ask.objective.show")
+        : t("ask.objective", { pts: objPointsLabel(REQ.options[0]) }));
       const pick = el("div", "objpick");
       pick.innerHTML = REQ.options.map((o, i) => objCard(o, "", `data-obj="${i}"`)).join("");
       bar.appendChild(pick);
@@ -3036,7 +3059,7 @@ function renderPromptBody() {
        * hand is a card shorter and recycles sooner, bringing everything back
        * with it. */
       ask(t("ask.researchTo",
-            { card: REQ.card.r + SUIT_LETTER[REQ.card.s] }));
+            { card: cardLabel(REQ.card) }));
       btn(t("btn.toHand"), () => answer("hand"));
       btn(t("btn.toDiscard"), () => answer("discard"), "alt");
       break;
@@ -3171,7 +3194,7 @@ function researchPanel(bar, stage, p) {
     : (ORDER.indexOf(stage) > ORDER.indexOf(n) ? "done" : "todo");
 
   const box = el("div", "research");
-  const cardName = (c) => c.r + SUIT_LETTER[c.s];
+  const cardName = (c) => cardLabel(c);
   box.innerHTML = `
     <div class="rhead"><b>${t("res.title")}</b>
       <span class="muted">${stage === "preview" ? t("res.preview")
@@ -3340,7 +3363,7 @@ function renderTurn(bar, ask, btn, p) {
     const e = o.cards.find((m) => m.card === SEL.card);
     if (!e.options.length)
       ask(t("ask.noHex"));
-    btn(t("btn.cash", { card: SEL.card.r + SUIT_LETTER[SEL.card.s] }),
+    btn(t("btn.cash", { card: cardLabel(SEL.card) }),
         () => answer({ kind: "cash", card: SEL.card }), "alt");
   } else if (left && o.cards.every((m) => !m.options.length)) {
     ask(t("ask.noHexAny"));
@@ -3394,22 +3417,28 @@ function renderFinal(bar) {
   let s = `<div class="ask">${t("final.over", {
     why: t(G.endedOn || ""), rounds: G.round })}</div>`;
   const anyObj = sc.some((d) => d.objDone && d.objDone.length);
-  s += `<table class="final"><tr><th>${t("final.seat")}</th><th>${t("final.pop")}</th>
-        <th>${t("final.row")}</th><th>${t("final.dom")}</th>${
-        anyObj ? `<th>${t("final.obj")}</th>` : ""}<th>${t("final.total")}</th></tr>`;
+  /* Terrain dominance is a variant now (MAJORITY off by default): a column of
+   * zeroes for a rule nobody played reads as a scoring bug. And TOTAL comes
+   * second, so on a phone the number that matters is never off-screen; the
+   * table also scrolls sideways inside its own box rather than the page. */
+  const dom = G.MAJORITY && G.MAJORITY !== "off";
+  s += `<div class="finalwrap"><table class="final"><tr><th>${t("final.seat")}</th>
+        <th>${t("final.total")}</th><th>${t("final.pop")}</th><th>${t("final.row")}</th>${
+        dom ? `<th>${t("final.dom")}</th>` : ""}${
+        anyObj ? `<th>${t("final.obj")}</th>` : ""}</tr>`;
   for (const d of sc) {
     s += `<tr class="${d.seat === ME ? "me" : ""}"><td><span class="dot"
       style="background:${SEAT_C[d.seat]}"></span>${SEAT_N[d.seat]}${
-      d.seat === ME ? " " + t("board.you") : ""}</td><td>${d.pop}</td><td>${d.vrow}</td>
-      <td>${d.dom}</td>`;
+      d.seat === ME ? " " + t("board.you") : ""}</td><td><b>${d.total}</b></td>
+      <td>${d.pop}</td><td>${d.vrow}</td>${dom ? `<td>${d.dom}</td>` : ""}`;
     if (anyObj) {
       s += `<td>${(d.objDone || []).map((x) =>
         `<span class="${x.done ? "ok" : "muted"}">${objName(x.o)}${
           x.done ? ` +${x.points}` : " ✗"}</span>`).join("<br>") || "—"}</td>`;
     }
-    s += `<td><b>${d.total}</b></td></tr>`;
+    s += `</tr>`;
   }
-  bar.innerHTML = s + `</table>`;
+  bar.innerHTML = s + `</table></div>`;
   renderFeedback(bar);
   const again = el("button", "go", t("btn.newGame"));
   again.addEventListener("click", () => {
@@ -3613,8 +3642,17 @@ function secretLine(key, vars) {
 }
 /* One log line. `log.recycle` carries a clause that only appears when cards
  * were actually drawn, so it is composed rather than looked up whole. */
+const SUIT_OF_LETTER = { P: "plains", F: "forest", O: "ocean", M: "mountain" };
 function logLine(key, vars) {
   const v = Object.assign({}, vars || {});
+  /* The engine logs seats as numbers and cards as "10M"; a player reads
+   * colours and "Mountain 10". Done here, once, for every line. */
+  if (typeof v.seat === "number") v.seat = seatName(v.seat);
+  for (const k of ["card", "out", "in", "a", "b"]) {
+    const m = typeof v[k] === "string" && /^(\d+)([PFOM])$/.exec(v[k]);
+    if (m) v[k] = `${TL[SUIT_OF_LETTER[m[2]]]} ${m[1]}`;
+  }
+  if (typeof v.terrain === "string" && TC[v.terrain]) v.terrain = TL[v.terrain];
   if (key === "log.recycle")
     v.drew = v.drew ? t("log.recycle.drew", { n: v.drew }) : "";
   return tn(key, v.n !== undefined ? v.n : 1, v);
@@ -3628,7 +3666,8 @@ function renderSide() {
     .map(([r, key, vars]) => `<div><b>R${r}</b> ${
       logLine(key, vars)}</div>`).join("");
   $("#log").scrollTop = $("#log").scrollHeight;
-  $("#roundno").textContent = G.round;
+  /* Round 0 is the setup (draft, objectives): "round 0" reads as a bug. */
+  $("#roundno").textContent = G.round > 0 ? G.round : "–";
   renderEndBanner();
 }
 

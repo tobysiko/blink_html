@@ -441,9 +441,9 @@ HTML = f"""<!doctype html>
     <table>
       <thead><tr><th></th><th>standard start</th><th>quick start</th></tr></thead>
       <tbody>
-        <tr><td>2 players · rounds · winner · gap</td><td class="num-cell">11.4 · 38.9 · 9.9</td><td class="num-cell">10.9 · 38.8 · 9.1</td></tr>
-        <tr><td>3 players · rounds · winner · gap</td><td class="num-cell">11.7 · 38.4 · 23.2</td><td class="num-cell">11.0 · 38.4 · 21.4</td></tr>
-        <tr><td>4 players · rounds · winner · gap</td><td class="num-cell">11.7 · 38.6 · 29.8</td><td class="num-cell">11.2 · 37.7 · 28.0</td></tr>
+        <tr><td>2 players · rounds · winner · gap</td><td class="num-cell">11.3 · 38.0 · 9.5</td><td class="num-cell">10.7 · 38.0 · 8.7</td></tr>
+        <tr><td>3 players · rounds · winner · gap</td><td class="num-cell">11.6 · 37.9 · 20.6</td><td class="num-cell">11.0 · 38.0 · 19.0</td></tr>
+        <tr><td>4 players · rounds · winner · gap</td><td class="num-cell">11.7 · 37.3 · 28.0</td><td class="num-cell">11.0 · 37.1 · 26.7</td></tr>
       </tbody>
     </table>
     <p><b>About half a round shorter, and otherwise the same game.</b> Winning scores do

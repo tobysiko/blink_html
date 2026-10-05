@@ -195,9 +195,19 @@ footer{padding:2rem 0 3rem;font-family:"IBM Plex Mono",monospace;font-size:.72re
   .gloss dt{break-inside:avoid}
   .gloss dd{break-inside:avoid}
   #quickref{break-before:page;padding-top:0}
+  /* the glossary is one page of its own, never split across two */
+  #glossary{break-before:page;padding-top:0}
   #quickref .cols{gap:.2rem 1.6rem}
   #quickref h3{margin:.55rem 0 .15rem;font-size:.98rem}
   #quickref p{font-size:8.6pt;line-height:1.38;margin:0 0 .3rem}
+  /* no stranded lines, and no list broken after its first item */
+  p,li{orphans:2;widows:2}
+  .lede,ul.keep,.ref ul{break-inside:avoid}
+  /* the victory-row effects table: the rank band and the headings stay on one line */
+  table.fx th,table.fx td:first-child{white-space:nowrap}
+  /* the glossary is read on paper, so its body is ink, not the soft grey */
+  .ref .gloss dd{color:#2A2E2B}
+  .keep{break-inside:avoid}
 }
 @media (max-width:640px){
   body{font-size:15px}
@@ -265,7 +275,10 @@ TABLE = 0.98
 SCALE = {
     # Fortify grew a second half in v0.24 — a refusal beside a fight — and no
     # longer fits at DETAIL. It is still a close-up, just a wider one.
-    "combat": DETAIL, "fortify": 1.35, "market": 1.1,
+    # The duel figure came down from DETAIL in the v0.26 print pass: at 1.60
+    # it was too tall to follow the duel steps on their page, and left a third
+    # of a page blank in front of it.
+    "combat": 1.25, "fortify": 1.35, "market": 0.95,
     "board": COMPONENT, "vprow": COMPONENT, "table": TABLE,
 }
 _VB = re.compile(r'viewBox="(-?[\d.]+) (-?[\d.]+) ([\d.]+) ([\d.]+)"')
@@ -333,8 +346,8 @@ HTML = f"""<!doctype html>
     <li><b>Grow.</b> Units leave your board a tier at a time. Each tier you empty lets you
     play a bigger meld, research a stronger card and hold a taller wall.</li>
   </ol>
-  <p>When someone has placed their last unit, one more round is played and the game
-  ends. Most points wins: one per unit
+  <p>When someone has placed their last unit, finish the round, then play one more, and
+  the game ends. Most points wins: one per unit
   on the map, plus your <strong>victory row</strong>, plus your two <strong>map
   objectives</strong> &mdash; kinds of place, sung down the generations, that you score by
   holding.</p>
@@ -346,7 +359,7 @@ HTML = f"""<!doctype html>
     <b>✦</b> A worked round · <b>04</b> The round · <b>05</b> Melds ·
     <b>06</b> Spending your meld · <b>07</b> Free actions · <b>08</b> The recycle ·
     <b>09</b> Research and trade · <b>10</b> The victory row · <b>11</b> End of the game ·
-    <b>12</b> Map objectives · <b>13</b> Perks ·
+    <b>12</b> Map objectives ·
     <b>—</b> Glossary · <b>—</b> Quick reference</p>
   </div>
 </section>
@@ -372,13 +385,17 @@ HTML = f"""<!doctype html>
     <li><strong>60 terrain tiles</strong> — 15 each of Plains, Forest, Ocean and Mountain</li>
     <li><strong>80 population units</strong> — 20 in each of four player colours</li>
     <li><strong>4 player boards</strong> — each with a <b>reserve</b> of five tiers, a
-    <b>gold area</b> and a <b>victory row</b> of five slots</li>
-    <li><strong>12 map objective cards</strong> (§12)</li>
+    <b>gold area</b>, a <b>victory row</b> of five slots, and spaces for your
+    <b>discard</b> and your <b>shown objective</b></li>
+    <li><strong>4 player aids</strong> — one each: the round, your options and the
+    numbers at a glance</li>
+    <li><strong>12 map objective cards</strong> (§12), with their own back</li>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
-    <li><strong>4 dice</strong> — one <b>winner's die</b> in its own colour and three
-    plain <b>initiative dice</b></li>
-    <li><em>Perks module only:</em> perk tokens (§13)</li>
+    <li><strong>Dice</strong> — one <b>winner's die</b> in its own colour, plus one plain
+    <b>initiative die</b> for every other player: one at two players, two at three, three
+    at four</li>
   </ul>
+  <p class="fine">Optional modules and expansions are published separately.</p>
 </section>
 
 <section>
@@ -477,8 +494,8 @@ HTML = f"""<!doctype html>
     <li><strong>Ada</strong> sets aside the 5 — it pays her <strong>1 gold</strong> and goes
     to her own discard — and spends the <strong>6 of Plains</strong> to settle a second unit
     on her homeland, which holds three.</li>
-    <li><strong>Cy</strong> cashes his 4 for a second gold: nothing on the map is worth
-    reaching for yet, and he is saving for research.</li>
+    <li><strong>Cy</strong> could settle the empty Mountain beside his homeland, but he
+    cashes his 4 for a second gold instead: he is saving for research.</li>
   </ul>
   <p>Each card spent also carried one movement — two for Bex, one each for Ada and Cy — but
   everyone's units already stand where they want them, so nobody moves.</p>
@@ -526,9 +543,9 @@ HTML = f"""<!doctype html>
   <h3>Card phase</h3>
   <ol class="seq">
     <li><b>Lead.</b> The leader lays a meld from their hand <strong>face down</strong>: one
-    card up to their meld limit, forming an unbroken run of ranks (§05).</li>
+    or more cards, up to their meld limit, forming an unbroken run of ranks (§05).</li>
     <li><b>Follow.</b> Clockwise, every other player lays a meld of their own, face down,
-    one card up to their own limit. You may not pass, and nothing has to follow what was
+    one or more cards, up to their own limit. You may not pass, and nothing has to follow what was
     led. <strong>All anyone sees is how many cards each player laid.</strong></li>
     <li><b>Reveal.</b> When the last meld is down, everyone turns theirs over at once.</li>
     <li><b>Declare.</b> Starting with the leader and going clockwise, each player may spend
@@ -544,7 +561,8 @@ HTML = f"""<!doctype html>
     <li><b>Set the dice.</b> The winner takes the <strong>winner's die</strong> and sets it
     to the <strong>number of cards in their meld</strong>. The others take plain dice
     showing <strong>2, 3, 4</strong> in finishing order. This is the initiative order for
-    the map phase.</li>
+    the map phase. Each player keeps their die in a corner of their board until their
+    turn is over.</li>
   </ol>
   <div class="note">
     <span class="tag">Why the winner's die shows a card count</span>
@@ -566,7 +584,7 @@ HTML = f"""<!doctype html>
     takes this coin; if they also set a card aside, they take both.</li>
   </ul>
   <p>Every card you resolve, and the one you set aside, goes face up into your own
-  <strong>discard</strong>. None of them is lost: the discard becomes your hand again when
+  <strong>discard</strong>, on its space on your board. None of them is lost: the discard becomes your hand again when
   your hand runs out (§08).</p>
   <p>When everyone has finished, the trick winner leads the next round.</p>
 </section>
@@ -581,13 +599,13 @@ HTML = f"""<!doctype html>
     legal meld.</p>
   </div>
 
-  {fig('meld_rule', 'The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant. Only the last row is illegal, because nothing sits at rank 3.')}
-
   <p>If you know rummy or poker, set that vocabulary aside: there are no straights, sets or
   full houses, only runs, and duplicates inside a run are free.</p>
   <p>Your <strong>meld limit</strong> is a ceiling, never a quota. A short meld is a real
   line, not a failure: it still reaches the map card for card, and only a player who
   <em>matches</em> the winner's count and loses gives a card up.</p>
+
+  {fig('meld_rule', 'The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant. Only the last row is illegal, because nothing sits at rank 3.')}
 </section>
 
 <section>
@@ -635,7 +653,8 @@ HTML = f"""<!doctype html>
 
   <h3>Attack</h3>
   <p>A tile a rival occupies cannot be settled. Spending a card on it <strong>declares an
-  attack</strong> instead, and the attack is a <strong>duel</strong>:</p>
+  attack</strong> instead, and the attack is a <strong>duel</strong>.</p>
+  {fig('combat', 'Attacking is not moving a unit across the map. The card you spent is the attack; the defender answers from hand, and the ground adds to them. Clear the last defender and the tile is yours — and pays a coin.')}
   <ol class="seq">
     <li><b>Attack.</b> Your attack is the rank of the card you spent. You commit nothing
     else.</li>
@@ -658,7 +677,6 @@ HTML = f"""<!doctype html>
   </ol>
   <p>Cards used in the duel go to their owners' discards. Clearing a tile holding several
   units takes one won duel per unit, and the coin comes only with the last.</p>
-  {fig('combat', 'Attacking is not moving a unit across the map. The card you spent is the attack; the defender answers from hand, and the ground adds to them. Clear the last defender and the tile is yours — and pays a coin.')}
   <div class="note">
     <span class="tag">Where a retreat can go</span>
     <p>Ocean and Mountain hold one unit each, so a neighbouring one of yours is always full:
@@ -682,7 +700,7 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">07</span><h2>Free actions</h2></div>
   <p>Besides your cards, your map phase offers actions that cost no card. Take them
   whenever you like during your turn, between card plays or after them:</p>
-  <ul>
+  <ul class="keep">
     <li><strong>move</strong> your units, and once a turn take the
     <strong>water advantage</strong>;</li>
     <li><strong>fortify</strong> your units with gold;</li>
@@ -699,7 +717,7 @@ HTML = f"""<!doctype html>
   units:</p>
   <ul>
     <li><strong>By land</strong> — through any chain of tiles you occupy, and onto a tile
-    beside it that is empty or yours and has room.</li>
+    beside it that is unoccupied, or yours and has room.</li>
     <li><strong>By sea</strong> — a unit standing on Ocean may sail across
     <strong>unoccupied Ocean</strong>, as far as the open water reaches, to an empty Ocean
     tile.</li>
@@ -727,6 +745,7 @@ HTML = f"""<!doctype html>
   most <strong>one coin per unit</strong>. The coin stays until a fight spends it or the unit
   is disturbed: moved, or stacked onto by another unit (which strips every coin on that
   tile). A coin on a unit never comes back to your gold.</p>
+  {fig('fortify', "A wall does not save the unit — it raises the rank needed to come for it. The coin holds at your tier's number, your own card fights instead if it is higher, and the coin is spent either way.")}
   <p>A coin on a unit is a <strong>wall</strong>, and a wall fights. When the tile is
   attacked:</p>
   <ul>
@@ -744,7 +763,6 @@ HTML = f"""<!doctype html>
   Plains or Ocean — an 11 against 10 — and never on Forest or Mountain. Every higher wall
   needs a researched card. You cannot fortify in answer to an attack, because attacks come
   on someone else's turn: a wall is a read on your neighbours, paid for in advance.</p>
-  {fig('fortify', "A wall does not save the unit — it raises the rank needed to come for it. The coin holds at your tier's number, your own card fights instead if it is higher, and the coin is spent either way.")}
 </section>
 
 <section id="recycle">
@@ -756,11 +774,10 @@ HTML = f"""<!doctype html>
   <ol class="seq">
     <li><strong>Collect your income:</strong> 1 gold for each of your map objectives, shown
     or hidden, whose pattern you hold right now (§12).</li>
-    <li><strong>Arm a perk</strong>, if you are playing with perks (§13).</li>
     <li><strong>Pick up your whole discard</strong> as your new hand — ten cards — and carry
     on with your turn. You never draw cards to refill.</li>
   </ol>
-  {fig('recycle', 'The recycle, in order: income first, then the perk (a module), and the hand comes back last. Your map phase — moves, walls, research — is still in front of you.')}
+  {fig('recycle', 'The recycle, in order: income first, and the hand comes back last. Your map phase — moves, walls, research — is still in front of you.')}
   <p>If you spend your last card defending on someone else's turn, you recycle as soon as
   your own meld is resolved — or at the end of the round, if your turn has already
   passed.</p>
@@ -770,6 +787,7 @@ HTML = f"""<!doctype html>
 
 <section>
   <div class="h2"><span class="num">09</span><h2>Research and trade</h2></div>
+  <div class="keep">
   <p>Two piles of cards sit beside the map:</p>
   <ul>
     <li>the <strong>innovation space</strong> — nine face-up cards from the upgrade deck in
@@ -777,9 +795,11 @@ HTML = f"""<!doctype html>
     <li>the <strong>market</strong> — the face-down pile that began as the undrafted cards.
     <strong>Trade</strong> reaches into it.</li>
   </ul>
+  </div>
   <p><strong>Up to twice per turn</strong>, during your map phase, you may improve your
   hand: research twice, trade twice, or one of each. The <strong>first improvement of a turn
   costs 1 gold, the second costs 2</strong>, whichever kind it is.</p>
+  {fig('market', 'The innovation space. Each draw covers the highest rank showing, so the tallest idea is always the one buried next. A player with a rank cap of 16 may research any visible card up to 16; the taller ones are in view but out of reach until they grow.')}
 
   <h3>Research</h3>
   <ol class="seq">
@@ -797,7 +817,6 @@ HTML = f"""<!doctype html>
     <li><b>Refill</b> any empty grid positions from the deck. Once the deck is empty,
     positions stay empty.</li>
   </ol>
-  {fig('market', 'The innovation space. Each draw covers the highest rank showing, so the tallest idea is always the one buried next. A player with a rank cap of 16 may buy any visible card up to 16; the taller ones are in view but out of reach until they grow.')}
   <div class="note">
     <span class="tag">When there is nothing you may take</span>
     <p>Draw first, then look. If nothing on the grid is at or below your rank cap, the
@@ -841,7 +860,7 @@ HTML = f"""<!doctype html>
   <p>Every card prints three effects, growing with its rank. Spend a card on
   <strong>one</strong> of them, then put it at the bottom of the market: your row shrinks,
   and your score with it.</p>
-  <table>
+  <table class="fx">
     <thead><tr><th>Rank</th><th>A · after the reveal</th><th>B · your map phase</th><th>C · your map phase</th></tr></thead>
     <tbody>
       <tr><td>1–5</td><td>Add this card's <b>rank</b> to your total</td><td><b>Found a colony</b> — 1 new tile of this suit, 1 unit on it, fortified</td><td><b>2</b> gold</td></tr>
@@ -856,7 +875,7 @@ HTML = f"""<!doctype html>
     you ahead of an equal total with the same number of cards (§04).</li>
     <li><strong>B</strong> is used in your own map phase. Lay the new tile or tiles from the
     supply, settle a unit from your reserve on each one the card provides for, and fortify
-    each of those units with a coin <strong>from the general supply</strong>. Each tile is an
+    each of those units with a coin <strong>from the gold supply</strong>. Each tile is an
     explore: it must touch two tiles and lie <strong>within your reach</strong> — or, for the
     6–10 band, <strong>up to two tiles out</strong>. You need at least one unit in your
     reserve and a tile of the right terrain in the supply; lay what you can.</li>
@@ -866,7 +885,7 @@ HTML = f"""<!doctype html>
     <span class="tag">One effect per round</span>
     <p>A, B and C share <strong>one allowance per round</strong>: at most one victory card
     leaves your row each round, whichever effect it pays for. Declare A and you may not also
-    found a colony or cash a card this round, and so on.</p>
+    found a colony or take C's gold this round, and so on.</p>
   </div>
   <div class="note">
     <span class="tag">One row, three appetites</span>
@@ -906,8 +925,7 @@ HTML = f"""<!doctype html>
   <div class="note">
     <span class="tag">For a first game</span>
     <p><strong>Map objectives</strong> (§12) are part of the base game, but you may leave
-    them out of a first game — the rest stands without them. <strong>Perks</strong> (§13)
-    are an optional module and do not belong in a first game at all.</p>
+    them out of a first game — the rest stands without them.</p>
   </div>
 </section>
 
@@ -938,16 +956,23 @@ HTML = f"""<!doctype html>
   <div class="note">
     <span class="tag">At the table</span>
     <p>Hold your <strong>hidden</strong> card with your hand of cards — it is not one of
-    your ten — so you can check it after every tile you place. Keep your
-    <strong>shown</strong> card face up on your board, where everyone can read it without
-    asking.</p>
+    your ten, and its different back keeps it apart — so you can check it after every tile
+    you place. Keep your <strong>shown</strong> card face up on its space on your board,
+    where everyone can read it without asking.</p>
   </div>
 
+  <div class="keep">
   <h3>Other ways to play it</h3>
-  <p>Show one is the printed game. Agree on another before setup if your table prefers.</p>
+  <p>Show one is the standard game. Agree on another mode before setup if your table
+  prefers.</p>
   <table>
     <thead><tr><th>Mode</th><th>Setup</th><th>Character</th></tr></thead>
     <tbody>
+      <tr><td><strong>Show one</strong><br><span class="fine">(standard)</span></td>
+        <td>Deal <b>two</b> to each player after the starting map is laid. Show
+        <b>one</b> face up on your board; keep the other hidden.</td>
+        <td>Half declared: the table can see one shape you want, and guess at the
+        other.</td></tr>
       <tr><td><strong>Secret</strong></td>
         <td>Deal <b>two</b> to each player before the draft. Keep <b>one</b>, hidden; return
         the other unseen.</td>
@@ -960,6 +985,7 @@ HTML = f"""<!doctype html>
         <td>The loosest: two shapes to steer between and nothing declared.</td></tr>
     </tbody>
   </table>
+  </div>
   <p>In every mode, hidden objectives are revealed together at the end, after the rest of
   the score is counted.</p>
 
@@ -971,95 +997,33 @@ HTML = f"""<!doctype html>
     wrecking your position over.</p>
   </div>
 </section>
-
-<section id="perks">
-  <div class="h2"><span class="num">13</span><h2>Perks</h2></div>
-  <p class="lede">An optional module. Everything in sections 01 to 12 still applies.</p>
-
-  <p>Perks give the slots of your victory row a job of their own. <strong>Exactly one perk runs at a time</strong>, and you choose which at every
-  recycle (§08), from the perks your row is deep enough to reach <em>at that moment</em>. A
-  deep row does not run four perks — it chooses from four. No perk runs before your first
-  recycle.</p>
-  <p>Once armed, a perk <strong>keeps running until your next recycle</strong>, even if you
-  spend the card that unlocked it. Spending a victory card costs you nothing now; it shows
-  up at the next recycle, as a shorter menu.</p>
-
-  <h3>Setup</h3>
-  <ol class="seq">
-    <li>Shuffle the perk tokens and <b>deal four to each player</b>.</li>
-    <li>Put one on each of <strong>slots 1, 2, 3 and 4</strong> of your victory row, face
-    up, in any order. <strong>Slot 5 stays empty</strong>: it fills on your first research,
-    so a perk there would be a gift.</li>
-    <li>You may rearrange them until your first card reaches the row. After that the
-    arrangement is <strong>permanent</strong>.</li>
-  </ol>
-
-  <h3>Which slot</h3>
-  <p>The row fills from the <strong>right</strong>, so the slot decides how long you
-  wait:</p>
-  <table>
-    <thead><tr><th>Slot</th><th>Reachable when your row holds</th><th>The bet</th></tr></thead>
-    <tbody>
-      <tr><td class="num-cell">4</td><td class="num-cell">2 cards</td>
-        <td>Working almost at once. The safe place for the perk you want most.</td></tr>
-      <tr><td class="num-cell">3</td><td class="num-cell">3 cards</td>
-        <td>Reachable in most games.</td></tr>
-      <tr><td class="num-cell">2</td><td class="num-cell">4 cards</td>
-        <td>Late, and only if you keep researching.</td></tr>
-      <tr><td class="num-cell">1</td><td class="num-cell">all 5</td>
-        <td>A long shot: fill the row and never spend it down.</td></tr>
-    </tbody>
-  </table>
-  <p>Every perk is equal in strength; what differs is how soon you want each one, and how
-  much of your row you will tie up to reach it.</p>
-
-  <h3>The two kinds</h3>
-  <ul>
-    <li><strong>SPEND</strong> — use it once, then turn the token face down. It turns face
-    up again at your next recycle.</li>
-    <li><strong>STANDING</strong> — it simply works for as long as it is armed. These tokens
-    never turn over.</li>
-  </ul>
-  <p>Each token says which kind it is.</p>
-  <div class="note">
-    <span class="tag">The price of a perk</span>
-    <p>Every victory card you spend on A, B or C is a slot your row may no longer reach at
-    the next recycle. The more you value your perks, the fewer effects you will spend — a
-    player who wants everything running has quietly given up their war chest.</p>
-  </div>
-</section>
-
 </main>
 
 <div class="ref">
 <div class="pad">
-<section>
+<section id="glossary">
   <div class="h2"><span class="num">—</span><h2>Glossary</h2></div>
   <dl class="gloss">
-    <dt>Meld</dt><dd>The cards you play in one round — one up to your meld limit, forming an
-    unbroken run of ranks. It competes for the trick, then each card is spent (§05).</dd>
-    <dt>Cell</dt><dd>The single hex a card acts on — a tile of the card's suit, or an empty
-    space where a tile of that suit will go — in your reach.</dd>
-    <dt>Reach</dt><dd>Any tile you occupy, or any tile or empty space adjacent to one you
-    occupy (§06).</dd>
+    <dt>Cell</dt><dd>The single hex a card acts on — a tile of the card's suit, or an empty space where a tile of that suit will go — in your reach.</dd>
     <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
-    <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom,
-    Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units;
-    it sets your meld limit, rank cap and wall (§04).</dd>
-    <dt>Set aside</dt><dd>The card you give up for matching the winner's card count and
-    losing. It pays 1 gold instead of acting, and goes to your own discard (§04).</dd>
-    <dt>Movement</dt><dd>One per card of your meld, except a card set aside. By land through
-    your own tiles, or by sea across open Ocean. Never an attack (§07).</dd>
-    <dt>Wall</dt><dd>A fortification coin on a unit. It defends at your tier's wall plus the
-    terrain, and is spent by the next attack (§07).</dd>
-    <dt>Recycle</dt><dd>When your hand is empty and your meld spent: collect income, arm a
-    perk if playing with them, and pick up your discard as your new hand of ten (§08).</dd>
-    <dt>Innovation space</dt><dd>The nine face-up upgrade cards in a 3 &times; 3 grid.
-    Research takes from it, up to your rank cap (§09).</dd>
-    <dt>Market</dt><dd>The face-down pile: the undrafted cards, plus spent and bumped victory cards and cards buried by trade. Only trade
-    draws from it, and it is never shuffled after setup (§09).</dd>
-    <dt>Victory row</dt><dd>The five slots holding your retired cards. They score at the
-    end, or can each be spent once on an effect (§10).</dd>
+    <dt>Discard</dt><dd>Your own face-up pile of the cards you have resolved or set aside. It becomes your new hand at the recycle (§08).</dd>
+    <dt>Duel</dt><dd>An attack: the rank of the card you spent against the defender's card from hand, or their wall, plus the terrain's defence (§06).</dd>
+    <dt>Explore</dt><dd>Spend a card to lay a tile of its suit on an empty space in your reach that touches at least two tiles (§06).</dd>
+    <dt>Innovation space</dt><dd>The nine face-up upgrade cards in a 3 &times; 3 grid. Research takes from it, up to your rank cap (§09).</dd>
+    <dt>Market</dt><dd>The face-down pile: the undrafted cards, plus spent and bumped victory cards and cards buried by trade. Only trade draws from it, and it is never shuffled after setup (§09).</dd>
+    <dt>Meld</dt><dd>The cards you play in one round — one or more, up to your meld limit, forming an unbroken run of ranks. It competes for the trick, then each card is spent (§05).</dd>
+    <dt>Meld limit</dt><dd>The most cards you may play in a meld, from 2 to 6, set by your current tier (§04).</dd>
+    <dt>Movement</dt><dd>One per card of your meld, except a card set aside. By land through your own tiles, or by sea across open Ocean. Never an attack (§07).</dd>
+    <dt>Rank cap</dt><dd>The highest rank you may take when you research, from 12 to 20, set by your current tier (§04).</dd>
+    <dt>Reach</dt><dd>Any tile you occupy, or any tile or empty space adjacent to one you occupy (§06).</dd>
+    <dt>Recycle</dt><dd>When your hand is empty and your meld spent: collect income, then pick up your discard as your new hand of ten (§08).</dd>
+    <dt>Set aside</dt><dd>The card you give up for matching the winner's card count and losing. It pays 1 gold instead of acting, and goes to your own discard (§04).</dd>
+    <dt>Settle</dt><dd>Spend a card to put a unit from your reserve on a tile of its suit in your reach (§06).</dd>
+    <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom, Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units; it sets your meld limit, rank cap and wall (§04).</dd>
+    <dt>Trick</dt><dd>The contest of the card phase: every meld is turned over at once and the highest total wins, taking the winner's die and the first turn (§04).</dd>
+    <dt>Victory row</dt><dd>The five slots holding your retired cards. They score at the end, or can each be spent once on an effect (§10).</dd>
+    <dt>Wall</dt><dd>A fortification coin on a unit. It defends at your tier's wall plus the terrain, and is spent by the next attack (§07).</dd>
+    <dt>Winner's die</dt><dd>The die in its own colour. The trick winner takes it and sets it to the number of cards in their meld; its holder acts first (§04).</dd>
   </dl>
 </section>
 
@@ -1108,12 +1072,12 @@ HTML = f"""<!doctype html>
       <h3>Research</h3>
       <p>Draw onto the highest rank showing → retire your <b>lowest</b> hand card to your
       victory row → pay → take any visible card <b>at or below your rank cap</b>
-      (12/14/16/18/20), to hand or discard → refill. Nothing to take: stop, pay nothing, still counts.</p>
+      (12/14/16/18/20), to hand or discard → refill the grid. Nothing to take: stop, pay nothing, still counts.</p>
       <h3>Trade</h3>
       <p>Draw the market's top two → pay → bury any two hand cards at its bottom.</p>
       <h3>Recycle</h3>
-      <p>Hand empty and meld spent, at once: income (1 gold per objective you hold) → arm a
-      perk → pick up your discard. Ten cards; no drawing.</p>
+      <p>Hand empty and meld spent, at once: income (1 gold per objective you hold) → pick
+      up your discard. Ten cards; no drawing.</p>
       <h3>Victory row — one effect per round</h3>
       <p><b>A</b> add its rank to your total (6–10 and 16–20 also win ties) ·
       <b>B</b> found a colony: tiles, units and walls from the supply · <b>C</b> 2 / 3 / 4 /
@@ -1133,9 +1097,9 @@ HTML = f"""<!doctype html>
 </div>
 </div>
 
-<div class="pad"><footer>Blink · base game · draft rules {VTAG} · Toby Siko ·
-deep-diversions.com/blink · @tobysiko.bsky.social · the disasters and events expansion is
-published separately</footer></div>
+<div class="pad"><footer>Blink · base game · Rules {VTAG} · Toby Siko ·
+deep-diversions.com/blink · deep.diversions.com@gmail.com · @tobysiko.bsky.social ·
+optional modules and expansions are published separately</footer></div>
 
 </div>
 </body>

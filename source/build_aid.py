@@ -33,7 +33,7 @@ from version import VTAG
 
 BW = "--bw" in sys.argv
 
-# ---- palette, matching the player board and the perk tokens --------------
+# ---- palette, matching the player board ---------------------------------
 if BW:
     INK, SOFT, FAINT = "#000000", "#3A3A3A", "#9A9A9A"
     PAPER, PANEL, LINE = "#FFFFFF", "#F0F0F0", "#000000"
@@ -157,7 +157,7 @@ def back():
   <div class="rule"></div>
   <table>
     <tr><th class="n">Tier</th><th>Units</th><th>Meld</th>
-        <th>Cap</th><th>Wall</th></tr>
+        <th>Rank cap</th><th>Wall</th></tr>
     {rows}
   </table>
   <div class="ter">{ter}</div>
@@ -165,14 +165,14 @@ def back():
     highest total wins · winner's die = meld size · spend in that order. Matched the
     winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
   <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
-    objective you hold · arm ONE perk (module) · take your discard back as your ten.</p>
+    objective you hold · pick your discard up as your ten. Nothing is drawn.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.
     2-3-3-4-4 yes · 2-2-4-4 no (no 3).</p>
   <p class="note"><b>Duel.</b> Your card vs theirs + ground; a level fight is yours unless
     theirs matches the ground.</p>
   <p class="note"><b>End.</b> Reserve empty at round's end: one more round. Score units ·
     row + centre · objectives.</p>
-  <div class="foot"><span>Blink {VTAG}</span><span>deep-diversions.com/blink</span></div>
+  <div class="foot"><span>Blink · rules {VTAG}</span><span>deep-diversions.com/blink</span></div>
 </div>"""
 
 
