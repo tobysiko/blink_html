@@ -349,8 +349,7 @@ HTML = f"""<!doctype html>
   <p>When someone has placed their last unit, finish the round, then play one more, and
   the game ends. Most points wins: one per unit
   on the map, plus your <strong>victory row</strong>, plus your two <strong>map
-  objectives</strong> &mdash; kinds of place, sung down the generations, that you score by
-  holding.</p>
+  objectives</strong> &mdash; small patterns of terrain that score when you hold them.</p>
   {fig('table', 'The table, from your seat. The map in the middle is shared and grows all game. Beside it lie the innovation space, where research buys cards, and the face-down market, which only trade reaches. Every meld played stays in the play area until it is spent. Your board holds your reserve of units, your gold and your victory row — and your hand is yours alone.')}
 
   <div class="contents">

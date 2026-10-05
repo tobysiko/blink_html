@@ -264,12 +264,12 @@ def table():
 
     # ---------------------------------------------------------- your seat
     yx, yy, yw = 96, 376, 476
-    b += (f'<rect x="{yx}" y="{yy}" width="{yw}" height="72" rx="7" fill="#F4F1E9" '
+    b += (f'<rect x="{yx}" y="{yy}" width="{yw}" height="100" rx="7" fill="#F4F1E9" '
           f'stroke="{LINE}" stroke-width="1.2"/>')
-    b += (f'<circle cx="{yx + 22:.1f}" cy="{yy + 24:.1f}" r="9" '
+    b += (f'<circle cx="{yx + 22:.1f}" cy="{yy + 44:.1f}" r="9" '
           f'fill="{PLAYER["you"]["fill"]}" stroke="{PLAYER["you"]["edge"]}" '
           f'stroke-width="1.3"/>')
-    b += label(yx + 40, yy + 30, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
+    b += label(yx + 40, yy + 50, "YOUR BOARD", 10, anchor="start", cls="fig-strong")
     b += label(yx + 205, yy + 9, "RESERVE", 9.5, cls="fig-step")
     b += label(yx + 337, yy + 9, "VICTORY ROW", 9.5, cls="fig-step")
     b += label(yx + 436, yy + 9, "GOLD", 9.5, cls="fig-step")
@@ -285,34 +285,44 @@ def table():
     # reserve: a reader looking at both should meet one idiom, not two. Spent
     # tiers are hollow, which is what the caption under this strip describes.
     # How many units a tier holds is the board figure's job, not this strip's.
-    for i in range(5):
-        cx = yx + 158 + i * 22
-        spent = i < 2
-        cy = yy + 30
-        if spent:
-            b += (f'<ellipse cx="{cx}" cy="{cy}" rx="10" ry="5" fill="none" '
-                  f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.2" '
-                  f'stroke-dasharray="3 3"/>')
-        else:
-            b += (f'<ellipse cx="{cx}" cy="{cy + 2}" rx="10" ry="5" '
-                  f'fill="{PLAYER["you"]["edge"]}"/>'
-                  f'<ellipse cx="{cx}" cy="{cy}" rx="10" ry="5" '
-                  f'fill="{PLAYER["you"]["fill"]}" '
-                  f'stroke="{PLAYER["you"]["edge"]}" stroke-width="1.2"/>')
+    # 5 Oct: a single row of five discs, captioned "tiers empty from the top",
+    # showed no tiers at all (Toby: "only one tier is shown"). So the reserve
+    # is now a miniature of the board's own ladder - five rows of 2/3/5/5/5,
+    # Tribe spent and one Settlement unit placed, the same state the board
+    # figure in section 04 shows.
+    TIERS = [2, 3, 5, 5, 5]
+    gone = [2, 1, 0, 0, 0]                      # units already on the map
+    rx0, ry0, dx, dy = yx + 177, yy + 21, 14, 12
+    for t, n in enumerate(TIERS):
+        cy = ry0 + t * dy
+        b += (f'<line x1="{rx0 - 9}" y1="{cy + 5.8:.1f}" x2="{rx0 + 4 * dx + 9}" '
+              f'y2="{cy + 5.8:.1f}" stroke="{LINE}" stroke-width="0.6"/>')
+        for i in range(n):
+            cx = rx0 + i * dx
+            if i < gone[t]:
+                b += (f'<ellipse cx="{cx}" cy="{cy:.1f}" rx="5.6" ry="3" fill="none" '
+                      f'stroke="{PLAYER["you"]["edge"]}" stroke-width="0.9" '
+                      f'stroke-dasharray="2 1.6"/>')
+            else:
+                b += (f'<ellipse cx="{cx}" cy="{cy + 1.4:.1f}" rx="5.6" ry="3" '
+                      f'fill="{PLAYER["you"]["edge"]}"/>'
+                      f'<ellipse cx="{cx}" cy="{cy:.1f}" rx="5.6" ry="3" '
+                      f'fill="{PLAYER["you"]["fill"]}" '
+                      f'stroke="{PLAYER["you"]["edge"]}" stroke-width="0.9"/>')
 
     for i in range(5):
         vx = yx + 294 + i * 22
         filled = i >= 2
-        b += (f'<rect x="{vx}" y="{yy + 14}" width="18" height="28" rx="2.5" '
+        b += (f'<rect x="{vx}" y="{yy + 30}" width="18" height="28" rx="2.5" '
               f'fill="#FBFAF6" stroke="{LINE}" stroke-width="1"'
               + ('' if filled else ' stroke-dasharray="2 2"') + '/>')
         if filled:
-            b += (f'<rect x="{vx}" y="{yy + 17}" width="18" height="5" rx="2" '
+            b += (f'<rect x="{vx}" y="{yy + 33}" width="18" height="5" rx="2" '
                   f'fill="{TER["forest"]["top"]}"/>')
-    b += label(yx + 294, yy + 64,
-               "tiers empty from the top \u00b7 the row fills from the right",
+    b += label(yx + 294, yy + 92,
+               "units leave from the top tier down \u00b7 the row fills from the right",
                9.5, cls="fig-label")
-    b += gold(yx + 436, yy + 32)
+    b += gold(yx + 436, yy + 46)
 
     # your hand, face up, nearest of all
     # EIGHT cards, not ten: the 5 and 6 of Plains are sitting in the play area
@@ -333,11 +343,11 @@ def table():
     # 9-9-10 is there because duplicates are free and nothing else says so.
     hand = [(1, "ocean"), (2, "mountain"), (3, "plains"), (4, "forest"),
             (9, "ocean"), (9, "plains"), (10, "mountain"), (13, "forest")]
-    b += fan(yx + yw / 2, yy + 92, hand, 52, 72, 8.6)
-    b += label(yx + yw / 2, yy + 214,
+    b += fan(yx + yw / 2, yy + 120, hand, 52, 72, 8.6)
+    b += label(yx + yw / 2, yy + 242,
                "YOUR HAND \u2014 eight left; the 5 and 6 are on the table",
                9.5, cls="fig-step")
-    b += label(yx + yw / 2, yy + 228,
+    b += label(yx + yw / 2, yy + 256,
                "yours alone \u2014 nobody else ever sees it",
                9.5, cls="fig-label")
     return svg(0, 0, b, vb="auto")
