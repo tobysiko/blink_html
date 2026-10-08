@@ -220,14 +220,16 @@ HTML = f"""<!doctype html>
   <ul>
     <li><b>A card with nowhere useful to go</b> — wrong terrain, or boxed in — simply
     <b>takes 1 gold</b> instead. You are never stuck.</li>
-    <li><b>Landing on a rival's tile</b> is an <b>attack</b>, not a move — and an attack is
-    a <b>duel</b>. You each put one card from hand face down and turn them together: your rank
-    against their rank plus the ground (Plains and Ocean +0, Forest +1, Mountain +2). Higher
-    wins; level goes to the defender. Win and <em>one</em> of their units goes home — and if
-    that was the last unit there, the tile is yours: settle it on the spot. Both cards go to
-    their owners' discards, back in your hand next time it recycles. Taking a tile always takes more than one turn. (You
-    won't manage it this round — the Mountain is in the way, which is why it's there, and it
-    defends at +2.)</li>
+    <li><b>Spending a card onto a rival's tile</b> is an <b>attack</b>, not a move — and an
+    attack is a <b>duel</b>. Your attack is simply the rank of the card you spent; you commit
+    nothing else. The defender may answer with one card from their hand, face up, of any suit
+    — its rank plus the ground (Plains and Ocean +0, Forest +1, Mountain +2) is their defence.
+    Higher total wins; a level total goes to <em>you</em>, the attacker (unless their card
+    matches the ground too, when they hold). Win and <em>one</em> of their units goes home —
+    and if that was the last unit there, the tile is yours: settle it on the spot. Both cards
+    go to their owners' discards, back in your hand next time it recycles. Taking a tile
+    always takes more than one turn. (You won't manage it this round — the Mountain is in the
+    way, which is why it's there, and it defends at +2.)</li>
     <li><b>Your movement comes from the meld.</b> Every card you played this round lets you
     move one unit: across your own connected units onto a free tile beside them, or across open
     Ocean. Never onto a rival. A meld of two moves twice; a single moves once.</li>

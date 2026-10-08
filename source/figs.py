@@ -14,7 +14,12 @@ TER = {
 
 PLAYER = {
     "you":   {"fill": "#C0392B", "edge": "#7B2018"},
-    "rival": {"fill": "#EDEAE1", "edge": "#5A544C"},
+    # Was #EDEAE1 — the same value as --paper, so "Bex"/the second rival drew as
+    # a blank outline on the page background in every figure that used it (the
+    # table overview, the trick-reveal figure, all three starting layouts). A
+    # placeholder palette (see materials-audit) still needs every seat to read
+    # as an actual player, in colour and in black and white alike.
+    "rival": {"fill": "#C1662B", "edge": "#7A3D18"},
     "third": {"fill": "#3B3F8F", "edge": "#232659"},
 }
 

@@ -141,16 +141,18 @@ HTML = f"""<!doctype html>
   with the rule. The v0.22 version is in the variants book.</p>
 
   <h3>Several A effects in one trick</h3>
-  <p>Nothing stops two or more players spending A in the same round. Each applies, and the trick
+  <p>Nothing stops two or more players spending A in the same trick. Each applies, and the trick
   resolves on the modified totals — highest total wins, then most cards, then highest single
-  rank, then earliest played, exactly as normal. Because every declaration is made before any meld is
-  played, nobody can answer anybody: you are all guessing at once, and finding out together.</p>
+  rank, then earliest played, exactly as normal. Declarations go leader first and clockwise,
+  after the reveal, so a later player sees every earlier declaration before choosing their own —
+  answering, rather than guessing.</p>
   <div class="ruling">
-    <span class="tag">A is a bet, B is a decision</span>
-    <p>The difference in timing is the difference in kind. <strong>A</strong> is spent before you
-    have seen a single card, so it is a wager on a trick you might have won anyway.
-    <strong>B</strong> is spent in your own map phase with the board in front of you, so it is
-    never a gamble — only a question of whether the units are worth the card.</p>
+    <span class="tag">A can be answered, B cannot</span>
+    <p>The difference in timing is a difference in kind. <strong>A</strong> is spent into a trick
+    that is still live: you see every meld and every earlier declaration, but a player still to
+    declare may answer you with an A of their own and pass you. <strong>B</strong> is spent in
+    your own map phase, long after the trick is settled, so nobody can answer it — it is only a
+    question of whether the units are worth the card.</p>
   </div>
   <div class="ruling">
     <span class="tag">Two players both winning ties</span>

@@ -592,7 +592,7 @@ HTML = f"""<!doctype html>
   <div class="h2"><span class="num">05</span><h2>Melds</h2></div>
   <div class="note" style="border-left-color:var(--forest)">
     <span class="tag">The meld rule</span>
-    <p>A meld is <strong>any cards whose ranks form an unbroken run</strong> — every rank
+    <p>A meld is <strong>one or more cards whose ranks form an unbroken run</strong> — every rank
     from your lowest to your highest must be present. <strong>How many cards you hold of
     each rank does not matter, and suits do not matter at all.</strong> One card is always a
     legal meld.</p>
@@ -666,8 +666,10 @@ HTML = f"""<!doctype html>
     always matches the ground; that is how it got there.)</li>
     <li><b>You win:</b> one defending unit <strong>falls back</strong>. Its owner moves it to
     an adjacent tile they already hold that has room, and chooses if there are several. With
-    nowhere to go, the unit goes home to their board, into the <strong>lowest tier with a
-    free slot</strong> — which can cost them a tier.
+    nowhere to go, the unit goes home to their board and <strong>refills their current
+    tier</strong> — or, if that tier hasn't lost a unit yet, the tier before it, reopening it
+    so the owner's numbers <strong>step back down</strong> (§04). Either way, it costs them
+    at most one tier.
     <br>If that was the <strong>last</strong> unit on the tile, <strong>the ground changes
     hands</strong>: place a unit from your reserve on it and take <strong>1 gold</strong>
     from the supply. With no unit left in your reserve, the tile is simply left empty, and
@@ -678,9 +680,9 @@ HTML = f"""<!doctype html>
   units takes one won duel per unit, and the coin comes only with the last.</p>
   <div class="note">
     <span class="tag">Where a retreat can go</span>
-    <p>Ocean and Mountain hold one unit each, so a neighbouring one of yours is always full:
-    a retreat can only reach <strong>Plains or Forest</strong>. And a unit with nothing of
-    yours beside it has nowhere to fall back to at all — a lone outpost goes home.</p>
+    <p>Ocean and Mountain hold one unit each, so one you already occupy has no room to
+    spare: a retreat can only reach <strong>Plains or Forest</strong>. And a unit with nothing
+    of yours beside it has nowhere to fall back to at all — a lone outpost goes home.</p>
   </div>
   <div class="note">
     <span class="tag">Your hand does three jobs</span>
@@ -873,11 +875,12 @@ HTML = f"""<!doctype html>
     only toward winning the trick, never toward what you spend on the map. "Win ties" places
     you ahead of an equal total with the same number of cards (§04).</li>
     <li><strong>B</strong> is used in your own map phase. Lay the new tile or tiles from the
-    supply, settle a unit from your reserve on each one the card provides for, and fortify
-    each of those units with a coin <strong>from the gold supply</strong>. Each tile is an
-    explore: it must touch two tiles and lie <strong>within your reach</strong> — or, for the
-    6–10 band, <strong>up to two tiles out</strong>. You need at least one unit in your
-    reserve and a tile of the right terrain in the supply; lay what you can.</li>
+    supply and settle a unit from your reserve on however many of them the table gives a unit
+    for — one tile only for the 11–15 band, every tile for the others — fortifying each of
+    those units with a coin <strong>from the gold supply</strong>. Each tile is an explore: it
+    must touch two tiles and lie <strong>within your reach</strong> — or, for the 6–10 band,
+    <strong>up to two tiles out</strong>. You need at least one unit in your reserve and a tile
+    of the right terrain in the supply; lay what you can.</li>
     <li><strong>C</strong> is taken in your own map phase, at any point in it.</li>
   </ul>
   <div class="note" style="border-left-color:var(--forest)">
@@ -930,8 +933,8 @@ HTML = f"""<!doctype html>
 
 <section id="objectives">
   <div class="h2"><span class="num">12</span><h2>Map objectives</h2></div>
-  <p class="lede">The only points in the game about the <em>shape</em> of what you hold
-  rather than its size.</p>
+  <p class="lede">The only points in the game that reward the <em>shape</em> of what you
+  hold, not its size.</p>
 
   <p>Each objective card names <strong>three tiles</strong>: a <b>middle</b> of one terrain,
   and two <b>ends</b> that each touch the middle. The ends need not touch each other, so a
@@ -1003,7 +1006,7 @@ HTML = f"""<!doctype html>
 <section id="glossary">
   <div class="h2"><span class="num">—</span><h2>Glossary</h2></div>
   <dl class="gloss">
-    <dt>Cell</dt><dd>The single hex a card acts on — a tile of the card's suit, or an empty space where a tile of that suit will go — in your reach.</dd>
+    <dt>Cell</dt><dd>The single space a card acts on — a tile of the card's suit, or an empty space where one will go — in your reach.</dd>
     <dt>Civilization</dt><dd>All your units on the map, and the tiles they stand on.</dd>
     <dt>Discard</dt><dd>Your own face-up pile of the cards you have resolved or set aside. It becomes your new hand at the recycle (§08).</dd>
     <dt>Duel</dt><dd>An attack: the rank of the card you spent against the defender's card from hand, or their wall, plus the terrain's defence (§06).</dd>

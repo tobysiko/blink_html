@@ -83,18 +83,23 @@ def swatch(ter, mono, w=63, h=13):
             f'<rect width="{w}" height="{h}" fill="{COLOUR[ter]["side"]}"/></svg>')
 
 
-# Three player colours have to stay three *distinguishable* things without hue,
-# because the rulebook figures show players contesting the same tiles.
-#   you    solid dark disc with a white rim -- stacks stay countable
-#   rival  open disc, black rim
+# Four player colours have to stay four *distinguishable* things without hue,
+# because the rulebook figures show players contesting the same tiles, and the
+# four-player starting layout is the one figure that needs all of them at once.
+# An even grey ramp, darkest to lightest, each a solid disc so none of them
+# reads as "no player" (an open/white disc once did, for two different
+# players at once -- fixed 8 Oct 2026):
+#   you    near-black disc, white rim -- stacks stay countable
+#   rival  dark grey disc, black rim
 #   third  mid grey disc, black rim
+#   fourth light grey disc, black rim
 DISC = {
     "#C0392B": ("#1A1A1A", "#FFFFFF", "#1A1A1A"),   # you    (fill, rim, shadow)
-    "#EDEAE1": ("#FFFFFF", "#000000", "#7A7A7A"),   # rival
+    "#C1662B": ("#595959", "#000000", "#262626"),   # rival
     "#3B3F8F": ("#8C8C8C", "#000000", "#3A3A3A"),   # third
-    "#7A4E9B": ("#FFFFFF", "#000000", "#3A3A3A"),   # fourth
+    "#7A4E9B": ("#BFBFBF", "#000000", "#595959"),   # fourth
 }
-DISC_EDGE = {"#C0392B": "#7B2018", "#EDEAE1": "#5A544C",
+DISC_EDGE = {"#C0392B": "#7B2018", "#C1662B": "#7A3D18",
              "#3B3F8F": "#232659", "#7A4E9B": "#4C2F63"}
 
 

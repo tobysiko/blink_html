@@ -367,6 +367,17 @@ if a_timing and a_timing.group(1) == "afterReveal":
     check("blind" not in rules.lower().split("glossary")[0],
           "the rulebook still calls the A declaration blind, but the melds are "
           "face up before anyone declares")
+    # The companion card-effects document explains A and B in its own words
+    # rather than quoting the rulebook, which is exactly how it drifted: v0.26
+    # moved the declare step after the reveal in the rulebook and the aid, but
+    # "Several A effects in one trick" and "A is a bet, B is a decision" went
+    # on describing the old blind commitment until this caught them.
+    _eff_low = eff.lower()
+    for _phrase in ("before any meld is played", "before you have seen",
+                    "guessing at once", "is a bet"):
+        check(_phrase not in _eff_low,
+              f"the card-effects document still describes A as a blind bet "
+              f'(found "{_phrase}"), but the engine declares it after the reveal')
 check("ROUND" not in board_txt,
       "the round order is back on the player board — it belongs on the aid")
 
@@ -932,6 +943,17 @@ no_bonus_rule(tut, "the tutorial")
 check(not re.search(r"attacking into \w+ \(\d\)", tut, re.I),
       "the tutorial still charges gold to attack")
 check("duel" in tut.lower(), "the tutorial never mentions the duel")
+# A duel is not a simultaneous, face-down, blind reveal by both sides — it is
+# the already-spent meld card (openly the attack) against one card the
+# defender chooses to answer with, face up, and a level total goes to the
+# ATTACKER unless the defender's card also matches the terrain. The tutorial
+# used to teach a symmetrical face-down duel with ties to the defender —
+# a different game — until this caught it.
+check("put one card from hand face down" not in tut.lower(),
+      "the tutorial still has both sides commit to the duel face down and simultaneously")
+check("level goes to the defender" not in tut.lower(),
+      "the tutorial still gives a level duel total to the defender; the rulebook gives it "
+      "to the attacker")
 check(not _FRONTIER_PROSE.search(tut),
       "the tutorial still teaches the dropped frontier coin")
 check("the tile is yours" in tut, "the tutorial does not say a won duel takes the ground")
