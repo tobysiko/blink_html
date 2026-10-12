@@ -18,12 +18,12 @@ PLAYER = {
     # a blank outline on the page background in every figure that used it (the
     # table overview, the trick-reveal figure, all three starting layouts). Fixed,
     # then re-measured in HSL against the four terrain colours and against each
-    # other (12 Oct): "rival" (orange, hue 24) sat within 20 degrees of both Plains
-    # (44) and Mountain (34), and within 18 degrees of "you" (6) besides; "third"
-    # (navy, hue 237) sat within 37 degrees of Ocean (200). Moved both off those
-    # hues and spread their lightness apart from "you" and from each other, so the
-    # three read apart in colour, in black and white, and from the map beneath them.
-    "rival": {"fill": "#912758", "edge": "#4F132E"},
+    # other (12 Oct). Toby's call on the example palette: red, light grey, purple
+    # (13 Oct) — "rival" is now a cool light grey, chosen to sit far from Mountain
+    # in hue (195 vs 34) and lightness (66% vs 51%) and from the cream page
+    # background, rather than relying on saturation alone to tell them apart.
+    # "third" stays the violet from the 12 Oct pass — distinct from both.
+    "rival": {"fill": "#A0ADB1", "edge": "#53686E"},
     "third": {"fill": "#8164C4", "edge": "#54359C"},
 }
 
@@ -86,17 +86,30 @@ def label(x, y, text, size=11, anchor="middle", cls="fig-label"):
 
 
 def card(x, y, rank, suit, w=44, h=62, faded=False):
-    """A small playing card. suit in plains/forest/ocean/mountain."""
+    """A small playing card. suit in plains/forest/ocean/mountain.
+
+    The rank's baseline and the suit dot below it were placed from two fixed
+    offsets off the card bottom (h-13 for the dot) and off the card centre
+    (h/2+11 for the text) — at every h this function is actually called with
+    (54 to 62, across the trick/market/vprow figures) those two landed within
+    a couple of px of each other, so the dot's top edge sat ABOVE the digit's
+    own baseline and the two visibly overlapped (13 Oct). Both are now placed
+    from the dot's position outward: the dot sits a fixed 10px off the card
+    bottom, and the rank is centred in whatever room is left above it, so the
+    gap between them holds at every card size this draws.
+    """
     c = TER[suit]["top"]
     op = ' opacity="0.35"' if faded else ""
+    dot_cy = y + h - 10
+    rank_cy = y + 13 + (dot_cy - 5 - (y + 13)) / 2
     out = f'<g{op}>'
     out += (f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="4" fill="#FBFAF6" '
             f'stroke="#2A2E2B" stroke-width="1.4"/>')
     out += f'<rect x="{x}" y="{y}" width="{w}" height="9" rx="4" fill="{c}"/>'
     out += f'<rect x="{x}" y="{y+5}" width="{w}" height="4" fill="{c}"/>'
-    out += (f'<text x="{x+w/2:.1f}" y="{y+h/2+11:.1f}" text-anchor="middle" '
+    out += (f'<text x="{x+w/2:.1f}" y="{rank_cy+9:.1f}" text-anchor="middle" '
             f'class="fig-rank" font-size="26">{rank}</text>')
-    out += f'<circle cx="{x+w/2:.1f}" cy="{y+h-13:.1f}" r="5" fill="{c}"/>'
+    out += f'<circle cx="{x+w/2:.1f}" cy="{dot_cy:.1f}" r="5" fill="{c}"/>'
     out += '</g>'
     return out
 
