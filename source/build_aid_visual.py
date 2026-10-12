@@ -538,14 +538,21 @@ def back():
           f'L{M + fw / 2} {y + fh}" fill="none" stroke="{GOLD}" '
           f'stroke-width="0.5" stroke-dasharray="1.6 1.4"/>')
     y = ly + 4.6
-    # A FIXED SECOND COLUMN, not label-width + a gap. text_w() is an estimate
-    # and it ran short here, so the label and its answer overprinted each
-    # other on all three lines. A column cannot collide.
+    # A FIXED SECOND COLUMN, not label-width + a gap, so the label and its
+    # answer can never run together the way they did when this used a
+    # label-width-plus-gap layout. But a fixed column is only safe if the
+    # label itself can't run past it — and "Lost with as many cards as the
+    # winner, or more" (added with the card-phase restructuring) measures
+    # 66mm against the 59mm this column leaves it, so it overran col2 and
+    # printed on top of "where" exactly as the old layout used to. The label
+    # now wraps within its column instead of assuming one line.
     col2 = M + 62
+    label_w = col2 - 3 - (M + 3)
     for label, where in FLOW_ASIDE:
-        b += T(M + 3, y, label, 3.0, weight="600")
+        w1, n1 = wrap(M + 3, y, label, label_w, 3.0, INK, weight="600")
+        b += w1
         b += T(col2, y, where, 3.0, col=SOFT)
-        y += 4.4
+        y += max(n1, 1) * 3.9 + 0.5
     y += 4.0
 
     # ============================================= 2. THE RECYCLE
