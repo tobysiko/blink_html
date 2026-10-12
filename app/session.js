@@ -140,7 +140,7 @@ function newSession(opts, rand) {
       food: o.food !== false,
       ascension: o.ascension !== false,
       spoils: ["none", "gold"].includes(o.spoils) ? o.spoils : "ground",
-      asideTiming: o.asideTiming === "trick" ? "trick" : "turn",
+      asideTiming: o.asideTiming === "turn" ? "turn" : "trick",
       tileSupply: [8, 11, 15].includes(Number(o.tileSupply)) ? Number(o.tileSupply) : 15,
     },
     /* One entry per seat. `player` is null for a bot seat. */

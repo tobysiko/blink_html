@@ -196,12 +196,12 @@ STEPS = [
      "no following."),
     ("REVEAL", "all at once. highest <b>total</b> wins &mdash; then more cards, "
      "then highest card."),
-    ("DICE", "winner&rsquo;s die = cards they played. the rest take 2 &middot; 3 "
+    ("DICE", "plain dice show finishing place: winner 1, then 2 &middot; 3 "
      "&middot; 4 in order."),
 ]
 
-LAST = ("SETTLE UP", "matched the winner&rsquo;s count and lost &rarr; a card "
-        "aside, <b>+1 gold</b>. last meld &rarr; <b>+1 gold</b>. winner leads.")
+LAST = ("SETTLE UP", "at or above the winner&rsquo;s count and lost &rarr; set cards "
+        "aside to below it, <b>+1 gold each</b>. last meld &rarr; <b>+1 gold</b>.")
 
 MARKS = [
     ("A", marks.mark_a("#3E4540", True), "card phase",

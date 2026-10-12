@@ -294,10 +294,10 @@ def sheet():
     # THE SET-ASIDE gets its own line in ink, not the faint second line of the
     # MAP box: it is the one rule of the round that costs a player something,
     # and the one a table forgets.
-    b += T(M, y, "Played as many cards as the winner and lost? Set one of them aside: "
-                 "it pays 1 gold instead of acting,", 3.1, weight="600")
+    b += T(M, y, "Played as many cards as the winner, or more, and lost? Set cards aside "
+                 "until below that count:", 3.1, weight="600")
     y += 4.0
-    b += T(M, y, "and goes to your own discard. Everyone else spends them all. "
+    b += T(M, y, "each pays 1 gold instead of acting and goes to your own discard. "
                  "Last place: +1 gold.", 3.1, weight="600")
     y += 4.2
     b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "

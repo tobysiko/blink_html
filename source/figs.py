@@ -16,11 +16,15 @@ PLAYER = {
     "you":   {"fill": "#C0392B", "edge": "#7B2018"},
     # Was #EDEAE1 — the same value as --paper, so "Bex"/the second rival drew as
     # a blank outline on the page background in every figure that used it (the
-    # table overview, the trick-reveal figure, all three starting layouts). A
-    # placeholder palette (see materials-audit) still needs every seat to read
-    # as an actual player, in colour and in black and white alike.
-    "rival": {"fill": "#C1662B", "edge": "#7A3D18"},
-    "third": {"fill": "#3B3F8F", "edge": "#232659"},
+    # table overview, the trick-reveal figure, all three starting layouts). Fixed,
+    # then re-measured in HSL against the four terrain colours and against each
+    # other (12 Oct): "rival" (orange, hue 24) sat within 20 degrees of both Plains
+    # (44) and Mountain (34), and within 18 degrees of "you" (6) besides; "third"
+    # (navy, hue 237) sat within 37 degrees of Ocean (200). Moved both off those
+    # hues and spread their lightness apart from "you" and from each other, so the
+    # three read apart in colour, in black and white, and from the map beneath them.
+    "rival": {"fill": "#912758", "edge": "#4F132E"},
+    "third": {"fill": "#8164C4", "edge": "#54359C"},
 }
 
 

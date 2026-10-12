@@ -390,9 +390,8 @@ HTML = f"""<!doctype html>
     numbers at a glance</li>
     <li><strong>12 map objective cards</strong> (§12), with their own back</li>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
-    <li><strong>Dice</strong> — one <b>winner's die</b> in its own colour, plus one plain
-    <b>initiative die</b> for every other player: one at two players, two at three, three
-    at four</li>
+    <li><strong>4 plain dice</strong> — set to finishing place each round: 1 for the trick
+    winner, then 2, 3 and 4 in order</li>
   </ul>
   <p class="fine">Optional modules and expansions are published separately.</p>
 </section>
@@ -435,8 +434,8 @@ HTML = f"""<!doctype html>
     <strong>two</strong> to each player. <strong>Show one</strong> face up on your board and
     keep the other hidden (§12). Return the rest to the box unseen.</li>
 
-    <li><b>First player.</b> Choose a start player. They take the <b>winner's die</b>, set
-    to 1, and lead the first round.</li>
+    <li><b>First player.</b> Choose a start player. They take a die, set it to 1, and lead
+    the first round.</li>
   </ol>
   {fig('setup_maps', 'The starting layouts for two, three and four players, each with every homeland unit in place.')}
   <div class="note">
@@ -461,7 +460,7 @@ HTML = f"""<!doctype html>
   Mountains in a triangle, a Plains beyond each outer face — putting one unit on their own
   Plains. The upgrade deck deals nine cards into the innovation space; with a Tribe's rank
   cap of 12, only the 12s there are within reach for now. Each is dealt two map objectives
-  and shows one. Ada starts, with the winner's die set to 1.</p>
+  and shows one. Ada starts, with a die set to 1.</p>
 
   <h3>The card phase</h3>
   <p>Everyone's meld limit is <strong>2</strong>. Ada lays first, face down, then Bex, then
@@ -475,24 +474,25 @@ HTML = f"""<!doctype html>
     <strong>4</strong>.</li>
   </ul>
   <p>Nobody has a victory card yet, so nobody declares. <strong>Bex wins the trick</strong>
-  with 16 and takes the winner's die, set to <strong>2</strong> — the size of her meld.
-  Ada, second, takes the plain die 2; Cy takes 3.</p>
-  <p>Because <strong>Ada matched Bex's two cards and lost</strong>, she must set one of
-  hers aside. Cy played fewer cards than Bex, so he gives up nothing — and as the
-  last-ranked meld he takes <strong>1 gold</strong>.</p>
+  with 16 against Ada's 11 and Cy's 4. The dice are set — Bex's to <strong>1</strong>,
+  Ada's to 2 and Cy's to 3 — before anyone touches the map, the trick's dues are settled
+  clockwise from Bex. Cy's meld ranked last, so he takes <strong>1 gold</strong>. Then
+  Ada, holding as many cards as Bex played and having lost, sets one of hers aside. It pays
+  her <strong>1 gold</strong>. Cy played only one card to Bex's two, which is already fewer,
+  so he owes nothing further.</p>
 
-  {fig('trick', "Round one, the moment after the reveal. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick and the winner's die — set to the size of her meld, two cards. Ada matched that count and lost, so one of her cards will be set aside for a coin.")}
+  {fig('trick', "Round one, the moment after the reveal. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick, and every die is set to a finishing place — hers to 1. Cy's meld ranked last and earns him a coin; Ada held as many cards as Bex and lost, so one of hers is set aside for a coin of her own.")}
 
   <h3>The map phase</h3>
-  <p>They act in initiative order: Bex, then Ada, then Cy.</p>
+  <p>Both of the trick's debts are already paid, so Ada now has only one card left to spend.
+  They act in initiative order: Bex, then Ada, then Cy.</p>
   <ul>
     <li><strong>Bex</strong> spends both cards. The Mountain beside her Plains is in reach,
     so her <strong>8 of Mountain</strong> settles a unit there — Mountain holds one, so it is
     hers alone. Her <strong>8 of Ocean</strong> explores: she picks an empty space beside
     her civilization that touches at least two tiles, and lays an Ocean tile from the supply.</li>
-    <li><strong>Ada</strong> sets aside the 5 — it pays her <strong>1 gold</strong> and goes
-    to her own discard — and spends the <strong>6 of Plains</strong> to settle a second unit
-    on her homeland, which holds three.</li>
+    <li><strong>Ada</strong> spends her one remaining card, the <strong>6 of Plains</strong>,
+    to settle a second unit on her homeland, which holds three.</li>
     <li><strong>Cy</strong> could settle the empty Mountain beside his homeland, but he
     cashes his 4 for a second gold instead: he is saving for research.</li>
   </ul>
@@ -557,34 +557,23 @@ HTML = f"""<!doctype html>
     higher victory card on A; then the <strong>highest card</strong>, then the
     second-highest, and so on; and finally the meld laid <strong>earlier</strong>. There is
     never a tie.</li>
-    <li><b>Set the dice.</b> The winner takes the <strong>winner's die</strong> and sets it
-    to the <strong>number of cards in their meld</strong>. The others take plain dice
-    showing <strong>2, 3, 4</strong> in finishing order. This is the initiative order for
-    the map phase. Each player keeps their die in a corner of their board until their
-    turn is over.</li>
+    <li><b>Set the dice.</b> Four plain dice, one per player, are each set to the seat's
+    <strong>finishing place</strong>: the winner's die is set to 1, the rest to 2, 3 and 4. This is
+    the initiative order for the map phase. Each player keeps their die in a corner of their
+    board until their turn is over.</li>
+    <li><b>Resolve the trick's dues.</b> Clockwise from the winner, before anyone touches
+    the map: the player whose meld ranked last takes 1 gold. Everyone holding as many cards
+    as the winner played, or more, sets cards aside — one at a time, their choice — until
+    they hold fewer than the winner did. Each pays 1 gold instead of acting and goes face up
+    into its owner's <strong>discard</strong>. A player owed both coins takes both.</li>
   </ol>
-  <div class="note">
-    <span class="tag">Why the winner's die shows a card count</span>
-    <p>It carries the one number the map phase needs: how many cards the winner played,
-    because anyone who matched that count and lost gives a card up. The winner acts first
-    because theirs is the winner's die, whatever number it shows.</p>
-  </div>
 
   <h3>Map phase</h3>
-  <p>In initiative order, each player takes their whole turn before the next begins:
-  spend the cards of your meld (§06) and take your free actions (§07), in any order you
-  like.</p>
-  <ul>
-    <li><strong>Everyone who played exactly as many cards as the winner, and lost, sets one
-    card aside.</strong> You choose which. Instead of acting on the map it pays you
-    <strong>1 gold</strong>. Everyone else — the winner included — spends every card of
-    their meld.</li>
-    <li><strong>The player whose meld ranked last takes 1 gold.</strong> Only one player
-    takes this coin; if they also set a card aside, they take both.</li>
-  </ul>
-  <p>Every card you resolve, and the one you set aside, goes face up into your own
-  <strong>discard</strong>, on its space on your board. None of them is lost: the discard becomes your hand again when
-  your hand runs out (§08).</p>
+  <p>Every forced discard is already settled by the time the map phase opens, so each
+  player's meld is exactly what they will spend. In initiative order, each player takes their
+  whole turn before the next begins: spend the cards of your meld (§06) and take your free
+  actions (§07), in any order you like. None of what you set aside is lost: it sits in your
+  own discard and becomes part of your hand again at the recycle (§08).</p>
   <p>When everyone has finished, the trick winner leads the next round.</p>
 </section>
 
@@ -601,8 +590,8 @@ HTML = f"""<!doctype html>
   <p>If you know rummy or poker, set that vocabulary aside: there are no straights, sets or
   full houses, only runs, and duplicates inside a run are free.</p>
   <p>Your <strong>meld limit</strong> is a ceiling, never a quota. A short meld is a real
-  line, not a failure: it still reaches the map card for card, and only a player who
-  <em>matches</em> the winner's count and loses gives a card up.</p>
+  line, not a failure: it still reaches the map card for card, and losing with fewer cards
+  than the winner costs you nothing at all.</p>
 
   {fig('meld_rule', 'The whole rule in five rows. Every rank between your lowest and your highest must be present; how many of each you hold does not matter, and suits are irrelevant. Only the last row is illegal, because nothing sits at rank 3.')}
 </section>
@@ -1019,13 +1008,13 @@ HTML = f"""<!doctype html>
     <dt>Rank cap</dt><dd>The highest rank you may take when you research, from 12 to 20, set by your current tier (§04).</dd>
     <dt>Reach</dt><dd>Any tile you occupy, or any tile or empty space adjacent to one you occupy (§06).</dd>
     <dt>Recycle</dt><dd>When your hand is empty and your meld spent: collect income, then pick up your discard as your new hand of ten (§08).</dd>
-    <dt>Set aside</dt><dd>The card you give up for matching the winner's card count and losing. It pays 1 gold instead of acting, and goes to your own discard (§04).</dd>
+    <dt>Set aside</dt><dd>A card you give up after losing with as many cards as the trick winner, or more: one at a time until you hold fewer. It pays 1 gold instead of acting, and goes to your own discard (§04).</dd>
     <dt>Settle</dt><dd>Spend a card to put a unit from your reserve on a tile of its suit in your reach (§06).</dd>
     <dt>Tier</dt><dd>One of the five rows of your reserve — Tribe, Settlement, Kingdom, Empire, Civilization. Your <em>current tier</em> is the topmost one still holding units; it sets your meld limit, rank cap and wall (§04).</dd>
-    <dt>Trick</dt><dd>The contest of the card phase: every meld is turned over at once and the highest total wins, taking the winner's die and the first turn (§04).</dd>
+    <dt>Trick</dt><dd>The contest of the card phase: every meld is turned over at once and the highest total wins, taking the first turn (§04).</dd>
     <dt>Victory row</dt><dd>The five slots holding your retired cards. They score at the end, or can each be spent once on an effect (§10).</dd>
     <dt>Wall</dt><dd>A fortification coin on a unit. It defends at your tier's wall plus the terrain, and is spent by the next attack (§07).</dd>
-    <dt>Winner's die</dt><dd>The die in its own colour. The trick winner takes it and sets it to the number of cards in their meld; its holder acts first (§04).</dd>
+    <dt>Dice</dt><dd>Four plain dice set to each seat's finishing place in the trick. The player holding 1 acts first (§04).</dd>
   </dl>
 </section>
 
@@ -1041,14 +1030,14 @@ HTML = f"""<!doctype html>
       <p>Leader lays a meld face down → others follow clockwise, face down → reveal
       together → declare A effects, leader first → highest total wins; ties: more cards,
       then tie-winning A, then higher A card, then highest card down, then earliest laid →
-      <b>winner's die = their meld size</b>, others 2 / 3 / 4.</p>
+      <b>plain dice = finishing place</b>; the winner takes 1, then 2 / 3 / 4.</p>
       <h3>Melds</h3>
       <p>An <b>unbroken run</b> of ranks; duplicates free, suits irrelevant, one card always
       legal. 2 ✓ · 2-2 ✓ · 2-3 ✓ · 2-3-3-4-4 ✓ · <b>2-2-4-4 ✗</b></p>
       <h3>Map phase</h3>
-      <p>In initiative order. Anyone who played <b>exactly</b> the winner's card count and
-      lost sets one card aside for 1 gold; everyone else spends every card. Last-ranked meld
-      takes 1 gold.</p>
+      <p>Before it opens, settle the trick's dues clockwise from the winner: the last-ranked
+      meld takes 1 gold; anyone holding as many cards as the winner, or more, sets cards
+      aside until below that count, 1 gold each. Then act in initiative order.</p>
       <h3>Each card of your meld</h3>
       <p>ONE of: <b>settle</b> a unit · <b>explore</b> a tile · <b>attack</b> · take
       <b>1 gold</b>. In your reach, suit matches terrain. No units on the map? Reach does not

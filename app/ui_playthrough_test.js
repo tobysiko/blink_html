@@ -154,7 +154,7 @@ function run(seed, n, seat, deck, obj, cb, extra) {
         } else {
           note('vcard-keep'); click(btn(/Keep this card/) || btn(/Play no effect/));
         }
-      } else if (/matched the winner/.test(t)) {
+      } else if (/lost with as many cards/.test(t)) {
         // forced, and made on the cards themselves in the meld area
         note('setaside');
         const r = q('#mymeld button[data-aside]');

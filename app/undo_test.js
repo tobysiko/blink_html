@@ -137,7 +137,7 @@ setTimeout(() => {
           if (p2 && p2.disabled) click(b);
         }
         const p2 = btn(/Play meld/); if (p2) click(p2);
-      } else if (/matched the winner/.test(t)) {
+      } else if (/lost with as many cards/.test(t)) {
         const r = q('#mymeld button[data-aside]'); if (r) click(r);
       } else if (/Your turn/.test(t)) {
         // undo every third action, to prove replay survives being used a lot

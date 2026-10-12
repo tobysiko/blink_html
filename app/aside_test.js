@@ -1,18 +1,14 @@
 /* WHEN THE SET-ASIDE IS RESOLVED — and the promise that it is only WHEN.
  *
- * The printed rule settles it at the top of each player's own map turn. The
- * variant settles every player's clockwise from the winner, right after the
- * trick, before anything moves on the map.
+ * The printed rule settles every player's clockwise from the winner, right
+ * after the trick, before anything moves on the map. The historical variant
+ * settles it at the top of each player's own map turn.
  *
- * The point of the change is not balance, it is a component: the coloured die
- * carries the winner's meld size only because the set-aside is read later than
- * the card phase. Settle it at the trick and the number is spent before the map
- * opens, the die stops carrying anything but its colour, and all four dice
- * become interchangeable — which is what an exploration roll would need, since
- * the winner cannot roll away a number three other players still have to read.
+ * Resolving dues at the trick leaves all four dice as plain finishing-place
+ * markers during the map phase.
  *
  * So what this file asserts is that NOTHING ELSE MOVED: the same seats owe a
- * card, the same number of cards reach the shared pile, and a set-aside card is
+ * card, the same number of cards reach their owners' discards, and a set-aside card is
  * still kept out of the meld that is about to be spent.
  */
 const E = require('./engine.js');
@@ -30,9 +26,9 @@ function oneRound(seed, timing) {
 // ------------------------------------------------- the printed rule is intact
 {
   const g = new E.Game(4, 5, { humans: [] });
-  ok(g.ASIDE_AT_TRICK === false, 'the set-aside moved to the trick by default');
+  ok(g.ASIDE_AT_TRICK === true, 'the set-aside does not resolve at the trick by default');
   ok(new E.Game(4, 5, { humans: [], asideTiming: 'turn' }).ASIDE_AT_TRICK === false,
-     "asideTiming:'turn' did not select the printed rule");
+     "asideTiming:'turn' did not select the historical rule");
 }
 
 // ------------------------------------- the rule is the same; only the clock moves
@@ -60,7 +56,7 @@ for (const seed of [3, 11, 29, 77, 101]) {
  * card fly to the middle, they reasonably asked whether it was gone for good.
  *
  * The change came out of the one human playtest: losing the card outright felt
- * too harsh. You still pay for matching the leader - the card is out of this
+ * too harsh. You still pay for losing at or above the winner's count - the card is out of this
  * meld and out of this turn, and it returns only when your hand recycles.
  *
  * Checked on the cards themselves rather than on a counter, because a counter
@@ -71,13 +67,14 @@ for (const seed of [3, 11, 29, 77, 101]) {
   let r = it.next(); while (!r.done) r = it.next(null);
   let checked = 0;
   for (const p of g.P) {
-    if (!p.asideCard) continue;
-    checked++;
-    ok(p.discard.includes(p.asideCard),
-       `seat ${p.i}'s set-aside card is not in that player's own discard`);
-    ok(!g.pile.includes(p.asideCard),
-       `seat ${p.i}'s set-aside card went to the SHARED market - a meld card `
-       + 'never leaves its owner; only a victory-row card does');
+    for (const aside of p.asideCards || []) {
+      checked++;
+      ok(p.discard.includes(aside),
+         `seat ${p.i}'s set-aside card is not in that player's own discard`);
+      ok(!g.pile.includes(aside),
+         `seat ${p.i}'s set-aside card went to the SHARED market - a meld card `
+         + 'never leaves its owner; only a victory-row card does');
+    }
   }
   ok(checked > 0, 'no seat set a card aside in this round, so nothing was tested');
   /* And the counters agree with the cards. */
@@ -95,8 +92,8 @@ for (const seed of [3, 11, 29, 77, 101]) {
   let r = it.next(); while (!r.done) r = it.next(null);
   for (const p of g.P) {
     ok(Array.isArray(p.mapUse), `seat ${p.i} was never handed a meld to spend`);
-    if (p.asideCard && p.mapUse)
-      ok(!p.mapUse.includes(p.asideCard),
+    for (const aside of p.asideCards || [])
+      ok(!p.mapUse.includes(aside),
          `seat ${p.i} kept its set-aside card in the meld it then spent`);
   }
 }
@@ -107,7 +104,7 @@ for (const seed of [3, 11, 29, 77, 101]) {
     const g = E.playOut(4, 9, { asideTiming: timing });
     ok(g.finished(), `a full game did not finish on the ${timing} timing`);
     ok((g.stats.docked_card || 0) > 0,
-       `nobody ever matched the winner in a whole game (${timing})`);
+       `nobody owed set-aside cards in a whole game (${timing})`);
   }
   /* And with everything else this session's variants can turn on at once. */
   const g = E.playOut(4, 9, { asideTiming: 'trick', food: false,

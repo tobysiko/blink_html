@@ -2006,8 +2006,9 @@ function meldFaces(q, list) {
    * table, and nothing else is. */
   if (!shown(q.i))
     return { html: `<span class="cf mid back" aria-hidden="true"></span>`.repeat(n), n };
+  const asides = new Set(q.asideCards || (q.asideCard ? [q.asideCard] : []));
   let html = played
-    .map((c) => cardChip(c, c === q.asideCard ? "aside" : "", "", "mid")).join("");
+    .map((c) => cardChip(c, asides.has(c) ? "aside" : "", "", "mid")).join("");
   if (q.tableauBonus) html += cardChip(q.tableauBonus, "bonus", "", "mid");
   return { html, n };
 }
@@ -2284,21 +2285,16 @@ function renderTurnbar() {
     const cls = ["tchip", done ? "done" : "", now ? "now" : "",
                  !ord && played ? "hasLaid" : "",
                  win === i ? "won" : "", i === ME ? "me" : ""].filter(Boolean).join(" ");
-    /* The face the die shows. A plain die shows the finishing place, which is
-     * also the position in this list. The winner’s die shows the SIZE of the
-     * winning meld instead — it is first because of its colour, not its
-     * number — and that size is what everyone has to carry into the map
-     * phase, so it is the number the strip has to show. */
-    const meld = (p.tableau && p.tableau.length) || 0;
-    const face = win === i && meld ? meld : k + 1;
+    /* All dice are plain: their face is the finishing place in this list. */
+    const face = k + 1;
     s += `<span class="${cls}" style="--c:${SEAT_C[i]}"
       title="${seatName(i)}${i === ME ? " " + t("board.you") : ""} — ${
         t(ord ? "board.acts" : "board.plays")} ${
         t("board.ofN", { k: k + 1, n: seq.length })}${
         win === i ? ", " + t("board.wonTrick") : ""}${
-        win === i && meld ? ". " + t("board.dieWin", { n: meld }) : ""}${
+        win === i ? ". " + t("board.dieWin") : ""}${
         done ? ". " + t("board.dieOut") : ""}">
-      <i></i><span class="die${win === i ? " win" : ""}"><b>${face}</b></span>${
+      <i></i><span class="die"><b>${face}</b></span>${
         win === i ? CROWN : ""}</span>`;
   });
   box.innerHTML = s;

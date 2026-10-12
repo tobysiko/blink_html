@@ -540,12 +540,9 @@
   #turnbar{display:flex; align-items:center; gap:12px;
     background:rgba(255,253,248,.9); border:1px solid var(--line);
     border-radius:20px; padding:3px 8px}
-  /* THE DICE, NOT A LIST OF NUMBERS. Initiative on the table is four dice:
-     the winner's die in its own colour, set to the size of the winning meld,
-     and plain dice showing 2/3/4 in finishing order. Each waits in a slot at
-     the top of its owner's board and is lifted out when that player's turn is
-     over. Drawing coloured pins with ordinals instead taught none of that, and
-     a player who then sat down at the physical game met the dice cold. */
+  /* THE DICE, NOT A LIST OF NUMBERS. Initiative on the table is four plain
+     dice showing 1/2/3/4 in finishing order. Each waits in a slot at the top
+     of its owner's board and is lifted out when that player's turn is over. */
   .tchip{position:relative; display:flex; align-items:center; gap:4px;
     line-height:1; transition:opacity .3s ease}
   .tchip i{width:13px; height:13px; border-radius:50%; background:var(--c);
@@ -554,9 +551,6 @@
     background:#FBFAF6; border:1.4px solid var(--ink);
     display:flex; align-items:center; justify-content:center}
   .tchip b{font-size:11px; color:var(--ink); font-weight:700}
-  /* the winner's die: the one die of its own colour, and always first */
-  .tchip .die.win{background:#C0392B; border-color:#7B2018}
-  .tchip .die.win b{color:#FBFAF6}
   /* A die OUT of its slot is a player who has finished - the same dashed,
      empty idiom the printed board uses for the slot it came from. */
   /* laid their meld, but the round is far from over */
@@ -1724,8 +1718,8 @@
     <div class="field">
       <label for="aside" data-i18n="setup.aside">Set-aside resolves</label>
       <select id="aside">
-        <option value="turn" selected data-i18n="setup.aside.turn"></option>
-        <option value="trick" data-i18n="setup.aside.trick"></option>
+        <option value="turn" data-i18n="setup.aside.turn"></option>
+        <option value="trick" selected data-i18n="setup.aside.trick"></option>
       </select>
       <p class="hint" id="aside-hint" data-i18n="setup.aside.note"></p>
     </div>

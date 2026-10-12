@@ -162,8 +162,9 @@ def back():
   </table>
   <div class="ter">{ter}</div>
   <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
-    highest total wins · winner's die = meld size · spend in that order. Matched the
-    winner's count and lost: set one aside, +1 gold. Last: +1 gold.</p>
+    highest total wins · dice: winner 1, then 2/3/4 · settle dues before the map, then
+    spend in that order. At or above the winner's count and lost: set aside to below it,
+    +1 gold each. Last: +1 gold.</p>
   <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per
     objective you hold · pick your discard up as your ten. Nothing is drawn.</p>
   <p class="note"><b>Meld.</b> Any unbroken run; duplicates free, suits irrelevant.

@@ -1746,9 +1746,9 @@ class Game {
       ? opts.spoils : "ground";
     /* WHEN THE SET-ASIDE IS RESOLVED.
      *
-     *   "turn"  - printed: at the top of each player's own map turn.
-     *   "trick" - right after the trick, clockwise from the winner, before
-     *             anybody touches the map.
+     *   "trick" - printed: right after the trick, clockwise from the winner,
+     *             before anybody touches the map.
+     *   "turn"  - historical: at the top of each player's own map turn.
      *
      * The ORDER is mechanically irrelevant either way: one player's choice
      * never changes another's options, so clockwise and initiative order
@@ -1764,7 +1764,7 @@ class Game {
      * one thing, and all four dice become interchangeable - which is what an
      * exploration roll would need, since the winner cannot roll away a number
      * three other players still have to read. */
-    this.ASIDE_AT_TRICK = opts.asideTiming === "trick";
+    this.ASIDE_AT_TRICK = opts.asideTiming !== "turn";
     /* HOW A FORTIFICATION DEFENDS — all four measurable, "assault" is v0.24 as
      * printed. Measured 31 Aug: 40% of duels are against a defender holding NO
      * card, and the attacker wins 100% of those; when a card IS committed the
@@ -2788,7 +2788,7 @@ class Game {
      * not last round's meld — the play area is public information about THIS
      * trick, and a stale card would be a lie. */
     for (const q of this.P) { q.tableau = null; q.tableauBonus = null; q.asideCard = null;
-                              q.onTable = null; }
+                              q.asideCards = []; q.onTable = null; }
     this.trickOrder = null; this.winner = null; this.turnDone = new Set();
     for (const i of order) {
       const p = this.P[i];
@@ -3495,19 +3495,17 @@ class Game {
           this.inc("match_discard");
         }
       } else {
-        /* Classic: only the trick winner uses every card of their meld. A
-         * player who matched the winner's count sets one of their played cards
-         * aside unused — it earns 1 gold instead (§06). Playing FEWER than the
-         * winner costs nothing, because you are already below the cap. */
-        if (i !== winner && cards.length === winSize && cards.length) {
-          /* Forced, not offered: matching the winner's count costs you a card,
-           * and the only decision is which one. A null answer (a client that
-           * shows no way to comply) still gives one up — the bot's choice. */
-          const aside = (yield* this._pickSetAside(p, use)) || use[0];
-          use.splice(use.indexOf(aside), 1);
-          p.onTable = use.slice();
-          spent.splice(spent.indexOf(aside), 1);
-          p.asideCard = aside;
+        /* A losing meld at the winner's count or above sheds cards until it is
+         * below the winner's count. A smaller meld costs nothing. */
+        if (i !== winner && cards.length >= winSize && cards.length) {
+          /* Forced, not offered: each choice only decides WHICH card goes.
+           * A null answer (a client with no picker) still gives one up. */
+          const asides = [];
+          while (use.length >= winSize) {
+            const aside = (yield* this._pickSetAside(p, use)) || use[0];
+            use.splice(use.indexOf(aside), 1);
+            spent.splice(spent.indexOf(aside), 1);
+            asides.push(aside);
           /* IT GOES TO YOUR OWN DISCARD (v0.26). A meld card never leaves its
            * owner; only a victory-row card does.
            *
@@ -3523,13 +3521,18 @@ class Game {
            * the table - the one FELT problem the session produced. You still
            * pay: the card is out of this meld and out of this turn, and it
            * comes back only when your hand next recycles. */
-          p.discard.push(aside);
-          this.inc("docked_card"); this.inc("cards_to_gold");
-          this.inc("to_own_discard");
-          this.fx("card", { seat: p.i, card: aside, from: "meld", to: "discard" });
-          this.purse(p, 1, "docked", "hand", { cards: cards.length });
+            p.discard.push(aside);
+            this.inc("docked_card"); this.inc("cards_to_gold");
+            this.inc("to_own_discard");
+            this.fx("card", { seat: p.i, card: aside, from: "meld", to: "discard" });
+            this.purse(p, 1, "docked", "hand", { cards: cards.length });
+          }
+          p.onTable = use.slice();
+          p.asideCards = asides;
+          p.asideCard = asides[asides.length - 1];
         } else {
           p.asideCard = null;
+          p.asideCards = [];
         }
       }
   }
@@ -3553,7 +3556,7 @@ class Game {
     this.acting = null;
   }
 
-  /* Which card to give up when you matched the winner and lost: the one whose
+  /* Which card to give up when you lost at or above the winner's count: the one whose
    * removal costs the least hand_power. */
   *_pickDiscard(p) {
     if (!p.hand.length) return null;
@@ -3567,7 +3570,7 @@ class Game {
     return best;
   }
 
-  /* Which played card to set aside when you matched the winner's count. It is
+  /* Which played card to set aside while you are at or above the winner's count. It is
    * not spent on the map; it pays 1 gold. The bot gives up whatever the map
    * wants least, judged the same way it judges cashing. */
   *_pickSetAside(p, use) {

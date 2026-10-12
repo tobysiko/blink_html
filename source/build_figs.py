@@ -383,32 +383,25 @@ def trick():
                 if len(cards) > 1 else str(total))
         b += label(cx, 22 + ch + 18, sums, 13,
                    cls="fig-strong" if place == 1 else "fig-label")
-        # the die each one takes: the winner's die is the coloured one, and it
-        # shows the MELD SIZE, not the placing — the single thing about the
-        # dice that readers get wrong
+        # Every die is plain and shows the player's finishing place. The winner
+        # therefore has 1 and acts first without a special component.
         dx = cx - 8.5
         dy = 22 + ch + 30
-        if place == 1:
-            b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
-                  f'fill="#C0392B" stroke="#7B2018" stroke-width="1.3"/>'
-                  f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
-                  f'font-size="10.5" fill="#FBFAF6" class="fig-strong">2</text>')
-            b += label(cx, dy + 30, "winner\u2019s die: her meld", 8, cls="fig-attack")
-            b += label(cx, dy + 40, "was 2 cards. Leads next.", 8, cls="fig-attack")
-        else:
-            b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
-                  f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.3"/>'
-                  f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
-                  f'font-size="10.5" class="fig-strong">{place}</text>')
-            b += label(cx, dy + 30, f"{place}{'nd' if place == 2 else 'rd'} to spend",
-                       8, cls="fig-label")
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(place, "th")
+        b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
+              f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.3"/>'
+              f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
+              f'font-size="10.5" class="fig-strong">{place}</text>')
+        b += label(cx, dy + 30, f"{place}{suffix} to spend", 8, cls="fig-label")
         x += wide + 34
     b += label((x - 34) / 2, 22 + ch + 100,
                "Highest TOTAL takes the trick \u2014 one big card beats two small ones.",
                11, cls="fig-strong")
     b += label((x - 34) / 2, 22 + ch + 115,
-               "Ada matched Bex\u2019s two cards and lost, so one of hers is set aside "
-               "for a coin.", 9, cls="fig-label")
+               "Cy ranked last and takes a coin.", 9, cls="fig-label")
+    b += label((x - 34) / 2, 22 + ch + 128,
+               "Ada held as many cards as Bex and lost, so one of hers is set aside too.",
+               9, cls="fig-label")
     return svg(0, 0, b, vb="auto")
 
 
@@ -1049,8 +1042,17 @@ def setup_maps():
 
     Every start is 3 hexes from every other, so an opening meld of two cannot
     reach a rival's homeland. Verified: min pairwise distance 3, every player
-    bordering exactly one Mountain."""
-    PLAYER["fourth"] = {"fill": "#7A4E9B", "edge": "#4C2F63"}
+    bordering exactly one Mountain.
+
+    "fourth" only ever appears in this one figure (the 4-player layout), but
+    it used to be a purple within 16 degrees of "third"'s new violet and
+    almost unreadable from it in the b/w edition - a near-miss of the same
+    mistake "rival"/"third" had. Re-measured 12 Oct against every player and
+    terrain colour (hue, RGB-euclidean, and print luminance, since b/w strips
+    hue entirely): moved to a moss green that sits in the one open hue gap
+    (between the Plains/Mountain family and Forest) with the best available
+    luminance separation from every other colour on the sheet."""
+    PLAYER["fourth"] = {"fill": "#548627", "edge": "#2C4912"}
     M, P = "mountain", "plains"
     who = ["you", "rival", "third", "fourth"]
     LAYOUTS = [

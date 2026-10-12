@@ -132,7 +132,7 @@ setTimeout(() => {
         if (p && p.disabled) click(b);
       }
       const p = btn(/Play meld/); if (p) click(p);
-    } else if (/matched the winner/.test(t)) {
+    } else if (/lost with as many cards/.test(t)) {
       const r = q('#mymeld button[data-aside]'); if (r) click(r);
     } else if (/Your turn/.test(t)) {
       const cs = qa('#mymeld button[data-turn]');

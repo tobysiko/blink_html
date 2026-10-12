@@ -127,7 +127,7 @@ function run(seed, n, seat, retire, deck, obj, cb) {
         }
         const play = btn(/Play meld/);
         if (play) click(play);
-      } else if (/matched the winner/.test(t)) {
+      } else if (/lost with as many cards/.test(t)) {
         const r = q('#mymeld button[data-aside]');
         if (r) click(r);
       } else if (/Your turn/.test(t)) {

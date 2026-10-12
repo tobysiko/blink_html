@@ -412,7 +412,7 @@ function clickThrough(p) {
     }
     return click(btn(/Play meld/));
   }
-  if (/matched the winner/.test(t)) return click(q('#mymeld button[data-aside]'));
+  if (/lost with as many cards/.test(t)) return click(q('#mymeld button[data-aside]'));
   if (/Your turn/.test(t)) {
     /* A MOVE IS TWO CLICKS, and the first one answers nothing on purpose:
      * onCell() stores the source in SEL.moveSrc and re-renders so the legal

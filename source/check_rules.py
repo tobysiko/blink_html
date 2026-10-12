@@ -887,8 +887,8 @@ check(len(totals) >= 2, "the trick figure shows fewer than two melds to compare"
 loose = [int(x) for x in re.findall(r"(?<![+=] )\b(\d+)\b(?! [+=])", trick_text)]
 check(totals and max(totals) == max(totals + [t for t in loose if t < 21]),
       "the trick figure's winning meld is not the highest total shown")
-check("winner" in trick_text and "meld" in trick_text,
-      "the trick figure does not say the winner's die shows the meld size")
+check("1st to spend" in trick_text and "2nd to spend" in trick_text,
+      "the trick figure does not show the plain dice in finishing order")
 
 # The market figure told the same kind of lie: it offered a CHOICE of which
 # position to bury, years after the rule became "cover the highest rank, nobody
@@ -1263,7 +1263,7 @@ check(m, "cannot find where the engine puts a set-aside card")
 if m:
     to_owner = m.group(0).startswith("p.discard")
     if to_owner:
-        check(re.search(r"the one you set aside, goes face up into your own\s+<strong>discard</strong>", raw_rules),
+        check(re.search(r"goes face up\s+into (?:its owner's|your own)\s+<strong>discard</strong>", raw_rules),
               "the engine returns a set-aside card to its owner's discard and §04 "
               "does not say so")
         check(not re.search(r"set aside[^.]{0,80}shared pile", rules, re.I),

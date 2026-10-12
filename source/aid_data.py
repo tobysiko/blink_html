@@ -73,8 +73,8 @@ ROUND = [
     ("RANK",    "highest total wins the trick",
                 "ties: more cards, a tie-winning A, the higher victory card "
                 "spent on A, highest card, earliest laid"),
-    ("MAP",     "spend your meld, winner first",
-                "but first see the line below"),
+    ("MAP",     "spend your remaining meld, winner first",
+                "after the trick's dues"),
 ]
 
 # WHAT A COIN CAN DO. (key, price, what)
@@ -141,12 +141,9 @@ FLOW = [
 FLOW_ASIDE = [
     ("A victory card you spend", "leaves the row \u2014 to the MARKET"),
     ("A card bumped from a full row", "to the MARKET as well \u00b7 trade draws from it"),
-    # WHERE IT GOES IS THE POINT, and it goes to YOUR OWN DISCARD. This line
-    # said SHARED PILE for a day, which was the engine's behaviour and the
-    # rulebook's wording and the wrong rule: the design had already reversed
-    # it, because a playtester found losing the card outright too harsh.
-    ("Matched the winner, lost", "one card set aside \u2014 into YOUR discard, +1 gold "
-                                 "\u00b7 you meld it again next recycle"),
+    # Set-asides remain in their owner's discard and return at the recycle.
+    ("Lost with as many cards as the winner, or more",
+     "set cards aside to below their count \u2014 into YOUR discard, +1 gold each"),
 ]
 
 # THE RECYCLE, in order. Two steps in the base game. (The perks module adds a
