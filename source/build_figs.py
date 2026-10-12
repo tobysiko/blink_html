@@ -593,20 +593,27 @@ F["explore"] = explore()
 # ------------------------------------------------------- combat
 def combat():
     """v0.24: an attack is a DUEL, and the figure has to show two hands, not a
-    coin.
+    coin. v0.26 added the coin for taking the ground.
 
-    The previous version drew a gold piece beside the struck tile and said "one
-    defender removed — your unit stays in reserve". Both halves of that are now
-    wrong: there is no coin price, and clearing the last defender takes the
-    ground. A figure that teaches the replaced rule is worse than no figure,
-    because it is the part of the page a reader believes without checking.
+    Restored 13 Oct from a screenshot after an earlier pass had overwritten
+    this file without committing it: a dot over each card names whose it is
+    (red = the attacker, the third colour = the defender), not just which
+    side of the "vs" it sits on, and the defender's unit is drawn actually
+    retreating rather than just captioned "falls back". The lost version had
+    two real layout bugs that came back when it was rebuilt from the
+    screenshot alone: the "the card you spent" / "any suit..." captions
+    collided because the card columns weren't far enough apart for the
+    second one's length, and the "+1 gold" label collided with "yours now"
+    because it sat to the icon's side instead of centred under it like every
+    other label in this figure. Both are fixed here, not reproduced.
 
     Two rows rather than three beats across: a single line of card-card-tile
-    overflowed the print column by 114px, and this is a DETAIL figure, so it is
-    already drawn large.
+    overflowed the print column by 114px, and this is a DETAIL figure, so it
+    is already drawn large.
     """
     cw, ch = 42, 58
-    gap = 30
+    gap = 94   # wide enough that "any suit - only the terrain cares" clears
+               # "the card you spent" beside it (see note above)
     b = ""
 
     # ---- row 1: the card you SPENT against a card from their HAND
@@ -614,48 +621,78 @@ def combat():
     xd = xa + cw + gap + 14
     b += card(xa, 12, 12, "forest", w=cw, h=ch)
     b += card(xd, 12, 9, "forest", w=cw, h=ch)
-    b += label(xa + cw / 2, 4, "attack", 10, cls="fig-attack")
-    b += label(xd + cw / 2, 4, "defence", 10, cls="fig-step")
-    # WHERE each card comes from is the part players got wrong: the attacker
-    # commits nothing extra, so an attack costs exactly what a settle costs.
-    b += label(xa + cw / 2, 12 + ch + 33, "the card you spent", 8, cls="fig-label")
-    b += label(xd + cw / 2, 12 + ch + 33, "their card + Forest", 8, cls="fig-label")
+    # A dot in the player's colour over each card: attacker and defender
+    # aren't "left" and "right", they're players, and the duel figures
+    # elsewhere in the book (the worked trick) already teach that dot as a
+    # player's mark.
+    b += (f'<circle cx="{xa + cw/2:.1f}" cy="-9" r="5" '
+          f'fill="{PLAYER["you"]["fill"]}" stroke="{PLAYER["you"]["edge"]}" '
+          f'stroke-width="1"/>')
+    b += (f'<circle cx="{xd + cw/2:.1f}" cy="-9" r="5" '
+          f'fill="{PLAYER["third"]["fill"]}" stroke="{PLAYER["third"]["edge"]}" '
+          f'stroke-width="1"/>')
+    b += label(xa + cw / 2, 4, "your attack", 10, cls="fig-attack")
+    b += label(xd + cw / 2, 4, "their defence", 10, cls="fig-step")
     b += label((xa + cw + xd) / 2, 12 + ch / 2 + 8, "vs", 12, cls="fig-label")
     b += label(xa + cw / 2, 12 + ch + 18, "12", 13, cls="fig-strong")
     # the ground is on the DEFENDER's side of the sum, and that is the whole
     # point of the terrain: a bonus, not a toll
     b += label(xd + cw / 2, 12 + ch + 18, "9 + 1 = 10", 13, cls="fig-strong")
+    # WHERE each card comes from is the part players got wrong: the attacker
+    # commits nothing extra, so an attack costs exactly what a settle costs;
+    # the defender isn't restricted to a matching suit either.
+    b += label(xa + cw / 2, 12 + ch + 33, "the card you spent", 8, cls="fig-label")
+    b += label(xd + cw / 2, 12 + ch + 33,
+               "any suit — only the terrain cares", 8, cls="fig-label")
 
     # ---- row 2: the ground changes hands
     centre = (xa + xd + cw) / 2
     ty = 12 + ch + 32 + 26 + R
     b += prism(centre, ty, "forest")
     b += unit(centre, ty, "you", 1)
-    # the defender going home
+    b += label(centre, ty + R + TER["forest"]["h"] + 17, "yours now", 10,
+               cls="fig-step")
+
+    # ...AND THE COIN (v0.26). The spoils are the newest rule in the game and
+    # the whole reason attacking is worth its card, and this figure - the one
+    # a reader believes without checking - used to show a fight that paid
+    # nothing. Drawn beside the tile, in the attacker's colour, because that
+    # is the condition: the coin arrives when the ground changes hands, and
+    # it's the attacker who gets it.
+    #
+    # NOT figs.py's gold() helper: that's the shared glyph for a cost, drawn
+    # wherever the rules show a player SPENDING gold (the market, upgrades).
+    # check_rules.py fails on #E8C25A appearing here specifically because an
+    # earlier draft of this figure reused it for the reward and so looked
+    # like the attack had a gold PRICE again - the exact rule this figure
+    # used to teach by mistake. Same coin silhouette, a paler fill, so a
+    # reader's eye still reads "coin" without reading "cost".
+    gx = centre - R - 54
+    gy = ty
+    p = PLAYER["you"]
+    b += (f'<circle cx="{gx-9:.1f}" cy="{gy:.1f}" r="7" fill="{p["fill"]}" '
+          f'stroke="{p["edge"]}" stroke-width="1.1"/>')
+    b += (f'<circle cx="{gx+4:.1f}" cy="{gy:.1f}" r="10" fill="#F5E2AE" '
+          f'stroke="#C9992B" stroke-width="2"/>'
+          f'<circle cx="{gx+4:.1f}" cy="{gy:.1f}" r="5" fill="none" '
+          f'stroke="#C9992B" stroke-width="1.4"/>')
+    b += label(gx - 2, ty + R + TER["forest"]["h"] + 17, "+1 gold to you", 9,
+               cls="fig-label")
+
+    # the defender's unit, actually retreating rather than just captioned
     ax = centre + R + 6
     b += (f'<path d="M{ax:.1f} {ty - 8:.1f} l16 0 M{ax + 10:.1f} {ty - 13:.1f} '
           f'l6 5 l-6 5" fill="none" stroke="#C0392B" stroke-width="2.2" '
           f'stroke-linecap="round" stroke-linejoin="round"/>')
-    b += label(ax + 20, ty - 12, "falls back", 9, anchor="start", cls="fig-attack")
-    b += label(centre, ty + R + TER["forest"]["h"] + 17, "yours now", 10,
-               cls="fig-step")
-    # ...AND THE COIN (v0.26). The spoils are the newest rule in the game and
-    # the whole reason attacking is worth its card, and this figure - the one
-    # a reader believes without checking - showed a fight that paid nothing.
-    # Drawn beside the tile it was won on, because that is the condition: the
-    # coin arrives when the ground changes hands, not when a duel is won.
-    gx = centre + R + 10
-    gy = ty + TER["forest"]["h"] / 2
-    b += (f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="10" fill="#F5E2AE" '
-          f'stroke="#C9992B" stroke-width="2"/>'
-          f'<circle cx="{gx:.1f}" cy="{gy:.1f}" r="5" fill="none" '
-          f'stroke="#C9992B" stroke-width="1.4"/>')
-    b += label(gx + 20, gy + 4, "+1 gold", 10, anchor="start", cls="fig-step")
+    b += unit(ax + 30, ty, "third", 1)
+    b += label(ax + 20, ty - 12, "their unit falls back", 9, anchor="start",
+               cls="fig-attack")
+
     b += label(centre, ty + R + TER["forest"]["h"] + 38,
                "Higher total wins. Clearing the LAST defender",
                11, cls="fig-strong")
     b += label(centre, ty + R + TER["forest"]["h"] + 53,
-               "takes the ground \u2014 and pays a coin.", 11, cls="fig-strong")
+               "takes the ground — and pays a coin.", 11, cls="fig-strong")
     return svg(0, 0, b, vb="auto")
 
 
