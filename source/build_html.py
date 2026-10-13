@@ -390,8 +390,9 @@ HTML = f"""<!doctype html>
     numbers at a glance</li>
     <li><strong>12 map objective cards</strong> (§12), with their own back</li>
     <li><strong>40 gold coins</strong> — if you run out, treat the supply as unlimited</li>
-    <li><strong>4 plain dice</strong> — set to finishing place each round: 1 for the trick
-    winner, then 2, 3 and 4 in order</li>
+    <li><strong>4 initiative markers</strong> — one black, three plain: set to finishing
+    place each round, the black marker always 1 for the trick winner, then 2, 3 and 4 in
+    order</li>
   </ul>
   <p class="fine">Optional modules and expansions are published separately.</p>
 </section>
@@ -434,8 +435,8 @@ HTML = f"""<!doctype html>
     <strong>two</strong> to each player. <strong>Show one</strong> face up on your board and
     keep the other hidden (§12). Return the rest to the box unseen.</li>
 
-    <li><b>First player.</b> Choose a start player. They take a die, set it to 1, and lead
-    the first round.</li>
+    <li><b>First player.</b> Choose a start player. They take the black marker, set it to 1,
+    and lead the first round.</li>
   </ol>
   {fig('setup_maps', 'The starting layouts for two, three and four players, each with every homeland unit in place.')}
   <div class="note">
@@ -460,7 +461,7 @@ HTML = f"""<!doctype html>
   Mountains in a triangle, a Plains beyond each outer face — putting one unit on their own
   Plains. The upgrade deck deals nine cards into the innovation space; with a Tribe's rank
   cap of 12, only the 12s there are within reach for now. Each is dealt two map objectives
-  and shows one. Ada starts, with a die set to 1.</p>
+  and shows one. Ada starts, with the black marker set to 1.</p>
 
   <h3>The card phase</h3>
   <p>Everyone's meld limit is <strong>2</strong>. Ada lays first, face down, then Bex, then
@@ -474,14 +475,15 @@ HTML = f"""<!doctype html>
     <strong>4</strong>.</li>
   </ul>
   <p>Nobody has a victory card yet, so nobody declares. <strong>Bex wins the trick</strong>
-  with 16 against Ada's 11 and Cy's 4. The dice are set — Bex's to <strong>1</strong>,
-  Ada's to 2 and Cy's to 3 — before anyone touches the map, the trick's dues are settled
+  with 16 against Ada's 11 and Cy's 4. The markers are set — Bex takes the black marker,
+  to <strong>1</strong>, Ada's to 2 and Cy's to 3 — before anyone touches the map, the
+  trick's dues are settled
   clockwise from Bex. Cy's meld ranked last, so he takes <strong>1 gold</strong>. Then
   Ada, holding as many cards as Bex played and having lost, sets one of hers aside. It pays
   her <strong>1 gold</strong>. Cy played only one card to Bex's two, which is already fewer,
   so he owes nothing further.</p>
 
-  {fig('trick', "Round one, the moment after the reveal. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick, and every die is set to a finishing place — hers to 1. Cy's meld ranked last and earns him a coin; Ada held as many cards as Bex and lost, so one of hers is set aside for a coin of her own.")}
+  {fig('trick', "Round one, the moment after the reveal. Add each row: Bex's 16 beats Ada's 11 and Cy's 4, so Bex takes the trick, and every marker is set to a finishing place — her black marker to 1. Cy's meld ranked last and earns him a coin; Ada held as many cards as Bex and lost, so one of hers is set aside for a coin of her own.")}
 
   <h3>The map phase</h3>
   <p>Both of the trick's debts are already paid, so Ada now has only one card left to spend.
@@ -557,10 +559,11 @@ HTML = f"""<!doctype html>
     higher victory card on A; then the <strong>highest card</strong>, then the
     second-highest, and so on; and finally the meld laid <strong>earlier</strong>. There is
     never a tie.</li>
-    <li><b>Set the dice.</b> Four plain dice, one per player, are each set to the seat's
-    <strong>finishing place</strong>: the winner's die is set to 1, the rest to 2, 3 and 4. This is
-    the initiative order for the map phase. Each player keeps their die in a corner of their
-    board until their turn is over.</li>
+    <li><b>Set the markers.</b> Four initiative markers, one per player, are each set to the
+    seat's <strong>finishing place</strong>: the winner takes the <b>black marker</b>, always
+    set to 1; the rest take plain markers set to 2, 3 and 4. This is the initiative order for
+    the map phase, and the black marker is how the table spots the leader at a glance. Each
+    player keeps their marker in a corner of their board until their turn is over.</li>
     <li><b>Resolve the trick's dues.</b> Clockwise from the winner, before anyone touches
     the map: the player whose meld ranked last takes 1 gold. Everyone holding as many cards
     as the winner played, or more, sets cards aside — one at a time, their choice — until
@@ -1014,7 +1017,7 @@ HTML = f"""<!doctype html>
     <dt>Trick</dt><dd>The contest of the card phase: every meld is turned over at once and the highest total wins, taking the first turn (§04).</dd>
     <dt>Victory row</dt><dd>The five slots holding your retired cards. They score at the end, or can each be spent once on an effect (§10).</dd>
     <dt>Wall</dt><dd>A fortification coin on a unit. It defends at your tier's wall plus the terrain, and is spent by the next attack (§07).</dd>
-    <dt>Dice</dt><dd>Four plain dice set to each seat's finishing place in the trick. The player holding 1 acts first (§04).</dd>
+    <dt>Initiative markers</dt><dd>Four markers — one black, three plain — set to each seat's finishing place in the trick. The black marker is always 1; whoever holds it acts first (§04).</dd>
   </dl>
 </section>
 
@@ -1030,7 +1033,8 @@ HTML = f"""<!doctype html>
       <p>Leader lays a meld face down → others follow clockwise, face down → reveal
       together → declare A effects, leader first → highest total wins; ties: more cards,
       then tie-winning A, then higher A card, then highest card down, then earliest laid →
-      <b>plain dice = finishing place</b>; the winner takes 1, then 2 / 3 / 4.</p>
+      <b>initiative markers = finishing place</b>; the winner takes the black marker (1),
+      then 2 / 3 / 4.</p>
       <h3>Melds</h3>
       <p>An <b>unbroken run</b> of ranks; duplicates free, suits irrelevant, one card always
       legal. 2 ✓ · 2-2 ✓ · 2-3 ✓ · 2-3-3-4-4 ✓ · <b>2-2-4-4 ✗</b></p>

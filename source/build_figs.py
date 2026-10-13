@@ -148,10 +148,15 @@ def table():
         return out
 
     def die(x, y, n, winner=False):
-        f = "#C0392B" if winner else "#FBFAF6"
+        # The leader's marker is BLACK, not a player colour (14 Oct) - it used to
+        # be drawn in "you" the reader's own red, which read as "this is your
+        # die" rather than "this is whoever is leading", and collided with the
+        # red example player on the same figure. Black is nobody's colour, so it
+        # reads as the table's marker, not a player's.
+        f = "#1C1F1D" if winner else "#FBFAF6"
         t = "#FBFAF6" if winner else INK
         return (f'<rect x="{x}" y="{y}" width="22" height="22" rx="4" fill="{f}" '
-                f'stroke="{"#7B2018" if winner else INK}" stroke-width="1.4"/>'
+                f'stroke="{"#000000" if winner else INK}" stroke-width="1.4"/>'
                 f'<text x="{x + 11:.1f}" y="{y + 16:.1f}" text-anchor="middle" '
                 f'font-size="13" fill="{t}" class="fig-strong">{n}</text>')
 
@@ -247,12 +252,15 @@ def table():
         for j, (rank, suit) in enumerate(cards):
             b += faceup(mx + j * 26, pa_y + 16, rank, suit, 24, 33)
         mx += max(2, len(cards)) * 26 + 28
-    b += die(pa_x + 236, pa_y + 20, 2, winner=True)
+    # The leader's marker is always 1 - this figure had it showing 2, which
+    # cannot happen under the actual rule (14 Oct).
+    b += die(pa_x + 236, pa_y + 20, 1, winner=True)
     b += die(pa_x + 262, pa_y + 20, 2)
     b += die(pa_x + 288, pa_y + 20, 3)
     # Centred on the dice would push the right end of this caption through the
     # PLAY AREA border, which sits at pa_x + 288. Centred to fit instead.
-    b += label(pa_x + 250, pa_y + 64, "dice \u2014 the coloured one won", 9.5, cls="fig-label")
+    b += label(pa_x + 250, pa_y + 64, "initiative markers \u2014 black is the leader", 9.5,
+               cls="fig-label")
 
     # the shared pile and the coin supply
     b += facedown(96, 296, 22, 30, 2)
@@ -383,15 +391,20 @@ def trick():
                 if len(cards) > 1 else str(total))
         b += label(cx, 22 + ch + 18, sums, 13,
                    cls="fig-strong" if place == 1 else "fig-label")
-        # Every die is plain and shows the player's finishing place. The winner
-        # therefore has 1 and acts first without a special component.
+        # The winner's marker is BLACK, the rest plain (14 Oct) - this figure
+        # used to draw all three identically and said so in this very comment,
+        # which was the old design before the black leader-marker was settled.
         dx = cx - 8.5
         dy = 22 + ch + 30
         suffix = {1: "st", 2: "nd", 3: "rd"}.get(place, "th")
+        is_leader = place == 1
+        dfill = "#1C1F1D" if is_leader else "#FBFAF6"
+        dtext = "#FBFAF6" if is_leader else "#2A2E2B"
         b += (f'<rect x="{dx}" y="{dy}" width="17" height="17" rx="3.5" '
-              f'fill="#FBFAF6" stroke="#2A2E2B" stroke-width="1.3"/>'
+              f'fill="{dfill}" stroke="{"#000000" if is_leader else "#2A2E2B"}" '
+              f'stroke-width="1.3"/>'
               f'<text x="{dx + 8.5:.1f}" y="{dy + 12.5:.1f}" text-anchor="middle" '
-              f'font-size="10.5" class="fig-strong">{place}</text>')
+              f'font-size="10.5" fill="{dtext}" class="fig-strong">{place}</text>')
         b += label(cx, dy + 30, f"{place}{suffix} to spend", 8, cls="fig-label")
         x += wide + 34
     b += label((x - 34) / 2, 22 + ch + 100,

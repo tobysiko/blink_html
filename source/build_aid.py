@@ -162,7 +162,7 @@ def back():
   </table>
   <div class="ter">{ter}</div>
   <p class="note"><b>Round.</b> Melds face down · reveal · declare A, leader first ·
-    highest total wins · dice: winner 1, then 2/3/4 · settle dues before the map, then
+    highest total wins · markers: black 1, then 2/3/4 · settle dues before the map, then
     spend in that order. At or above the winner's count and lost: set aside to below it,
     +1 gold each. Last: +1 gold.</p>
   <p class="note"><b>Recycle.</b> Hand empty, meld spent — at once, mid-turn: 1 gold per

@@ -219,13 +219,13 @@ DIE = 15.0                       # printed die slot, mm — suits a 12-16 mm die
 
 
 def die_slot(x, y):
-    """Where your initiative die waits until your turn is over.
+    """Where your initiative marker waits until your turn is over.
 
-    A die IN its slot means that player has still to act this round; a die out
-    of it means they are done. That is the whole of it, and it holds however
-    the die left - rolled for something, or simply lifted out because the turn
-    ended. One state, no exceptions, and the table can read who is left at a
-    glance instead of comparing four numbers.
+    A marker IN its slot means that player has still to act this round; one
+    out of it means they are done. That is the whole of it, and it holds
+    however the marker left - set there at the start of the map phase, or
+    simply lifted out because the turn ended. One state, no exceptions, and
+    the table can read who is left at a glance instead of comparing numbers.
 
     Two of these are printed, one at each top corner, and a player uses
     whichever is nearer the middle of the table — the board is symmetrical
@@ -233,11 +233,13 @@ def die_slot(x, y):
     idiom as an empty unit slot, because it means the same thing: something
     belongs here and is not here yet.
 
-    OUT OF THE SLOT IS NOT OFF THE TABLE. The coloured die still carries the
-    winner's meld size, and the player who matched it gives a card up at the
-    start of their OWN map turn - so the last player in the order is still
-    reading that number when the winner has long finished. A finished die goes
-    beside its slot, face up, not back in the box.
+    OUT OF THE SLOT IS OFF THE CLOCK, nothing more. An earlier version of
+    this rule had the black marker carry the winner's meld size so a later
+    player could still read it after the winner had finished - that is gone:
+    the set-aside count is settled for everyone right after the reveal,
+    before the map phase opens, so nobody ever needs to read a marker's
+    number once initiative is set. A finished marker goes beside its slot,
+    face up, not back in the box.
     """
     out = (f'<rect x="{x:.2f}" y="{y:.2f}" width="{DIE}" height="{DIE}" rx="2.6" '
            f'fill="none" stroke="{FAINT}" stroke-width="0.6" '
@@ -335,7 +337,7 @@ def build():
     # The board names its own parts. One line does the whole rule, including
     # why there are two of them.
     s.append(T((inner_l + inner_r) / 2, M+15.5,
-               "your initiative die waits in either corner \u2014 whichever is "
+               "your initiative marker waits in either corner \u2014 whichever is "
                "nearer the table \u2014 and comes out when your turn ends", 3.0,
                col=SOFT, mono=True))
     s.append(f'<line x1="{M}" y1="{M+19}" x2="{PW-M}" y2="{M+19}" '
@@ -788,10 +790,10 @@ def build():
     # ...wholly inside the trim: not a millimetre of an outline may be cut off.
     if col_x0 < M + 0.5 or col_x1 > PW - M - 0.5:
         raise SystemExit("board_a4: a card area crosses the left or right trim")
-    # ...under the masthead rule and clear of the corner die slot above it,
+    # ...under the masthead rule and clear of the corner marker slot above it,
     if disc_y0 < max(mast_y, dy + DIE) + 1.0:
         raise SystemExit("board_a4: the discard area runs into the masthead or "
-                         "the initiative die slot")
+                         "the initiative marker slot")
     # ...clear of each other,
     if obj_y0 < disc_y0 + AREA_H + 2.0:
         raise SystemExit("board_a4: the discard and objective areas overlap")
