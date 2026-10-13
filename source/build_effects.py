@@ -112,10 +112,10 @@ HTML = f"""<!doctype html>
   <div class="ruling">
     <span class="tag">Placement</span>
     <p>Every colony tile still obeys <b>touch-two</b>: it must touch at least two tiles
-    already on the map. <b>Reach does not apply</b> — a colony may be founded anywhere along
-    the map's edge, not only beside your own civilization. Ranks <b>1&ndash;15</b> place tiles
-    matching the spent card's suit; ranks <b>16&ndash;20</b> may place any terrain. Ranks
-    <b>6&ndash;10</b> may reach up to two tiles out, laying the intervening tile first.</p>
+    already on the map, and lie <b>within your reach</b> — adjacent to a tile you already
+    occupy, the same as an ordinary explore. Ranks <b>1&ndash;15</b> place tiles matching the
+    spent card's suit; ranks <b>16&ndash;20</b> may place any terrain. Ranks <b>6&ndash;10</b>
+    reach up to two tiles out instead of one, laying the intervening tile first.</p>
   </div>
   <div class="ruling">
     <span class="tag">Two tiles, one unit</span>

@@ -4688,7 +4688,8 @@ class Game {
   }
 
   /* B — found colonies (§10). Lay new tiles, put units on them, fortify them
-   * from the GENERAL SUPPLY. Touch-two still applies; REACH does not. */
+   * from the GENERAL SUPPLY. Touch-two and reach both apply — see colonyCells()
+   * below, which is what actually judges a placement. */
   *_maybeUseB(p) {                                   // bot path
     /* The four-card guard is the BOT'S, matched to D's so the two can be
      * compared. The rule is one vrow effect (A/B/C/D) per round, a legal
