@@ -65,17 +65,31 @@ TIERS = [
 ]
 
 # THE ROUND, as the table meets it. (key, what happens, who acts)
+#
+# SIX BEATS, not five. RANK used to carry the full tie-break chain in its own
+# "who" field, and the dice/dues step had no box at all - it was a footnote
+# hanging off MAP's fine print, which reads as "a detail of spending" rather
+# than "a beat that happens before anyone spends anything" (a table's own
+# complaint). SETTLE gives that beat a numbered box of its own; the tie-break
+# chain moved out to TIES below so RANK's own box could stay short enough to
+# leave room for the extra column.
 ROUND = [
     ("LAY",     "everyone lays a meld FACE DOWN", "leader first, then clockwise"),
     ("REVEAL",  "turn them all over together",    "one beat, all at once"),
     ("DECLARE", "spend a victory card on its A effect, or not",
                 "leader first — you can see every meld"),
     ("RANK",    "highest total wins the trick",
-                "ties: more cards, a tie-winning A, the higher victory card "
-                "spent on A, highest card, earliest laid"),
+                "ties broken in order — see below"),
+    ("SETTLE",  "set your initiative markers, pay the trick's dues",
+                "the black marker is always 1, then 2, 3 and 4"),
     ("MAP",     "spend your remaining meld, winner first",
-                "after the trick's dues"),
+                "every card left is already yours to spend"),
 ]
+
+# RANK's tie-break chain, in full, in the rulebook's own order - pulled out of
+# the RANK box above and printed once, as its own line, under the round.
+TIES = ("Ties: more cards, a tie-winning A, the higher victory card spent on A, "
+        "highest card, earliest laid.")
 
 # WHAT A COIN CAN DO. (key, price, what)
 COIN_USES = [

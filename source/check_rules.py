@@ -1149,11 +1149,16 @@ if vis_file.exists():
               f"version of the sheet; run: python3 build_aid_visual.py")
     vis = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ",
                                     vis_file.read_text(encoding="utf8")))
-    # the five beats, in order
-    beats = ["LAY", "REVEAL", "DECLARE", "RANK", "MAP"]
+    # the round's beats, in order - read from aid_data.ROUND itself so a future
+    # change to the data (five beats, six, whatever comes next) can't silently
+    # stop being checked the way this one did: the beats list here used to be
+    # hardcoded to five entries and stayed that way through a six-beat redesign
+    # of the sheet it was supposed to be checking.
+    from aid_data import ROUND as _ROUND
+    beats = [key for key, _w, _wh in _ROUND]
     at = [vis.find(x) for x in beats]
     check(all(i >= 0 for i in at) and at == sorted(at),
-          "the pictorial aid does not show the five beats of a round in order")
+          f"the pictorial aid does not show the {len(beats)} beats of a round in order")
     # the three questions it exists to answer
     for want in ["A CARD IN YOUR MELD", "A COIN", "A VICTORY-ROW CARD"]:
         check(want in vis, f"the pictorial aid no longer asks about {want}")

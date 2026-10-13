@@ -29,7 +29,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from aid_data import (ROUND, COIN_USES, VROW_USES, FREE, card_uses, terrain,
+from aid_data import (ROUND, TIES, COIN_USES, VROW_USES, FREE, card_uses, terrain,
                       MELD, FLOW, FLOW_ASIDE, RECYCLE, OBJECTIVES,
                       INCOME)                                       # noqa: E402
 from version import VTAG                                                     # noqa: E402
@@ -267,9 +267,9 @@ def sheet():
     y += 8.5
 
     # ================================================== 1. THE ROUND
-    b += head(M, y, "THE ROUND", "five beats · the table finishes each one before the next")
+    b += head(M, y, "THE ROUND", "six beats · the table finishes each one before the next")
     y += 4.5
-    bw = (W - 2 * M - 4 * 3) / 5
+    bw = (W - 2 * M - 5 * 3) / 6
     top = y
     inner = bw - 6
     # the tallest card decides them all, so the row reads as one band
@@ -280,7 +280,7 @@ def sheet():
         bh = max(bh, 11.5 + n1 * 3.8 + 1.6 + n2 * 3.4 + 2.5)
     for i, (key, what, who) in enumerate(ROUND):
         x = M + i * (bw + 3)
-        b += panel(x, top, bw, bh, accent=GOLD if i in (2, 4) else None)
+        b += panel(x, top, bw, bh, accent=GOLD if i in (2, 4, 5) else None)
         b += disc(x + 5.6, top + 5.6, 3.0, INK)
         b += T(x + 5.6, top + 6.8, str(i + 1), 3.2, anchor="middle",
                col=PAPER, weight="700")
@@ -290,19 +290,23 @@ def sheet():
         b += wrap(x + 3, top + 13.0 + n1 * 3.8 + 1.6, who, inner, 2.6, FAINT)[0]
         if i < len(ROUND) - 1:
             b += arrow(x + bw + 0.4, top + bh / 2, x + bw + 2.6)
-    y = top + bh + 4.4
-    # THE SET-ASIDE gets its own line in ink, not the faint second line of the
-    # MAP box: it is the one rule of the round that costs a player something,
-    # and the one a table forgets.
-    b += T(M, y, "Played as many cards as the winner, or more, and lost? Set cards aside "
-                 "until below that count:", 3.1, weight="600")
+    y = top + bh + 3.8
+    # The RANK box's own tie-break chain, printed once in full rather than
+    # wrapped into a seventh column or crammed into RANK's own box.
+    b += T(M, y, TIES, 3.0, col=SOFT)
+    y += 3.8
+    # THE SET-ASIDE gets its own line in ink, not the faint second line of a
+    # box: it is the one rule of the round that costs a player something, and
+    # the one a table forgets. SETTLE's box states the gist; this is the detail.
+    b += T(M, y, "Held as many cards as the trick's winner, or more, and lost? "
+                 "Shed cards one at a time until below that count:", 3.1, weight="600")
     y += 4.0
-    b += T(M, y, "each pays 1 gold instead of acting and goes to your own discard. "
-                 "Last place: +1 gold.", 3.1, weight="600")
+    b += T(M, y, "each one pays 1 gold instead of acting, into your own discard. "
+                 "Last place pays you +1 gold.", 3.1, weight="600")
     y += 4.2
     b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "
                  "this sheet says what that means.", 3.0, col=SOFT, italic=True)
-    y += 6.8
+    y += 6.4
 
     # ================================================== 1b. WHAT MAY I LAY?
     # The single largest omission on the one-page sheet: Blink is a
