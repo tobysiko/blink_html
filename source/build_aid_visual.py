@@ -262,58 +262,74 @@ def sheet():
     b += T(M + text_w("BLINK", 8.5, "700", 0.4) + 5, y,
            "player aid · every stage, every choice", 4.0, col=SOFT)
     b += T(W - M, y, f"rules {VTAG}", 3.4, anchor="end", col=FAINT, mono=True)
-    y += 3.0
+    y += 2.6
     b += f'<path d="M{M} {y} L{W - M} {y}" stroke="{INK}" stroke-width="0.7"/>'
-    y += 8.5
+    y += 7.0
 
     # ================================================== 1. THE ROUND
+    # THREE ACROSS, TWO DOWN — not six in a single cramped row. Six boxes
+    # squeezed into one row left each ~29mm wide, forcing 2.6-2.9pt text and
+    # 3-4 lines of wrapped "who" copy in a sliver of a column; the reader
+    # (across a table, not at a desk) had to work to get through it. A 3x2
+    # grid roughly doubles each box's width, so most lines fit in one or two
+    # wraps at a size that still reads from an arm's length away, and the
+    # "who" line moves up from FAINT to SOFT — FAINT is for de-emphasis, not
+    # for a sentence someone is meant to read.
     b += head(M, y, "THE ROUND", "six beats · the table finishes each one before the next")
-    y += 4.5
-    bw = (W - 2 * M - 5 * 3) / 6
+    y += 3.3
+    cols = 3
+    gap_x, gap_y = 4.0, 1.2
+    bw = (W - 2 * M - (cols - 1) * gap_x) / cols
     top = y
-    inner = bw - 6
-    # the tallest card decides them all, so the row reads as one band
+    inner = bw - 7
+    KEY_SIZE, WHAT_SIZE, WHO_SIZE = 4.0, 3.3, 2.8
+    lead1, lead2 = WHAT_SIZE * 1.12, WHO_SIZE * 1.12
+    # the tallest card in the grid decides every box's height, so the grid
+    # reads as two even rows rather than a staircase
     bh = 0
     for key, what, who in ROUND:
-        n1 = len(split(what, inner, 2.9))
-        n2 = len(split(who, inner, 2.6))
-        bh = max(bh, 11.5 + n1 * 3.8 + 1.6 + n2 * 3.4 + 2.5)
+        n1 = len(split(what, inner, WHAT_SIZE))
+        n2 = len(split(who, inner, WHO_SIZE))
+        bh = max(bh, 11.0 + n1 * lead1 + 1.0 + n2 * lead2 + 1.4)
     for i, (key, what, who) in enumerate(ROUND):
-        x = M + i * (bw + 3)
-        b += panel(x, top, bw, bh, accent=GOLD if i in (2, 4, 5) else None)
-        b += disc(x + 5.6, top + 5.6, 3.0, INK)
-        b += T(x + 5.6, top + 6.8, str(i + 1), 3.2, anchor="middle",
+        row, col = divmod(i, cols)
+        x = M + col * (bw + gap_x)
+        by = top + row * (bh + gap_y)
+        b += panel(x, by, bw, bh, accent=GOLD if i in (2, 4, 5) else None)
+        b += disc(x + 6.2, by + 6.2, 3.1, INK)
+        b += T(x + 6.2, by + 7.3, str(i + 1), 3.4, anchor="middle",
                col=PAPER, weight="700")
-        b += T(x + 10.6, top + 6.9, key, 3.8, weight="700", spacing="0.2")
-        w1, n1 = wrap(x + 3, top + 13.0, what, inner, 2.9, INK)
+        b += T(x + 11.6, by + 7.5, key, KEY_SIZE, weight="700", spacing="0.2")
+        w1, n1 = wrap(x + 3.6, by + 12.0, what, inner, WHAT_SIZE, INK, lead=lead1)
         b += w1
-        b += wrap(x + 3, top + 13.0 + n1 * 3.8 + 1.6, who, inner, 2.6, FAINT)[0]
-        if i < len(ROUND) - 1:
-            b += arrow(x + bw + 0.4, top + bh / 2, x + bw + 2.6)
-    y = top + bh + 3.8
+        b += wrap(x + 3.6, by + 12.0 + n1 * lead1 + 1.0, who, inner, WHO_SIZE, SOFT,
+                  lead=lead2)[0]
+        if col < cols - 1:
+            b += arrow(x + bw + 0.5, by + bh / 2, x + bw + gap_x - 0.5, col=SOFT)
+    y = top + 2 * bh + gap_y + 3.3
     # The RANK box's own tie-break chain, printed once in full rather than
     # wrapped into a seventh column or crammed into RANK's own box.
     b += T(M, y, TIES, 3.0, col=SOFT)
-    y += 3.8
+    y += 3.2
     # THE SET-ASIDE gets its own line in ink, not the faint second line of a
     # box: it is the one rule of the round that costs a player something, and
     # the one a table forgets. SETTLE's box states the gist; this is the detail.
     b += T(M, y, "Held as many cards as the trick's winner, or more, and lost? "
                  "Shed cards one at a time until below that count:", 3.1, weight="600")
-    y += 4.0
+    y += 3.5
     b += T(M, y, "each one pays 1 gold instead of acting, into your own discard. "
                  "Last place pays you +1 gold.", 3.1, weight="600")
-    y += 4.2
+    y += 3.7
     b += T(M, y, "Hand empty and meld spent? Recycle at once, mid-turn — the back of "
                  "this sheet says what that means.", 3.0, col=SOFT, italic=True)
-    y += 6.4
+    y += 5.0
 
     # ================================================== 1b. WHAT MAY I LAY?
     # The single largest omission on the one-page sheet: Blink is a
     # trick-taker and nothing on the aid said what a legal meld is. A player
     # could read the whole sheet and still not know they may lay 2-3-3-4-4.
     b += head(M, y, "WHAT MAY I LAY?", "one meld, face down, every round")
-    y += 4.8
+    y += 3.8
     mh = 19.0
     b += panel(M, y, W - 2 * M, mh, accent=GOLD)
     b += T(M + 4, y + 6.4, MELD["rule"], 4.4, weight="700", col=GOLD)
@@ -332,11 +348,11 @@ def sheet():
            "(" + MELD["why"] + ")", 3.0, col=RED)
     b += T(W - M - 4, y + 6.4, MELD["cap"], 3.1, anchor="end", col=SOFT)
     b += T(W - M - 4, y + 13.4, MELD["win"], 3.1, anchor="end", col=INK, weight="600")
-    y += mh + 7.5
+    y += mh + 4.5
 
     # ================================================== 2. THE THREE DECISIONS
     b += head(M, y, "WHAT ARE MY OPTIONS?", "what a card, a coin and a victory card can do")
-    y += 5
+    y += 3.5
     colw = (W - 2 * M - 2 * 5) / 3
     ctop = y
     iw = colw - 6
@@ -681,7 +697,7 @@ def back():
 
 def build():
     b, y = sheet()
-    y += 7.0
+    y += 5.0
 
     # THE PRICES BELONG BESIDE THE COLUMN THEY PRICE. A, B and C are the three
     # boxes of the victory-row column directly above this table; on the back
@@ -715,7 +731,7 @@ def build():
 
     b += T(M, y, "TURN OVER for where your cards go, the recycle, and what the "
                  "map scores.", 3.2, col=SOFT, italic=True)
-    y += 3.0
+    y += 2.5
     front, fb = _page(b, y, "side one",
                       "side two carries the card loop, the recycle and the objectives")
     (HERE / "Blink-aid-visual.svg").write_text(front, encoding="utf8")
